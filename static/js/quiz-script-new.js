@@ -3279,24 +3279,14 @@ function appendFreeTextInput(div, maxCharInput) {
         container.appendChild(charCount);
 
     } else {
-        // Écran de choix initial
+        // Pas d'écran de choix — on affiche directement l'audio
         const choiceScreen = document.createElement('div');
         choiceScreen.className = 'response-choice-screen';
-        choiceScreen.innerHTML = `
-            <div class="audio-first-choice">
-                <button type="button" class="audio-first-btn" data-mode="audio">
-                    <span class="audio-first-btn__icon">🎙️</span>
-                    <span class="audio-first-btn__label">Répondre en vocal</span>
-                    <span class="audio-first-btn__badge">Recommandé</span>
-                </button>
-                <button type="button" class="audio-first-text-link" data-mode="text">✍️ Je préfère écrire</button>
-            </div>
-        `;
+        choiceScreen.style.display = 'none';
 
-        // Container audio (caché par défaut)
+        // Container audio (visible par défaut)
         const audioContainer = document.createElement('div');
         audioContainer.className = 'enhanced-audio-container';
-        audioContainer.style.display = 'none';
         audioContainer.innerHTML = `
             <div class="mic-central-container">
                 <div class="circular-progress">
