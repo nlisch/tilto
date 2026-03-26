@@ -3283,18 +3283,13 @@ function appendFreeTextInput(div, maxCharInput) {
         const choiceScreen = document.createElement('div');
         choiceScreen.className = 'response-choice-screen';
         choiceScreen.innerHTML = `
-            <div class="choice-question">Comment veux-tu répondre ?</div>
-            <div class="choice-buttons">
-                <button type="button" class="choice-btn" data-mode="audio">
-                    <span class="choice-btn-icon">🎙️</span>
-                    <span class="choice-btn-label">Parler</span>
-                    <span class="choice-btn-hint">Plus rapide</span>
+            <div class="audio-first-choice">
+                <button type="button" class="audio-first-btn" data-mode="audio">
+                    <span class="audio-first-btn__icon">🎙️</span>
+                    <span class="audio-first-btn__label">Répondre en vocal</span>
+                    <span class="audio-first-btn__badge">Recommandé</span>
                 </button>
-                <button type="button" class="choice-btn" data-mode="text">
-                    <span class="choice-btn-icon">✍️</span>
-                    <span class="choice-btn-label">Écrire</span>
-                    <span class="choice-btn-hint">Plus discret</span>
-                </button>
+                <button type="button" class="audio-first-text-link" data-mode="text">✍️ Je préfère écrire</button>
             </div>
         `;
 
@@ -3386,7 +3381,7 @@ function appendFreeTextInput(div, maxCharInput) {
         setTimeout(() => {
             const textArea = textContainer.querySelector('.free-text-input');
             const charCount = textContainer.querySelector('.char-count');
-            const choiceBtns = choiceScreen.querySelectorAll('.choice-btn');
+            const choiceBtns = choiceScreen.querySelectorAll('[data-mode]');
             const switchLinks = container.querySelectorAll('.switch-mode-link');
 
             // Fonction pour afficher un mode
@@ -4717,15 +4712,15 @@ try {
     const complete = document.getElementById('quizComplete');
     const welcome = document.getElementById('quizWelcome');
 
+    // Flow normal : welcome screen d'abord
     if (content) content.style.display = 'none';
     if (complete) complete.style.display = 'none';
     if (welcome) welcome.style.display = 'flex';
-    // Lancer la vidéo d'intro (une seule fois)
-if (typeof window.playWelcomeVideo === 'function') {
-    window.playWelcomeVideo();
-}
 
-    // Handler du bouton "C'est parti !"
+    if (typeof window.playWelcomeVideo === 'function') {
+        window.playWelcomeVideo();
+    }
+
     const startBtn = document.getElementById('welcomeStartBtn');
     if (startBtn && !startBtn._bound) {
         startBtn._bound = true;
@@ -5497,18 +5492,18 @@ function initHeroPlaceholders() {
         
         if (hasMoreQuestions) {
             // ═══════════════════════════════════════════════════════════════════
-            // Continuer le quiz avec les questions suivantes
+            // Continuer le quiz — directement Q2
             // ═══════════════════════════════════════════════════════════════════
-            console.log('[Hero] Continuation du quiz...');
-            
+            console.log('[Hero] Continuation directe vers Q2...');
+
             if (quizWelcome) quizWelcome.style.display = 'none';
             if (quizComplete) quizComplete.style.display = 'none';
             if (quizContent) quizContent.style.display = 'block';
-            
+
             // Positionner sur la question suivante
             currentChapter = 0;
             currentChapterQuestionIndex = heroQuestionIndex + 1;
-            
+
             // Sauvegarder l'historique de la question Hero
             homepageQuestionHistory.push({
                 chapter: 0,
@@ -5516,8 +5511,8 @@ function initHeroPlaceholders() {
                 screenType: 'question',
                 questionId: HERO_QUESTION_ID
             });
-            
-            // Afficher la question suivante
+
+            // Afficher Q2 directement
             await showQuestion(QUIZ_ID);
             
         } else {
@@ -5812,4 +5807,9 @@ window.validateLeadLocation = validateLeadLocation;
 window.initializeHomepageQuiz = initializeHomepageQuiz;
 window.startAnalysis = startAnalysis;
 window.closeConfirmationModal = closeConfirmationModal;
+window.initHeroElements = initHeroElements;
+window.initHeroPlaceholders = initHeroPlaceholders;
+window.showHeroTextMode = showHeroTextMode;
+window.showHeroAudioMode = showHeroAudioMode;
+window.showHeroChoiceScreen = showHeroChoiceScreen;
 

@@ -24,8 +24,91 @@
     <div class="hp-hero__text">
       <h1 class="hp-hero__title" style="text-align:left;">Tu te sens <span class="hp-hero__hl">perdu·e</span> dans ta vie pro&nbsp;?</h1>
       <p class="hp-hero__sub">Quand on tourne en rond professionnellement, le plus difficile est de savoir par où commencer.<br><strong>Identifie des pistes concrètes</strong> pour y voir plus clair.</p>
-      <button type="button" class="hp-hero__cta" id="startQuizBtn" data-quiz-trigger>👉 Trouver mes premières pistes</button>
-      <p class="hp-hero__re" style="display:block;">⏱ 5 minutes — gratuit</p>
+      <!-- Hero Q1 intégrée — audio + texte -->
+      <h2 class="hero-question-title">{{ hero_question.question if hero_question else "Quand tu penses à ton travail actuel, qu'est-ce qui te vient à l'esprit ?" }}</h2>
+      <div class="hero-input-card" id="heroInputCard">
+        <!-- Choix initial -->
+        <div class="hero-choice-screen" id="heroChoiceScreen">
+          <div class="hero-placeholder-zone" id="heroPlaceholderZone">
+            <p class="placeholder-text" id="rotatingPlaceholder">Ex : Je m'ennuie dans mon poste, j'ai besoin de changement mais je ne sais pas par où commencer...</p>
+          </div>
+          <div class="hero-actions-bar">
+            <button type="button" class="hero-voice-btn hero-voice-btn--primary" id="heroVoiceBtn">
+              <span class="btn-icon">🎙️</span>
+              <span class="btn-label">Répondre en vocal</span>
+              <span class="btn-badge">Recommandé</span>
+            </button>
+          </div>
+        </div>
+        <!-- Mode audio -->
+        <div class="hero-audio-mode" id="heroAudioMode" style="display: none;">
+          <div class="hero-recording-state" id="heroRecordingState">
+            <div class="recording-status-header"><span class="recording-dot-pulse">●</span><span>Enregistrement en cours</span></div>
+            <div class="recording-visual"><div class="recording-circle-outer"><div class="recording-circle-inner" id="heroRecordingCircle"></div></div></div>
+            <p class="hero-timer-display" id="heroTimerDisplay">0:00</p>
+            <p class="hero-timer-hint">2:00 max</p>
+            <p class="hero-recording-hint" id="heroRecordingHint">C'est parti ! Parle-moi de ce qui te vient à l'esprit...</p>
+            <button type="button" class="hero-stop-btn" id="heroStopBtn"><span>⏹</span> Terminer</button>
+            <button type="button" class="hero-cancel-link" id="heroCancelRecording">Annuler</button>
+            <button type="button" class="hero-switch-mode-link" id="heroSwitchToTextFromRecording">✍️ Finalement, je préfère écrire</button>
+          </div>
+          <div class="hero-done-state" id="heroDoneState" style="display: none;">
+            <div class="done-status-header"><span>Enregistrement terminé</span></div>
+            <div class="done-visual"><div class="done-circle"><span class="done-check-large">✓</span></div></div>
+            <p class="hero-done-text" id="heroDoneText">0:00 enregistré</p>
+            <div class="hero-done-actions">
+              <button type="button" class="hero-action-btn" id="heroListenBtn" style="display: none;">🎧 Écouter</button>
+              <button type="button" class="hero-action-btn" id="heroRerecordBtn"><span>🔄</span> Réenregistrer</button>
+            </div>
+            <p class="hero-warning-text" id="heroWarningText" style="display: none;">⚠️ Un peu court — parle au moins 15 secondes</p>
+            <div class="hero-done-footer">
+              <button type="button" class="hero-back-btn" id="heroBackFromDone">← Retour</button>
+              <button type="button" class="hero-submit-btn" id="heroSubmitAudio">Continuer <span>→</span></button>
+            </div>
+          </div>
+          <audio id="heroAudioElement" style="display: none;"></audio>
+        </div>
+        <!-- Mode texte -->
+        <div class="hero-text-mode" id="heroTextMode" style="display: none;">
+          <textarea class="hero-textarea" id="heroTextarea" placeholder="Ex : Je m'ennuie dans mon poste, j'ai besoin de changement mais je ne sais pas par où commencer..." maxlength="2000"></textarea>
+          <div class="hero-text-footer">
+            <div class="hero-text-footer-left">
+              <button type="button" class="hero-back-btn" id="heroBackFromText">← Retour</button>
+              <span class="hero-char-count" id="heroCharCount">0 / 2000</span>
+            </div>
+            <button type="button" class="hero-submit-btn" id="heroSubmitText" disabled>Continuer <span>→</span></button>
+          </div>
+          <div class="hero-switch-suggestion">
+            <span>🎙️</span><span>Tu préfères parler ? </span>
+            <button type="button" class="hero-switch-link" id="heroSwitchToAudio">Passer en mode vocal (recommandé)</button>
+          </div>
+        </div>
+      </div>
+      <!-- Trust badges + Claire -->
+      <div class="hero-bottom-row">
+        <div class="hero-trust-badges" id="heroTrustBadges">
+          <span>⏱ 5 min</span>
+          <span>🔒 Confidentiel</span>
+          <span>🎁 Gratuit</span>
+        </div>
+        <button type="button" class="claire-pill" id="claireToggle">
+          <span class="claire-pill__play">▶</span>
+          <span class="claire-pill__label">Un mot de Claire</span>
+        </button>
+      </div>
+      <!-- Claire video overlay -->
+      <div class="claire-overlay" id="claireOverlay" style="display:none;">
+        <div class="claire-overlay__card">
+          <button type="button" class="claire-overlay__close" id="claireClose">&times;</button>
+          <video
+            id="claireVideo"
+            src="https://images.tilto.co/videos/production/2026/02/71d3d8ad_video_claire.mp4"
+            playsinline webkit-playsinline
+            controls
+            preload="none"
+          ></video>
+        </div>
+      </div>
     </div>
     <div class="hp-hero__photos">
         <div class="hp-hero__carousel">
@@ -168,20 +251,8 @@
             <div id="quizContent" style="display: none;"><form id="quizForm"></form></div>
             <div id="quizWelcome" style="display: none;">
                 <div class="quiz-welcome-screen">
-            <!-- NOUVEAU -->
-            <div class="welcome-video-wrapper">
-                <video 
-                    id="welcomeVideo" 
-                    src="https://images.tilto.co/videos/production/2026/02/71d3d8ad_video_claire.mp4"
-                    playsinline 
-                    webkit-playsinline
-                    preload="metadata"
-                    controls
-                    muted
-                ></video>
-            </div>
-                    <h2 class="welcome-title"> C'est simple, parle-nous de toi</h2>
-                    <p class="welcome-subtitle">4 questions guidées, zéro préparation. Laisse-toi porter, on fait le reste.</p>
+                    <h2 class="welcome-title">C'est simple, parle-nous de toi</h2>
+                    <p class="welcome-subtitle">3 questions guidées, zéro préparation. Plus tu détailles, plus tes pistes seront pertinentes.</p>
                     <div class="welcome-features">
                         <div class="welcome-feature"><span class="feature-icon">⏱</span><span>5 minutes max</span></div>
                         <div class="welcome-feature"><span class="feature-icon">🔒</span><span>100% confidentiel</span></div>
@@ -352,8 +423,166 @@
      color: #888;
      margin-top: 0.85rem;
      font-weight: 800;
-
  }
+
+ /* Hero Q1 — Question title */
+ .hero-question-title {
+     font-family: 'Fraunces', Georgia, serif;
+     font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+     font-weight: 800;
+     color: #A11857;
+     margin: 2rem 0 1rem;
+     line-height: 1.35;
+ }
+
+ /* Hero Input Card */
+ .hero-input-card {
+     background: rgba(255, 255, 255, 0.97);
+     backdrop-filter: blur(20px);
+     border-radius: 24px;
+     box-shadow: 0 4px 60px rgba(161, 24, 87, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+     padding: 1.5rem;
+     width: 100%;
+     position: relative;
+     animation: scaleIn 0.5s ease-out 0.2s both;
+ }
+ @keyframes scaleIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+ .hero-choice-screen { text-align: left; }
+ .hero-placeholder-zone { min-height: 80px; padding: 0.5rem 0; cursor: text; }
+ .hero-placeholder-zone .placeholder-text { color: #9ca3af; font-size: 1rem; line-height: 1.6; font-style: italic; margin: 0; transition: opacity 0.4s ease; }
+ .hero-actions-bar { display: flex; flex-direction: column; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; gap: 0.75rem; }
+ .hero-voice-btn--primary { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; padding: 1rem 1.5rem; background: linear-gradient(135deg, #A11857, #8b1249); border: none; border-radius: 16px; font-size: 1.1rem; color: white; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 700; font-family: inherit; box-shadow: 0 6px 24px rgba(161, 24, 87, 0.35); }
+ .hero-voice-btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(161, 24, 87, 0.45); background: linear-gradient(135deg, #c92a6e, #A11857); }
+ .hero-voice-btn--primary .btn-icon { font-size: 1.3rem; }
+ .hero-voice-btn--primary .btn-badge { background: rgba(255,255,255,0.2); color: white; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; text-transform: uppercase; }
+ .hero-text-link { background: none; border: none; color: #94a3b8; font-size: 0.9rem; font-weight: 500; cursor: pointer; font-family: inherit; text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+ .hero-text-link:hover { color: #64748b; }
+ .hero-submit-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #A11857, #8b1249); border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 20px rgba(161, 24, 87, 0.3); transition: all 0.2s ease; font-family: inherit; }
+ .hero-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(161, 24, 87, 0.4); }
+ .hero-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+ /* Audio mode */
+ .hero-audio-mode { text-align: center; padding: 1rem 0; }
+ .recording-status-header, .done-status-header { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem; }
+ .recording-status-header { color: #ef4444; }
+ .done-status-header { color: #10b981; }
+ .recording-dot-pulse { animation: blink 1s ease-in-out infinite; }
+ @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+ .recording-visual, .done-visual { margin-bottom: 1rem; }
+ .recording-circle-outer { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, rgba(161,24,87,0.1), rgba(161,24,87,0.05)); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+ .recording-circle-outer.is-recording { animation: recording-pulse 2s ease-in-out infinite; }
+ @keyframes recording-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 40px rgba(161,24,87,0.2); } }
+ .recording-circle-inner { width: 75px; height: 75px; border-radius: 50%; background: linear-gradient(135deg, #A11857, #C44B89); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(239,68,68,0.4); }
+ .done-circle { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 8px 30px rgba(16,185,129,0.3); }
+ .done-check-large { font-size: 2.5rem; color: white; }
+ .hero-timer-display { font-size: 2.5rem; font-weight: 700; color: #1a1a2e; margin: 0.5rem 0 0; }
+ .hero-timer-hint { font-size: 0.85rem; color: #999; margin: 0 0 1rem; }
+ .hero-recording-hint { color: #64748b; font-size: 1.15rem; line-height: 1.5; max-width: 380px; margin: 0 auto 1.5rem; min-height: 45px; }
+ .hero-stop-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2.5rem; background: linear-gradient(135deg, #A11857, #C44B89); border: none; border-radius: 10px; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(161,24,87,0.3); }
+ .hero-stop-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(161,24,87,0.4); }
+ .hero-cancel-link { display: block; background: none; border: none; color: #999; margin-top: 1rem; cursor: pointer; font-size: 0.9rem; font-family: inherit; }
+ .hero-cancel-link:hover { color: #666; }
+ .hero-switch-mode-link { display: block; background: none; border: none; color: #A11857; margin-top: 1.25rem; cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: inherit; text-decoration: underline; text-underline-offset: 3px; }
+ .hero-switch-mode-link:hover { color: #8b1249; }
+ .hero-done-text { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 1.25rem; }
+ .hero-done-actions { display: flex; gap: 1rem; justify-content: center; margin: 1.5rem 0; }
+ .hero-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: 2px solid; }
+ #heroListenBtn { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fbbf24; color: #92400e; }
+ #heroListenBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(251,191,36,0.3); }
+ #heroRerecordBtn { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fbbf24; color: #92400e; }
+ #heroRerecordBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(251,191,36,0.3); }
+ .hero-warning-text { color: #F34213; font-size: 1.2rem; margin: 1rem 0; font-weight: 700; }
+ .hero-done-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; }
+ .hero-back-btn { background: none; border: none; color: #999; cursor: pointer; font-size: 0.9rem; padding: 0.5rem 0; font-family: inherit; }
+ .hero-back-btn:hover { color: #666; }
+
+ /* Text mode */
+ .hero-text-mode { text-align: left; }
+ .hero-textarea { width: 100%; min-height: 150px; border: none; padding: 0; font-size: 1rem; color: #1a1a2e; background: transparent; resize: none; line-height: 1.6; outline: none; font-family: inherit; }
+ .hero-textarea::placeholder { color: #9ca3af; font-style: italic; }
+ .hero-text-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; flex-wrap: wrap; gap: 1rem; }
+ .hero-text-footer-left { display: flex; align-items: center; gap: 1rem; }
+ .hero-char-count { font-size: 0.8rem; color: #bbb; }
+ .hero-switch-suggestion { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; font-size: 0.85rem; color: #94a3b8; }
+ .hero-switch-link { background: none; border: none; color: #A11857; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: inherit; }
+ .hero-switch-link:hover { color: #8b1249; }
+
+ /* Quiz modal — audio-first choice screen */
+ .audio-first-choice { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem 0; }
+ .audio-first-btn {
+     display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+     width: 100%; padding: 1.1rem 1.5rem;
+     background: linear-gradient(135deg, #A11857, #8b1249);
+     border: none; border-radius: 16px;
+     font-size: 1.1rem; color: white; cursor: pointer;
+     font-weight: 700; font-family: inherit;
+     box-shadow: 0 6px 24px rgba(161,24,87,0.35);
+     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+ }
+ .audio-first-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(161,24,87,0.45); }
+ .audio-first-btn__icon { font-size: 1.3rem; }
+ .audio-first-btn__badge { background: rgba(255,255,255,0.2); color: white; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; text-transform: uppercase; }
+ .audio-first-text-link { background: none; border: none; color: #94a3b8; font-size: 0.9rem; cursor: pointer; font-family: inherit; text-decoration: underline; text-underline-offset: 3px; }
+ .audio-first-text-link:hover { color: #64748b; }
+
+ /* Bottom row: badges + Claire */
+ .hero-bottom-row {
+     display: flex; align-items: center; justify-content: space-between;
+     margin-top: 1.25rem; gap: 1rem; flex-wrap: wrap;
+ }
+ .hero-trust-badges { display: flex; gap: 1.5rem; color: #94a3b8; font-size: 0.85rem; flex-wrap: wrap; }
+
+ /* Claire pill */
+ .claire-pill {
+     display: inline-flex; align-items: center; gap: 0.5rem;
+     background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+     border: 1px solid rgba(161,24,87,0.1);
+     border-radius: 60px; padding: 0.35rem 1rem 0.35rem 0.35rem;
+     cursor: pointer; font-family: 'DM Sans', sans-serif;
+     font-size: 0.82rem; color: #64748b;
+     transition: all 0.25s ease;
+     box-shadow: 0 2px 8px rgba(161,24,87,0.05);
+     flex-shrink: 0;
+ }
+ .claire-pill:hover { border-color: rgba(161,24,87,0.25); color: #A11857; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(161,24,87,0.1); }
+ .claire-pill__play {
+     display: flex; align-items: center; justify-content: center;
+     width: 26px; height: 26px; border-radius: 50%;
+     background: linear-gradient(135deg, #A11857, #c92a6e);
+     color: white; font-size: 0.55rem; padding-left: 2px;
+     box-shadow: 0 2px 8px rgba(161,24,87,0.25);
+ }
+ .claire-pill__label { font-weight: 600; }
+
+ /* Claire video overlay */
+ .claire-overlay {
+     position: fixed; inset: 0; z-index: 9999;
+     background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+     display: flex; align-items: center; justify-content: center;
+     animation: fadeIn 0.2s ease;
+ }
+ @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+ .claire-overlay__card {
+     position: relative;
+     width: 85%; max-width: 360px;
+     border-radius: 24px; overflow: hidden;
+     background: #000;
+     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+     animation: scaleIn 0.3s ease-out;
+ }
+ .claire-overlay__card video {
+     width: 100%; aspect-ratio: 1 / 1;
+     display: block; object-fit: cover;
+ }
+ .claire-overlay__close {
+     position: absolute; top: 12px; right: 12px; z-index: 10;
+     width: 32px; height: 32px; border-radius: 50%;
+     background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+     border: none; color: white; font-size: 1.2rem;
+     cursor: pointer; display: flex; align-items: center; justify-content: center;
+     transition: background 0.2s;
+ }
+ .claire-overlay__close:hover { background: rgba(0,0,0,0.7); }
  
  /* Photos - style incliné/décalé */
  .hp-hero__photos {
@@ -737,6 +966,9 @@
      .hp-hero__title { padding:0.5rem;padding-top:2rem;font-size: 2rem;text-align: center !important;}
      .hp-hero__sub { font-size: 1rem; padding:0.5rem;}
      .hp-hero__cta { font-size: 1.1rem; padding: 1rem 1.8rem; width: 70%; text-align: center; }
+     .hero-question-title { text-align: center; font-size: 1.2rem; }
+     .hero-input-card { padding: 1rem; }
+     .hero-trust-badges { justify-content: center; }
      .hp-hero__photos { min-height: 400px; }
      .hp-hero__ph--1 { width: 58%; height: 220px; }
      .hp-hero__ph--2 { width: 48%; height: 240px; right: -10px; }
@@ -1333,6 +1565,27 @@ window.HERO_QUESTION_ID = {{ hero_question.question_id if hero_question else 65 
 document.addEventListener('DOMContentLoaded', function() {
     var quizModal = document.getElementById('quizModal');
     var closeQuizModal = document.getElementById('closeQuizModal');
+
+    // Hero Q1 audio/text est auto-initialisé par quiz-script-new.js (initHeroQuiz)
+
+    // Claire video overlay
+    var claireToggle = document.getElementById('claireToggle');
+    var claireOverlay = document.getElementById('claireOverlay');
+    var claireClose = document.getElementById('claireClose');
+    var claireVideo = document.getElementById('claireVideo');
+    function openClaire() {
+        if (claireOverlay) { claireOverlay.style.display = 'flex'; }
+        if (claireVideo) { claireVideo.currentTime = 0; claireVideo.play(); }
+    }
+    function closeClaire() {
+        if (claireVideo) { claireVideo.pause(); claireVideo.currentTime = 0; }
+        if (claireOverlay) { claireOverlay.style.display = 'none'; }
+    }
+    if (claireToggle) claireToggle.addEventListener('click', openClaire);
+    if (claireClose) claireClose.addEventListener('click', closeClaire);
+    if (claireOverlay) claireOverlay.addEventListener('click', function(e) {
+        if (e.target === claireOverlay) closeClaire();
+    });
     
     window.showQuizFormMessage = function(type, icon, title, text) {
         var fm = document.getElementById('quiz-form-message');
