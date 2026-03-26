@@ -216,4 +216,4 @@ The `cloudbuild.yaml` pipeline builds the Docker image, pushes it to Container R
 
 ## License
 
-All rights reserved.
+This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You are free to use, modify, and distribute this code, but any modified version that is deployed as a service must also be open-sourced under the same license.
