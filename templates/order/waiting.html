@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align:center;padding:80px 20px;">
+  <p style="color:#777;font-size:0.9rem;">On finalise ta commande…</p>
+</div>
+<script>
+var attempts = 0;
+function checkStatus() {
+    if (attempts++ > 15) {
+        window.location.href = '/payment-failed?error=timeout&session_id={{ session_id }}';
+        return;
+    }
+    fetch('/order/status?session_id={{ session_id }}')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if (data.status === 'paid') {
+                window.location.href = '/success?session_id={{ session_id }}';
+            } else {
+                setTimeout(checkStatus, 2000);
+            }
+        })
+        .catch(function(){ setTimeout(checkStatus, 2000); });
+}
+setTimeout(checkStatus, 1500);
+</script>
+{% endblock %}

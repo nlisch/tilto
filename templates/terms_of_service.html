@@ -1,0 +1,120 @@
+<!-- templates/terms_of_service.html -->
+{% extends "base.html" %}
+
+{% block title %}Conditions Générales - Tilto{% endblock %}
+
+{% block meta_description %}Conditions générales d'utilisation de Tilto.{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section style="background: linear-gradient(135deg, #A11857 0%, #8a1249 100%); padding: 8rem 0 3rem; color: white;">
+    <div style="max-width: 750px; margin: 0 auto; text-align: center; padding: 0 1.5rem;">
+        <h1 style="font-size: 2.3rem; font-weight: 700; margin-bottom: 0.75rem;">
+            Conditions Générales
+        </h1>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 1rem;">
+            Dernière mise à jour : 20 janvier 2026
+        </p>
+    </div>
+</section>
+
+<div style="max-width: 750px; margin: 0 auto; padding: 0 1.5rem 4rem;">
+
+    <!-- 1. Mentions légales -->
+    <div class="cgv-section" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: -2rem 0 1.5rem; position: relative; z-index: 10;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            1. Mentions légales
+        </h2>
+        <p style="margin: 0; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            <strong>Tilto</strong> est édité par Claire Ngoc, micro-entreprise<br>
+            SIREN : 892056128<br>
+            7 rue des Perrières, 44100 Nantes<br>
+            Contact : <a href="mailto:contact@tilto.ai" style="color: #A11857;">contact@tilto.ai</a><br>
+            TVA non applicable (article 293 B du CGI)
+        </p>
+    </div>
+
+    <!-- 2. Le service Tilto -->
+    <div class="cgv-section" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            2. Le service Tilto
+        </h2>
+        <p style="margin: 0 0 1rem; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            Tilto t'aide à explorer des pistes professionnelles adaptées à ta situation :
+        </p>
+        <ul style="margin: 0; padding-left: 1.5rem; color: #333; line-height: 1.8; font-size: 0.95rem;">
+            <li>Tu réponds à <strong>une question</strong> (à l'oral ou à l'écrit)</li>
+            <li>Notre IA génère <strong>3 pistes professionnelles</strong> personnalisées</li>
+            <li>Tu accèdes à tes fiches métiers dans ton espace personnel</li>
+        </ul>
+        <div style="background: #F0FDF4; padding: 1rem; border-radius: 8px; margin-top: 1.25rem;">
+            <p style="margin: 0; color: #065f46; font-size: 0.95rem;">
+                <strong>🎁 100% gratuit</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. Mise en relation (optionnelle) -->
+    <div class="cgv-section" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            3. Mise en relation (optionnelle)
+        </h2>
+        <p style="margin: 0; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            Après avoir consulté tes pistes, tu peux choisir d'être mis en relation avec un <strong>recruteur</strong> ou un <strong>coach Tilto</strong>. C'est 100% optionnel et tu peux annuler à tout moment.
+        </p>
+    </div>
+
+    <!-- 4. Nature des recommandations -->
+    <div class="cgv-section" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            4. Nature des recommandations
+        </h2>
+        <p style="margin: 0; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            Les pistes proposées sont des <strong>suggestions générées par IA</strong>. Elles ne constituent pas un engagement de résultat. Tu restes libre de tes décisions et peux demander une révision humaine à tout moment.
+        </p>
+    </div>
+
+    <!-- 5. Données personnelles -->
+    <div class="cgv-section" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            5. Données personnelles
+        </h2>
+        <p style="margin: 0; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            Tes données sont traitées conformément au RGPD. Consulte notre <a href="{{ url_for('privacy_policy') }}" style="color: #A11857;">Politique de Confidentialité</a>. Pour toute demande : <a href="mailto:contact@tilto.ai" style="color: #A11857;">contact@tilto.ai</a>
+        </p>
+    </div>
+
+    <!-- 6. Acceptation -->
+    <div class="cgv-section" style="background: linear-gradient(135deg, rgba(161,24,87,0.05) 0%, rgba(255,179,217,0.08) 100%); padding: 2rem; border-radius: 16px; border: 1px solid rgba(161,24,87,0.15); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: #A11857;">
+            6. Acceptation
+        </h2>
+        <p style="margin: 0; color: #333; line-height: 1.7; font-size: 0.95rem;">
+            En créant un compte, tu confirmes avoir lu et accepté ces conditions.
+        </p>
+    </div>
+
+    <!-- Contact + Retour -->
+    <div style="text-align: center; padding-top: 1rem;">
+        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            Une question ? <a href="mailto:contact@tilto.ai" style="color: #A11857; font-weight: 600;">contact@tilto.ai</a>
+        </p>
+        <a href="{{ url_for('auth.home') }}" 
+           style="background: #A11857; color: white; padding: 0.9rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 0.95rem;">
+            ← Retour à l'accueil
+        </a>
+    </div>
+</div>
+
+<style nonce="{{ g.nonce }}">
+h1 { color: white; }
+.cgv-section { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.cgv-section:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+@media (max-width: 600px) {
+    .cgv-section { padding: 1.5rem !important; }
+    .cgv-section h2 { font-size: 1.15rem !important; }
+}
+</style>
+
+{% endblock %}

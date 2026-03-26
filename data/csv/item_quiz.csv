@@ -1,0 +1,9 @@
+item_id,quiz_id,is_active
+personal_profiling_fr,personal_profiling,TRUE
+professional_profiling_fr,professional_profiling,TRUE
+personal_profiling_en,personal_profiling,TRUE
+professional_profiling_en,professional_profiling,TRUE
+pack_clarte_items_fr,pack_clarte,TRUE
+tilto_analysis_item,pack_clarte,TRUE
+smart_contact_10_fr,smart_contact,TRUE
+bilan_carriere_express_item_fr,bilan_carriere_express,TRUE

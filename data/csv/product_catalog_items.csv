@@ -1,0 +1,12 @@
+item_id,item_name,item_type,description,image_url,item_category,base_price,vat_price,unit_amount,vat_rate,currency,is_active,country_code
+personal_profiling_fr,"Personal Profiling Quiz FR",quiz,"Personal evaluation quiz - French version",,personality_assessment,2417,483,2900,20.00,eur,TRUE,FR
+professional_profiling_fr,"Professional Profiling Quiz FR",quiz,"Professional evaluation quiz - French version",,career_assessment,2417,483,2900,20.00,eur,FALSE,FR
+personal_profiling_en,"Personal Profiling Quiz EN",quiz,"Personal evaluation quiz - English version",,personality_assessment,2417,483,2900,20.00,eur,FALSE,EN
+professional_profiling_en,"Professional Profiling Quiz EN",quiz,"Professional evaluation quiz - English version",,career_assessment,2417,483,2900,20.00,eur,FALSE,EN
+coaching_session_1h_fr,"Session de Coaching Carrière 1h",coaching,"Session individuelle de coaching carrière de 60 minutes",,career_coaching,1583,317,1900,20.00,eur,TRUE,FR
+coaching_session_1h_pack_fr,"Pack 3 Sessions de Coaching Carrière",coaching,"Pack de 3 sessions individuelles de coaching carrière",,career_coaching,4083,817,4900,20.00,eur,TRUE,FR
+pack_clarte_session_fr,"Pack Clarté",coaching,"Un échange profondément humain + diagnostic + plan d'action + capsules audio",,career_coaching,2083,417,2500,20.00,eur,TRUE,FR
+pack_clarte_items_fr,"Pack Clarté Items",coaching,"Éléments du Pack Clarté: conversation, diagnostic, plan d'action, capsules audio",,career_coaching,2083,417,2500,20.00,eur,TRUE,FR
+tilto_analysis_item,Analyse Tilto Item,quiz,Analyse complète du profil professionnel,,career_assessment,792,198,990,20.00,eur,TRUE,FR
+smart_contact_10_fr,"Pack 10 Smart Contacts",smart_contact,"10 prises de contact stratégiques avec entreprises ciblées, contacts clés et messages personnalisés",,smart_contact,4158,832,4990,20.00,eur,TRUE,FR
+bilan_carriere_express_item_fr,Bilan Carrière Express — Entretien + Feuille de route,coaching,"Entretien exploratoire 45 min + feuille de route carrière 20 pages avec 3 meilleurs choix pro",,career_coaching,11583,2317,14900,20.00,eur,TRUE,FR

@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Gestion des images</h2>
+    
+    <!-- Uploader une nouvelle image -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 style="text-align: left;">Uploader une nouvelle image</h4>
+        </div>
+        <div class="card-body">
+            <form id="uploadForm" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="col-md-6">
+                    <label for="image" class="form-label">Sélectionner une image</label>
+                    <input type="file" class="form-control" id="image" accept="image/*">
+                </div>
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">Uploader</button>
+                </div>
+            </form>
+            <div id="result" class="mt-4"></div>
+            <div id="preview" class="mt-4"></div>
+        </div>
+    </div>
+
+    <!-- Images en attente -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center" >
+            <h4 style="text-align: left;" >Images en attente</h4>
+            <button id="reloadImages" class="btn btn-sm btn-outline-secondary" >Recharger la liste</button>
+        </div>
+        <div class="card-body">
+            <div id="pendingList" class="row">
+                <!-- Les images en attente seront affichées ici -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles pour la prévisualisation flottante -->
+<style>
+    .preview-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 1000;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-overlay img {
+        max-height: 90vh;
+        max-width: 90vw;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        border-radius: 4px;
+    }
+
+    /* Animation d'apparition */
+    .preview-overlay.show {
+        display: flex;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Animation de disparition */
+    .preview-overlay.hide {
+        animation: fadeOut 0.3s forwards;
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Script personnalisé -->
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', async () => {
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('image');
+    const uploadButton = uploadForm.querySelector('button[type="submit"]');
+    
+    uploadButton.disabled = true;
+    
+    fileInput.addEventListener('change', function() {
+        uploadButton.disabled = !this.files.length;
+    });
+
+    async function loadPendingImages() {
+        const response = await fetch('/api/images/pending', {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        const data = await response.json();
+        
+        const container = document.getElementById('pendingList');
+        container.innerHTML = '';
+        
+        if (data.error) {
+            container.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            return;
+        }
+
+        if (data.length === 0) {
+            container.innerHTML = `<div class="col-12"><p class="text-muted">Aucune image en attente.</p></div>`;
+            return;
+        }
+
+        data.forEach(img => {
+            const col = document.createElement('div');
+            col.classList.add('col-sm-6', 'col-md-4', 'col-lg-3', 'mb-4');
+
+            col.innerHTML = `
+                <div class="card h-100">
+                    <img class="lazyload" src="${img.url}" class="card-img-top preview-image" style="object-fit:cover; height:200px; cursor: pointer;">
+                    
+                    <!-- Div de prévisualisation flottante -->
+                    <div class="preview-overlay">
+                        <img class="lazyload" src="${img.url}" alt="${img.filename}">
+                    </div>
+                    
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="${img.filename}">${img.filename}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Taille : ${Math.round(img.size / 1024)} Ko<br>
+                                Créé le : ${new Date(img.created).toLocaleString()}
+                            </small>
+                        </p>
+                        <div class="d-flex gap-2 mt-2">
+                            <button class="btn btn-sm btn-success promote-btn" data-filename="${img.filename}">Promouvoir</button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-filename="${img.filename}">X</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(col);
+        });
+
+        // Gestion de la prévisualisation
+        document.querySelectorAll('.preview-image').forEach(img => {
+            const overlay = img.closest('.card').querySelector('.preview-overlay');
+
+            img.addEventListener('click', () => {
+                overlay.classList.add('show');
+            });
+
+            overlay.addEventListener('click', () => {
+                overlay.classList.remove('show');
+            });
+        });
+
+        // Gestion des promotions
+        document.querySelectorAll('.promote-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const filename = btn.getAttribute('data-filename');
+                try {
+                    const promoteResp = await fetch(`/api/images/promote/${filename}`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                        }
+                    });
+                    const promoteData = await promoteResp.json();
+                    if (promoteData.success) {
+                        document.getElementById('result').innerHTML = `
+                            <div class="alert alert-success">
+                                Image promue avec succès !<br>
+                                URL Cloud Storage: <a href="${promoteData.url}" target="_blank">${promoteData.url}</a>
+                            </div>
+                        `;
+                        loadPendingImages();
+                    } else {
+                        alert(`Erreur lors de la promotion: ${promoteData.error}`);
+                    }
+                } catch (error) {
+                    alert(`Erreur lors de la promotion: ${error.message}`);
+                }
+            });
+        });
+
+        // Gestion des suppressions
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                    const filename = btn.getAttribute('data-filename');
+                    try {
+                        const response = await fetch(`/api/images/delete/${filename}`, {
+                            method: 'DELETE',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            loadPendingImages();
+                        } else {
+                            alert(`Erreur lors de la suppression: ${data.error}`);
+                        }
+                    } catch (error) {
+                        alert(`Erreur lors de la suppression: ${error.message}`);
+                    }
+                }
+            });
+        });
+    }
+
+    loadPendingImages();
+    document.getElementById('reloadImages').addEventListener('click', loadPendingImages);
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!fileInput.files.length) {
+            document.getElementById('result').innerHTML = `
+                <div class="alert alert-danger">
+                    Veuillez sélectionner une image
+                </div>
+            `;
+            return;
+        }
+        
+        const formData = new FormData();
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        formData.append('image', fileInput.files[0]);
+        
+        document.getElementById('result').innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+        `;
+        
+        try {
+            const response = await fetch('/api/images/upload', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData,
+                credentials: 'same-origin'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('result').innerHTML = `
+                    <div class="alert alert-success">
+                        Upload réussi!<br>
+                        URL: <a href="${data.url}" target="_blank">${data.url}</a>
+                    </div>
+                `;
+                document.getElementById('preview').innerHTML = `
+                    <img class="lazyload" src="${data.url}" class="img-fluid rounded border" style="max-width: 300px" />
+                `;
+                fileInput.value = '';
+                uploadButton.disabled = true;
+                await loadPendingImages();
+            } else {
+                document.getElementById('result').innerHTML = `
+                    <div class="alert alert-danger">Erreur: ${data.error}</div>
+                `;
+            }
+        } catch (error) {
+            document.getElementById('result').innerHTML = `
+                <div class="alert alert-danger">Erreur: ${error.message}</div>
+            `;
+        }
+    });
+});
+</script>
+{% endblock %}

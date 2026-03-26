@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Gestion des vidéos</h2>
+    
+    <!-- Uploader une nouvelle vidéo -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 style="text-align: left;">Uploader une nouvelle vidéo</h4>
+        </div>
+        <div class="card-body">
+            <form id="uploadForm" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="col-md-6">
+                    <label for="video" class="form-label">Sélectionner une vidéo</label>
+                    <input type="file" class="form-control" id="video" accept="video/*">
+                    <small class="text-muted">Formats acceptés: MP4, WebM, MOV, AVI, MKV (max {{ config.VIDEOS.MAX_SIZE_MB }}MB)</small>
+                </div>
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary" id="uploadButton">Uploader</button>
+                    <div id="uploadProgress" class="mt-2" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted" id="progressText">Upload en cours...</small>
+                    </div>
+                </div>
+            </form>
+            <div id="result" class="mt-4"></div>
+            <div id="preview" class="mt-4"></div>
+        </div>
+    </div>
+
+    <!-- Vidéos en attente -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 style="text-align: left;">Vidéos en attente</h4>
+            <button id="reloadVideos" class="btn btn-sm btn-outline-secondary">Recharger la liste</button>
+        </div>
+        <div class="card-body">
+            <div id="pendingList" class="row">
+                <!-- Les vidéos en attente seront affichées ici -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de prévisualisation -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel">Prévisualisation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <video id="modalVideo" controls style="width: 100%; max-height: 70vh;">
+                    <source id="modalVideoSource" src="" type="video/mp4">
+                    Votre navigateur ne supporte pas la lecture vidéo.
+                </video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-card {
+        transition: transform 0.2s;
+    }
+    
+    .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .video-thumbnail {
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .video-thumbnail i {
+        font-size: 48px;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .video-thumbnail:hover i {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', async () => {
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('video');
+    const uploadButton = document.getElementById('uploadButton');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = uploadProgress.querySelector('.progress-bar');
+    const progressText = document.getElementById('progressText');
+    
+    uploadButton.disabled = true;
+    
+    fileInput.addEventListener('change', function() {
+        uploadButton.disabled = !this.files.length;
+        
+        // Afficher la taille du fichier
+        if (this.files.length > 0) {
+            const sizeMB = (this.files[0].size / (1024 * 1024)).toFixed(2);
+            const maxSizeMB = {{ config.VIDEOS.MAX_SIZE_MB }};
+            
+            if (parseFloat(sizeMB) > maxSizeMB) {
+                document.getElementById('result').innerHTML = `
+                    <div class="alert alert-danger">
+                        La vidéo est trop volumineuse (${sizeMB} MB). Taille maximale: ${maxSizeMB} MB
+                    </div>
+                `;
+                uploadButton.disabled = true;
+            } else {
+                document.getElementById('result').innerHTML = `
+                    <div class="alert alert-info">
+                        Taille du fichier: ${sizeMB} MB
+                    </div>
+                `;
+            }
+        }
+    });
+
+    async function loadPendingVideos() {
+        const response = await fetch('/api/videos/pending', {
+            method: 'GET',
+            credentials: 'same-origin'
+        });
+        const data = await response.json();
+        
+        const container = document.getElementById('pendingList');
+        container.innerHTML = '';
+        
+        if (data.error) {
+            container.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            return;
+        }
+
+        if (data.length === 0) {
+            container.innerHTML = `<div class="col-12"><p class="text-muted">Aucune vidéo en attente.</p></div>`;
+            return;
+        }
+
+        data.forEach(vid => {
+            const col = document.createElement('div');
+            col.classList.add('col-sm-6', 'col-md-4', 'col-lg-3', 'mb-4');
+
+            const sizeMB = (vid.size / (1024 * 1024)).toFixed(2);
+
+            col.innerHTML = `
+                <div class="card h-100 video-card">
+                    <div class="video-thumbnail" data-url="${vid.url}">
+                        <i class="fas fa-play-circle"></i>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="${vid.filename}">${vid.filename}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Taille : ${sizeMB} MB<br>
+                                Créé le : ${new Date(vid.created).toLocaleString()}
+                            </small>
+                        </p>
+                        <div class="d-flex gap-2 mt-2">
+                            <button class="btn btn-sm btn-success promote-btn" data-filename="${vid.filename}">Promouvoir</button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-filename="${vid.filename}">X</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(col);
+        });
+
+        // Gestion de la prévisualisation
+        document.querySelectorAll('.video-thumbnail').forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                const videoUrl = this.getAttribute('data-url');
+                const modalVideo = document.getElementById('modalVideo');
+                const modalVideoSource = document.getElementById('modalVideoSource');
+                
+                modalVideoSource.src = videoUrl;
+                modalVideo.load();
+                
+                const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+                modal.show();
+            });
+        });
+
+        // Gestion des promotions
+        document.querySelectorAll('.promote-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const filename = btn.getAttribute('data-filename');
+                try {
+                    const promoteResp = await fetch(`/api/videos/promote/${filename}`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                        }
+                    });
+                    const promoteData = await promoteResp.json();
+                    if (promoteData.success) {
+                        document.getElementById('result').innerHTML = `
+                            <div class="alert alert-success">
+                                Vidéo promue avec succès !<br>
+                                URL Cloud Storage: <a href="${promoteData.url}" target="_blank">${promoteData.url}</a>
+                            </div>
+                        `;
+                        loadPendingVideos();
+                    } else {
+                        alert(`Erreur lors de la promotion: ${promoteData.error}`);
+                    }
+                } catch (error) {
+                    alert(`Erreur lors de la promotion: ${error.message}`);
+                }
+            });
+        });
+
+        // Gestion des suppressions
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
+                    const filename = btn.getAttribute('data-filename');
+                    try {
+                        const response = await fetch(`/api/videos/delete/${filename}`, {
+                            method: 'DELETE',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            loadPendingVideos();
+                        } else {
+                            alert(`Erreur lors de la suppression: ${data.error}`);
+                        }
+                    } catch (error) {
+                        alert(`Erreur lors de la suppression: ${error.message}`);
+                    }
+                }
+            });
+        });
+    }
+
+    loadPendingVideos();
+    document.getElementById('reloadVideos').addEventListener('click', loadPendingVideos);
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!fileInput.files.length) {
+            document.getElementById('result').innerHTML = `
+                <div class="alert alert-danger">
+                    Veuillez sélectionner une vidéo
+                </div>
+            `;
+            return;
+        }
+        
+        const formData = new FormData();
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        formData.append('video', fileInput.files[0]);
+        
+        uploadButton.disabled = true;
+        uploadProgress.style.display = 'block';
+        progressBar.style.width = '0%';
+        
+        try {
+            const xhr = new XMLHttpRequest();
+            
+            // Gestion de la progression
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = `Upload en cours: ${percentComplete.toFixed(0)}%`;
+                }
+            });
+            
+            // Gestion de la réponse
+            xhr.addEventListener('load', async () => {
+                uploadProgress.style.display = 'none';
+                uploadButton.disabled = false;
+                
+                const data = JSON.parse(xhr.responseText);
+                
+                if (xhr.status === 200 && data.success) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="alert alert-success">
+                            Upload réussi!<br>
+                            URL: <a href="${data.url}" target="_blank">${data.url}</a>
+                        </div>
+                    `;
+                    document.getElementById('preview').innerHTML = `
+                        <video controls style="max-width: 100%; max-height: 300px;">
+                            <source src="${data.url}" type="video/mp4">
+                        </video>
+                    `;
+                    fileInput.value = '';
+                    uploadButton.disabled = true;
+                    await loadPendingVideos();
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="alert alert-danger">Erreur: ${data.error}</div>
+                    `;
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                uploadProgress.style.display = 'none';
+                uploadButton.disabled = false;
+                document.getElementById('result').innerHTML = `
+                    <div class="alert alert-danger">Erreur lors de l'upload</div>
+                `;
+            });
+            
+            xhr.open('POST', '/api/videos/upload');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            xhr.send(formData);
+            
+        } catch (error) {
+            uploadProgress.style.display = 'none';
+            uploadButton.disabled = false;
+            document.getElementById('result').innerHTML = `
+                <div class="alert alert-danger">Erreur: ${error.message}</div>
+            `;
+        }
+    });
+    
+    // Nettoyer la vidéo quand on ferme le modal
+    document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+        const modalVideo = document.getElementById('modalVideo');
+        modalVideo.pause();
+        modalVideo.currentTime = 0;
+    });
+});
+</script>
+{% endblock %}

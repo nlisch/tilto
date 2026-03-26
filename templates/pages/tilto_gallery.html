@@ -1,0 +1,647 @@
+{% extends "base.html" %}
+
+{% block title %}Exemples de reconversions réussies | Ils avaient tes contraintes | Tilto{% endblock %}
+
+{% block meta_description %}Découvre comment Tilto a trouvé 3 pistes pro à des gens comme toi : après burn-out, en quête de sens, envie d'évoluer. Leurs contraintes, leurs résultats.{% endblock %}
+
+{% block body_class %}tilto-gallery-page{% endblock %}
+
+{% block extra_head %}
+{# ===== STRUCTURED DATA - ItemList dynamique basé sur les vrais profils ===== #}
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Exemples de reconversions professionnelles avec Tilto",
+    "description": "Cas réels de personnes ayant trouvé leur prochaine étape professionnelle",
+    "numberOfItems": {{ profils|length }},
+    "itemListElement": [
+        {% for p in profils %}
+        {
+            "@type": "ListItem",
+            "position": {{ loop.index }},
+            "name": "{{ p.seo_title }}",
+            "description": "{{ p.seo_description }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.tilto-gallery-page main { padding: 0; max-width: none; }
+.gallery-wrapper { background: #F8F7F6; min-height: 100vh; }
+.gallery-highlight { background: #EBD5E3; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; color: #A11857; }
+.gallery-highlight-box { background: #EBD5E3; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; color: #A11857; }
+
+/* DESKTOP */
+.gallery-desktop { display: none; }
+@media (min-width: 768px) {
+  .gallery-wrapper { background: linear-gradient(135deg, #F8F7F6 0%, #EEECEA 100%); }
+  .gallery-mobile { display: none; }
+  .gallery-desktop { display: block; }
+  .gallery-desktop-hero { display: flex; align-items: center; justify-content: space-between; padding: 100px 80px 40px; max-width: 1400px; margin: 0 auto; }
+  .gallery-desktop-hero-left { max-width: 950px; }
+  .gallery-desktop-badge { display: inline-block; padding: 10px 20px; background: #F7C164; border-radius: 100px; font-size: 16px; font-weight: 600; color: #A11857; margin-bottom: 24px; }
+  .gallery-desktop-title { font-size: 44px; font-weight: 800; color: #1a1a1a; margin: 0 0 20px 0; line-height: 1.5; text-align: left;}
+  .gallery-desktop-subtitle { font-size: 18px; color: #666; margin: 0 0 36px 0; line-height: 1.6; }
+  .gallery-desktop-hero-cta { padding: 18px 40px; background: linear-gradient(135deg, #A11857 0%, #8B1048 100%); color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 20px rgba(161, 24, 87, 0.3); transition: all 0.25s; }
+  .gallery-desktop-hero-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(161, 24, 87, 0.4); }
+  .gallery-desktop-hero-right { padding-right: 40px; }
+  .gallery-desktop-arrow { width: 160px; transform: rotate(35deg); }
+  .gallery-desktop-filters { display: flex; gap: 10px; padding: 0 80px; margin-bottom: 40px; max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .gallery-desktop-filter { padding: 10px 20px; border-radius: 10px; border: 2px solid #E8E6E4; background: #fff; color: #555; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .gallery-desktop-filter:hover { border-color: #A11857; color: #A11857; }
+  .gallery-desktop-filter.active { background: #A11857; border-color: #A11857; color: #fff; }
+  .gallery-desktop-cards { padding: 0 80px 80px; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  .gallery-desktop-card { display: flex; align-items: center; background: #fff; border-radius: 20px; padding: 28px 36px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.25s; gap: 40px; }
+  .gallery-desktop-card:hover { transform: translateX(8px); box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+  .gallery-desktop-card.hidden { display: none; }
+  .gallery-desktop-card-left { flex: 1; }
+  .gallery-desktop-card-badge { display: inline-block; padding: 6px 14px; background: linear-gradient(135deg, #FDF2F6 0%, #F9E8EE 100%); border-radius: 100px; font-size: 12px; font-weight: 600; color: #A11857; margin-bottom: 12px; }
+  .gallery-desktop-card-text { font-size: 17px; color: #1a1a1a; margin: 0 0 8px 0; line-height: 1.5; }
+  .gallery-desktop-card-text strong { color: #A11857; font-weight: 700; }
+  .gallery-desktop-card-meta { font-size: 13px; color: #888; margin: 0; }
+  .gallery-desktop-card-right { display: flex; flex-direction: column; gap: 8px; min-width: 300px; }
+  .gallery-desktop-card-opp { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #F8F7F6; border-radius: 10px; font-size: 13px; font-weight: 500; color: #333; }
+  .gallery-desktop-card-opp-emoji { font-size: 18px; }
+  .gallery-desktop-card-arrow { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #A11857 0%, #C41E6A 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; transition: all 0.25s; }
+  .gallery-desktop-card:hover .gallery-desktop-card-arrow { transform: scale(1.1); }
+}
+
+/* MOBILE */
+.gallery-mobile { display: block; }
+@media (min-width: 768px) { .gallery-mobile { display: none; } }
+.gallery-mobile-header { padding: 80px 24px 20px; padding-top: 7rem; padding-bottom: 0rem;text-align: center; }
+.gallery-mobile-badge { display: inline-block; padding: 10px 20px; background: #FECDA6; border-radius: 100px; font-size: 16px; font-weight: 600; color: #9a4b00; margin-bottom: 24px; }
+.gallery-mobile-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0; line-height: 1.5; }
+.gallery-mobile-card-counter { display: flex; justify-content: flex-end; padding: 0 0 10px; }
+.gallery-mobile-counter { font-size: 12px; color: #999; font-weight: 500; letter-spacing: 0.5px; }
+.gallery-mobile-counter strong { color: #A11857; font-weight: 700; }
+.gallery-mobile-cards { padding: 0px 20px 40px; display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - 300px); }
+.gallery-mobile-carousel { position: relative; overflow: hidden; }
+.gallery-mobile-track { display: flex; transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
+.gallery-mobile-card { flex: 0 0 100%; background: #fff; border-radius: 24px; padding: 28px 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); text-align: center; }
+.gallery-mobile-card.hidden { display: none; }
+.gallery-mobile-card-badge { display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, #FDF2F6 0%, #F9E8EE 100%); border-radius: 100px; font-size: 13px; font-weight: 600; color: #A11857; margin-bottom: 20px; }
+.gallery-mobile-card-text { font-size: 19px; color: #1a1a1a; line-height: 1.5; margin: 0 0 10px 0; }
+.gallery-mobile-card-text strong { color: #A11857; font-weight: 700; }
+.gallery-mobile-card-meta { font-size: 14px; color: #888; margin: 0 0 24px 0; }
+.gallery-mobile-card-opp-star { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 20px; background: linear-gradient(135deg, #FDF8FA 0%, #FDF2F6 100%); border: 2px solid #F4D7E5; border-radius: 14px; margin-bottom: 12px; }
+.gallery-mobile-card-opp-star-emoji { font-size: 24px; }
+.gallery-mobile-card-opp-star-title { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.gallery-mobile-card-opps-more { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; cursor: pointer; }
+.gallery-mobile-card-opp-mini { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: #F8F7F6; border-radius: 100px; font-size: 12px; color: #666; font-weight: 500; transition: all 0.2s; }
+.gallery-mobile-card-opp-mini:hover { background: #F4E8ED; color: #A11857; }
+.gallery-mobile-card-opp-mini-emoji { font-size: 14px; }
+.gallery-mobile-card-see-all { padding: 8px 12px; background: transparent; border: 1.5px dashed #A11857; border-radius: 100px; font-size: 12px; color: #A11857; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+.gallery-mobile-card-see-all:hover { border-color: #A11857; color: #A11857; }
+.gallery-mobile-dots { display: flex; justify-content: center; gap: 8px; padding: 24px 0; }
+.gallery-mobile-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(161, 24, 87, 0.15); transition: all 0.3s ease; }
+.gallery-mobile-dot.active { width: 24px; border-radius: 4px; background: #A11857; }
+
+/* MODAL */
+.gallery-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+.gallery-modal-overlay.active { display: flex; }
+@media (min-width: 768px) { .gallery-modal-overlay { align-items: center; } .gallery-modal { border-radius: 24px; max-height: 85vh; } }
+.gallery-modal { background: #fff; width: 100%; max-width: 500px; max-height: 90vh; border-radius: 24px 24px 0 0; overflow: hidden; animation: gallerySlideUp 0.3s ease; }
+@keyframes gallerySlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.gallery-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #f0f0f0; }
+.gallery-modal-name { font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 0; }
+.gallery-modal-close { width: 36px; height: 36px; border-radius: 50%; border: none; background: #F5F5F5; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; }
+.gallery-modal-body { padding: 20px; overflow-y: auto; max-height: calc(90vh - 80px); }
+.gallery-modal-criteria { margin-bottom: 20px; }
+.gallery-modal-criteria-label { font-size: 12px; font-weight: 600; color: #A11857; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; }
+.gallery-modal-criteria-list { display: flex; flex-direction: column; gap: 8px; }
+.gallery-modal-criteria-item { font-size: 14px; color: #1a1a1a; padding: 12px 14px; background: #F8F7F6; border-radius: 10px; display: flex; align-items: flex-start; gap: 10px; }
+.gallery-modal-criteria-item .gallery-check { color: #A11857; font-weight: 700; }
+.gallery-modal-arrow { text-align: center; font-size: 24px; color: #A11857; margin: 16px 0; }
+
+/* Modal Opp - Accordéon dynamique */
+.gallery-modal-opp { border-radius: 14px; margin-bottom: 12px; overflow: hidden; background: #F8F7F6; border: 2px solid #E8E6E4; transition: all 0.25s ease; cursor: pointer; }
+.gallery-modal-opp.opp-active { background: linear-gradient(135deg, #FDF8F9 0%, #FDF2F6 100%); border-color: #A11857; }
+.gallery-modal-opp-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
+.gallery-modal-opp-header-left { display: flex; align-items: center; gap: 14px; }
+.gallery-modal-opp-emoji { font-size: 28px; }
+.gallery-modal-opp-title { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+.gallery-modal-opp-toggle { width: 28px; height: 28px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #A11857; transition: all 0.2s; }
+.gallery-modal-opp.opp-active .gallery-modal-opp-toggle { background: #A11857; color: #fff; }
+.gallery-modal-opp-why { padding: 0 16px 16px; display: none; }
+.gallery-modal-opp.opp-active .gallery-modal-opp-why { display: block; }
+.gallery-modal-opp-why-label { font-size: 11px; font-weight: 600; color: #A11857; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; }
+.gallery-modal-opp-why-item { font-size: 13px; color: #444; line-height: 1.6; margin-bottom: 10px; padding-left: 12px; border-left: 3px solid #F9D7E5; }
+.gallery-modal-opp-why-need { color: #666; }
+.gallery-modal-opp-why-answer { color: #1a1a1a; font-weight: 600; }
+.gallery-modal-cta { background: linear-gradient(135deg, #A11857 0%, #8B1048 100%); color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 24px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(161, 24, 87, 0.3); }
+.gallery-modal-share { font-size: 13px; color: #888; text-align: center; margin: 0; cursor: pointer; }
+.gallery-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a1a; color: #fff; padding: 14px 28px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 2000; }
+.gallery-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gallery-wrapper">
+  <!-- DESKTOP -->
+  <section class="gallery-desktop">
+    <div class="gallery-desktop-hero">
+      <div class="gallery-desktop-hero-left">
+        <span class="gallery-desktop-badge">✨ +300 résultats Tilto déjà partagés</span>
+        <h1 class="gallery-desktop-title">Leurs opportunités pour <span class="gallery-highlight-box">avancer</span></h1>
+        <p class="gallery-desktop-subtitle">Salaire, région, équilibre. Tilto leur a trouvé des pistes qui respectent ce qui compte pour eux.</p>
+        <button class="gallery-desktop-hero-cta" id="desktopHeroCta">Découvrir mes opportunités →</button>
+      </div>
+      <div class="gallery-desktop-hero-right">
+        <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" alt="" class="gallery-desktop-arrow" loading="lazy">
+      </div>
+    </div>
+    <nav class="gallery-desktop-filters">
+      <button class="gallery-desktop-filter" data-filter="sens">💫 Sens</button>
+      <button class="gallery-desktop-filter" data-filter="evoluer">🚀 Évolution</button>
+      <button class="gallery-desktop-filter" data-filter="stabilite">🧘 Calme</button>
+      <button class="gallery-desktop-filter" data-filter="idees">💡 Idées</button>
+    </nav>
+    <div class="gallery-desktop-cards">
+      {% for p in profils %}
+      <article class="gallery-desktop-card" 
+               data-category="{{ p.category }}" 
+               data-id="{{ p.id }}"
+               title="{{ p.seo_title }} - {{ p.seo_description }}">
+        <div class="gallery-desktop-card-left">
+          <span class="gallery-desktop-card-badge">{{ p.category_label if p.category_label else '💫 Quête de sens' }}</span>
+          <p class="gallery-desktop-card-text">{{ p.situation|safe }}</p>
+          <p class="gallery-desktop-card-meta">{{ p.name }}</p>
+        </div>
+        <div class="gallery-desktop-card-right">
+          <div class="gallery-desktop-card-opp"><span class="gallery-desktop-card-opp-emoji">{{ p.opp1.emoji }}</span><span>{{ p.opp1.title }}</span></div>
+          <div class="gallery-desktop-card-opp"><span class="gallery-desktop-card-opp-emoji">{{ p.opp2.emoji }}</span><span>{{ p.opp2.title }}</span></div>
+          <div class="gallery-desktop-card-opp"><span class="gallery-desktop-card-opp-emoji">{{ p.opp3.emoji }}</span><span>{{ p.opp3.title }}</span></div>
+        </div>
+        <div class="gallery-desktop-card-arrow">→</div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- MOBILE -->
+  <section class="gallery-mobile">
+    <div class="gallery-mobile-header">
+      <h1 class="gallery-mobile-title">Leurs opportunités pour <span class="gallery-highlight-box">avancer</span></h1>
+    </div>
+    <div class="gallery-mobile-cards">
+      <div class="gallery-mobile-card-counter">
+        <span class="gallery-mobile-counter"><strong id="mobileCurrentIndex">1</strong>/{{ profils|length }}</span>
+      </div>
+      <div class="gallery-mobile-carousel" id="mobileCarousel">
+        <div class="gallery-mobile-track" id="mobileTrack">
+          {% for p in profils %}
+          <article class="gallery-mobile-card" 
+                   data-category="{{ p.category }}" 
+                   data-id="{{ p.id }}"
+                   title="{{ p.seo_title }} - {{ p.seo_description }}">
+            <span class="gallery-mobile-card-badge">{{ p.category_label if p.category_label else '💫 Quête de sens' }}</span>
+            <p class="gallery-mobile-card-text">{{ p.situation|safe }}</p>
+            <p class="gallery-mobile-card-meta">{{ p.name }}</p>
+            
+            <div class="gallery-mobile-card-opp-star">
+              <span class="gallery-mobile-card-opp-star-emoji">{{ p.opp1.emoji }}</span>
+              <span class="gallery-mobile-card-opp-star-title">{{ p.opp1.title }}</span>
+            </div>
+            <div class="gallery-mobile-card-opps-more" data-id="{{ p.id }}">
+              <span class="gallery-mobile-card-opp-mini"><span class="gallery-mobile-card-opp-mini-emoji">{{ p.opp2.emoji }}</span> {{ p.opp2.short if p.opp2.short else p.opp2.title[:10] }}...</span>
+              <span class="gallery-mobile-card-opp-mini"><span class="gallery-mobile-card-opp-mini-emoji">{{ p.opp3.emoji }}</span> {{ p.opp3.short if p.opp3.short else p.opp3.title[:10] }}...</span>
+              <span class="gallery-mobile-card-see-all">Voir →</span>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="gallery-mobile-dots" id="mobileDots"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Modal -->
+<div class="gallery-modal-overlay" id="galleryModalOverlay">
+  <div class="gallery-modal">
+    <div class="gallery-modal-header">
+      <p class="gallery-modal-name" id="galleryModalName"></p>
+      <button class="gallery-modal-close" id="galleryModalClose">✕</button>
+    </div>
+    <div class="gallery-modal-body" id="galleryModalBody">
+      <div class="gallery-modal-criteria">
+        <p class="gallery-modal-criteria-label" id="galleryModalCriteriaLabel"></p>
+        <div class="gallery-modal-criteria-list" id="galleryModalCriteria"></div>
+      </div>
+      <div class="gallery-modal-arrow">↓</div>
+      
+      <!-- Opp 1 -->
+      <div class="gallery-modal-opp opp-active" id="galleryModalOpp1Container" data-opp="1">
+        <div class="gallery-modal-opp-header">
+          <div class="gallery-modal-opp-header-left">
+            <span class="gallery-modal-opp-emoji" id="galleryModalOpp1Emoji"></span>
+            <span class="gallery-modal-opp-title" id="galleryModalOpp1Title"></span>
+          </div>
+          <span class="gallery-modal-opp-toggle" id="galleryModalOpp1Toggle">−</span>
+        </div>
+        <div class="gallery-modal-opp-why" id="galleryModalOpp1Why">
+          <p class="gallery-modal-opp-why-label">Pourquoi ça matche</p>
+          <div id="galleryModalOpp1WhyContent"></div>
+        </div>
+      </div>
+      
+      <!-- Opp 2 -->
+      <div class="gallery-modal-opp" id="galleryModalOpp2Container" data-opp="2">
+        <div class="gallery-modal-opp-header">
+          <div class="gallery-modal-opp-header-left">
+            <span class="gallery-modal-opp-emoji" id="galleryModalOpp2Emoji"></span>
+            <span class="gallery-modal-opp-title" id="galleryModalOpp2Title"></span>
+          </div>
+          <span class="gallery-modal-opp-toggle" id="galleryModalOpp2Toggle">+</span>
+        </div>
+        <div class="gallery-modal-opp-why" id="galleryModalOpp2Why">
+          <p class="gallery-modal-opp-why-label">Pourquoi ça matche</p>
+          <div id="galleryModalOpp2WhyContent"></div>
+        </div>
+      </div>
+      
+      <!-- Opp 3 -->
+      <div class="gallery-modal-opp" id="galleryModalOpp3Container" data-opp="3">
+        <div class="gallery-modal-opp-header">
+          <div class="gallery-modal-opp-header-left">
+            <span class="gallery-modal-opp-emoji" id="galleryModalOpp3Emoji"></span>
+            <span class="gallery-modal-opp-title" id="galleryModalOpp3Title"></span>
+          </div>
+          <span class="gallery-modal-opp-toggle" id="galleryModalOpp3Toggle">+</span>
+        </div>
+        <div class="gallery-modal-opp-why" id="galleryModalOpp3Why">
+          <p class="gallery-modal-opp-why-label">Pourquoi ça matche</p>
+          <div id="galleryModalOpp3WhyContent"></div>
+        </div>
+      </div>
+      
+      <button class="gallery-modal-cta" id="galleryModalCta">Et moi ? →</button>
+      <p class="gallery-modal-share" id="galleryModalShare">Ça te rappelle quelqu'un ? 💬</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function() {
+  'use strict';
+  
+  var profils = {{ profils_json|safe }};
+  var mobileTrack = document.getElementById('mobileTrack');
+  var mobileCarousel = document.getElementById('mobileCarousel');
+  var dotsContainer = document.getElementById('mobileDots');
+  var counterEl = document.getElementById('mobileCurrentIndex');
+  var mobileCards = Array.from(document.querySelectorAll('.gallery-mobile-card'));
+  var totalCards = mobileCards.length;
+  var currentIndex = 0;
+  
+  // Variables pour le swipe - CORRIGÉ pour iOS
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchEndX = 0;
+  var touchEndY = 0;
+  var isSwiping = false;
+  var isHorizontalSwipe = false;
+  var swipeThreshold = 50;
+  var swipeAngleThreshold = 30;
+
+  // ============================================
+  // GESTION DES DOTS
+  // ============================================
+  function createDots() {
+    dotsContainer.innerHTML = '';
+    var maxDots = Math.min(totalCards, 5);
+    for (var i = 0; i < maxDots; i++) {
+      var dot = document.createElement('span');
+      dot.className = 'gallery-mobile-dot';
+      dot.setAttribute('data-index', i);
+      dotsContainer.appendChild(dot);
+    }
+    updateDots();
+  }
+
+  function updateDots() {
+    var dots = dotsContainer.querySelectorAll('.gallery-mobile-dot');
+    if (dots.length === 0) return;
+    var mappedIndex = Math.floor((currentIndex / Math.max(totalCards - 1, 1)) * (dots.length - 1));
+    dots.forEach(function(dot, i) { 
+      dot.classList.toggle('active', i === mappedIndex); 
+    });
+  }
+
+  // ============================================
+  // NAVIGATION CAROUSEL
+  // ============================================
+  function updateMobileCarousel() {
+    mobileTrack.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
+    counterEl.textContent = currentIndex + 1;
+    updateDots();
+  }
+
+  function goTo(index) { 
+    var newIndex = Math.max(0, Math.min(index, totalCards - 1));
+    if (newIndex !== currentIndex) {
+      currentIndex = newIndex;
+      updateMobileCarousel();
+    }
+  }
+  
+  function goNext() { 
+    if (currentIndex < totalCards - 1) {
+      goTo(currentIndex + 1); 
+    }
+  }
+  
+  function goPrev() { 
+    if (currentIndex > 0) {
+      goTo(currentIndex - 1); 
+    }
+  }
+
+  // ============================================
+  // SWIPE HANDLER - FIX iOS
+  // ============================================
+  function handleSwipe() {
+    var diffX = touchStartX - touchEndX;
+    var diffY = touchStartY - touchEndY;
+    var absDiffX = Math.abs(diffX);
+    var absDiffY = Math.abs(diffY);
+    
+    if (absDiffX > swipeThreshold && absDiffX > absDiffY) {
+      if (diffX > 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+    }
+    
+    isSwiping = false;
+    isHorizontalSwipe = false;
+  }
+
+  // ============================================
+  // TOUCH EVENTS - CORRIGÉ POUR iOS
+  // ============================================
+  mobileCarousel.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchEndX = touchStartX;
+    touchEndY = touchStartY;
+    isSwiping = true;
+    isHorizontalSwipe = false;
+    
+    mobileTrack.style.transition = 'none';
+  }, { passive: true });
+
+  mobileCarousel.addEventListener('touchmove', function(e) {
+    if (!isSwiping) return;
+    
+    var currentX = e.touches[0].clientX;
+    var currentY = e.touches[0].clientY;
+    var diffX = Math.abs(currentX - touchStartX);
+    var diffY = Math.abs(currentY - touchStartY);
+    
+    if (!isHorizontalSwipe && (diffX > 10 || diffY > 10)) {
+      isHorizontalSwipe = diffX > diffY;
+    }
+    
+    if (isHorizontalSwipe) {
+      e.preventDefault();
+      
+      var dragOffset = currentX - touchStartX;
+      var maxDrag = 100;
+      dragOffset = Math.max(-maxDrag, Math.min(maxDrag, dragOffset));
+      mobileTrack.style.transform = 'translateX(calc(-' + (currentIndex * 100) + '% + ' + dragOffset + 'px))';
+    }
+    
+    touchEndX = currentX;
+    touchEndY = currentY;
+  }, { passive: false });
+
+  mobileCarousel.addEventListener('touchend', function(e) {
+    if (!isSwiping) return;
+    
+    mobileTrack.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    
+    touchEndX = e.changedTouches[0].clientX;
+    touchEndY = e.changedTouches[0].clientY;
+    
+    handleSwipe();
+    
+    updateMobileCarousel();
+  }, { passive: true });
+
+  mobileCarousel.addEventListener('touchcancel', function(e) {
+    isSwiping = false;
+    isHorizontalSwipe = false;
+    mobileTrack.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    updateMobileCarousel();
+  }, { passive: true });
+
+  // ============================================
+  // INIT CAROUSEL
+  // ============================================
+  createDots();
+  updateMobileCarousel();
+
+  // ============================================
+  // FILTRES DESKTOP
+  // ============================================
+  var activeFilter = null;
+  var desktopCards = Array.from(document.querySelectorAll('.gallery-desktop-card'));
+  
+  document.querySelectorAll('.gallery-desktop-filter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var filter = btn.dataset.filter;
+      if (activeFilter === filter) { 
+        activeFilter = null; 
+        btn.classList.remove('active'); 
+      } else { 
+        document.querySelectorAll('.gallery-desktop-filter').forEach(function(b) { 
+          b.classList.remove('active'); 
+        }); 
+        btn.classList.add('active'); 
+        activeFilter = filter; 
+      }
+      desktopCards.forEach(function(card) { 
+        card.classList.toggle('hidden', activeFilter && card.dataset.category !== activeFilter); 
+      });
+    });
+  });
+
+  // ============================================
+  // MODAL
+  // ============================================
+  var currentOpenProfileId = null;
+  
+  function setActiveOpp(num) {
+    var container = document.getElementById('galleryModalOpp' + num + 'Container');
+    var isAlreadyActive = container.classList.contains('opp-active');
+    
+    [1, 2, 3].forEach(function(n) {
+      var c = document.getElementById('galleryModalOpp' + n + 'Container');
+      var t = document.getElementById('galleryModalOpp' + n + 'Toggle');
+      c.classList.remove('opp-active');
+      t.textContent = '+';
+    });
+    
+    if (!isAlreadyActive) {
+      container.classList.add('opp-active');
+      document.getElementById('galleryModalOpp' + num + 'Toggle').textContent = '−';
+    }
+  }
+
+  function openModal(id) {
+    var profil = profils.find(function(p) { return p.id === parseInt(id); });
+    if (!profil) return;
+    
+    currentOpenProfileId = id;
+    document.getElementById('galleryModalName').textContent = profil.name;
+    document.getElementById('galleryModalCriteriaLabel').textContent = profil.female ? "Ce qu'elle cherchait" : "Ce qu'il cherchait";
+    document.getElementById('galleryModalCriteria').innerHTML = profil.criteria.map(function(c) { 
+      return '<div class="gallery-modal-criteria-item"><span class="gallery-check">✓</span> ' + c + '</div>'; 
+    }).join('');
+    
+    // Opp 1
+    document.getElementById('galleryModalOpp1Emoji').textContent = profil.opp1.emoji;
+    document.getElementById('galleryModalOpp1Title').textContent = profil.opp1.title;
+    document.getElementById('galleryModalOpp1WhyContent').innerHTML = profil.opp1.why.map(function(w) { 
+      return '<div class="gallery-modal-opp-why-item"><span class="gallery-modal-opp-why-need">' + w.need + '</span> → <span class="gallery-modal-opp-why-answer">' + w.answer + '</span></div>'; 
+    }).join('');
+    
+    // Opp 2
+    document.getElementById('galleryModalOpp2Emoji').textContent = profil.opp2.emoji;
+    document.getElementById('galleryModalOpp2Title').textContent = profil.opp2.title;
+    document.getElementById('galleryModalOpp2WhyContent').innerHTML = profil.opp2.why.map(function(w) { 
+      return '<div class="gallery-modal-opp-why-item"><span class="gallery-modal-opp-why-need">' + w.need + '</span> → <span class="gallery-modal-opp-why-answer">' + w.answer + '</span></div>'; 
+    }).join('');
+    
+    // Opp 3
+    document.getElementById('galleryModalOpp3Emoji').textContent = profil.opp3.emoji;
+    document.getElementById('galleryModalOpp3Title').textContent = profil.opp3.title;
+    document.getElementById('galleryModalOpp3WhyContent').innerHTML = profil.opp3.why.map(function(w) { 
+      return '<div class="gallery-modal-opp-why-item"><span class="gallery-modal-opp-why-need">' + w.need + '</span> → <span class="gallery-modal-opp-why-answer">' + w.answer + '</span></div>'; 
+    }).join('');
+    
+    setActiveOpp(1);
+    
+    document.getElementById('galleryModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('galleryModalBody').scrollTop = 0;
+  }
+
+  function closeModal() {
+    document.getElementById('galleryModalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+    currentOpenProfileId = null;
+    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+  }
+
+  // Accordéon dans la modal
+  document.querySelectorAll('.gallery-modal-opp').forEach(function(opp) {
+    opp.addEventListener('click', function() {
+      var num = parseInt(opp.dataset.opp);
+      setActiveOpp(num);
+    });
+  });
+
+  // Ouverture modal depuis mobile
+  document.querySelectorAll('.gallery-mobile-card-opps-more').forEach(function(el) { 
+    el.addEventListener('click', function(e) { 
+      e.stopPropagation(); 
+      openModal(el.dataset.id); 
+    }); 
+  });
+  
+  // Ouverture modal depuis desktop
+  desktopCards.forEach(function(card) { 
+    card.addEventListener('click', function() { 
+      openModal(card.dataset.id); 
+    }); 
+  });
+  
+  // Fermeture modal
+  document.getElementById('galleryModalClose').addEventListener('click', closeModal);
+  document.getElementById('galleryModalOverlay').addEventListener('click', function(e) { 
+    if (e.target.id === 'galleryModalOverlay') closeModal(); 
+  });
+  
+  // CTA modal
+  document.getElementById('galleryModalCta').addEventListener('click', function() { 
+    window.location.href = '/'; 
+  });
+
+  // ============================================
+  // PARTAGE
+  // ============================================
+  function handleShare() {
+    var shareUrl = window.location.origin + window.location.pathname;
+    if (currentOpenProfileId) shareUrl += '#profil-' + currentOpenProfileId;
+    
+    if (navigator.share) { 
+      navigator.share({ 
+        title: 'Tilto', 
+        text: 'Regarde ce que Tilto peut te trouver 👀', 
+        url: shareUrl 
+      }); 
+    } else { 
+      navigator.clipboard.writeText(shareUrl).then(function() { 
+        showToast('Lien copié !'); 
+      }); 
+    }
+  }
+
+  function showToast(message) {
+    var existing = document.querySelector('.gallery-toast');
+    if (existing) existing.remove();
+    
+    var toast = document.createElement('div');
+    toast.className = 'gallery-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(function() { toast.classList.add('show'); }, 10);
+    setTimeout(function() { 
+      toast.classList.remove('show'); 
+      setTimeout(function() { toast.remove(); }, 300); 
+    }, 2000);
+  }
+
+  document.getElementById('galleryModalShare').addEventListener('click', handleShare);
+  document.getElementById('desktopHeroCta').addEventListener('click', function() { 
+    window.location.href = '/'; 
+  });
+
+  // ============================================
+  // DEEP LINK (hash)
+  // ============================================
+  if (window.location.hash) {
+    var match = window.location.hash.match(/^#profil-(\d+)$/);
+    if (match) setTimeout(function() { openModal(match[1]); }, 100);
+  }
+
+  // ============================================
+  // KEYBOARD NAV
+  // ============================================
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById('galleryModalOverlay').classList.contains('active')) { 
+      if (e.key === 'Escape') closeModal(); 
+      return; 
+    }
+    
+    if (window.innerWidth < 768) { 
+      if (e.key === 'ArrowLeft') goPrev(); 
+      if (e.key === 'ArrowRight') goNext(); 
+    }
+  });
+
+})();
+</script>
+{% endblock %}

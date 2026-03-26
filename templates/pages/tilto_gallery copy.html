@@ -1,0 +1,1105 @@
+{% extends "base.html" %}
+{% block title %}Tilto – Ils avaient tes contraintes{% endblock %}
+{% block meta_description %}Découvre comment Tilto a trouvé 3 opportunités professionnelles à des personnes qui vivaient la même situation que toi. Envies, contraintes, atouts, région : tout est pris en compte.{% endblock %}
+{% block body_class %}tilto-gallery-page{% endblock %}
+{% block extra_css %}
+<style>
+.tilto-gallery-page {
+  background: #F8F7F6;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.gallery-hero {
+  background: #fff;
+  padding: 3rem 1.5rem 2rem;
+  text-align: center;
+}
+
+.gallery-hero h1 {
+  font-size: clamp(1.5rem, 6vw, 2.25rem);
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.gallery-hero h1 span { color: #A11857; }
+
+.gallery-hero-formula {
+  font-size: 0.9rem;
+  color: #666;
+  background: #F8F7F6;
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.gallery-filters {
+  background: #fff;
+  padding: 1.5rem;
+  border-top: 1px solid #F0EFEE;
+}
+
+.gallery-filters-question {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.gallery-filters-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.gallery-filter-btn {
+  padding: 0.65rem 1rem;
+  border-radius: 99px;
+  border: 2px solid #E8E6E4;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.gallery-filter-btn:hover {
+  border-color: #A11857;
+  color: #A11857;
+}
+
+.gallery-filter-btn.active {
+  background: #A11857;
+  border-color: #A11857;
+  color: #fff;
+}
+
+.gallery-cases { padding: 1.5rem; }
+
+.gallery-cases-intro {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.gallery-cards-container { position: relative; }
+
+.gallery-cards {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem 0 1.5rem;
+  scrollbar-width: none;
+}
+
+.gallery-cards::-webkit-scrollbar { display: none; }
+
+.gallery-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #F0EFEE;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: center;
+  flex: 0 0 85%;
+  min-width: 280px;
+  max-width: 340px;
+}
+
+.gallery-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E0DFDE;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.gallery-dot.active {
+  background: #A11857;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.gallery-card-header {
+  padding: 1.25rem 1.25rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-card-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #A11857;
+  background: #FDF2F6;
+  padding: 0.3rem 0.6rem;
+  border-radius: 99px;
+  margin-bottom: 0.75rem;
+  width: fit-content;
+}
+
+.gallery-card-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.35rem;
+}
+
+.gallery-card-situation {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.gallery-card-cta {
+  display: block;
+  padding: 1rem 1.25rem;
+  background: #A11857;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.gallery-card-cta:hover { background: #8B1048; }
+
+.gallery-bottom-cta {
+  background: #fff;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid #F0EFEE;
+}
+
+.gallery-bottom-cta p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.gallery-bottom-cta-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #A11857;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.gallery-bottom-cta-btn:hover {
+  background: #8B1048;
+  transform: translateY(-1px);
+}
+
+.gallery-bottom-cta-btn span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-top: 0.25rem;
+}
+
+.gallery-consent-note {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 1.5rem;
+  font-style: italic;
+}
+
+.gallery-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.gallery-modal-overlay.active { display: flex; }
+
+.gallery-modal {
+  background: #fff;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  animation: gallerySlideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes gallerySlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.gallery-modal-header {
+  padding: 1.25rem 1.25rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.gallery-modal-header-info { flex: 1; }
+
+.gallery-modal-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #A11857;
+  margin-bottom: 0.3rem;
+}
+
+.gallery-modal-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.gallery-modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F4F3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #555;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.gallery-modal-close:hover {
+  background: #EEEDEC;
+  color: #1a1a1a;
+}
+
+.gallery-modal-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.gallery-modal-body {
+  padding: 0 1.25rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.gallery-modal-input {
+  background: #F8F7F6;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gallery-modal-input-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #A11857;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.75rem;
+}
+
+.gallery-modal-input-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gallery-modal-input-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.gallery-modal-input-label {
+  font-size: 0.78rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gallery-modal-input-value {
+  font-size: 0.92rem;
+  color: #333;
+  padding-left: 1.4rem;
+  font-weight: 500;
+}
+
+.gallery-modal-input-proof {
+  font-size: 0.82rem;
+  color: #888;
+  padding-left: 1.4rem;
+  font-style: italic;
+}
+
+.gallery-modal-transition {
+  text-align: center;
+  padding: 0.75rem 0;
+  font-size: 0.85rem;
+  color: #A11857;
+  font-weight: 600;
+}
+
+.gallery-modal-transition-arrow {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.gallery-modal-opp {
+  border: 2px solid #A11857;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.gallery-modal-opp-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #A11857;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.5rem;
+}
+
+.gallery-modal-opp-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.gallery-modal-opp-revelation {
+  background: linear-gradient(135deg, #FDF8F9 0%, #FDF2F6 100%);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+
+.gallery-modal-opp-locked {
+  border: 1px solid #E8E6E4;
+  background: #FAFAF9;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gallery-modal-opp-locked-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.25rem;
+}
+
+.gallery-modal-opp-locked-teaser {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.gallery-modal-opp-locked-cta {
+  font-size: 0.8rem;
+  color: #A11857;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.gallery-modal-opp-locked-icon { font-size: 1.2rem; }
+
+.gallery-modal-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  background: #A11857;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.gallery-modal-cta:hover { background: #8B1048; }
+
+.gallery-modal-cta span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-top: 0.2rem;
+}
+
+.gallery-modal-footer {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #FDF8F9 0%, #FDF2F6 100%);
+  flex-shrink: 0;
+}
+
+.gallery-modal-share-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #A11857;
+  text-align: center;
+  margin-bottom: 0.35rem;
+}
+
+.gallery-modal-share-sublabel {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.gallery-modal-share-btns {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.gallery-modal-share-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #E8E6E4;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.gallery-modal-share-btn:hover { transform: scale(1.1); }
+.gallery-modal-share-btn svg { width: 24px; height: 24px; }
+
+.gallery-modal-share-btn.whatsapp:hover {
+  border-color: #25D366;
+  background: #E8FFF0;
+}
+.gallery-modal-share-btn.whatsapp svg { fill: #25D366; }
+
+.gallery-modal-share-btn.linkedin:hover {
+  border-color: #0A66C2;
+  background: #E8F4FC;
+}
+.gallery-modal-share-btn.linkedin svg { fill: #0A66C2; }
+
+.gallery-modal-share-btn.email:hover {
+  border-color: #A11857;
+  background: #FDF2F6;
+}
+.gallery-modal-share-btn.email svg { stroke: #A11857; }
+
+@media (min-width: 768px) {
+  .gallery-hero { padding: 4rem 2rem 3rem; padding-top: 8rem; }
+  .gallery-hero h1 { font-size: 2.5rem; }
+  .gallery-filters { padding: 2rem; }
+  .gallery-cases { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  .gallery-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    padding: 0;
+  }
+  .gallery-card { flex: none; min-width: auto; max-width: none; }
+  .gallery-dots { display: none; }
+  .gallery-modal { border-radius: 20px; margin: auto; max-height: 85vh; }
+}
+
+@media (min-width: 1024px) {
+  .gallery-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1400px) {
+  .gallery-cards { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="gallery-hero">
+  <h1>Ils vivaient la même situation.<br><span>Tilto leur a trouvé 3 opportunités réalistes</span></h1>
+  <p class="gallery-hero-formula">Envies · Contraintes · Atouts · Région → tout est pris en compte</p>
+</section>
+
+<section class="gallery-filters">
+  <p class="gallery-filters-question">🪞 Qu'est-ce qui te décrit le mieux ?</p>
+  <div class="gallery-filters-btns">
+    <button class="gallery-filter-btn active" data-filter="all">Tous</button>
+    <button class="gallery-filter-btn" data-filter="sens">😶 Perte de sens</button>
+    <button class="gallery-filter-btn" data-filter="evoluer">🎯 Envie d'évoluer</button>
+    <button class="gallery-filter-btn" data-filter="stabilite">🧘 Besoin de stabilité</button>
+    <button class="gallery-filter-btn" data-filter="concret">⚡ Besoin d'idées</button>
+  </div>
+</section>
+
+<section class="gallery-cases">
+  <p class="gallery-cases-intro" id="galleryCasesIntro">Ils se posaient les mêmes questions que toi.</p>
+  <div class="gallery-cards-container">
+    <div class="gallery-cards" id="galleryCards"></div>
+    <div class="gallery-dots" id="galleryDots"></div>
+  </div>
+</section>
+
+<section class="gallery-bottom-cta">
+  <p>Et toi, quelles opportunités Tilto va te trouver ?</p>
+  <a href="https://tilto.co" class="gallery-bottom-cta-btn">
+    Découvrir mes 3 opportunités
+    <span>1 min · Sans CV · Sans test</span>
+  </a>
+  <p class="gallery-consent-note">Merci à eux d'avoir accepté de partager leur histoire 🙏</p>
+</section>
+
+<div class="gallery-modal-overlay" id="galleryModalOverlay">
+  <div class="gallery-modal" id="galleryModal">
+    <div class="gallery-modal-header">
+      <div class="gallery-modal-header-info">
+        <span class="gallery-modal-tag" id="galleryModalTag"></span>
+        <p class="gallery-modal-name" id="galleryModalName"></p>
+      </div>
+      <button class="gallery-modal-close" id="galleryModalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="gallery-modal-body" id="galleryModalBody">
+      <div class="gallery-modal-input">
+        <p class="gallery-modal-input-title">🎙️ En 1 min d'audio, Tilto a compris</p>
+        <div class="gallery-modal-input-grid" id="galleryModalInput"></div>
+      </div>
+
+      <div class="gallery-modal-transition">
+        <span class="gallery-modal-transition-arrow">↓</span>
+        3 opportunités trouvées
+      </div>
+
+      <div class="gallery-modal-opp">
+        <p class="gallery-modal-opp-header">Opportunité 1/3</p>
+        <p class="gallery-modal-opp-title" id="galleryModalOpp1Title"></p>
+        <p class="gallery-modal-opp-revelation" id="galleryModalOpp1Revelation"></p>
+      </div>
+
+      <div class="gallery-modal-opp">
+        <p class="gallery-modal-opp-header">Opportunité 2/3</p>
+        <p class="gallery-modal-opp-title" id="galleryModalOpp2Title"></p>
+        <p class="gallery-modal-opp-revelation" id="galleryModalOpp2Revelation"></p>
+      </div>
+
+      <div class="gallery-modal-opp-locked">
+        <div>
+          <p class="gallery-modal-opp-locked-header">Opportunité 3/3</p>
+          <p class="gallery-modal-opp-locked-teaser" id="galleryModalOpp3"></p>
+          <p class="gallery-modal-opp-locked-cta">Chaque résultat Tilto est unique. Découvre tes opportunités.</p>
+        </div>
+        <span class="gallery-modal-opp-locked-icon">🔐</span>
+      </div>
+
+      <a href="https://tilto.co" class="gallery-modal-cta">
+        Découvrir mes 3 opportunités
+        <span>1 min · Sans CV · Sans test</span>
+      </a>
+    </div>
+
+    <div class="gallery-modal-footer">
+      <p class="gallery-modal-share-label">💌 Ça te fait penser à quelqu'un ?</p>
+      <p class="gallery-modal-share-sublabel">Envoie-lui, ça peut l'aider</p>
+      <div class="gallery-modal-share-btns">
+        <a class="gallery-modal-share-btn whatsapp" id="galleryShareWhatsapp" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+        <a class="gallery-modal-share-btn linkedin" id="galleryShareLinkedin" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a class="gallery-modal-share-btn email" id="galleryShareEmail">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function() {
+  var temoignages = [
+    { id: "t_8k2m", name: "Tiphaine", age: 35, city: "Villeurbanne", tag: "😶 Perte de sens", filter: "sens",
+      situation: "7 ans en marketing digital. Depuis son congé mat', elle se reconnaît plus vraiment dans ce qu'elle fait au quotidien.",
+      wants: "Du lien humain au quotidien", keeps: "Pas question de baisser en salaire",
+      skills: "Communication, gestion de projet, relationnel",
+      skillsProof: "7 ans en marketing dont une refonte de marque gérée seule",
+      location: "Agglo lyonnaise",
+      revelation: "La médiation culturelle, c'est 100% relationnel — et à Lyon, ça paie autant que le marketing. Pile ce qu'elle cherchait.",
+      opp1: { emoji: "🎭", title: "Médiatrice culturelle" },
+      opp2: { emoji: "🏥", title: "Coordinatrice de parcours patient", teaser: "Poste en tension dans les cliniques privées lyonnaises — son profil com' matche bien avec ce qu'ils recherchent." },
+      opp3: { emoji: "🌉" }, female: true },
+
+    { id: "t_3nPq", name: "Benjamin", age: 43, city: "Paris 11", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "15 ans en conseil strat'. Il gère ses missions en automatique maintenant, et ça le stimule plus.",
+      wants: "Avoir un vrai impact", keeps: "Garder sa légitimité, pas repartir de zéro",
+      skills: "Stratégie, pilotage, réseau",
+      skillsProof: "15 ans en cabinet + accompagnement de jeunes en insertion",
+      location: "Paris, ok pour du télétravail",
+      revelation: "Les fondations d'entreprise cherchent des profils conseil senior pour structurer leurs programmes. Impact + niveau de poste.",
+      opp1: { emoji: "🤲", title: "Directeur des partenariats fondation" },
+      opp2: { emoji: "🏛️", title: "Responsable mécénat collectivité", teaser: "Les grandes collectivités créent des postes mécénat — son carnet d'adresses, c'est un vrai atout." },
+      opp3: { emoji: "🎓" }, female: false },
+
+    { id: "t_9xWv", name: "Anne", age: 46, city: "Rezé", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "Burn-out l'an dernier après 15 ans en gestion de projet. Ça va mieux, mais hors de question de revivre ça.",
+      wants: "Un cadre calme, vraiment", keeps: "Protéger sa santé avant tout",
+      skills: "Organisation, rigueur, sensibilité artistique",
+      skillsProof: "15 ans de gestion de projet + pratique artistique perso",
+      location: "Sud Loire",
+      revelation: "À Nantes, des ateliers partagés permettent de se lancer en céramique sans investir. Elle peut tester avant de s'engager.",
+      opp1: { emoji: "🏺", title: "Céramiste (atelier partagé)" },
+      opp2: { emoji: "📚", title: "Documentaliste médiathèque", teaser: "Les médiathèques recrutent — rythme incomparable avec le privé, et son côté organisé colle bien." },
+      opp3: { emoji: "👩‍🏫" }, female: true },
+
+    { id: "t_4jLs", name: "Robin", age: 34, city: "Lyon 7", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "8 ans en com' dans la tech. Le salaire est bon mais il adhère plus trop à ce que vend sa boîte.",
+      wants: "Bosser sur un sujet qui lui parle",
+      skills: "Stratégie digitale, contenu, animation de communauté",
+      skillsProof: "8 ans en tech + side project écriture depuis 2 ans",
+      location: "Lyon ou full remote",
+      revelation: "La GreenTech lyonnaise recrute à des salaires équivalents à la tech classique. Le sens en plus, sans la baisse de salaire.",
+      opp1: { emoji: "💚", title: "Responsable com' GreenTech" },
+      opp2: { emoji: "🎙️", title: "Créateur de contenu B2B freelance", teaser: "Il écrit déjà sur son temps perso — les boîtes à impact cherchent des gens qui savent vulgariser." },
+      opp3: { emoji: "🧭" }, female: false },
+
+    { id: "t_2hNm", name: "Clémence", age: 36, city: "Nantes", tag: "😶 Perte de sens", filter: "sens",
+      situation: "Commerciale B2B depuis 8 ans. Les objectifs changent tous les trimestres, elle en a un peu marre.",
+      wants: "S'ancrer quelque part, du local", keeps: "Rester sur Nantes, son mari bosse ici",
+      skills: "Vente, relationnel, animation",
+      skillsProof: "8 ans de commerce + investie dans une asso de quartier",
+      location: "Nantes centre ou proche",
+      revelation: "12 tiers-lieux ont ouvert à Nantes en 3 ans — ils cherchent des profils commerciaux qui savent créer du lien.",
+      opp1: { emoji: "🏡", title: "Gestionnaire de tiers-lieu" },
+      opp2: { emoji: "🍷", title: "Caviste (reprise)", teaser: "30% des cavistes partent à la retraite en Loire-Atlantique — profil commercial, c'est pile ce qu'il faut pour reprendre." },
+      opp3: { emoji: "📣" }, female: true },
+
+    { id: "t_7pRk", name: "Sofia", age: 28, city: "Boulogne", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "Assistante de direction depuis 5 ans. Elle gère énormément mais sur le papier elle reste 'assistante'.",
+      wants: "Être reconnue pour ce qu'elle fait vraiment", keeps: "Rester proche des décisions",
+      skills: "Coordination, anticipation, gestion de crise",
+      skillsProof: "5 ans auprès de 3 associés, elle a aussi géré un gros séminaire",
+      location: "Ouest parisien",
+      revelation: "Les startups early stage cherchent des profils couteau-suisse. L'office manager y est stratégique, pas juste support.",
+      opp1: { emoji: "🎯", title: "Office manager startup" },
+      opp2: { emoji: "🎪", title: "Régisseuse générale événementiel", teaser: "L'événementiel recrute des profils qui gèrent le stress et l'imprévu — son quotidien, quoi." },
+      opp3: { emoji: "🚀" }, female: true },
+
+    { id: "t_5vBx", name: "Guillaume", age: 48, city: "Neuilly", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "Finance de marché depuis 20 ans. Un malaise au bureau l'an dernier. Le médecin a été clair.",
+      wants: "Un rythme tenable", keeps: "Son train de vie quand même",
+      skills: "Analyse, modélisation, prise de décision",
+      skillsProof: "20 ans en salle de marché",
+      location: "Paris ouest",
+      revelation: "En indépendant, il gère son agenda. Les CGPI bien installés gagnent autant qu'en salle — mais sans la pression.",
+      opp1: { emoji: "📊", title: "Consultant gestion patrimoine indépendant" },
+      opp2: { emoji: "🏛️", title: "Analyste risques secteur public", teaser: "CDC, BPI recrutent des profils finance de marché — horaires de bureau, moins de pression." },
+      opp3: { emoji: "🏦" }, female: false },
+
+    { id: "t_1qYz", name: "Aurélie", age: 33, city: "Saint-Herblain", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Comptable en cabinet depuis 10 ans. Elle maîtrise bien, mais justement : elle s'ennuie un peu.",
+      wants: "Quelque chose qui la stimule plus", keeps: "La sécurité",
+      skills: "Rigueur, analyse, relation client",
+      skillsProof: "10 ans en cabinet",
+      location: "Agglo nantaise",
+      revelation: "Le syndic recrute pas mal en Loire-Atlantique — les profils comptables sont recherchés pour gérer les budgets copro.",
+      opp1: { emoji: "🏠", title: "Gestionnaire de copropriété" },
+      opp2: { emoji: "🏦", title: "Conseillère pro banque", teaser: "Les banques cherchent des gens qui comprennent un bilan — pour conseiller les pros, pas leur vendre des trucs." },
+      opp3: { emoji: "💼" }, female: true },
+
+    { id: "t_6mDf", name: "Julien", age: 38, city: "Orvault", tag: "😶 Perte de sens", filter: "sens",
+      situation: "Responsable logistique depuis 12 ans. Il bosse bien mais rentre le soir sans grand-chose à raconter.",
+      wants: "Sentir qu'il sert à quelque chose", keeps: "La stabilité, crédit et enfants",
+      skills: "Organisation, anticipation, management",
+      skillsProof: "12 ans de supply chain",
+      location: "Nord Nantes",
+      revelation: "Les coopératives agricoles recrutent des logisticiens expérimentés. L'agroalimentaire responsable se développe bien dans la région.",
+      opp1: { emoji: "🌾", title: "Responsable logistique coopérative" },
+      opp2: { emoji: "🏫", title: "Responsable intendance collège/lycée", teaser: "L'Éducation nationale galère à recruter — son profil supply chain coche pas mal de cases." },
+      opp3: { emoji: "🏭" }, female: false },
+
+    { id: "t_8nKw", name: "Thomas", age: 34, city: "Vénissieux", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "Technicien maintenance depuis 10 ans en pharma. Il répare, mais on lui demande jamais son avis sur le reste.",
+      wants: "Passer du curatif au préventif", keeps: "Le terrain, pas un poste bureau",
+      skills: "Diagnostic, réparation, transmission",
+      skillsProof: "10 ans d'industrie + une certif en maintenance prédictive",
+      location: "Couloir de la chimie",
+      revelation: "L'industrie 4.0 décolle à Lyon — les profils maintenance + IoT sont difficiles à trouver.",
+      opp1: { emoji: "📡", title: "Technicien IoT industriel" },
+      opp2: { emoji: "🔋", title: "Technicien bornes de recharge", teaser: "Le déploiement des bornes électriques explose — ils forment les techniciens industriels assez vite." },
+      opp3: { emoji: "🏭" }, female: false },
+
+    { id: "t_4rTg", name: "Sandrine", age: 42, city: "Lyon 3", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "Manager commerciale depuis 15 ans. Deux burn-outs en 5 ans. Elle veut plus manager.",
+      wants: "Plus de pression sur les résultats", keeps: "Le contact humain, c'est ça qui la tient",
+      skills: "Vente, écoute, accompagnement",
+      skillsProof: "15 ans de commerce + du bénévolat régulier",
+      location: "Lyon intra-muros",
+      revelation: "Les structures d'insertion peinent à recruter — l'expérience commerce est un vrai plus pour accompagner vers l'emploi.",
+      opp1: { emoji: "🤝", title: "Conseillère en insertion professionnelle" },
+      opp2: { emoji: "🏠", title: "Chargée de relogement bailleur social", teaser: "Les bailleurs sociaux recrutent des profils relationnels — stable, utile, humain." },
+      opp3: { emoji: "💼" }, female: true },
+
+    { id: "t_9sHj", name: "Alexandre", age: 37, city: "Montreuil", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Dev backend depuis 12 ans. Il code des features dont il comprend pas toujours l'utilité finale.",
+      wants: "Voir l'impact de ce qu'il fait", keeps: "Le remote, non négociable",
+      skills: "Architecture, résolution de problèmes complexes",
+      skillsProof: "12 ans en dev",
+      location: "Full remote",
+      revelation: "La HealthTech recrute en full remote — et chaque feature améliore un parcours de soin. Du concret.",
+      opp1: { emoji: "🏥", title: "Lead dev HealthTech" },
+      opp2: { emoji: "🌍", title: "Développeur ONG internationale", teaser: "MSF, Croix-Rouge ont des équipes tech internes — remote, et des projets qui comptent." },
+      opp3: { emoji: "💚" }, female: false },
+
+    { id: "t_2wLp", name: "Émilie", age: 29, city: "Paris 10", tag: "😶 Perte de sens", filter: "sens",
+      situation: "Com' en banque depuis 5 ans. Elle écrit surtout des contenus internes, peu de gens les lisent.",
+      wants: "Que ce qu'elle écrit serve à quelqu'un", keeps: "Son temps perso, elle y tient",
+      skills: "Rédaction, vulgarisation, créa",
+      skillsProof: "5 ans en com'",
+      location: "Paris ou remote",
+      revelation: "L'EdTech recrute pas mal en ce moment — télétravail quasi systématique. Ça colle avec ce qu'elle cherche.",
+      opp1: { emoji: "📚", title: "Content manager EdTech" },
+      opp2: { emoji: "✍️", title: "Rédactrice indépendante voyage", teaser: "Le secteur tourisme galère à trouver des rédacteurs qui connaissent le sujet — elle voyage pas mal, ça se voit dans ce qu'elle écrit." },
+      opp3: { emoji: "🎙️" }, female: true },
+
+    { id: "t_5kNr", name: "Camille", age: 36, city: "Nantes", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "Infirmière au CHU depuis 12 ans. Elle aime son métier mais a l'impression de faire toujours la même chose.",
+      wants: "Avoir plus d'impact", keeps: "Le contact patient",
+      skills: "Écoute, coordination des soins, pédagogie",
+      skillsProof: "12 ans en service + formatrice",
+      location: "Nantes et alentours",
+      revelation: "L'HAD explose — les postes de coordinatrice sont en tension partout en Loire-Atlantique.",
+      opp1: { emoji: "🏥", title: "Infirmière coordinatrice en HAD" },
+      opp2: { emoji: "💊", title: "Infirmière de recherche clinique", teaser: "Les labos et CHU recrutent des IDE pour les essais cliniques — plus varié, mieux payé." },
+      opp3: { emoji: "🎓" }, female: true },
+
+    { id: "t_7jQm", name: "Mathieu", age: 39, city: "Carquefou", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "Chef de projet IT en ESN depuis 12 ans. Deadlines serrées, sous-effectif permanent. Il dort mal.",
+      wants: "Des projets à taille humaine", keeps: "Garder les mains dans la technique",
+      skills: "Pilotage, code, formation",
+      skillsProof: "12 ans en ESN",
+      location: "Agglo nantaise",
+      revelation: "Les PME industrielles nantaises digitalisent — elles cherchent des leads qui codent encore, pas juste des managers.",
+      opp1: { emoji: "💻", title: "Lead dev PME industrielle" },
+      opp2: { emoji: "🏫", title: "Responsable informatique établissement scolaire", teaser: "L'Éducation nationale recrute des responsables SI — technique, stable, vacances scolaires." },
+      opp3: { emoji: "🔧" }, female: false },
+
+    { id: "t_3xVb", name: "Marion", age: 27, city: "Villeurbanne", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Chargée de clientèle en banque depuis 4 ans. Elle vend des produits qu'elle prendrait pas pour elle.",
+      wants: "Conseiller vraiment, pas juste vendre", keeps: "Le contact client",
+      skills: "Écoute, conseil, vente",
+      skillsProof: "4 ans en agence, bons retours clients",
+      location: "Lyon",
+      revelation: "Les banques éthiques recrutent sur Lyon — le modèle c'est le conseil, pas la vente à tout prix.",
+      opp1: { emoji: "🌱", title: "Conseillère en banque éthique" },
+      opp2: { emoji: "🏠", title: "Conseillère habitat (ADIL/ALEC)", teaser: "Les agences info logement cherchent des profils relationnels — du conseil pur, sans objectif commercial." },
+      opp3: { emoji: "💰" }, female: true },
+
+    { id: "t_6pDs", name: "Marc", age: 53, city: "Écully", tag: "😶 Perte de sens", filter: "sens",
+      situation: "DAF depuis 20 ans. Il connaît le job par cœur. Tellement qu'il s'ennuie un peu.",
+      wants: "Transmettre", keeps: "Sa crédibilité, 20 ans à la construire",
+      skills: "Analyse, décision, accompagnement",
+      skillsProof: "20 ans de direction financière",
+      location: "Région lyonnaise",
+      revelation: "Les PME lyonnaises galèrent à recruter des DAF expérimentés — le temps partagé, c'est ce qu'elles attendent.",
+      opp1: { emoji: "🤝", title: "DAF à temps partagé" },
+      opp2: { emoji: "🎓", title: "Intervenant école de commerce", teaser: "Les écoles cherchent des pros en activité pour intervenir — son profil colle." },
+      opp3: { emoji: "📊" }, female: false },
+
+    { id: "t_1mFk", name: "Karim", age: 41, city: "Lyon 6", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "Chef de rang en gastro lyonnaise depuis 15 ans. Il maîtrise mais il a atteint un plafond.",
+      wants: "Gérer, pas juste exécuter", keeps: "Le contact client",
+      skills: "Service, vente, management",
+      skillsProof: "15 ans en salle, gestion d'équipe",
+      location: "Lyon",
+      revelation: "La restauration collective premium recrute des profils gastro — sièges sociaux, ministères. Horaires de journée en prime.",
+      opp1: { emoji: "🍽️", title: "Maître d'hôtel resto d'entreprise premium" },
+      opp2: { emoji: "🛎️", title: "Responsable conciergerie privée", teaser: "Les conciergeries de luxe cherchent des profils hospitalité — son sens du service, c'est ça qu'ils veulent." },
+      opp3: { emoji: "🍷" }, female: false },
+
+    { id: "t_8vWn", name: "Nathalie", age: 51, city: "Paris 16", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "DRH depuis 25 ans. Trois PSE ces 5 dernières années. Ça l'a usée.",
+      wants: "Des RH qui construisent", keeps: "Son expérience, c'est tout ce qu'elle a",
+      skills: "Recrutement, accompagnement, négo",
+      skillsProof: "25 ans en RH grands groupes",
+      location: "Paris",
+      revelation: "Les entreprises à mission se multiplient — elles cherchent des DRH seniors pour structurer leur croissance.",
+      opp1: { emoji: "🌱", title: "DRH entreprise à mission" },
+      opp2: { emoji: "🎓", title: "Responsable carrières université", teaser: "Les facs recrutent des pros RH pour leurs services carrières — de l'accompagnement, pas de la restructuration." },
+      opp3: { emoji: "🎯" }, female: true },
+
+    { id: "t_4nRt", name: "Florian", age: 31, city: "Ancenis", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Ingénieur en bureau d'études depuis 8 ans. Ses plans finissent souvent au fond d'un tiroir. Le week-end il rénove chez lui, c'est là qu'il se sent utile.",
+      wants: "Voir ses projets se concrétiser", keeps: "La technique",
+      skills: "Conception, calcul, coordination",
+      skillsProof: "8 ans en BET",
+      location: "Entre Nantes et Angers",
+      revelation: "La rénovation énergétique explose avec MaPrimeRénov' — les conducteurs de travaux techniques sont introuvables.",
+      opp1: { emoji: "🏗️", title: "Conducteur de travaux rénovation énergétique" },
+      opp2: { emoji: "🏠", title: "Conseiller technique négoce matériaux", teaser: "Les négoces cherchent des profils techniques pour conseiller les pros — technique + relationnel, horaires fixes." },
+      opp3: { emoji: "🔧" }, female: false },
+
+    { id: "t_9qLm", name: "Léa", age: 31, city: "Nantes", tag: "😶 Perte de sens", filter: "sens",
+      situation: "UX designer depuis 6 ans. Concrètement, elle optimise des tunnels d'achat.",
+      wants: "Designer pour quelque chose d'utile", keeps: "Son salaire, elle vient d'acheter",
+      skills: "UX, recherche utilisateur, prototypage",
+      skillsProof: "6 ans en product",
+      location: "Nantes ou remote",
+      revelation: "La e-santé à Nantes recrute à des salaires tech — et chaque écran améliore un parcours de soin.",
+      opp1: { emoji: "🏥", title: "UX designer e-santé" },
+      opp2: { emoji: "♿", title: "Consultante accessibilité numérique", teaser: "Le RGAA rend l'accessibilité obligatoire — les experts sont rares et bien payés." },
+      opp3: { emoji: "🌍" }, female: true },
+
+    { id: "t_2kBv", name: "Pauline", age: 30, city: "Paris 20", tag: "🎯 Envie d'évoluer", filter: "evoluer",
+      situation: "Graphiste en agence depuis 7 ans. Elle exécute des briefs, elle les challenge jamais vraiment.",
+      wants: "Proposer, pas juste produire", keeps: "La création",
+      skills: "DA, conceptualisation, outils créa",
+      skillsProof: "7 ans en agence",
+      location: "Paris ou hybride",
+      revelation: "Les startups en croissance internalisent le branding — elles veulent des profils autonomes qui proposent.",
+      opp1: { emoji: "🎨", title: "Brand designer in-house startup" },
+      opp2: { emoji: "📱", title: "UI designer app mobile", teaser: "L'UI mobile recrute — son œil graphique, c'est ce qui manque souvent aux profils trop tech." },
+      opp3: { emoji: "💡" }, female: true },
+
+    { id: "t_5wHs", name: "Yannick", age: 44, city: "Tassin", tag: "🧘 Besoin de stabilité", filter: "stabilite",
+      situation: "Commercial terrain depuis 18 ans. 50 000 km par an. Son dos lâche, sa femme en a marre de le voir partir.",
+      wants: "Arrêter les déplacements", keeps: "La relation client, c'est son truc",
+      skills: "Négo, fidélisation, gestion de problèmes",
+      skillsProof: "18 ans de terrain, portefeuille fidélisé",
+      location: "Ouest lyonnais",
+      revelation: "Les boîtes lyonnaises cherchent des KAM sédentaires — le relationnel, ça marche aussi par téléphone.",
+      opp1: { emoji: "📞", title: "Responsable grands comptes sédentaire" },
+      opp2: { emoji: "🏢", title: "Gestionnaire locatif immobilier d'entreprise", teaser: "L'immo d'entreprise recrute des profils commerciaux pour gérer les locataires — relation client, en local." },
+      opp3: { emoji: "🤝" }, female: false },
+
+    { id: "t_7rNq", name: "Claire", age: 41, city: "Paris 18", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Pigiste depuis 15 ans. Elle écrit pour des titres nationaux mais certains mois c'est compliqué de payer le loyer.",
+      wants: "De la stabilité financière", keeps: "Écrire, c'est tout ce qu'elle sait faire",
+      skills: "Écriture, investigation, vulgarisation",
+      skillsProof: "15 ans de pige presse nationale",
+      location: "Paris ou remote",
+      revelation: "Les dirigeants cherchent des plumes — tribunes, discours, livres. Les bons profils sont rares.",
+      opp1: { emoji: "✍️", title: "Plume / ghostwriter dirigeants" },
+      opp2: { emoji: "📚", title: "Responsable éditoriale organisme de formation", teaser: "Les organismes de formation produisent beaucoup de contenu — ils cherchent des profils éditoriaux seniors." },
+      opp3: { emoji: "🎙️" }, female: true },
+
+    { id: "t_3pKx", name: "Thomas", age: 35, city: "Lyon 9", tag: "⚡ Besoin d'idées", filter: "concret",
+      situation: "Product manager en e-commerce depuis 10 ans. Il optimise des taux de conversion mais se demande à quoi ça sert vraiment.",
+      wants: "Un produit qui a du sens", keeps: "Son salaire tech",
+      skills: "Priorisation, analyse, coordination",
+      skillsProof: "10 ans en product",
+      location: "Lyon ou hybride",
+      revelation: "La MedTech lyonnaise recrute des PM seniors aux salaires du marché — chaque feature améliore un parcours de soin.",
+      opp1: { emoji: "🏥", title: "Product manager MedTech" },
+      opp2: { emoji: "🌱", title: "Head of Product startup climate", teaser: "Les startups climate lèvent pas mal en ce moment — elles paient bien pour attirer les bons profils." },
+      opp3: { emoji: "🎯" }, female: false }
+  ];
+
+  var filterMessages = {
+    all: "Ils se posaient les mêmes questions que toi.",
+    sens: "Tu te sens en perte de sens ? Eux aussi, avant.",
+    evoluer: "Tu veux évoluer ? Eux ont trouvé leur direction.",
+    stabilite: "Tu cherches la stabilité ? Eux ont apaisé leur rythme.",
+    concret: "Tu veux du concret ? Eux avaient besoin d'opportunités immédiates."
+  };
+
+  var currentFilter = 'all';
+
+  function init() {
+    renderCards(temoignages);
+    setupFilters();
+    setupModal();
+    checkHashAndOpenModal();
+  }
+
+  function checkHashAndOpenModal() {
+    var hash = window.location.hash;
+    if (hash && hash.length > 1) {
+      var id = hash.substring(1);
+      openModal(id);
+    }
+  }
+
+  function renderCards(data) {
+    var grid = document.getElementById('galleryCards');
+    var dotsContainer = document.getElementById('galleryDots');
+    
+    grid.innerHTML = data.map(function(c) {
+      var aidee = c.female ? 'aidée' : 'aidé';
+      return '<article class="gallery-card" data-id="' + c.id + '">' +
+        '<div class="gallery-card-header">' +
+          '<span class="gallery-card-tag">' + c.tag + '</span>' +
+          '<p class="gallery-card-name">' + c.name + ', ' + c.age + ' ans · ' + c.city + '</p>' +
+          '<p class="gallery-card-situation">' + c.situation + '</p>' +
+        '</div>' +
+        '<button class="gallery-card-cta">Voir comment Tilto l\'a ' + aidee + ' →</button>' +
+      '</article>';
+    }).join('');
+
+    dotsContainer.innerHTML = data.map(function(_, i) {
+      return '<span class="gallery-dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></span>';
+    }).join('');
+
+    var cards = grid.querySelectorAll('.gallery-card');
+    var dots = dotsContainer.querySelectorAll('.gallery-dot');
+    
+    grid.addEventListener('scroll', function() {
+      var scrollLeft = grid.scrollLeft;
+      var cardWidth = cards[0] ? cards[0].offsetWidth : 300;
+      var gap = 16;
+      var activeIndex = Math.round(scrollLeft / (cardWidth + gap));
+      dots.forEach(function(dot, i) { dot.classList.toggle('active', i === activeIndex); });
+    });
+
+    dots.forEach(function(dot, i) {
+      dot.addEventListener('click', function() {
+        var cardWidth = cards[0] ? cards[0].offsetWidth : 300;
+        var gap = 16;
+        grid.scrollTo({ left: i * (cardWidth + gap), behavior: 'smooth' });
+      });
+    });
+
+    cards.forEach(function(card) {
+      card.addEventListener('click', function() { openModal(card.dataset.id); });
+    });
+  }
+
+  function setupFilters() {
+    document.querySelectorAll('.gallery-filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.gallery-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        var filtered = currentFilter === 'all' ? temoignages : temoignages.filter(function(c) { return c.filter === currentFilter; });
+        renderCards(filtered);
+        document.getElementById('galleryCasesIntro').textContent = filterMessages[currentFilter];
+      });
+    });
+  }
+
+  function setupModal() {
+    document.getElementById('galleryModalOverlay').addEventListener('click', function(e) {
+      if (e.target.id === 'galleryModalOverlay') closeModal();
+    });
+    document.getElementById('galleryModalClose').addEventListener('click', closeModal);
+  }
+
+  function openModal(id) {
+    var c = temoignages.find(function(x) { return x.id === id; });
+    if (!c) return;
+
+    var pronom = c.female ? 'elle' : 'il';
+
+    document.getElementById('galleryModalTag').textContent = c.tag;
+    document.getElementById('galleryModalName').textContent = c.name + ', ' + c.age + ' ans · ' + c.city;
+
+    var inputHtml = '<div class="gallery-modal-input-item"><span class="gallery-modal-input-label">💫 Ce qu\'' + pronom + ' cherche</span><span class="gallery-modal-input-value">' + c.wants + '</span></div>';
+    
+    if (c.keeps) {
+      inputHtml += '<div class="gallery-modal-input-item"><span class="gallery-modal-input-label">🔒 Ce qu\'' + pronom + ' veut garder</span><span class="gallery-modal-input-value">' + c.keeps + '</span></div>';
+    }
+    
+    inputHtml += '<div class="gallery-modal-input-item"><span class="gallery-modal-input-label">⚡ Ses atouts</span><span class="gallery-modal-input-value">' + c.skills + '</span>';
+    
+    if (c.skillsProof) {
+      inputHtml += '<span class="gallery-modal-input-proof">' + c.skillsProof + '</span>';
+    }
+    
+    inputHtml += '</div>';
+    inputHtml += '<div class="gallery-modal-input-item"><span class="gallery-modal-input-label">📍 Localisation</span><span class="gallery-modal-input-value">' + c.location + '</span></div>';
+
+    document.getElementById('galleryModalInput').innerHTML = inputHtml;
+
+    document.getElementById('galleryModalOpp1Title').innerHTML = c.opp1.emoji + ' ' + c.opp1.title;
+    document.getElementById('galleryModalOpp1Revelation').textContent = c.revelation;
+    document.getElementById('galleryModalOpp2Title').innerHTML = c.opp2.emoji + ' ' + c.opp2.title;
+    document.getElementById('galleryModalOpp2Revelation').textContent = c.opp2.teaser;
+    document.getElementById('galleryModalOpp3').innerHTML = c.opp3.emoji + ' + 1 piste adaptée à son profil';
+
+    var baseUrl = window.location.origin + window.location.pathname;
+    var url = baseUrl + '#' + c.id;
+    var whatsappMsg = 'Hey, j\'ai vu ce parcours et j\'ai pensé à toi — tu parles 1 min à Tilto et il te trouve 3 pistes concrètes selon ta situation. Regarde : ' + url;
+    var emailMsg = 'Hey,\n\nJ\'ai vu ce parcours et j\'ai pensé à toi. Tu parles 1 min et Tilto te trouve 3 opportunités adaptées à ta situation.\n\nRegarde : ' + url;
+    
+    document.getElementById('galleryShareWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(whatsappMsg);
+    document.getElementById('galleryShareLinkedin').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+    document.getElementById('galleryShareEmail').href = 'mailto:?subject=' + encodeURIComponent('J\'ai pensé à toi') + '&body=' + encodeURIComponent(emailMsg);
+
+    document.getElementById('galleryModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('galleryModalBody').scrollTop = 0;
+  }
+
+  function closeModal() {
+    document.getElementById('galleryModalOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+{% endblock %}

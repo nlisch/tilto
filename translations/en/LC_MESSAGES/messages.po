@@ -1,0 +1,1102 @@
+# English translations for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-10-25 14:49+0200\n"
+"PO-Revision-Date: 2024-09-20 17:34+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+#~ msgid "Vous n'avez pas encore complété de quiz."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Aucun résultat d'analyse n'a été trouvé"
+#~ " pour ce quiz. Veuillez d'abord "
+#~ "compléter le quiz."
+#~ msgstr ""
+
+#~ msgid "tilto"
+#~ msgstr ""
+
+#~ msgid "Mon Quiz App. Tous droits réservés."
+#~ msgstr ""
+
+#~ msgid "Connexion réussie !"
+#~ msgstr ""
+
+#~ msgid "Nom d'utilisateur ou mot de passe incorrect."
+#~ msgstr ""
+
+#~ msgid "Access denied: reason=%(reason)s error=%(error)s"
+#~ msgstr ""
+
+#~ msgid "Connexion réussie avec Google !"
+#~ msgstr ""
+
+#~ msgid "Fetching questions for quiz ID %(quiz_id)s"
+#~ msgstr ""
+
+#~ msgid "Retrieved %(count)s questions for quiz ID %(quiz_id)s"
+#~ msgstr ""
+
+#~ msgid "Retrieved %(count)s choices for question %(question_id)s"
+#~ msgstr ""
+
+#~ msgid "Returning %(count)s formatted questions for quiz ID %(quiz_id)s"
+#~ msgstr ""
+
+#~ msgid "Error fetching questions for quiz ID %(quiz_id)s: %(error)s"
+#~ msgstr ""
+
+#~ msgid "An error occurred while fetching questions"
+#~ msgstr ""
+
+#~ msgid "Accueil"
+#~ msgstr ""
+
+#~ msgid "Déconnexion"
+#~ msgstr "Logout"
+
+#~ msgid "tilto. Tous droits réservés."
+#~ msgstr ""
+
+#~ msgid "Découvrez Votre Personnalité"
+#~ msgstr ""
+
+#~ msgid "Découvrez Votre Personnalité Unique"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Prenez notre quiz captivant pour révéler"
+#~ " vos talents cachés et vos passions"
+#~ " secrètes."
+#~ msgstr ""
+
+#~ msgid "Commencer le Quiz"
+#~ msgstr "Restart quiz"
+
+#~ msgid "Se connecter pour commencer"
+#~ msgstr "Login to start"
+
+#~ msgid "Se connecter avec Google"
+#~ msgstr ""
+
+#~ msgid "S'inscrire avec Google"
+#~ msgstr ""
+
+#~ msgid "{editor}: Editing failed"
+#~ msgstr ""
+
+#~ msgid "{editor}: Editing failed: {e}"
+#~ msgstr ""
+
+#~ msgid "Aborted!"
+#~ msgstr ""
+
+#~ msgid "Show this message and exit."
+#~ msgstr ""
+
+#~ msgid "(Deprecated) {text}"
+#~ msgstr ""
+
+#~ msgid "Options"
+#~ msgstr ""
+
+#~ msgid "Got unexpected extra argument ({args})"
+#~ msgid_plural "Got unexpected extra arguments ({args})"
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "DeprecationWarning: The command {name!r} is deprecated."
+#~ msgstr ""
+
+#~ msgid "Commands"
+#~ msgstr ""
+
+#~ msgid "Missing command."
+#~ msgstr ""
+
+#~ msgid "No such command {name!r}."
+#~ msgstr ""
+
+#~ msgid "Value must be an iterable."
+#~ msgstr ""
+
+#~ msgid "Takes {nargs} values but 1 was given."
+#~ msgid_plural "Takes {nargs} values but {len} were given."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "env var: {var}"
+#~ msgstr ""
+
+#~ msgid "(dynamic)"
+#~ msgstr ""
+
+#~ msgid "default: {default}"
+#~ msgstr ""
+
+#~ msgid "required"
+#~ msgstr ""
+
+#~ msgid "%(prog)s, version %(version)s"
+#~ msgstr ""
+
+#~ msgid "Show the version and exit."
+#~ msgstr ""
+
+#~ msgid "Error: {message}"
+#~ msgstr ""
+
+#~ msgid "Try '{command} {option}' for help."
+#~ msgstr ""
+
+#~ msgid "Invalid value: {message}"
+#~ msgstr ""
+
+#~ msgid "Invalid value for {param_hint}: {message}"
+#~ msgstr ""
+
+#~ msgid "Missing argument"
+#~ msgstr ""
+
+#~ msgid "Missing option"
+#~ msgstr ""
+
+#~ msgid "Missing parameter"
+#~ msgstr ""
+
+#~ msgid "Missing {param_type}"
+#~ msgstr ""
+
+#~ msgid "Missing parameter: {param_name}"
+#~ msgstr ""
+
+#~ msgid "No such option: {name}"
+#~ msgstr ""
+
+#~ msgid "Did you mean {possibility}?"
+#~ msgid_plural "(Possible options: {possibilities})"
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "unknown error"
+#~ msgstr ""
+
+#~ msgid "Could not open file {filename!r}: {message}"
+#~ msgstr ""
+
+#~ msgid "Argument {name!r} takes {nargs} values."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} does not take a value."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} requires an argument."
+#~ msgid_plural "Option {name!r} requires {nargs} arguments."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Shell completion is not supported for Bash versions older than 4.4."
+#~ msgstr ""
+
+#~ msgid "Couldn't detect Bash version, shell completion is not supported."
+#~ msgstr ""
+
+#~ msgid "Repeat for confirmation"
+#~ msgstr ""
+
+#~ msgid "Error: The value you entered was invalid."
+#~ msgstr ""
+
+#~ msgid "Error: {e.message}"
+#~ msgstr ""
+
+#~ msgid "Error: The two entered values do not match."
+#~ msgstr ""
+
+#~ msgid "Error: invalid input"
+#~ msgstr ""
+
+#~ msgid "Press any key to continue..."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Choose from:\n"
+#~ "\t{choices}"
+#~ msgstr ""
+
+#~ msgid "{value!r} is not {choice}."
+#~ msgid_plural "{value!r} is not one of {choices}."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "{value!r} does not match the format {format}."
+#~ msgid_plural "{value!r} does not match the formats {formats}."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "{value!r} is not a valid {number_type}."
+#~ msgstr ""
+
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid boolean."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid UUID."
+#~ msgstr ""
+
+#~ msgid "file"
+#~ msgstr ""
+
+#~ msgid "directory"
+#~ msgstr ""
+
+#~ msgid "path"
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is a file."
+#~ msgstr ""
+
+#~ msgid "{name} '{filename}' is a directory."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not readable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not writable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not executable."
+#~ msgstr ""
+
+#~ msgid "{len_type} values are required, but {len_value} was given."
+#~ msgid_plural "{len_type} values are required, but {len_value} were given."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "This field is required."
+#~ msgstr ""
+
+#~ msgid "File does not have an approved extension: {extensions}"
+#~ msgstr ""
+
+#~ msgid "File does not have an approved extension."
+#~ msgstr ""
+
+#~ msgid "File must be between {min_size} and {max_size} bytes."
+#~ msgstr ""
+
+#~ msgid "Invalid field name '%s'."
+#~ msgstr ""
+
+#~ msgid "Field must be equal to %(other_name)s."
+#~ msgstr ""
+
+#~ msgid "Field must be at least %(min)d character long."
+#~ msgid_plural "Field must be at least %(min)d characters long."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Field cannot be longer than %(max)d character."
+#~ msgid_plural "Field cannot be longer than %(max)d characters."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Field must be exactly %(max)d character long."
+#~ msgid_plural "Field must be exactly %(max)d characters long."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Field must be between %(min)d and %(max)d characters long."
+#~ msgstr ""
+
+#~ msgid "Number must be at least %(min)s."
+#~ msgstr ""
+
+#~ msgid "Number must be at most %(max)s."
+#~ msgstr ""
+
+#~ msgid "Number must be between %(min)s and %(max)s."
+#~ msgstr ""
+
+#~ msgid "Invalid input."
+#~ msgstr ""
+
+#~ msgid "Invalid email address."
+#~ msgstr ""
+
+#~ msgid "Invalid IP address."
+#~ msgstr ""
+
+#~ msgid "Invalid Mac address."
+#~ msgstr ""
+
+#~ msgid "Invalid URL."
+#~ msgstr ""
+
+#~ msgid "Invalid UUID."
+#~ msgstr ""
+
+#~ msgid "Invalid value, must be one of: %(values)s."
+#~ msgstr ""
+
+#~ msgid "Invalid value, can't be any of: %(values)s."
+#~ msgstr ""
+
+#~ msgid "Invalid CSRF Token."
+#~ msgstr ""
+
+#~ msgid "CSRF token missing."
+#~ msgstr ""
+
+#~ msgid "CSRF failed."
+#~ msgstr ""
+
+#~ msgid "CSRF token expired."
+#~ msgstr ""
+
+#~ msgid "Invalid Choice: could not coerce."
+#~ msgstr ""
+
+#~ msgid "Choices cannot be None."
+#~ msgstr ""
+
+#~ msgid "Not a valid choice."
+#~ msgstr ""
+
+#~ msgid "Invalid choice(s): one or more data inputs could not be coerced."
+#~ msgstr ""
+
+#~ msgid "'%(value)s' is not a valid choice for this field."
+#~ msgid_plural "'%(value)s' are not valid choices for this field."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Not a valid datetime value."
+#~ msgstr ""
+
+#~ msgid "Not a valid date value."
+#~ msgstr ""
+
+#~ msgid "Not a valid time value."
+#~ msgstr ""
+
+#~ msgid "Not a valid integer value."
+#~ msgstr ""
+
+#~ msgid "Not a valid decimal value."
+#~ msgstr ""
+
+#~ msgid "Not a valid float value."
+#~ msgstr ""
+
+#~ msgid "Login route accessed with method: %(method)s"
+#~ msgstr ""
+
+#~ msgid "Login attempt for username: %(username)s"
+#~ msgstr ""
+
+#~ msgid "User %(username)s logged in successfully"
+#~ msgstr ""
+
+#~ msgid "Login successful!"
+#~ msgstr ""
+
+#~ msgid "Failed login attempt for username: %(username)s"
+#~ msgstr ""
+
+#~ msgid "Invalid username or password."
+#~ msgstr ""
+
+#~ msgid "Signup route accessed with method: %(method)s"
+#~ msgstr ""
+
+#~ msgid "Signup attempt for username: %(username)s, email: %(email)s"
+#~ msgstr ""
+
+#~ msgid "Signup failed: Username or email already exists"
+#~ msgstr ""
+
+#~ msgid "Nom d'utilisateur ou email déjà utilisé."
+#~ msgstr ""
+
+#~ msgid "New user created: %(username)s"
+#~ msgstr ""
+
+#~ msgid "Compte créé avec succès ! Vous pouvez maintenant vous connecter."
+#~ msgstr ""
+
+#~ msgid "Error during signup: %(error)s"
+#~ msgstr ""
+
+#~ msgid "Une erreur est survenue. Veuillez réessayer."
+#~ msgstr ""
+
+#~ msgid "Logout route accessed by user: %(username)s"
+#~ msgstr ""
+
+#~ msgid "Vous avez été déconnecté."
+#~ msgstr ""
+
+#~ msgid "Missing required data"
+#~ msgstr ""
+
+#~ msgid "Invalid quiz ID"
+#~ msgstr ""
+
+#~ msgid "Quiz progress updated successfully"
+#~ msgstr ""
+
+#~ msgid "An error occurred while updating quiz progress"
+#~ msgstr ""
+
+#~ msgid "Table quiz_user does not exist"
+#~ msgstr ""
+
+#~ msgid "Error retrieving quiz progress: %(error)s"
+#~ msgstr ""
+
+#~ msgid "An error occurred while retrieving quiz progress"
+#~ msgstr ""
+
+#~ msgid "generate_analysis route called"
+#~ msgstr ""
+
+#~ msgid "Start of generate_analysis function"
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Start of prompt generation"
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Received data: %(data)s"
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Prompt data missing in request"
+#~ msgstr ""
+
+#~ msgid "Prompt data is required"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "[Request ID: %(request_id)s] Quiz ID "
+#~ "missing in request. Using default ID."
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Prompt result stored in database"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "[Request ID: %(request_id)s] Error storing "
+#~ "result in database: %(error)s"
+#~ msgstr ""
+
+#~ msgid "Database error occurred"
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Error during Anthropic API call: %(error)s"
+#~ msgstr ""
+
+#~ msgid "Sorry, we couldn't generate an analysis at this time."
+#~ msgstr ""
+
+#~ msgid "[Request ID: %(request_id)s] Total execution time: %(time).2f seconds"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "[Request ID: %(request_id)s] Processing "
+#~ "completed for quiz ID: %(quiz_id)s"
+#~ msgstr ""
+
+#~ msgid "Error decoding JSON result for quiz %(quiz_id)s"
+#~ msgstr ""
+
+#~ msgid "Une erreur est survenue lors du décodage des résultats."
+#~ msgstr ""
+
+#~ msgid "Aucun résultat d'analyse n'a été trouvé pour ce quiz."
+#~ msgstr ""
+
+#~ msgid "Error retrieving profiling analysis: %(error)s"
+#~ msgstr ""
+
+#~ msgid "Une erreur est survenue lors du chargement de votre analyse."
+#~ msgstr ""
+
+#~ msgid "Your preferences have been updated."
+#~ msgstr ""
+
+#~ msgid "Quiz %(id)s"
+#~ msgstr ""
+
+#~ msgid "Error retrieving account data: %(error)s"
+#~ msgstr ""
+
+#~ msgid "An error occurred while loading your data."
+#~ msgstr ""
+
+#~ msgid "Your password has been successfully updated."
+#~ msgstr ""
+
+#~ msgid "The old password is incorrect."
+#~ msgstr ""
+
+#~ msgid "Your account has been successfully deleted."
+#~ msgstr ""
+
+#~ msgid "Account successfully deleted"
+#~ msgstr ""
+
+#~ msgid "Error deleting account: %(error)s"
+#~ msgstr ""
+
+#~ msgid "An error occurred while deleting the account"
+#~ msgstr ""
+
+#~ msgid "Page non trouvée"
+#~ msgstr ""
+
+#~ msgid "Oups ! Page non trouvée"
+#~ msgstr ""
+
+#~ msgid "Il semble que vous vous soyez égaré dans notre univers de quiz !"
+#~ msgstr ""
+
+#~ msgid "La page que vous recherchez n'existe pas ou a été déplacée."
+#~ msgstr ""
+
+#~ msgid "Retournez à la page d'accueil pour retrouver votre chemin."
+#~ msgstr ""
+
+#~ msgid "Ou lancez-vous dans un nouveau quiz passionnant !"
+#~ msgstr ""
+
+#~ msgid "Retour à l'accueil"
+#~ msgstr ""
+
+#~ msgid "Erreur Serveur"
+#~ msgstr ""
+
+#~ msgid "Oups ! Une erreur s'est produite"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Nous rencontrons des difficultés techniques."
+#~ " Veuillez nous excuser pour la gêne"
+#~ " occasionnée."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Nos équipes techniques ont été informées"
+#~ " et travaillent à résoudre le "
+#~ "problème."
+#~ msgstr ""
+
+#~ msgid "Vous pouvez essayer de rafraîchir la page ou revenir plus tard."
+#~ msgstr ""
+
+#~ msgid "À propos de nous"
+#~ msgstr ""
+
+#~ msgid "À propos de tilto"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "tilto est une plateforme dédiée à "
+#~ "l'épanouissement professionnel et personnel. "
+#~ "Notre mission est de vous aider à"
+#~ " découvrir vos talents cachés, à "
+#~ "booster votre carrière et à réaliser "
+#~ "vos aspirations."
+#~ msgstr ""
+
+#~ msgid "Notre Histoire"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Fondée en 2020, tilto a commencé "
+#~ "comme une petite start-up avec une"
+#~ " grande vision : offrir des outils"
+#~ " innovants pour le développement personnel."
+#~ " Aujourd'hui, nous sommes fiers d'aider "
+#~ "des milliers d'utilisateurs à travers le"
+#~ " monde à atteindre leurs objectifs."
+#~ msgstr ""
+
+#~ msgid "Notre Équipe"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Notre équipe est composée de "
+#~ "professionnels passionnés par le développement"
+#~ " personnel, la psychologie et la "
+#~ "technologie. Ensemble, nous travaillons sans"
+#~ " relâche pour améliorer constamment notre"
+#~ " plateforme et offrir la meilleure "
+#~ "expérience possible à nos utilisateurs."
+#~ msgstr ""
+
+#~ msgid "Nos Valeurs"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Innovation : Toujours à la recherche "
+#~ "de nouvelles idées pour améliorer nos"
+#~ " services."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Intégrité : Nous agissons avec honnêteté"
+#~ " et transparence dans toutes nos "
+#~ "interactions."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Excellence : Nous nous efforçons de "
+#~ "fournir des produits et services de "
+#~ "la plus haute qualité."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Collaboration : Travailler ensemble pour "
+#~ "atteindre des objectifs communs."
+#~ msgstr ""
+
+#~ msgid "Analyse de l'Équilibre de Vie"
+#~ msgstr ""
+
+#~ msgid "Score d'Équilibre Global"
+#~ msgstr ""
+
+#~ msgid "Équilibre de Vie Actuel vs Potentiel Optimal"
+#~ msgstr ""
+
+#~ msgid "Situation Actuelle"
+#~ msgstr ""
+
+#~ msgid "Potentiel Optimal"
+#~ msgstr ""
+
+#~ msgid "Points Forts"
+#~ msgstr ""
+
+#~ msgid "Axes d'Amélioration"
+#~ msgstr ""
+
+#~ msgid "Super-pouvoirs de %(name)s"
+#~ msgstr ""
+
+#~ msgid "Partager sur LinkedIn"
+#~ msgstr ""
+
+#~ msgid "tilto - Boost ta carrière"
+#~ msgstr "tilto - Boost your career"
+
+#~ msgid "Test Gratuit"
+#~ msgstr "Free Test"
+
+#~ msgid "tilto Plus"
+#~ msgstr "tilto Plus"
+
+#~ msgid "Mon espace"
+#~ msgstr "My space"
+
+# Button texts
+#~ msgid "Commencer le test"
+#~ msgstr "Start the test"
+
+#~ msgid "Plus"
+#~ msgstr "Plus"
+
+#~ msgid "Changer le mot de passe"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Le nouveau mot de passe doit "
+#~ "comporter au moins 6 caractères, avec"
+#~ " une majuscule, une minuscule, et un"
+#~ " chiffre."
+#~ msgstr ""
+
+#~ msgid "Les mots de passe ne correspondent pas."
+#~ msgstr ""
+
+# Hero Section
+#~ msgid "Ne restez plus seul(e) face à vos questions de carrière !"
+#~ msgstr "Don't stay alone with your career questions anymore!"
+
+#~ msgid "tilto éclaire votre chemin professionnel en moins de 1 heure."
+#~ msgstr "tilto illuminates your professional path in less than 1 hour."
+
+#~ msgid "Déjà +1000 personnes accompagnées"
+#~ msgstr "Already +1000 people supported"
+
+#~ msgid "87% recommandent à leurs collègues"
+#~ msgstr "87% recommend to their colleagues"
+
+# Alt texts
+#~ msgid "Momentum Dashboard"
+#~ msgstr "Momentum Dashboard"
+
+# Main Pitch
+#~ msgid "Transforme tes questionnements en opportunités avec tilto."
+#~ msgstr "Transform your questions into opportunities with tilto."
+
+#~ msgid "Projette-toi vers demain en 1 heure !"
+#~ msgstr "Project yourself into tomorrow in 1 hour!"
+
+# Features Section
+#~ msgid "Check-up pro"
+#~ msgstr "Pro check-up"
+
+#~ msgid "en 1h"
+#~ msgstr "in 1h"
+
+#~ msgid ""
+#~ "Réponds à une série de questions "
+#~ "pour trouver les prochaines étapes de"
+#~ " ta carrière."
+#~ msgstr "Answer a series of questions to find the next steps in your career."
+
+#~ msgid "Focus Feature"
+#~ msgstr "Focus Feature"
+
+#~ msgid "Itinéraire professionnel"
+#~ msgstr "Professional pathway"
+
+#~ msgid "sur-mesure"
+#~ msgstr "tailored"
+
+#~ msgid ""
+#~ "Cartographie tes opportunités professionnelles "
+#~ "incluant les composantes métier, environnement"
+#~ " et structure de travail."
+#~ msgstr ""
+#~ "Map your professional opportunities including"
+#~ " job components, environment and work "
+#~ "structure."
+
+#~ msgid "Daily Inspiration"
+#~ msgstr "Daily Inspiration"
+
+#~ msgid "Des questions originales"
+#~ msgstr "Original questions"
+
+#~ msgid "pour une orientation précise"
+#~ msgstr "for precise guidance"
+
+#~ msgid ""
+#~ "Nos questions, surprenantes, révèlent ce "
+#~ "que vous ne soupçonnez pas encore. "
+#~ "Carrière, épanouissement personnel, développement"
+#~ " professionnel : tout est lié."
+#~ msgstr ""
+#~ "Our surprising questions reveal what you"
+#~ " don't yet suspect. Career, personal "
+#~ "fulfillment, professional development: everything"
+#~ " is connected."
+
+# How it works Section
+#~ msgid "COMMENT ÇA FONCTIONNE ?"
+#~ msgstr "HOW DOES IT WORK?"
+
+#~ msgid "Réponds à une série de questions"
+#~ msgstr "Answer a series of questions"
+
+#~ msgid ""
+#~ "Reçois un check-up complet de ta"
+#~ " personnalité au travail, ton score "
+#~ "d'ouverture au changement et 3 "
+#~ "itinéraires complets pour t'aider à "
+#~ "prendre les meilleures décisions pour ta"
+#~ " carrière."
+#~ msgstr ""
+#~ "Receive a complete check-up of "
+#~ "your work personality, your openness to"
+#~ " change score and 3 complete pathways"
+#~ " to help you make the best "
+#~ "decisions for your career."
+
+#~ msgid "Ton check-up pro"
+#~ msgstr "Your pro check-up"
+
+#~ msgid "Découvre tes super-pouvoirs (cachés)"
+#~ msgstr "Discover your (hidden) superpowers"
+
+#~ msgid ""
+#~ "Tes différences sont tes super-pouvoirs."
+#~ " Identifie-les, développe-les, et "
+#~ "crée la carrière qui te ressemble "
+#~ "!"
+#~ msgstr ""
+#~ "Your differences are your superpowers. "
+#~ "Identify them, develop them, and create"
+#~ " the career that looks like you!"
+
+#~ msgid "EXPLORER"
+#~ msgstr "EXPLORE"
+
+#~ msgid "Identifie ton itinéraire professionnel adapté"
+#~ msgstr "Identify your suitable professional pathway"
+
+#~ msgid ""
+#~ "tilto t'aide à cartographier tes "
+#~ "opportunités professionnelles sur-mesure. À"
+#~ " toi de te lancer et de passer"
+#~ " à l'action !"
+#~ msgstr ""
+#~ "tilto helps you map your tailored "
+#~ "professional opportunities. It's up to "
+#~ "you to get started and take "
+#~ "action!"
+
+#~ msgid "COMMENCER"
+#~ msgstr "START"
+
+# Testimonials Section
+#~ msgid "CE QUE DISENT NOS CLIENTS"
+#~ msgstr "WHAT OUR CLIENTS SAY"
+
+#~ msgid ""
+#~ "\"Un outil vraiment indispensable qui "
+#~ "m'a permis de retrouver ma voie "
+#~ "professionnelle. Le checkup pro est "
+#~ "particulièrement utile et révélateur !\""
+#~ msgstr ""
+#~ "\"A truly essential tool that helped "
+#~ "me find my professional path. The "
+#~ "pro checkup is particularly useful and"
+#~ " revealing!\""
+
+#~ msgid ""
+#~ "\"Grâce à tilto, j'ai pu identifier "
+#~ "mes forces et mes axes d'amélioration."
+#~ " Les conseils personnalisés sont vraiment"
+#~ " pertinents !\""
+#~ msgstr ""
+#~ "\"Thanks to tilto, I was able to"
+#~ " identify my strengths and areas for"
+#~ " improvement. The personalized advice is"
+#~ " really relevant!\""
+
+#~ msgid ""
+#~ "\"L'accompagnement est top ! En 1 "
+#~ "heure, j'ai pu avoir une vision "
+#~ "claire de mon parcours et de mes"
+#~ " prochaines étapes. Je recommande !\""
+#~ msgstr ""
+#~ "\"The guidance is great! In 1 "
+#~ "hour, I was able to get a "
+#~ "clear vision of my journey and my"
+#~ " next steps. I recommend it!\""
+
+#~ msgid "Connexion"
+#~ msgstr ""
+
+#~ msgid "Nom d'utilisateur"
+#~ msgstr ""
+
+#~ msgid "Mot de passe"
+#~ msgstr ""
+
+#~ msgid "ou"
+#~ msgstr ""
+
+#~ msgid "Pas encore de compte ?"
+#~ msgstr ""
+
+#~ msgid "S'inscrire"
+#~ msgstr ""
+
+#~ msgid "Mon Compte"
+#~ msgstr "My account"
+
+#~ msgid "Informations personnelles"
+#~ msgstr ""
+
+#~ msgid "Nom d'utilisateur:"
+#~ msgstr ""
+
+#~ msgid "Email:"
+#~ msgstr ""
+
+#~ msgid "Statistiques générales"
+#~ msgstr ""
+
+#~ msgid "Quiz complétés :"
+#~ msgstr ""
+
+#~ msgid "Questions répondues :"
+#~ msgstr ""
+
+#~ msgid "Préférences de communication"
+#~ msgstr ""
+
+#~ msgid "S'abonner à la newsletter"
+#~ msgstr ""
+
+#~ msgid "Mettre à jour les préférences"
+#~ msgstr ""
+
+#~ msgid "Types de quiz complétés"
+#~ msgstr ""
+
+#~ msgid "Aucun quiz complété"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Vous n'avez pas encore complété de "
+#~ "quiz. Commencez un quiz pour voir "
+#~ "vos statistiques ici !"
+#~ msgstr ""
+
+#~ msgid "Historique des quiz"
+#~ msgstr ""
+
+#~ msgid "Quiz %(id)s (%(type)s)"
+#~ msgstr ""
+
+#~ msgid "Commencé le :"
+#~ msgstr ""
+
+#~ msgid "Terminé le :"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Vous n'avez pas encore d'historique de"
+#~ " quiz. Complétez votre premier quiz "
+#~ "pour voir les résultats ici !"
+#~ msgstr ""
+
+#~ msgid "Zone de danger"
+#~ msgstr ""
+
+#~ msgid "Attention : la suppression de votre compte est irréversible."
+#~ msgstr ""
+
+#~ msgid "Supprimer mon compte"
+#~ msgstr ""
+
+#~ msgid "Confirmation de suppression"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Êtes-vous sûr de vouloir supprimer "
+#~ "votre compte ? Cette action est "
+#~ "irréversible."
+#~ msgstr ""
+
+#~ msgid "Confirmer la suppression"
+#~ msgstr ""
+
+#~ msgid "Annuler"
+#~ msgstr ""
+
+#~ msgid "Questions répondues par quiz"
+#~ msgstr ""
+
+#~ msgid "Nombre de questions répondues"
+#~ msgstr ""
+
+#~ msgid "Une erreur est survenue lors de la suppression du compte."
+#~ msgstr ""
+
+#~ msgid "Quiz de Personnalité"
+#~ msgstr ""
+
+#~ msgid "Boost ta carrière !"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Prêt(e) pour une aventure de découverte"
+#~ " de soi ? Ce quiz rapide et "
+#~ "amusant révélera tes talents cachés et"
+#~ " tes passions secrètes !"
+#~ msgstr ""
+
+#~ msgid "5 minutes pour te connaître mieux"
+#~ msgstr ""
+
+#~ msgid "Révèle tes super-pouvoirs créatifs"
+#~ msgstr ""
+
+#~ msgid "Découvre comment tu peux changer le monde"
+#~ msgstr ""
+
+#~ msgid "Commence l'aventure !"
+#~ msgstr ""
+
+#~ msgid "Voir mon dernier profil"
+#~ msgstr ""
+
+#~ msgid "Reprendre le quiz"
+#~ msgstr ""
+
+#~ msgid "Dévoile ta personnalité secrète !"
+#~ msgstr ""
+
+#~ msgid "Votre Résultat"
+#~ msgstr ""
+
+#~ msgid "Analyse en cours..."
+#~ msgstr ""
+
+#~ msgid "Recommencer le quiz"
+#~ msgstr "Restart quiz"
+
+#~ msgid "Voir ma page d'analyse profiling"
+#~ msgstr "See my analysis page"
+
+#~ msgid "Connectez-vous pour accéder au quiz"
+#~ msgstr ""
+
+#~ msgid "Vous devez être connecté pour participer au quiz de personnalité."
+#~ msgstr ""
+
+#~ msgid "Se connecter"
+#~ msgstr ""
+
+#~ msgid "Inscription"
+#~ msgstr ""
+
+#~ msgid "Email"
+#~ msgstr ""
+
+#~ msgid "Confirmez votre mot de passe"
+#~ msgstr ""
+
+#~ msgid "Déjà un compte ?"
+#~ msgstr ""
+
+#~ msgid "Le nom d'utilisateur doit comporter au moins 3 caractères."
+#~ msgstr ""
+
+#~ msgid "Ceci n'est pas une adresse email valide."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Le mot de passe doit comporter au"
+#~ " moins 6 caractères, avec une "
+#~ "majuscule, une minuscule, et un chiffre."
+#~ msgstr ""
+
+#~ msgid "Vous devez accepter la politique de confidentialité pour vous inscrire."
+#~ msgstr ""
+

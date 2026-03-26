@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Paiement annulé - tilto') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles de base */
+.shop-confirmation-wrapper {
+    width: 100% !important;
+    min-height: calc(100vh - 180px) !important;
+    background: var(--bg-light) !important;
+    padding: 3rem 1rem !important;
+}
+
+.shop-confirmation-container {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    background: var(--bg-light) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.shop-confirmation-header {
+    padding: 2.5rem 2rem !important;
+    text-align: center !important;
+    background: #fff3cd !important;
+    margin-bottom: 0 !important;
+    margin-top:2rem;
+}
+
+/* Styles pour l'icône d'annulation */
+.cancel-icon-container {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-bottom: 2rem !important;
+}
+
+.cancel-icon {
+    width: 100% !important;
+    height: 100% !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    color: #856404 !important;
+}
+
+.shop-confirmation-title {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #856404 !important;
+    margin: 0 0 1rem 0 !important;
+    line-height: 1.2 !important;
+}
+
+.shop-confirmation-subtitle {
+    font-size: 1.1rem !important;
+    color: #856404 !important;
+    margin: 0 !important;
+    opacity: 0.8 !important;
+}
+
+.shop-confirmation-footer {
+    padding: 2rem !important;
+    text-align: center !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+/* Styles des boutons */
+.shop-error-buttons {
+    display: flex !important;
+    gap: 1rem !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.shop-retry-button,
+.shop-back-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.875rem 2rem !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    gap: 0.5rem !important;
+}
+
+.shop-retry-button {
+    background: linear-gradient(135deg,#A11857 0,#8B1A6B 100%);
+    color: white !important;
+}
+
+.shop-retry-button:hover {
+    background: linear-gradient(135deg,#A11857 0,#8B1A6B 100%)
+    transform: translateY(-1px) !important;
+}
+
+.shop-back-button {
+    background: var(--bg-light) !important;
+    color: var(--text) !important;
+}
+
+.shop-back-button:hover {
+    background: #e0e0e0 !important;
+}
+
+.shop-retry-button svg,
+.shop-back-button svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    overflow: visible !important;
+}
+
+.shop-error-support {
+    margin-top: 2rem !important;
+    text-align: center !important;
+    color: var(--text-light) !important;
+}
+
+.shop-error-support a {
+    color: var(--primary) !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.shop-error-support a:hover {
+    text-decoration: underline !important;
+}
+
+@media (max-width: 768px) {
+    .shop-confirmation-wrapper {
+        padding: 1rem !important;
+    }
+    
+    .shop-error-buttons {
+        flex-direction: column !important;
+    }
+    
+    .shop-retry-button,
+    .shop-back-button {
+        width: 100% !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shop-confirmation-wrapper">
+    <div class="shop-confirmation-container">
+        <div class="shop-confirmation-header">
+            <!-- Icône d'annulation -->
+            <div class="cancel-icon-container">
+                <svg class="cancel-icon" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+            <h1 class="shop-confirmation-title">{{ _('Paiement annulé') }}</h1>
+            <p class="shop-confirmation-subtitle">
+                {{ _('Vous avez annulé le processus de paiement.') }}
+            </p>
+        </div>
+
+        <div class="shop-confirmation-footer">
+            <div class="shop-error-buttons">
+                {% if product_id %}
+                <a href="{{ url_for('tokens.direct_buy', product_id=product_id, coupon=coupon_code) }}" class="shop-retry-button">
+                {% else %}
+                <a href="{{ url_for('tokens.shop') }}" class="shop-retry-button">
+                {% endif %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    {{ _('Reprendre le paiement') }}
+                </a>
+                <a href="{{ url_for('auth.dashboard') }}" class="shop-back-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    {{ _('Retour au tableau de bord') }}
+                </a>
+            </div>
+
+            <div class="shop-error-support">
+                {{ _('Des questions ?') }}
+                <a href="mailto:contact@tilto.ai">{{ _('Contactez-nous') }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

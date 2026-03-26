@@ -1,0 +1,932 @@
+<!-- templates/pages/about.html -->
+{% extends "base.html" %}
+
+{% block title %}À propos de Tilto - Améliore ta situation pro en 1 min | Claire Ngoc & Nicolas Lisch, cofondateurs{% endblock %}
+
+{% block meta_description %}Découvrez l'histoire de Tilto, cofondé par Claire Ngoc et Nicolas Lisch. Notre mission : rendre la clarification professionnelle simple, accessible et inspirante pour retrouver du sens et avancer avec confiance.{% endblock %}
+
+{% block body_class %}about-page-redesign{% endblock %}
+
+{% block content %}
+
+<!-- Section 1: Hero -->
+<section class="about-hero">
+    <div class="about-container">
+        <h1 class="about-hero-title">À propos de Tilto</h1>
+        <p class="about-hero-subtitle">
+            Chez Tilto, nous pensons qu'avant de changer de voie...<br>
+            <span class="highlight-pink">il faut comprendre où l'on en est.</span>
+        </p>
+    </div>
+</section>
+
+<!-- Section 2: Le Constat -->
+<section class="about-section about-section-beige">
+    <div class="about-container">
+        <div class="section-header">
+            <h2 class="section-title">Le constat</h2>
+            <div class="section-subtitle-wrapper">
+                <p class="section-subtitle">Ce qu'on observe...</p>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" 
+                     alt="Flèche" 
+                     class="arrow-yellow">
+            </div>
+        </div>
+        
+        <div class="content-card">
+            <p class="card-text">
+                Trop d'actifs avancent dans le flou : <strong>5 millions de personnes chaque année</strong> se sentent bloquées dans leur vie pro, souvent sans savoir par où commencer.
+            </p>
+            
+            <p class="card-text">
+                Le monde du travail bouge vite. Mais beaucoup restent à l'arrêt — faute de repères, de temps, et par peur de se tromper.
+            </p>
+            
+            <!-- Stats en badges -->
+            <div class="stats-row">
+                <div class="stat-badge stat-badge-pink">
+                    <span class="stat-number">7/10</span>
+                    <span class="stat-label">salariés se sentent perdus</span>
+                </div>
+                <div class="stat-badge stat-badge-yellow">
+                    <span class="stat-number">1/2</span>
+                    <span class="stat-label">regrette ses choix pro</span>
+                </div>
+            </div>
+            
+            <p class="card-conclusion">
+                👉 C'est exactement ce vide que <strong>Tilto</strong> comble.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Section 3: Notre Mission -->
+<section class="about-section about-section-white">
+    <div class="about-container">
+        <div class="section-header">
+            <h2 class="section-title">Notre mission</h2>
+            <div class="section-subtitle-wrapper">
+                <p class="section-subtitle">Ce qu'on veut pour toi...</p>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" 
+                     alt="Flèche" 
+                     class="arrow-yellow">
+            </div>
+        </div>
+        
+        <!-- Grande bulle citation style homepage -->
+        <div class="quote-bubble-large">
+            <span class="quote-guillemet quote-open">«</span>
+            <p class="quote-text">
+                Rendre la clarification professionnelle <span class="underline-text">simple</span>, 
+                <span class="underline-text">accessible</span> et <span class="underline-text">inspirante</span>, 
+                pour que chacun puisse retrouver du sens, voir concrètement ses options, et avancer avec confiance.
+            </p>
+            <span class="quote-guillemet quote-close">»</span>
+        </div>
+        
+        <!-- Badges style homepage -->
+        <div class="badges-row">
+            <span class="badge badge-pink">Simple</span>
+            <span class="badge badge-yellow">Rapide</span>
+            <span class="badge badge-green">Inspirant</span>
+        </div>
+    </div>
+</section>
+
+<!-- Section 4: Notre Approche -->
+<section class="about-section about-section-beige">
+    <div class="about-container">
+        <div class="section-header">
+            <h2 class="section-title">Notre approche</h2>
+            <div class="section-subtitle-wrapper">
+                <p class="section-subtitle">Comment ça marche...</p>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" 
+                     alt="Flèche" 
+                     class="arrow-yellow">
+            </div>
+        </div>
+        
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3 class="step-title">Tu parles. Tilto écoute.</h3>
+                    <p class="step-desc">En audio, avec tes propres mots — sans test ni jargon.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3 class="step-title">Tilto révèle tes forces</h3>
+                    <p class="step-desc">Une synthèse claire, juste, nuancée de ton profil pro.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3 class="step-title">3 options réalistes</h3>
+                    <p class="step-desc">Contextualisées à ton profil et ton marché local.</p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3 class="step-title">L'élan pour agir</h3>
+                    <p class="step-desc">Un plan simple, des repères concrets et de la lucidité.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 5: Témoignages -->
+<section class="about-section about-section-white">
+    <div class="about-container">
+        <div class="section-header">
+            <h2 class="section-title">Ce qu'ils en disent</h2>
+            <div class="section-subtitle-wrapper">
+                <p class="section-subtitle">Leurs mots, pas les nôtres...</p>
+                <img src="https://images.tilto.co/production/2025/11/e5446ec0_hautparleur.webp" 
+                     alt="Haut parleur" 
+                     class="deco-speaker">
+            </div>
+        </div>
+        
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "L'audio, c'est extraordinaire. J'ai enfin eu l'impression de pouvoir parler avec mes mots."
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-author">Anthony, 38 ans, Vincennes</p>
+            </div>
+            
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "Je ne me rends jamais compte de ce que je sais faire... là, c'était agréable de le voir écrit."
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-author">Emma, 32 ans, Champigny</p>
+            </div>
+            
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "Tout est donné : les avantages, les challenges, les entreprises, les salaires."
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-author">Mathieu, 49 ans, Nantes</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 6: L'histoire des cofondateurs -->
+<section class="about-section about-section-beige">
+    <div class="about-container">
+        <div class="section-header">
+            <h2 class="section-title">Pourquoi Tilto existe</h2>
+            <div class="section-subtitle-wrapper">
+                <p class="section-subtitle">L'histoire des cofondateurs...</p>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" 
+                     alt="Flèche" 
+                     class="arrow-yellow">
+            </div>
+        </div>
+        
+        <div class="founder-story">
+            <div class="story-intro">
+                <p class="story-text">Je m'appelle <strong>Claire</strong>.</p>
+                <p class="story-text">
+                    Avant Tilto, j'ai connu moi aussi cette période de flou professionnel : un job "cool sur le papier", dans le marketing, puis chez Deliveroo à Londres — la startup qui fait rêver beaucoup de monde.
+                </p>
+                <p class="story-text">
+                    Sauf que derrière les paillettes, <strong>quelque chose sonnait faux</strong>.
+                </p>
+            </div>
+            
+            <!-- Citation fondatrice -->
+            <div class="quote-bubble-large">
+                <span class="quote-guillemet quote-open">«</span>
+                <p class="quote-text">
+                    J'aurais eu besoin d'un outil <span class="underline-text">simple</span>, 
+                    <span class="underline-text">humain</span>, <span class="underline-text">rapide</span>. 
+                    Quelque chose qui m'aide à mettre des mots sur ce qui cloche, et me montre des options réalistes.
+                </p>
+                <span class="quote-guillemet quote-close">»</span>
+            </div>
+            
+            <div class="story-conclusion">
+                <p class="conclusion-highlight">
+                    <strong>Cet outil n'existait pas.</strong><br>
+                    Alors avec <strong>Nicolas Lisch</strong>, CTO et cofondateur, nous l'avons créé.
+                </p>
+                <p class="conclusion-text">
+                    Tilto est né pour aider chacun à traverser cette zone de doute avec plus de clarté, plus de sens, plus de confiance — et surtout, beaucoup moins de solitude.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Section 7: CTA -->
+<section class="about-section about-section-white about-cta">
+    <div class="about-container">
+        <h2 class="cta-title">Envie de voir ce que Tilto ferait avec tes mots ?</h2>
+        <p class="cta-subtitle">
+            Fais ton expérience Tilto en <span class="highlight-pink">1 minutes</span>.
+        </p>
+        
+        <div class="cta-buttons">
+            <a href="{{ url_for('auth.home') }}" class="btn-cta-primary">
+                Démarrer l'expérience
+            </a>
+            <a href="{{ url_for('auth.home') }}" class="btn-cta-secondary">
+                ← Retour à l'accueil
+            </a>
+        </div>
+        
+        <p class="contact-tech">
+            Pour toute question technique : <a href="mailto:contact@tilto.ai">contact@tilto.ai</a>
+        </p>
+    </div>
+</section>
+
+<style nonce="{{ g.nonce }}">
+/* ============================================
+   ABOUT PAGE - REDESIGN STYLE HOMEPAGE TILTO
+   ============================================ */
+
+.about-page-redesign {
+    background: #FFFFFF;
+    overflow-x: hidden;
+}
+
+/* --- Container --- */
+.about-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.about-hero {
+    background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%);
+    padding: 8rem 0 5rem;
+    text-align: center;
+    color: white;
+}
+
+.about-hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.about-hero-subtitle {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    opacity: 0.95;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.about-hero-subtitle .highlight-pink {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.about-section {
+    padding: 5rem 0;
+}
+
+.about-section-white {
+    background: #FFFFFF;
+}
+
+.about-section-beige {
+    background: #F8F9F3;
+}
+
+/* --- Section Header (style homepage) --- */
+.section-header {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.section-subtitle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin: 0;
+}
+
+.arrow-yellow {
+    width: 50px;
+    height: auto;
+    transform: scale(2);
+    transform-origin: left center;
+}
+
+.deco-speaker {
+    width: 60px;
+    height: auto;
+    margin-left: 0.5rem;
+    margin-top:1rem;
+}
+
+/* ============================================
+   CONTENT CARD (Section Constat)
+   ============================================ */
+
+.content-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+}
+
+.about-section-white .content-card {
+    background: #F8F9F3;
+}
+
+.card-text {
+    font-size: 1.15rem;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+}
+
+.card-conclusion {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+/* --- Stats Badges --- */
+.stats-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.stat-badge {
+    padding: 1.25rem 2rem;
+    border-radius: 20px;
+    text-align: center;
+    min-width: 180px;
+}
+
+.stat-badge-pink {
+    background: #EBD5E3;
+}
+
+.stat-badge-yellow {
+    background: #F7C164;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #A11857;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* ============================================
+   QUOTE BUBBLE (Style Homepage)
+   ============================================ */
+
+.quote-bubble-large {
+    position: relative;
+    background: #EBD5E3;
+    border-radius: 20px;
+    padding: 3rem 4rem;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.quote-guillemet {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 4rem;
+    font-weight: 400;
+    line-height: 1;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(161, 24, 87, 0.2);
+}
+
+.quote-open {
+    left: 1.5rem;
+}
+
+.quote-close {
+    right: 1.5rem;
+}
+
+.quote-text {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.underline-text {
+    text-decoration: underline;
+    text-decoration-color: #A11857;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* --- Badges Row --- */
+.badges-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.badge {
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.badge-pink {
+    background: #EBD5E3;
+    color: #A11857;
+}
+
+.badge-yellow {
+    background: #F7C164;
+    color: #92400e;
+}
+
+.badge-green {
+    background: #85E0A3;
+    color: #1a5a2e;
+}
+
+/* ============================================
+   STEPS GRID (Section Approche)
+   ============================================ */
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.step-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.step-number {
+    background: #A11857;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+    padding-right: 1.2rem;
+}
+
+.step-desc {
+    font-size: 1rem;
+    color: #4a5568;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ============================================
+   TESTIMONIALS GRID
+   ============================================ */
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.testimonial-card {
+    background: #F8F9F3;
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-quote {
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.6;
+    font-style: italic;
+    margin: 0 0 1rem 0;
+}
+
+.testimonial-stars {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.testimonial-author {
+    font-size: 0.9rem;
+    color: #A11857;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ============================================
+   FOUNDER STORY
+   ============================================ */
+
+.founder-story {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.story-intro {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+}
+
+.story-text {
+    font-size: 1.15rem;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.story-text:last-child {
+    margin-bottom: 0;
+}
+
+.story-conclusion {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.conclusion-highlight {
+    font-size: 1.4rem;
+    color: #1a1a1a;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.conclusion-text {
+    font-size: 1.1rem;
+    color: #4a5568;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   CTA SECTION
+   ============================================ */
+
+.about-cta {
+    text-align: center;
+    padding: 5rem 0;
+}
+
+.cta-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1rem 0;
+    line-height: 1.3;
+    text-align:center;
+}
+
+.cta-subtitle {
+    font-size: 1.2rem;
+    color: #4a5568;
+    margin: 0 0 2rem 0;
+}
+
+.cta-subtitle .highlight-pink {
+    background: #EBD5E3;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #A11857;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.btn-cta-primary {
+    background: #A11857;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 27, 92, 0.3);
+}
+
+.btn-cta-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 27, 92, 0.4);
+    background: #8b1a6b;
+}
+
+.btn-cta-secondary {
+    background: transparent;
+    color: #A11857;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border: 2px solid #A11857;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-cta-secondary:hover {
+    background: rgba(161, 24, 87, 0.05);
+}
+
+.contact-tech {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.contact-tech a {
+    color: #A11857;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.contact-tech a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 968px) {
+    .about-hero-title {
+        font-size: 2.8rem;
+    }
+    
+    .section-title {
+        font-size: 2.3rem;
+    }
+    
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-hero {
+        padding: 6rem 0 4rem;
+    }
+    
+    .about-hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .about-hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .about-section {
+        padding: 3.5rem 0;
+    }
+    
+    .about-container {
+        padding: 0 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .arrow-yellow {
+        width: 40px;
+        transform: scale(1.5);
+    }
+    
+    .deco-speaker {
+        width: 45px;
+    }
+    
+    .content-card,
+    .story-intro {
+        padding: 1.75rem;
+        border-radius: 20px;
+    }
+    
+    .quote-bubble-large {
+        padding: 2.5rem 3rem;
+        border-radius: 16px;
+    }
+    
+    .quote-guillemet {
+        font-size: 3rem;
+    }
+    
+    .quote-open {
+        left: 1rem;
+    }
+    
+    .quote-close {
+        right: 1rem;
+    }
+    
+    .quote-text {
+        font-size: 1.25rem;
+    }
+    
+    .stats-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .stat-badge {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .step-card {
+        padding: 1.5rem;
+    }
+    
+    .step-number {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    .cta-title {
+        font-size: 1.8rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-cta-primary,
+    .btn-cta-secondary {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-hero {
+        padding: 7rem 0 3rem;
+    }
+    
+    .about-hero-title {
+        font-size: 1.9rem;
+    }
+    
+    .about-hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .quote-bubble-large {
+        padding: 2rem 2.5rem;
+    }
+    
+    .quote-text {
+        font-size: 1.1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .conclusion-highlight {
+        font-size: 1.2rem;
+    }
+    
+    .cta-title {
+        font-size: 1.5rem;
+    }
+}
+
+h1 {
+  color: white;
+}
+</style>
+
+{% endblock %}

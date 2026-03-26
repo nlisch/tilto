@@ -1,0 +1,14 @@
+product_id,item_id,country_code,is_active,quantity
+personal_profiling_quiz_fr,personal_profiling_fr,FR,TRUE,1
+professional_profiling_quiz_fr,professional_profiling_fr,FR,TRUE,1
+profiling_bundle_fr,personal_profiling_fr,FR,TRUE,1
+profiling_bundle_fr,professional_profiling_fr,FR,TRUE,1
+personal_profiling_quiz_en,personal_profiling_en,EN,TRUE,1
+profiling_bundle_en,personal_profiling_en,EN,TRUE,1
+profiling_bundle_en,professional_profiling_en,EN,TRUE,1
+coaching_1h_fr,coaching_session_1h_fr,FR,TRUE,1
+coaching_3h_fr,coaching_session_1h_pack_fr,FR,TRUE,1
+pack_clarte_fr,pack_clarte_items_fr,FR,TRUE,1
+tilto_analysis,tilto_analysis_item,1,FR,TRUE
+pack_smart_contact_fr,smart_contact_10_fr,FR,TRUE,1
+bilan_carriere_express_fr,bilan_carriere_express_item_fr,FR,TRUE,1

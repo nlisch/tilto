@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Paiement confirmé - tilto') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* === DESIGN POST-ACHAT === */
+
+.shop-confirmation-wrapper {
+    width: 100% !important;
+    min-height: calc(100vh - 180px) !important;
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
+    padding: 3rem 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.shop-confirmation-container {
+    max-width: 600px !important;
+    width: 100% !important;
+    background: white !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05), 
+                0 10px 15px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    font-family: 'Poppins', sans-serif !important;
+    animation: fadeInUp 0.5s ease-out !important;
+    margin-top: 3rem;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === EN-TÊTE === */
+.shop-confirmation-header {
+    padding: 3rem 2rem 2rem 2rem !important;
+    text-align: center !important;
+    background: white !important;
+}
+
+.success-icon {
+    width: 64px !important;
+    height: 64px !important;
+    margin: 0 auto 1.5rem auto !important;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3) !important;
+    animation: scaleIn 0.5s ease-out !important;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-icon svg {
+    width: 36px !important;
+    height: 36px !important;
+    stroke: white !important;
+    stroke-width: 3 !important;
+}
+
+.shop-confirmation-title {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+    margin: 0 0 0.5rem 0 !important;
+    line-height: 1.2 !important;
+}
+
+.shop-confirmation-subtitle {
+    font-size: 1.05rem !important;
+    color: #666 !important;
+    margin: 0 0 1rem 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* === HIGHLIGHT BOX (partagé) === */
+.highlight-box {
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
+    border: 2px solid #f9a8d4 !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin: 0 2rem 1.5rem 2rem !important;
+    text-align: center !important;
+}
+
+.highlight-number {
+    font-size: 3rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #A11857 0%, #ec4899 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.highlight-label {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.highlight-sub {
+    font-size: 0.85rem !important;
+    color: #6b7280 !important;
+}
+
+/* === CONTENU === */
+.shop-order-details {
+    padding: 2rem !important;
+    background: #fafafa !important;
+}
+
+.main-message {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    border: 2px solid #f3f4f6 !important;
+    text-align: center !important;
+}
+
+.main-message p {
+    font-size: 1rem !important;
+    color: #333 !important;
+    line-height: 1.6 !important;
+    margin: 0 0 0.75rem 0 !important;
+}
+
+.main-message p:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* === COMMENT ÇA MARCHE === */
+.how-it-works {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.how-it-works-title {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+}
+
+.steps-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.step-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+    font-size: 0.95rem !important;
+    color: #555 !important;
+    line-height: 1.5 !important;
+}
+
+.step-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+.step-number {
+    flex-shrink: 0 !important;
+    width: 28px !important;
+    height: 28px !important;
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+}
+
+.step-text {
+    padding-top: 0.2rem !important;
+}
+
+/* === PHONE FORM === */
+.phone-form-section {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    margin-top: 1.5rem !important;
+    border: 2px solid #f9a8d4 !important;
+}
+
+.phone-form-label {
+    display: block !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    margin-bottom: 0.75rem !important;
+    text-align: center !important;
+}
+
+.phone-input-row {
+    display: flex !important;
+    gap: 0.75rem !important;
+}
+
+.phone-input {
+    flex: 1 !important;
+    padding: 0.875rem 1rem !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    font-size: 1rem !important;
+    font-family: 'Poppins', sans-serif !important;
+    color: #1a1a1a !important;
+    transition: border-color 0.2s ease !important;
+    outline: none !important;
+}
+
+.phone-input:focus {
+    border-color: #A11857 !important;
+    box-shadow: 0 0 0 3px rgba(161, 24, 87, 0.1) !important;
+}
+
+.phone-input::placeholder {
+    color: #9ca3af !important;
+}
+
+.phone-submit-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.875rem 1.5rem !important;
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-family: 'Poppins', sans-serif !important;
+    box-shadow: 0 4px 12px rgba(161, 24, 87, 0.3) !important;
+    white-space: nowrap !important;
+}
+
+.phone-submit-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(161, 24, 87, 0.4) !important;
+}
+
+.phone-submit-btn:disabled {
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Phone success state */
+.phone-success {
+    display: none;
+    text-align: center !important;
+    padding: 1rem !important;
+}
+
+.phone-success.visible {
+    display: block !important;
+}
+
+.phone-success-icon {
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.phone-success-text {
+    font-size: 0.95rem !important;
+    color: #166534 !important;
+    font-weight: 500 !important;
+}
+
+/* === CTA === */
+.cta-section {
+    margin: 1.5rem 0 0 0 !important;
+    text-align: center !important;
+}
+
+.shop-cta-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem 2.5rem !important;
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    gap: 0.5rem !important;
+    box-shadow: 0 4px 12px rgba(161, 24, 87, 0.3) !important;
+}
+
+.shop-cta-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(161, 24, 87, 0.4) !important;
+    color: white !important;
+}
+
+.cta-subtext {
+    font-size: 0.85rem !important;
+    color: #aaa !important;
+    margin-top: 0.75rem !important;
+}
+
+/* === INFO BOX === */
+.info-box {
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+    display: flex !important;
+    gap: 0.875rem !important;
+    align-items: flex-start !important;
+    margin-top: 1.5rem !important;
+}
+
+.info-icon {
+    flex-shrink: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: #16a34a !important;
+    background: none;
+}
+
+.info-text {
+    font-size: 0.875rem !important;
+    color: #166534 !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .shop-confirmation-wrapper { padding: 1.5rem 1rem !important; }
+    .shop-confirmation-header { padding: 2rem 1.5rem 1.5rem 1.5rem !important; }
+    .shop-confirmation-title { font-size: 1.5rem !important; }
+    .success-icon { width: 56px !important; height: 56px !important; }
+    .success-icon svg { width: 32px !important; height: 32px !important; }
+    .highlight-box { margin: 0 1.5rem 1.5rem 1.5rem !important; }
+    .shop-order-details { padding: 1.5rem !important; }
+    .shop-cta-button { width: 100% !important; padding: 1rem 1.5rem !important; }
+    .phone-input-row { flex-direction: column !important; }
+    .phone-submit-btn { width: 100% !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shop-confirmation-wrapper">
+    <div class="shop-confirmation-container">
+
+        {# ═══════════ EN-TÊTE ═══════════ #}
+        <div class="shop-confirmation-header">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+
+            {% if is_bilan %}
+                <h1 class="shop-confirmation-title">C'est parti ! 🎉</h1>
+                <p class="shop-confirmation-subtitle">Votre bilan carrière est confirmé</p>
+            {% elif is_smart_contact %}
+                <h1 class="shop-confirmation-title">Merci !</h1>
+                <p class="shop-confirmation-subtitle">Votre commande est confirmée</p>
+            {% else %}
+                <h1 class="shop-confirmation-title">C'est tout bon !</h1>
+                <p class="shop-confirmation-subtitle">Tes crédits sont prêts à être utilisés</p>
+            {% endif %}
+        </div>
+
+        {% if not is_smart_contact and not is_bilan %}
+            <div class="highlight-box">
+                <div class="highlight-number">2</div>
+                <div class="highlight-label">crédits ajoutés à ton compte</div>
+                <div class="highlight-sub">Valables 6 mois</div>
+            </div>
+        {% endif %}
+
+        {# ═══════════ CONTENU ═══════════ #}
+        <div class="shop-order-details">
+
+            {% if is_bilan %}
+            {# ── Bilan Carrière Express ── #}
+            <div class="main-message">
+                <p>On va vous appeler pour planifier votre <strong>entretien exploratoire de 45 min</strong> avec un expert.</p>
+                <p>Votre feuille de route carrière vous sera livrée dans les <strong>48h après l'entretien</strong>.</p>
+            </div>
+
+            <div class="how-it-works">
+                <h3 class="how-it-works-title">La suite en 2 temps</h3>
+                <ul class="steps-list">
+                    <li class="step-item">
+                        <span class="step-number">1</span>
+                        <span class="step-text"><strong>Votre entretien (45 min)</strong><br>Un expert vous guide pour clarifier vos attentes et vos critères non négociables.</span>
+                    </li>
+                    <li class="step-item">
+                        <span class="step-number">2</span>
+                        <span class="step-text"><strong>Votre feuille de route sous 48h</strong><br>20+ pages avec vos 3 meilleurs choix pro, validés par la donnée marché.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="phone-form-section" id="phone-form-section">
+                <label class="phone-form-label">📞 Votre numéro pour planifier l'entretien :</label>
+                <div class="phone-input-row" id="phone-input-row">
+                    <input
+                        type="tel"
+                        id="phone-input"
+                        class="phone-input"
+                        placeholder="06 12 34 56 78"
+                        autocomplete="tel"
+                        maxlength="20"
+                    />
+                    <button class="phone-submit-btn" id="phone-submit-btn">
+                        Envoyer →
+                    </button>
+                </div>
+                <p style="font-size:0.8rem; color:#9ca3af; text-align:center; margin-top:0.5rem;">
+                    On vous rappelle dans les 24h pour convenir d'un créneau.
+                </p>
+                <div class="phone-success" id="phone-success">
+                    <div class="phone-success-icon">✅</div>
+                    <p class="phone-success-text">Reçu ! On vous rappelle très vite pour planifier votre entretien.</p>
+                </div>
+            </div>
+
+            {% if order %}
+                <p class="cta-subtext" style="text-align:center; margin-top:1rem;">Commande n°{{ order.order_number }}</p>
+            {% endif %}
+
+            {% elif is_smart_contact %}
+            {# ── Smart Contact ── #}
+            <div class="main-message">
+                <p>Plus qu'une étape pour que nous puissions identifier les <strong>entreprises</strong> et les <strong>contacts</strong> les plus pertinents pour vous.</p>
+            </div>
+
+            <div class="how-it-works">
+                <h3 class="how-it-works-title">Comment ça se passe ?</h3>
+                <ul class="steps-list">
+                    <li class="step-item">
+                        <span class="step-number">1</span>
+                        <span class="step-text"><strong>Laissez-nous votre numéro de téléphone</strong><br>Nous vous appelons pour un échange rapide d'environ 10 minutes.</span>
+                    </li>
+                    <li class="step-item">
+                        <span class="step-number">2</span>
+                        <span class="step-text"><strong>Nous définissons ensemble vos critères de recherche</strong><br>Poste visé, secteur, type d'entreprises, environnement souhaité…</span>
+                    </li>
+                    <li class="step-item">
+                        <span class="step-number">3</span>
+                        <span class="step-text"><strong>Nous préparons vos Smart Contacts</strong><br>Nous identifions 10 entreprises pertinentes, le bon interlocuteur à contacter, et les messages personnalisés prêts à envoyer.</span>
+                    </li>
+                </ul>
+                <p style="font-size:0.85rem; color:#6b7280; text-align:center; margin: 1rem 0 0 0;">Vous recevrez votre liste dès qu'elle est prête.</p>
+            </div>
+
+            <div class="phone-form-section" id="phone-form-section">
+                <label class="phone-form-label">📞 Indiquez votre numéro pour être recontacté :</label>
+                <div class="phone-input-row" id="phone-input-row">
+                    <input
+                        type="tel"
+                        id="phone-input"
+                        class="phone-input"
+                        placeholder="06 12 34 56 78"
+                        autocomplete="tel"
+                        maxlength="20"
+                    />
+                    <button class="phone-submit-btn" id="phone-submit-btn">
+                        Envoyer →
+                    </button>
+                </div>
+                <p class="phone-mandatory-note" style="font-size:0.8rem; color:#9ca3af; text-align:center; margin-top:0.5rem;">
+                    Votre numéro est nécessaire pour que nous puissions vous appeler et préparer vos contacts.
+                </p>
+                <div class="phone-success" id="phone-success">
+                    <div class="phone-success-icon">✅</div>
+                    <p class="phone-success-text">Merci ! Nous vous contacterons très prochainement.</p>
+                </div>
+            </div>
+
+            {% if order %}
+                <p class="cta-subtext" style="text-align:center; margin-top:1rem;">Commande n°{{ order.order_number }}</p>
+            {% endif %}
+
+            {% else %}
+            {# ── Quiz / Coaching classique ── #}
+            <div class="how-it-works">
+                <h3 class="how-it-works-title">Comment ça marche ?</h3>
+                <ul class="steps-list">
+                    <li class="step-item">
+                        <span class="step-number">1</span>
+                        <span class="step-text">Retourne sur ta page d'analyse</span>
+                    </li>
+                    <li class="step-item">
+                        <span class="step-number">2</span>
+                        <span class="step-text">Clique sur une piste pour la débloquer</span>
+                    </li>
+                    <li class="step-item">
+                        <span class="step-number">3</span>
+                        <span class="step-text">Découvre le métier, le salaire et les formations</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="cta-section">
+                <a href="{{ analysis_url or url_for('auth.dashboard') }}" class="shop-cta-button">
+                    Debloquer mes pistes
+                </a>
+                {% if order %}
+                    <p class="cta-subtext">Commande n°{{ order.order_number }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {# ═══════════ INFO BOX ═══════════ #}
+            {% if not is_smart_contact and not is_bilan %}
+            <div class="info-box">
+                <svg class="info-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <p class="info-text">Un email de confirmation a été envoyé à ton adresse.</p>
+            </div>
+            {% endif %}
+
+            {% if is_bilan %}
+            <div class="info-box" style="margin-top:1.5rem;">
+                <svg class="info-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <p class="info-text">Un email de confirmation avec les détails a été envoyé à votre adresse.</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% if is_smart_contact or is_bilan %}
+<script nonce="{{ g.nonce }}">
+
+function showPhoneError() {
+    document.getElementById('phone-input-row').style.display = 'none';
+    const label = document.querySelector('.phone-form-label');
+    if (label) label.style.display = 'none';
+    const section = document.getElementById('phone-form-section');
+    if (section) section.innerHTML += '<p style="text-align:center;font-size:0.9rem;color:#dc2626;margin-top:1rem;">Problème pour récupérer votre numéro, veuillez nous contacter : <a href="mailto:contact@tilto.ai" style="color:#dc2626;font-weight:700;">contact@tilto.ai</a></p>';
+}
+
+function submitPhone() {
+    const input = document.getElementById('phone-input');
+    const btn = document.getElementById('phone-submit-btn');
+    const phone = input.value.trim();
+    const digits = phone.replace(/\D/g, '');
+
+    if (digits.length < 8) {
+        input.style.borderColor = '#ef4444';
+        input.focus();
+        setTimeout(() => { input.style.borderColor = ''; }, 2000);
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+
+    fetch('/dashboard/smart-contact/save-phone', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            phone: phone
+            {% if order %}, order_id: {{ order.order_id or order.id }}{% endif %}
+        })
+    })
+    .then(res => res.json())
+.then(data => {
+    if (data.success) {
+        showPhoneSuccess();
+    } else {
+        btn.disabled = false;
+        btn.textContent = 'Envoyer →';
+        input.style.borderColor = '#ef4444';
+        showPhoneError();
+    }
+})
+.catch(() => {
+    btn.disabled = false;
+    btn.textContent = 'Envoyer →';
+    input.style.borderColor = '#ef4444';
+    showPhoneError();
+});
+}
+
+function showPhoneSuccess() {
+    document.getElementById('phone-input-row').style.display = 'none';
+    const label = document.querySelector('.phone-form-label');
+    if (label) label.style.display = 'none';
+    const note = document.querySelector('.phone-mandatory-note');
+    if (note) note.style.display = 'none';
+    const success = document.getElementById('phone-success');
+    success.classList.add('visible');
+    success.style.display = 'block';
+}
+
+document.getElementById('phone-submit-btn').addEventListener('click', submitPhone);
+document.getElementById('phone-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitPhone();
+});
+</script>
+{% endif %}
+{% endblock %}

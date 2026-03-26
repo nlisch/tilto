@@ -1,0 +1,887 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Administration des Capsules Audio') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .duration-display {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: var(--primary-light);
+        border-radius: var(--radius-md);
+        color: var(--primary);
+        font-weight: 600;
+        margin-top: 10px;
+    }
+    
+    .file-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: var(--radius-md);
+        display: none;
+    }
+    
+    .loading-duration {
+        display: inline-block;
+        margin-left: 10px;
+        color: var(--text-light);
+        font-style: italic;
+    }
+    
+    .card-stats {
+        transition: all 0.3s ease;
+    }
+    .card-stats:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{{ _('Administration des Capsules Audio') }}</h2>
+
+    <!-- Statistiques des capsules (Ajout pour résoudre l'erreur stats) -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white card-stats">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ _('Total Capsules') }}</h5>
+                    <h2 class="display-4">{{ stats.total|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white card-stats">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ _('Capsules Écoutées') }}</h5>
+                    <h2 class="display-4">{{ stats.listened_count|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white card-stats">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ _('Assignations') }}</h5>
+                    <h2 class="display-4">{{ assignments|length|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white card-stats">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ _('Utilisateurs') }}</h5>
+                    <h2 class="display-4">{{ users|length|default(0) }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="upload-tab" data-bs-toggle="tab" href="#upload" role="tab" aria-controls="upload" aria-selected="true">
+                <i class="fas fa-upload"></i> {{ _('Téléverser') }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="assign-tab" data-bs-toggle="tab" href="#assign" role="tab" aria-controls="assign" aria-selected="false">
+                <i class="fas fa-user-plus"></i> {{ _('Assigner') }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="manage-tab" data-bs-toggle="tab" href="#manage" role="tab" aria-controls="manage" aria-selected="false">
+                <i class="fas fa-cog"></i> {{ _('Gérer') }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="assignments-tab" data-bs-toggle="tab" href="#assignments" role="tab" aria-controls="assignments" aria-selected="false">
+                <i class="fas fa-link"></i> {{ _('Assignations') }}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="feedbacks-tab" data-bs-toggle="tab" href="#feedbacks" role="tab" aria-controls="feedbacks" aria-selected="false">
+                <i class="fas fa-comments"></i> {{ _('Feedbacks') }}
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!-- Upload Tab -->
+        <div class="tab-pane fade show active" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ _('Téléverser une nouvelle capsule audio') }}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" method="post" action="{{ url_for('audio_capsule.upload_audio') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">{{ _('Titre') }} *</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="personalized_reflection" class="form-label">{{ _('Réflexion personnalisée') }} *</label>
+                            <textarea class="form-control" id="reflection_text" name="personalized_reflection" required rows="3"
+                                      placeholder="{{ _('Réflexion personnalisée qui sera affiché à la fin de la capsule') }}"></textarea>
+                          </div>
+                        <div class="mb-3">
+                            <label for="audio_file" class="form-label">{{ _('Fichier audio') }} * (.mp3, .wav, .ogg, .m4a, .webm)</label>
+                            <input type="file" class="form-control" id="audio_file" name="audio_file" required accept="audio/*">
+                            <div class="form-text text-muted">{{ _('Taille maximum: 10 MB') }}</div>
+                            
+                            <!-- Affichage des informations du fichier -->
+                            <div id="fileInfo" class="file-info">
+                                <div><strong>{{ _('Nom du fichier:') }}</strong> <span id="fileName"></span></div>
+                                <div><strong>{{ _('Type:') }}</strong> <span id="fileType"></span></div>
+                                <div><strong>{{ _('Taille:') }}</strong> <span id="fileSize"></span></div>
+                                <div>
+                                    <strong>{{ _('Durée:') }}</strong> 
+                                    <span id="fileDuration"></span>
+                                    <span id="loadingDuration" class="loading-duration">{{ _('Calcul en cours...') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Champ caché pour la durée détectée automatiquement -->
+                        <input type="hidden" name="duration" id="duration">
+                        
+                        <button type="submit" class="btn btn-primary" id="uploadButton">
+                            <i class="fas fa-cloud-upload-alt"></i> {{ _('Téléverser') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Manage Tab -->
+        <div class="tab-pane fade" id="manage" role="tabpanel" aria-labelledby="manage-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ _('Gérer les capsules') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>{{ _('Titre') }}</th>
+                                    <th>{{ _('Réflexion') }}</th> 
+                                    <th>{{ _('Fichier') }}</th>
+                                    <th>{{ _('Durée') }}</th>
+                                    <th>{{ _('Statut') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if capsules %}
+                                    {% for capsule in capsules %}
+                                    <tr>
+                                        <td>{{ capsule.capsule_id }}</td>
+                                        <td>{{ capsule.title }}</td>
+                                        <td>{{ capsule.personalized_reflection|default('—')|truncate(50) }}</td>
+                                        <td>{{ capsule.file_name }}</td>
+                                        <td>{{ capsule.duration|default('00:00') }}</td>
+                                        <td>
+                                            {% if capsule.is_active %}
+                                            <span class="badge bg-success">{{ _('Actif') }}</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">{{ _('Inactif') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary preview-audio" data-filename="{{ capsule.file_name }}">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                                <form method="post" action="{{ url_for('audio_capsule.delete_capsule', capsule_id=capsule.capsule_id) }}" class="delete-form">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">{{ _('Aucune capsule trouvée') }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- URLs de programme -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ _('Générer des URLs de programme') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ _('Générez une URL unique pour donner accès au programme audio complet d\'un utilisateur.') }}</p>
+                    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{{ _('Utilisateur') }}</th>
+                                <th>{{ _('Email') }}</th>
+                                <th>{{ _('URL programme') }}</th>
+                                <th>{{ _('Actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.access_token %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               value="{{ url_for('audio_capsule.view_programme', access_token=user.access_token, _external=True) }}" 
+                                               readonly>
+                                        <button class="btn btn-sm btn-outline-secondary copy-url" type="button" 
+                                                data-url="{{ url_for('audio_capsule.view_programme', access_token=user.access_token, _external=True) }}">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">{{ _('Aucun token généré') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="post" action="{{ url_for('audio_capsule.generate_user_token', user_id=user.user_id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            {% if user.access_token %}
+                                            <i class="fas fa-sync"></i> {{ _('Régénérer') }}
+                                            {% else %}
+                                            <i class="fas fa-key"></i> {{ _('Générer URL') }}
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+          
+        <!-- Assign Tab -->
+        <div class="tab-pane fade" id="assign" role="tabpanel" aria-labelledby="assign-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ _('Assigner une capsule à un utilisateur') }}</h5>
+                </div>
+                <div class="card-body">
+                    <form id="assignForm" method="post" action="{{ url_for('audio_capsule.assign_to_user') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">{{ _('Utilisateur') }} *</label>
+                            <select class="form-select" id="user_id" name="user_id" required>
+                                <option value="">{{ _('Sélectionner un utilisateur') }}</option>
+                                {% for user in users %}
+                                <option value="{{ user.user_id }}" {% if selected_user == user.user_id|string %}selected{% endif %}>
+                                    {{ user.username }} ({{ user.email }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="capsule_id" class="form-label">{{ _('Capsule') }} *</label>
+                            <select class="form-select" id="capsule_id" name="capsule_id" required>
+                                <option value="">{{ _('Sélectionner une capsule') }}</option>
+                                {% for capsule in capsules %}
+                                <option value="{{ capsule.capsule_id }}">{{ capsule.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sequence_number" class="form-label">{{ _('Numéro de séquence') }}</label>
+                            <input type="number" class="form-control" id="sequence_number" name="sequence_number" min="1" placeholder="{{ _('Laissez vide pour auto-incrémenter') }}">
+                            <div class="form-text text-muted">{{ _('Position dans la séquence de capsules de l\'utilisateur') }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="signed_url_duration" class="form-label">{{ _('Durée URL audio (minutes)') }}</label>
+                            <input type="number" class="form-control" id="signed_url_duration" name="signed_url_duration" min="5" value="1440">
+                            <div class="form-text text-muted">{{ _('Durée de validité de l\'URL pour accéder au fichier audio (1440 minutes = 24 heures).') }}</div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="generate_url_now" name="generate_url_now" checked>
+                            <label class="form-check-label" for="generate_url_now">
+                                {{ _('Générer l\'URL audio immédiatement') }}
+                            </label>
+                            <div class="form-text text-muted">{{ _('Si non coché, l\'URL devra être générée manuellement plus tard.') }}</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-link"></i> {{ _('Assigner') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            {% if selected_user %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ _('Capsules assignées à') }} {{ users|selectattr('user_id', 'eq', selected_user|int)|map(attribute='username')|first|default('Utilisateur') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Séquence') }}</th>
+                                    <th>{{ _('Capsule') }}</th>
+                                    <th>{{ _('Écoutée') }}</th>
+                                    <th>{{ _('URL Audio') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set user_assignments = assignments|selectattr('user_id', 'eq', selected_user|int)|list %}
+                                {% if user_assignments %}
+                                    {% for assignment in user_assignments|sort(attribute='sequence_number') %}
+                                    <tr>
+                                        <td>{{ assignment.sequence_number }}</td>
+                                        <td>{{ assignment.capsule_title }}</td>
+                                        <td>
+                                            {% if assignment.listen_count > 0 %}
+                                            <span class="badge bg-success">{{ _('Oui') }} ({{ assignment.listen_count }})</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">{{ _('Non') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if assignment.signed_url_expiry %}
+                                                {% if assignment.signed_url_expiry < now %}
+                                                <span class="badge bg-danger">{{ _('Expirée') }}</span>
+                                                {% else %}
+                                                {% set remaining_seconds = (assignment.signed_url_expiry - now).total_seconds() %}
+                                                {% set hours = (remaining_seconds // 3600)|int %}
+                                                {% set minutes = ((remaining_seconds % 3600) // 60)|int %}
+                                                <span class="badge bg-success">{{ _('Valide') }}</span>
+                                                <small>{{ hours }}h{{ minutes }}m restant</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning">{{ _('Non générée') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form method="post" action="{{ url_for('audio_capsule.renew_signed_url', assignment_id=assignment.id) }}" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-key"></i> {% if assignment.signed_url_expiry %}{{ _('Renouveler') }}{% else %}{{ _('Générer') }}{% endif %}
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">{{ _('Aucune capsule assignée à cet utilisateur') }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Assignments Tab -->
+        <div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ _('Assignations actuelles') }}</h5>
+                    
+                    <!-- Filtrage par utilisateur -->
+                    <div class="user-filter">
+                        <form action="{{ url_for('audio_capsule.admin_dashboard') }}" method="get" class="d-flex align-items-center">
+                            <label for="user_filter" class="me-2">{{ _('Filtrer par utilisateur:') }}</label>
+                            <select name="user_id" id="user_filter" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                                <option value="">{{ _('Tous les utilisateurs') }}</option>
+                                {% for user in users %}
+                                <option value="{{ user.user_id }}" {% if selected_user == user.user_id|string %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if selected_user %}
+                            <a href="{{ url_for('audio_capsule.admin_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-times"></i> {{ _('Réinitialiser') }}
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>{{ _('Utilisateur') }}</th>
+                                    <th>{{ _('Séquence') }}</th>
+                                    <th>{{ _('Capsule') }}</th>
+                                    <th>{{ _('URL Page') }}</th>
+                                    <th>{{ _('Écoutes') }}</th>
+                                    <th>{{ _('URL Audio') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if assignments %}
+                                    {% for assignment in assignments %}
+                                    <tr>
+                                        <td>{{ assignment.id }}</td>
+                                        <td>
+                                            <a href="{{ url_for('audio_capsule.admin_dashboard', user_id=assignment.user_id) }}">
+                                                {{ assignment.username }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ assignment.sequence_number }}</span>
+                                        </td>
+                                        <td>{{ assignment.capsule_title }}</td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control form-control-sm" value="{{ assignment.url }}" readonly>
+                                                <button class="btn btn-sm btn-outline-secondary copy-url" type="button" data-url="{{ assignment.url }}">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>{{ assignment.listen_count }}</td>
+                                        <td>
+                                            {% if assignment.signed_url_expiry %}
+                                                {% if assignment.signed_url_expiry < now %}
+                                                <span class="badge bg-danger">{{ _('Expirée') }}</span>
+                                                {% else %}
+                                                {% set remaining_seconds = (assignment.signed_url_expiry - now).total_seconds() %}
+                                                {% set hours = (remaining_seconds // 3600)|int %}
+                                                {% set minutes = ((remaining_seconds % 3600) // 60)|int %}
+                                                <span class="badge bg-success">{{ _('Valide') }}</span>
+                                                <small>{{ hours }}h{{ minutes }}m restant</small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning">{{ _('Non générée') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ assignment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                                <form method="post" action="{{ url_for('audio_capsule.renew_signed_url', assignment_id=assignment.id) }}" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-key"></i> {% if assignment.signed_url_expiry %}{{ _('Renouveler Audio') }}{% else %}{{ _('Générer Audio') }}{% endif %}
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ url_for('audio_capsule.revoke_access', assignment_id=assignment.id) }}" class="revoke-form d-inline">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-unlink"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="8" class="text-center">{{ _('Aucune assignation trouvée') }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Modal de prévisualisation audio -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">{{ _('Prévisualisation Audio') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="audioPlayerContainer" class="mb-3">
+                    <!-- Le lecteur audio sera inséré ici dynamiquement -->
+                </div>
+                <div class="spinner-border text-primary" role="status" id="loadingSpinner">
+                    <span class="visually-hidden">{{ _('Chargement...') }}</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Fermer') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous" nonce="{{ g.nonce }}"></script>
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des onglets avec URL hash
+    const url = document.location.toString();
+    if (url.match('#')) {
+        const tab = url.split('#')[1];
+        if (tab) {
+            const tabLink = document.querySelector(`.nav-tabs a[href="#${tab}"]`);
+            if (tabLink) {
+                const bsTab = new bootstrap.Tab(tabLink);
+                bsTab.show();
+            }
+        }
+    }
+    
+    // Change le hash dans l'URL quand un onglet est cliqué
+    const tabLinks = document.querySelectorAll('.nav-tabs a');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            window.location.hash = e.target.hash;
+        });
+    });
+    
+    // Gestion des formulaires de suppression
+    const deleteForms = document.querySelectorAll('.delete-form');
+    if (deleteForms) {
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('{{ _('Êtes-vous sûr de vouloir supprimer cette capsule?') }}')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    }
+    
+    // Gestion des formulaires de révocation
+    const revokeForms = document.querySelectorAll('.revoke-form');
+    if (revokeForms) {
+        revokeForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('{{ _('Êtes-vous sûr de vouloir révoquer cet accès?') }}')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    }
+    
+    // Gestion de l'upload de fichier audio et détection de la durée
+    const audioFileInput = document.getElementById('audio_file');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileType = document.getElementById('fileType');
+    const fileSize = document.getElementById('fileSize');
+    const fileDuration = document.getElementById('fileDuration');
+    const loadingDuration = document.getElementById('loadingDuration');
+    const durationInput = document.getElementById('duration');
+    const uploadButton = document.getElementById('uploadButton');
+    
+    if (audioFileInput) {
+        audioFileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Vérifier si le fichier n'est pas vide
+                if (file.size === 0) {
+                    alert("{{ _('Le fichier audio semble être vide. Veuillez sélectionner un fichier audio valide.') }}");
+                    this.value = '';  // Réinitialiser l'input
+                    return;
+                }
+                
+                // Afficher les informations du fichier
+                fileName.textContent = file.name;
+                fileType.textContent = file.type;
+                fileSize.textContent = formatFileSize(file.size);
+                
+                fileInfo.style.display = 'block';
+                loadingDuration.style.display = 'inline-block';
+                fileDuration.textContent = ''; 
+                
+                // Version compatible CSP pour la détection de durée d'audio
+                // Utilisation de FileReader au lieu de l'API URL.createObjectURL
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Créer un élément audio temporaire 
+                    // (non ajouté au DOM, donc pas de problème CSP)
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Décode le fichier audio
+                    audioContext.decodeAudioData(e.target.result)
+                        .then(function(audioBuffer) {
+                            // Obtenir la durée
+                            const duration = audioBuffer.duration;
+                            const formattedDuration = formatDuration(duration);
+                            
+                            // Mettre à jour les champs
+                            fileDuration.textContent = formattedDuration;
+                            durationInput.value = formattedDuration;
+                            loadingDuration.style.display = 'none';
+                        })
+                        .catch(function(err) {
+                            console.error('Erreur lors du décodage audio:', err);
+                            fileDuration.textContent = "{{ _('Erreur de décodage') }}";
+                            loadingDuration.style.display = 'none';
+                        });
+                };
+                
+                reader.onerror = function() {
+                    console.error('Erreur FileReader');
+                    fileDuration.textContent = "{{ _('Erreur de lecture') }}";
+                    loadingDuration.style.display = 'none';
+                };
+                
+                // Lire le fichier comme un ArrayBuffer
+                reader.readAsArrayBuffer(file);
+            }
+        });
+    }
+    
+    // Validation du formulaire d'upload
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('audio_file');
+            if (fileInput && fileInput.files.length > 0) {
+                const fileSize = fileInput.files[0].size; // en octets
+                const maxSize = 10 * 1024 * 1024; // 10 Mo
+                
+                if (fileSize > maxSize) {
+                    e.preventDefault();
+                    alert("{{ _('Le fichier est trop volumineux. La taille maximale autorisée est de 10 Mo.') }}");
+                    return false;
+                }
+                
+                // Vérifier si le fichier n'est pas vide
+                if (fileSize === 0) {
+                    e.preventDefault();
+                    alert("{{ _('Le fichier audio semble être vide. Veuillez sélectionner un fichier audio valide.') }}");
+                    return false;
+                }
+                
+                // Vérifier si la durée a été détectée
+                if (!durationInput.value) {
+                    e.preventDefault();
+                    alert("{{ _('La durée du fichier n\'a pas pu être détectée. Veuillez réessayer.') }}");
+                    return false;
+                }
+            }
+        });
+    }
+    
+    // Prévisualisation audio
+    const previewButtons = document.querySelectorAll('.preview-audio');
+    if (previewButtons) {
+        previewButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const filename = this.getAttribute('data-filename');
+                const modalElement = document.getElementById('previewModal');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    
+                    const playerContainer = document.getElementById('audioPlayerContainer');
+                    const loadingSpinner = document.getElementById('loadingSpinner');
+                    
+                    // Afficher le spinner
+                    if (playerContainer) playerContainer.innerHTML = '';
+                    if (loadingSpinner) loadingSpinner.style.display = 'inline-block';
+                    
+                    try {
+                        // Utiliser la route de streaming pour admins
+                        const audioUrl = `/audio-capsule/api/admin-audio-stream/${encodeURIComponent(filename)}`;
+                        
+                        // Masquer le spinner
+                        if (loadingSpinner) loadingSpinner.style.display = 'none';
+                        
+                        // Créer le lecteur audio de façon compatible avec CSP
+                        if (playerContainer) {
+                            // Nettoyer d'abord le conteneur
+                            playerContainer.innerHTML = '';
+                            
+                            // Créer le lecteur audio
+                            const audioPlayer = document.createElement('audio');
+                            audioPlayer.controls = true;
+                            audioPlayer.style.width = '100%';
+                            audioPlayer.preload = 'auto';
+                            
+                            // Ajouter l'écouteur d'erreur (compatible CSP)
+                            audioPlayer.addEventListener('error', function() {
+                                playerContainer.innerHTML = `
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> {{ _('Impossible de charger le fichier audio.') }}
+                                    </div>
+                                `;
+                            });
+                            
+                            // Créer la source audio
+                            const audioSource = document.createElement('source');
+                            audioSource.src = audioUrl;
+                            
+                            // Déterminer le type MIME en fonction de l'extension
+                            if (filename.endsWith('.wav')) {
+                                audioSource.type = 'audio/wav';
+                            } else if (filename.endsWith('.ogg')) {
+                                audioSource.type = 'audio/ogg';
+                            } else if (filename.endsWith('.m4a')) {
+                                audioSource.type = 'audio/mp4';
+                            } else if (filename.endsWith('.webm')) {
+                                audioSource.type = 'audio/webm';
+                            } else {
+                                audioSource.type = 'audio/mpeg'; // Par défaut pour .mp3
+                            }
+                            
+                            // Ajouter la source au lecteur et le lecteur au conteneur
+                            audioPlayer.appendChild(audioSource);
+                            playerContainer.appendChild(audioPlayer);
+                            
+                            // Tenter la lecture automatique
+                            audioPlayer.load();
+                            try {
+                                const playPromise = audioPlayer.play();
+                                if (playPromise !== undefined) {
+                                    playPromise.catch(error => {
+                                        console.log('Lecture automatique désactivée par le navigateur', error);
+                                    });
+                                }
+                            } catch (playError) {
+                                console.log('Erreur de lecture:', playError);
+                            }
+                        }
+                    } catch (error) {
+                        if (loadingSpinner) loadingSpinner.style.display = 'none';
+                        if (playerContainer) {
+                            playerContainer.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ _('Erreur lors du chargement du fichier audio:') }} ${error.message}
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
+    // Copier l'URL
+    const copyButtons = document.querySelectorAll('.copy-url');
+    if (copyButtons) {
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                navigator.clipboard.writeText(url).then(() => {
+                    // Changer temporairement l'icône pour indiquer le succès
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-copy');
+                        icon.classList.add('fa-check');
+                        
+                        setTimeout(() => {
+                            icon.classList.remove('fa-check');
+                            icon.classList.add('fa-copy');
+                        }, 2000);
+                    }
+                }).catch(err => {
+                    console.error('Erreur lors de la copie :', err);
+                });
+            });
+        });
+    }
+    
+    // Fonctions utilitaires
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function formatDuration(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+// Débogage des problèmes d'upload
+console.log('Chargement de la page d\'administration des capsules audio...');
+
+// Journalisation des événements d'upload
+document.addEventListener('DOMContentLoaded', function() {
+    const audioFileInput = document.getElementById('audio_file');
+    if (audioFileInput) {
+        console.log('Élément input file trouvé:', audioFileInput);
+        
+        audioFileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                console.log('Fichier sélectionné:', file);
+                console.log('- Nom:', file.name);
+                console.log('- Type:', file.type);
+                console.log('- Taille:', file.size, 'octets');
+            } else {
+                console.log('Aucun fichier sélectionné');
+            }
+        });
+    } else {
+        console.warn('Élément input file non trouvé!');
+    }
+    
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+        console.log('Formulaire d\'upload trouvé:', uploadForm);
+        
+        uploadForm.addEventListener('submit', function(e) {
+            console.log('Formulaire soumis');
+            console.log('Enctype:', this.enctype);
+            
+            const fileInput = document.getElementById('audio_file');
+            if (fileInput && fileInput.files.length > 0) {
+                console.log('Fichier à envoyer:', fileInput.files[0]);
+            } else {
+                console.warn('Tentative d\'envoi sans fichier!');
+            }
+        });
+    } else {
+        console.warn('Formulaire d\'upload non trouvé!');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Aligne ta personnalité avec ta profession | Tilto{% endblock %}
+
+{% block meta_description %}Découvre les métiers qui correspondent vraiment à ta personnalité. Test gratuit, résultat immédiat, données privées. Fais ton test Tilto en 1 minutes.{% endblock %}
+
+{% block body_class %}tilto-personality-lp{% endblock %}
+
+{% block content %}
+
+<section class="personality-lp-section">
+    <div class="personality-lp-container">
+        
+        <!-- Hero -->
+        <div class="hero-block">
+            <h1 class="personality-lp-title">
+                Aligne ta personnalité<br>
+                <span class="title-highlight">avec ta profession</span>
+            </h1>
+            
+            <div class="usp-list">
+                <div class="usp-item">
+                    <span class="usp-icon">🎁</span>
+                    <span class="usp-text">Gratuit</span>
+                </div>
+                <div class="usp-item">
+                    <span class="usp-icon">⚡</span>
+                    <span class="usp-text">Résultat immédiat</span>
+                </div>
+                <div class="usp-item">
+                    <span class="usp-icon">🔒</span>
+                    <span class="usp-text">Données privées</span>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('auth.home') }}#section-1" class="btn-cta-primary" id="ctaBtn">
+                Faire mon test Tilto
+            </a>
+            <p class="cta-subtext">1 min chrono · 3 pistes métiers personnalisées</p>
+        </div>
+        
+        <!-- Séparateur -->
+        <div class="section-divider">
+            <span class="divider-line"></span>
+            <span class="divider-text">Ils ont trouvé leur voie</span>
+            <span class="divider-line"></span>
+        </div>
+        
+        <!-- Témoignages -->
+        <div class="testimonials-grid">
+            
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "J'ai ouvert le document et j'ai vu tout de suite que vous m'aviez compris. C'est hyper clair, c'est bluffant !"
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <div class="testimonial-author">
+                    <img src="https://images.tilto.co/production/2025/09/c1b4f252_assets_task_01k5gwcgdsfgnss9vttsfdstr1_1758282150_img_1.webp" 
+                         alt="Mathieu" 
+                         class="author-avatar"
+                         loading="lazy">
+                    <p class="author-info">Mathieu, monteur vidéo, 48 ans</p>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "C'est ultra motivant et rassurant, on voit que c'est possible. J'ai envie de commencer dès la semaine prochaine !"
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <div class="testimonial-author">
+                    <img src="https://images.tilto.co/production/2025/09/d5c4a292_20250915_1251_Photo_Identite_Souriante_simple_compose_01k56fypepf71b49qqwtmgbyb8.webp" 
+                         alt="Marion" 
+                         class="author-avatar"
+                         loading="lazy">
+                    <p class="author-info">Marion, juriste, 29 ans</p>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "En 1 minutes, j'ai obtenu des idées hyper ciblées, plus concrètes que mon bilan de compétences."
+                </p>
+                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                <div class="testimonial-author">
+                    <img src="https://images.tilto.co/production/2025/09/40eac4a0_assets_task_01k5gmhwdtf8ntychcryc4pbzb_1758273836_img_1.webp" 
+                         alt="Sarah" 
+                         class="author-avatar"
+                         loading="lazy">
+                    <p class="author-info">Sarah, technicienne, 42 ans</p>
+                </div>
+            </div>
+            
+        </div>
+        
+    </div>
+</section>
+
+<!-- Tracking -->
+<input type="hidden" id="lpSource" value="{{ source }}">
+<input type="hidden" id="lpVariant" value="{{ variant }}">
+<input type="hidden" id="lpCampaign" value="{{ campaign }}">
+
+<style>
+/* ============================================
+   RESET
+   ============================================ */
+.tilto-personality-lp header,
+.tilto-personality-lp footer,
+.tilto-personality-lp .navbar,
+.tilto-personality-lp .secondary-navbar,
+.tilto-personality-lp .flash-messages { display: none !important; }
+
+.tilto-personality-lp .chat-widget,
+.tilto-personality-lp .chat-widget-container,
+.tilto-personality-lp #chat-widget,
+.tilto-personality-lp [class*="chat-widget"],
+.tilto-personality-lp .chat-bubble,
+.tilto-personality-lp .chat-toggle,
+.tilto-personality-lp #crisp-chatbox,
+.tilto-personality-lp [class*="crisp"],
+.tilto-personality-lp [id*="crisp"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.tilto-personality-lp { 
+    background: #FFFFFF;
+}
+
+.tilto-personality-lp main { 
+    margin: 0 !important; 
+    padding: 0 !important; 
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.personality-lp-section {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 3rem 1.5rem;
+}
+
+.personality-lp-container {
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero-block {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.personality-lp-title {
+    color: #1a1a1a;
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+}
+
+.title-highlight {
+    color: #A11857;
+}
+
+/* ============================================
+   USPs
+   ============================================ */
+.usp-list {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.usp-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #FFFFFF;
+    border: 1px solid #e5e7eb;
+    padding: 0.6rem 1.2rem;
+    border-radius: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.usp-icon {
+    font-size: 1rem;
+}
+
+.usp-text {
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   CTA
+   ============================================ */
+.btn-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #A11857;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 1.1rem 2.8rem;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(161, 24, 87, 0.3);
+}
+
+.btn-cta-primary:hover {
+    background: #8b1249;
+    transform: translateY(-3px);
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(161, 24, 87, 0.4);
+}
+
+.cta-subtext {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+}
+
+/* ============================================
+   SÉPARATEUR
+   ============================================ */
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.divider-line {
+    flex: 1;
+    max-width: 120px;
+    height: 1px;
+    background: #e5e7eb;
+}
+
+.divider-text {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ============================================
+   TÉMOIGNAGES - Style Homepage
+   ============================================ */
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    animation: fadeInUp 0.5s ease-out 0.15s both;
+}
+
+.testimonial-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f3f4f6;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-quote {
+    font-size: 1rem;
+    color: #2d3748;
+    line-height: 1.6;
+    font-style: italic;
+    margin: 0;
+    flex: 1;
+}
+
+.testimonial-stars {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+
+.testimonial-author {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: auto;
+}
+
+.author-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #EBD5E3;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.author-info {
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+        max-width: 450px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .personality-lp-section {
+        padding: 2rem 1rem;
+    }
+    
+    .personality-lp-title {
+        font-size: 2rem;
+    }
+    
+    .usp-list {
+        gap: 0.6rem;
+    }
+    
+    .usp-item {
+        padding: 0.5rem 0.9rem;
+    }
+    
+    .usp-text {
+        font-size: 0.85rem;
+    }
+    
+    .btn-cta-primary {
+        width: 80%;
+        font-size: 1.15rem;
+        padding: 1rem 2rem;
+    }
+    
+    .testimonial-card {
+        padding: 1.5rem;
+    }
+    
+    .testimonial-quote {
+        font-size: 0.95rem;
+    }
+    
+    .author-avatar {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+    }
+}
+</style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    const ctaBtn = document.getElementById('ctaBtn');
+    const source = document.getElementById('lpSource')?.value || 'direct';
+    const variant = document.getElementById('lpVariant')?.value || 'personality';
+    const campaign = document.getElementById('lpCampaign')?.value || 'organic';
+    
+    trackEvent('lp_personality_view');
+    
+    if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => trackEvent('lp_cta_clicked'));
+    }
+    
+    function trackEvent(eventName) {
+        {% if g.can_use_analytics %}
+        if (typeof gtag !== 'undefined' && window.googleAnalyticsLoaded) {
+            gtag('event', eventName, { 
+                event_category: 'personality_lp', 
+                event_label: `${source}_${variant}`
+            });
+        }
+        {% endif %}
+        
+        fetch('/lead/track-video-lp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                event: eventName, 
+                source, variant, campaign,
+                timestamp: new Date().toISOString(), 
+                url: window.location.href 
+            })
+        }).catch(() => {});
+    }
+});
+</script>
+
+{% endblock content %}

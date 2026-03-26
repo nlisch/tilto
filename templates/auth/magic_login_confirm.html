@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Confirmer la connexion{% endblock %}
+{% block body_class %}flex-layout{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form magic-confirm-card">
+        <!-- Header avec icône -->
+        <div class="magic-header">
+            <div class="magic-icon">🔐</div>
+            <h1 class="auth-title">Confirmer la connexion</h1>
+        </div>
+        
+        <!-- Info utilisateur -->
+        <div class="user-info-box">
+            <div class="user-avatar">
+                {{ firstname[0]|upper if firstname else email[0]|upper }}
+            </div>
+            <div class="user-details">
+                <div class="user-name">{{ firstname or 'Utilisateur' }}</div>
+                <div class="user-email">{{ email }}</div>
+            </div>
+        </div>
+        
+        <!-- Message de confirmation -->
+        <p class="confirm-message">
+            Es-tu sûr·e de vouloir te connecter avec ce compte ?
+        </p>
+        
+        <!-- Formulaire de confirmation -->
+        <form method="POST" action="{{ url_for('auth.magic_login', token=token, next=next_url) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="confirm" value="yes">
+            
+            <button type="submit" class="auth-button btn-confirm">
+                ✅ Oui, me connecter
+            </button>
+        </form>
+        
+        <!-- Bouton annuler -->
+        <a href="{{ url_for('auth.login') }}" class="btn-cancel">
+            ❌ Non, ce n'est pas moi
+        </a>
+        
+        <!-- Avertissement sécurité -->
+        <div class="security-notice">
+            <div class="notice-icon">🛡️</div>
+            <div class="notice-text">
+                Si tu n'as pas demandé ce lien, 
+                clique sur "Non, ce n'est pas moi".
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.magic-confirm-card {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.magic-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.magic-icon {
+    font-size: 54px;
+    margin-bottom: 16px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.user-info-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 2px solid #0ea5e9;
+}
+
+.user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.user-email {
+    font-size: 14px;
+    color: #64748b;
+    word-break: break-all;
+}
+
+.confirm-message {
+    text-align: center;
+    font-size: 16px;
+    color: #475569;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.btn-confirm {
+    margin-bottom: 12px;
+}
+
+.btn-cancel {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-bottom: 24px;
+}
+
+.btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.security-notice {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    margin-top: 24px;
+}
+
+.notice-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.notice-text {
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.5;
+}
+
+.notice-text strong {
+    font-weight: 600;
+    color: #78350f;
+}
+
+@media (max-width: 640px) {
+    .magic-icon {
+        font-size: 48px;
+    }
+    
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+    
+    .user-name {
+        font-size: 16px;
+    }
+    
+    .user-email {
+        font-size: 13px;
+    }
+}
+</style>
+{% endblock %}

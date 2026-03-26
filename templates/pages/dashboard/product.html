@@ -1,0 +1,1769 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - Votre espace Tilto{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+/* STYLES SPÉCIFIQUES À LA PAGE PRODUIT - HAUTE SPÉCIFICITÉ POUR ÉVITER LES CONFLITS */
+
+/* Container principal - spécificité augmentée */
+.product-container.product-dashboard {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    min-height: calc(100vh - 150px);
+}
+
+/* Navigation breadcrumb - compatible avec base.html */
+.product-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    font-size: 0.9rem;
+    width: fit-content;
+}
+
+.product-breadcrumb .breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+}
+
+.product-breadcrumb .breadcrumb-link:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.product-breadcrumb .breadcrumb-separator {
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+.product-breadcrumb .breadcrumb-current {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* En-tête produit COMPACT - évite les conflits avec base.html */
+.product-hero-section {
+    background: linear-gradient(135deg, var(--primary-light), rgba(255, 255, 255, 0.9));
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(97, 5, 69, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.product-hero-section::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -15%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(97, 5, 69, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.product-hero-content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+/* Image produit CORRIGÉE - haute spécificité */
+.product-visual-container {
+    flex-shrink: 0;
+}
+
+.product-image-wrapper {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 2px solid rgba(97, 5, 69, 0.1);
+    position: relative;
+}
+
+.product-image-wrapper img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-image-wrapper .product-emoji-display {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+/* Informations produit - haute spécificité */
+.product-info-section {
+    min-width: 0;
+}
+
+.product-main-title {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: var(--primary) !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.2 !important;
+}
+
+.product-main-description {
+    font-size: 1rem !important;
+    color: var(--text) !important;
+    margin-bottom: 1rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Statut EXACTEMENT comme le dashboard */
+.product-status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.product-status-badge.status-achat_confirmé {
+    background: rgba(66, 153, 225, 0.1) !important;
+    color: #2B6CB0 !important;
+    border: 1px solid rgba(66, 153, 225, 0.2) !important;
+}
+
+.product-status-badge.status-rdv_planifié {
+    background: rgba(159, 122, 234, 0.1) !important;
+    color: #6B46C1 !important;
+    border: 1px solid rgba(159, 122, 234, 0.2) !important;
+}
+
+.product-status-badge.status-analyse_en_cours {
+    background: rgba(237, 137, 54, 0.1) !important;
+    color: #C05621 !important;
+    border: 1px solid rgba(237, 137, 54, 0.2) !important;
+}
+
+.product-status-badge.status-livrable_dispo {
+    background: rgba(72, 187, 120, 0.1) !important;
+    color: #2F855A !important;
+    border: 1px solid rgba(72, 187, 120, 0.2) !important;
+}
+
+.product-status-badge.status-post_livraison {
+    background: rgba(113, 128, 150, 0.1) !important;
+    color: #4A5568 !important;
+    border: 1px solid rgba(113, 128, 150, 0.2) !important;
+}
+
+/* Progression compacte */
+.product-progress-section {
+    text-align: right;
+    min-width: 120px;
+}
+
+.progress-circle-display {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary) 0deg, var(--primary) calc(var(--progress, 0) * 3.6deg), #E2E8F0 calc(var(--progress, 0) * 3.6deg), #E2E8F0 360deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    position: relative;
+}
+
+.progress-circle-display::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    background: var(--white);
+    border-radius: 50%;
+}
+
+.progress-text-display {
+    position: relative;
+    z-index: 2;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.progress-label-display {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+/* Timeline horizontale SANS OVERLAP - haute spécificité */
+.product-timeline-section {
+    margin-bottom: 2rem;
+}
+
+.product-timeline-title {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    color: var(--secondary) !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+}
+
+.product-timeline-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    border-radius: 3px;
+}
+
+.timeline-steps-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    padding: 1rem 0;
+}
+
+/* Ligne de connexion supprimée pour clarifier le visuel */
+
+.timeline-step-item {
+    flex: 1;
+    max-width: 140px;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-step-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-step-item.completed {
+    border-color: var(--success);
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.05), var(--white));
+}
+
+.timeline-step-item.current {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary-light), var(--white));
+    transform: scale(1.02);
+}
+
+.timeline-step-item.pending {
+    opacity: 0.6;
+}
+
+.step-marker-container {
+    margin-bottom: 0.75rem;
+}
+
+.step-marker-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 auto;
+    border: 2px solid var(--white);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.step-marker-icon.completed {
+    background: linear-gradient(135deg, var(--success), #22c55e);
+    color: var(--white);
+}
+
+.step-marker-icon.current {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: var(--white);
+    animation: pulse-current 2s infinite;
+}
+
+.step-marker-icon.pending {
+    background: #E2E8F0;
+    color: var(--text-light);
+}
+
+@keyframes pulse-current {
+    0%, 100% { 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 0 0 0 rgba(97, 5, 69, 0.4);
+    }
+    50% { 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 0 0 6px rgba(97, 5, 69, 0);
+    }
+}
+
+.step-content-info h3 {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: var(--secondary) !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.2 !important;
+}
+
+.step-content-description {
+    font-size: 0.75rem !important;
+    color: var(--text-light) !important;
+    line-height: 1.3 !important;
+}
+
+/* Layout principal - évite les conflits */
+.product-content-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Cartes de contenu - haute spécificité pour éviter conflits */
+.product-content-card {
+    background: var(--white) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #E2E8F0 !important;
+    overflow: hidden !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+    transition: all 0.3s ease !important;
+}
+
+.product-content-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.product-content-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.product-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 1.5rem !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    background: linear-gradient(135deg, #F7FAFC, rgba(255, 255, 255, 0.8)) !important;
+}
+
+.product-card-icon {
+    font-size: 2rem !important;
+    background: var(--primary-light) !important;
+    width: 50px !important;
+    height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    flex-shrink: 0 !important;
+}
+
+.product-card-title h2 {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    color: var(--secondary) !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.product-card-title p {
+    color: var(--text-light) !important;
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Contenu spécifique selon le statut */
+.booking-content-section {
+    padding: 1.5rem !important;
+}
+
+.booking-highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.booking-highlight-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+    background: #F7FAFC !important;
+    border-radius: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    transition: all 0.3s ease !important;
+}
+
+.booking-highlight-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-color: rgba(97, 5, 69, 0.2);
+}
+
+.booking-highlight-icon {
+    font-size: 1.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+.booking-highlight-content h4 {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: var(--secondary) !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.booking-highlight-content p {
+    font-size: 0.8rem !important;
+    color: var(--text-light) !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+}
+
+/* Widget de réservation */
+.booking-widget-section {
+    padding: 1.5rem !important;
+    border-top: 1px solid #E2E8F0 !important;
+}
+
+.booking-widget-header {
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.booking-widget-header h3 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: var(--secondary) !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.booking-widget-header p {
+    color: var(--text-light) !important;
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+}
+
+.booking-embed-container {
+    min-height: 500px;
+    background: #F7FAFC;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #E2E8F0;
+}
+
+/* Bloc RDV confirmé - cohérent avec dashboard */
+.appointment-details-section {
+    padding: 1.5rem !important;
+}
+
+.appointment-main-card {
+    background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+    color: white !important;
+    padding: 1.5rem !important;
+    border-radius: 16px !important;
+    margin-bottom: 1.5rem !important;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 1.5rem !important;
+    align-items: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.appointment-main-card::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.appointment-info-grid h3 {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.75rem !important;
+    color: white !important;
+}
+
+.appointment-datetime-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.datetime-item-display {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.2rem !important;
+}
+
+.datetime-label-display {
+    font-size: 0.7rem !important;
+    opacity: 0.8 !important;
+    text-transform: uppercase !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px !important;
+}
+
+.datetime-value-display {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+}
+
+.countdown-widget-display {
+    text-align: center !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    min-width: 100px !important;
+}
+
+.countdown-value-display {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+    color:white!important;
+}
+
+.countdown-label-display {
+    font-size: 0.7rem !important;
+    opacity: 0.8 !important;
+}
+
+.appointment-actions-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 0.75rem !important;
+    margin-top: 1rem !important;
+}
+
+/* Sidebar - haute spécificité pour éviter conflits */
+.product-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+.product-sidebar-card {
+    background: var(--white) !important;
+    padding: 1.25rem !important;
+    border-radius: 16px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+}
+
+.product-sidebar-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.product-sidebar-card h4 {
+    color: var(--secondary) !important;
+    margin-bottom: 0.75rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.product-sidebar-card p {
+    color: var(--text-light) !important;
+    margin-bottom: 1rem !important;
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Boutons - reprendre exactement le style du dashboard */
+.product-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    border: none !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.3 !important;
+}
+
+.product-btn-primary {
+    background-color: var(--primary) !important;
+    color: var(--white) !important;
+    box-shadow: 0 4px 15px rgba(97, 5, 69, 0.2) !important;
+}
+
+.product-btn-primary:hover {
+    background-color: var(--secondary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(97, 5, 69, 0.3) !important;
+}
+
+.product-btn-secondary {
+    background-color: var(--white) !important;
+    color: var(--text) !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+.product-btn-secondary:hover {
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.product-btn-full {
+    width: 100% !important;
+}
+
+.product-btn-sm {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Responsive Design - évite les conflits */
+@media (max-width: 1024px) {
+    .product-content-layout {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+    
+    .product-sidebar {
+        order: -1 !important;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-container.product-dashboard {
+        padding: 1rem !important;
+        margin: 1rem auto !important;
+    }
+    
+    .product-hero-section {
+        padding: 1.5rem !important;
+    }
+    
+    .product-hero-content {
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
+    
+    .product-main-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .product-main-description {
+        font-size: 0.95rem !important;
+    }
+    
+    .timeline-steps-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1rem !important;
+    }
+    
+    .timeline-steps-container::before {
+        display: none !important;
+    }
+    
+    .timeline-step-item {
+        max-width: 280px !important;
+        width: 100% !important;
+    }
+    
+    .product-card-header {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 0.75rem !important;
+        padding: 1.25rem !important;
+    }
+    
+    .booking-highlights-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .appointment-main-card {
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
+    
+    .appointment-actions-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .product-sidebar {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
+
+/* États spéciaux - évite les conflits */
+.booking-success-section {
+    text-align: center !important;
+    padding: 2rem !important;
+}
+
+.booking-success-content {
+    max-width: 350px !important;
+    margin: 0 auto !important;
+}
+
+.booking-success-icon {
+    font-size: 3.5rem !important;
+    margin-bottom: 1rem !important;
+    animation: bounce 0.6s ease !important;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { 
+        transform: translateY(0);
+    }
+    40% { 
+        transform: translateY(-8px);
+    }
+    60% { 
+        transform: translateY(-4px);
+    }
+}
+
+.booking-success-section h3 {
+    color: var(--primary) !important;
+    margin-bottom: 0.75rem !important;
+    font-size: 1.3rem !important;
+}
+
+.booking-contact-section {
+    text-align: center !important;
+    padding: 2rem !important;
+}
+
+.booking-contact-icon {
+    font-size: 3.5rem !important;
+    margin-bottom: 1rem !important;
+    color: var(--primary) !important;
+}
+
+.booking-contact-section h3 {
+    color: var(--secondary) !important;
+    margin-bottom: 0.75rem !important;
+    font-size: 1.2rem !important;
+}
+
+.booking-contact-section p {
+    color: var(--text-light) !important;
+    margin-bottom: 1.5rem !important;
+    line-height: 1.5 !important;
+}
+
+/* Animations légères - pas de conflit */
+.product-fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+.product-fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-container product-dashboard">
+    <!-- Navigation breadcrumb -->
+    <div class="product-breadcrumb product-fade-in">
+        <a href="{{ url_for('dashboard.index') }}" class="breadcrumb-link">
+            <span>🏠</span> Mes produits
+        </a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ product.name }}</span>
+    </div>
+    
+    <!-- En-tête produit COMPACT -->
+    <section class="product-hero-section product-fade-in">
+        <div class="product-hero-content">
+            <div class="product-visual-container">
+                <div class="product-image-wrapper">
+                    {{ product.image|safe }}
+                </div>
+            </div>
+            
+            <div class="product-info-section">
+                <h1 class="product-main-title">{{ product.name }}</h1>
+                <p class="product-main-description">{{ product.description }}</p>
+                <span class="product-status-badge status-{{ status }}">{{ status_info.label }}</span>
+            </div>
+            
+            <div class="product-progress-section">
+                {% set completed_steps = timeline|selectattr('is_completed')|list|length %}
+                {% set total_steps = timeline|length %}
+                {% set progress_percent = (completed_steps / total_steps * 100)|round %}
+                <div class="progress-circle-display" style="--progress: {{ progress_percent }}">
+                    <div class="progress-text-display">{{ completed_steps }}/{{ total_steps }}</div>
+                </div>
+                <div class="progress-label-display">étapes</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline horizontale SIMPLIFIÉE -->
+    <section class="product-timeline-section product-fade-in">
+        <h2 class="product-timeline-title">Votre parcours</h2>
+        
+        <div class="timeline-steps-container">
+            {% for step in timeline %}
+            <div class="timeline-step-item {{ step.state }}">
+                <div class="step-marker-container">
+                    {% if step.is_completed %}
+                        <div class="step-marker-icon completed">✓</div>
+                    {% elif step.is_current %}
+                        <div class="step-marker-icon current">{{ loop.index }}</div>
+                    {% else %}
+                        <div class="step-marker-icon pending">{{ loop.index }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="step-content-info">
+                    <h3>{{ step.icon }} {{ step.title }}</h3>
+                    <p class="step-content-description">{{ step.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Contenu principal -->
+    <section class="product-content-layout">
+        <div class="main-content">
+            
+            {% if status == "achat_confirmé" %}
+            <!-- Étape 1: Planification -->
+            <div class="product-content-card product-fade-in">
+                <div class="product-card-header">
+                    <div class="product-card-icon">🗓️</div>
+                    <div class="product-card-title">
+                        <h2>Planifiez votre consultation</h2>
+                        <p>Choisissez le moment qui vous convient pour votre entretien de 60 minutes</p>
+                    </div>
+                </div>
+                
+                <div class="booking-content-section">
+                    <div class="booking-highlights-grid">
+                        <div class="booking-highlight-item">
+                            <div class="booking-highlight-icon">🎯</div>
+                            <div class="booking-highlight-content">
+                                <h4>Sur-mesure</h4>
+                                <p>Adapté à votre situation</p>
+                            </div>
+                        </div>
+                        <div class="booking-highlight-item">
+                            <div class="booking-highlight-icon">⚡</div>
+                            <div class="booking-highlight-content">
+                                <h4>Résultats rapides</h4>
+                                <p>Diagnostic sous 72h</p>
+                            </div>
+                        </div>
+                        <div class="booking-highlight-item">
+                            <div class="booking-highlight-icon">🤝</div>
+                            <div class="booking-highlight-content">
+                                <h4>Expertise humaine</h4>
+                                <p>Consultants expérimentés</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if ui_config.show_booking_widget %}
+                <div class="booking-widget-section">
+                    <div class="booking-widget-header">
+                        <h3>Réservez votre créneau</h3>
+                        <p>Sélectionnez la date et l'heure qui vous conviennent</p>
+                    </div>
+                    
+                    <div class="booking-embed-container" 
+                         data-product-id="{{ product.id }}" 
+                         data-user-id="{{ current_user.id }}" 
+                         data-user-email="{{ current_user.email }}" 
+                         data-user-name="{{ user.name if user and user.name else current_user.username }}">
+                        
+                        <script nonce="{{ g.nonce }}" src="https://embed.ycb.me"
+                                async="true"
+                                data-domain="Tilto"
+                                data-displaymode="light"
+                                data-lang="fr"
+                                data-hide-header="true"
+                                data-hide-footer="true"
+                                data-params="USER_ID={{ current_user.id }}&PRODUCT_ID={{ product.id }}&USER_EMAIL={{ current_user.email|urlencode }}&USER_NAME={{ (user.name if user and user.name else current_user.username)|urlencode }}">
+                        </script>
+                        
+                        <div class="booking-fallback" id="bookingFallback" style="display:none;">
+                            <iframe src="https://tilto.youcanbook.me/?embed=true&USER_ID={{ current_user.id }}&PRODUCT_ID={{ product.id }}&USER_EMAIL={{ current_user.email|urlencode }}&USER_NAME={{ (user.name if user and user.name else current_user.username)|urlencode }}"
+                                    width="100%" height="500px" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-success-section" id="bookingSuccess" style="display:none;">
+                        <div class="booking-success-content">
+                            <div class="booking-success-icon">🎉</div>
+                            <h3>Rendez-vous confirmé !</h3>
+                            <p>Vous recevrez un email de confirmation avec tous les détails.</p>
+                            <button data-action="window.location.reload()" class="product-btn product-btn-primary product-btn-full">Voir mon planning</button>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="booking-contact-section">
+                    <div class="booking-contact-icon">📞</div>
+                    <h3>Planification personnalisée</h3>
+                    <p>Contactez-nous pour organiser votre entretien</p>
+                    <a href="mailto:contact@tilto.ai?subject=Planification RDV - {{ product.name }}" class="product-btn product-btn-primary">
+                        📧 Nous contacter
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            {% elif status == "rdv_planifié" %}
+            <!-- Étape 2: RDV planifié -->
+            <div class="product-content-card product-fade-in">
+                <div class="product-card-header">
+                    <div class="product-card-icon">📅</div>
+                    <div class="product-card-title">
+                        <h2>Votre rendez-vous est confirmé</h2>
+                        <p>Tout est prêt pour votre consultation</p>
+                    </div>
+                </div>
+                
+                {% if booking_info %}
+                <div class="appointment-details-section">
+                    <div class="appointment-main-card">
+                        <div class="appointment-info-grid">
+                            <h3>{{ product.name }}</h3>
+                            <div class="appointment-datetime-grid">
+                                <div class="datetime-item-display">
+                                    <span class="datetime-label-display">Date</span>
+                                    <span class="datetime-value-display">{{ booking_info.booking_date|format_date_fr }}</span>
+                                </div>
+                                <div class="datetime-item-display">
+                                    <span class="datetime-label-display">Heure</span>
+                                    <span class="datetime-value-display">{{ booking_info.booking_date.strftime('%Hh%M') }}</span>
+                                </div>
+                                <div class="datetime-item-display">
+                                    <span class="datetime-label-display">Durée</span>
+                                    <span class="datetime-value-display">{{ booking_info.duration_minutes or 60 }} min</span>
+                                </div>
+                            </div>
+                            {% if booking_info.attendee_name %}
+                            <div style="font-size: 0.9rem; opacity: 0.9;">
+                                <span style="font-weight: 500;">Avec :</span>
+                                <span style="font-weight: 600;">{{ booking_info.attendee_name }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="countdown-widget-display">
+                            <div class="countdown-value-display" id="countdownValue">{{ time_until_booking(booking_info.booking_date) }}</div>
+                            <div class="countdown-label-display">avant votre RDV</div>
+                        </div>
+                    </div>
+                    
+                    <div class="appointment-actions-grid">
+                        {% if booking_info.zoom_link %}
+                        <a href="{{ booking_info.zoom_link }}" target="_blank" class="product-btn product-btn-primary">
+                            🎥 Rejoindre la visio
+                        </a>
+                        {% endif %}
+                        
+                        <button data-action="addToCalendar()" class="product-btn product-btn-secondary">
+                            📅 Ajouter au calendrier
+                        </button>
+                        
+                        {% if can_reschedule_booking(booking_info.booking_date) %}
+                        <button data-action="showRescheduleModal()" class="product-btn product-btn-secondary">
+                            🔄 Reprogrammer
+                        </button>
+                        {% endif %}
+                        
+                        {% if can_cancel_booking(booking_info.booking_date) %}
+                        <button data-action="showCancelModal()" class="product-btn product-btn-secondary" style="color: var(--danger) !important; border-color: var(--danger) !important;">
+                            ❌ Annuler
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% elif status == "analyse_en_cours" %}
+            <!-- Étape 3: Analyse en cours -->
+            <div class="product-content-card product-fade-in">
+                <div class="product-card-header">
+                    <div class="product-card-icon">🔍</div>
+                    <div class="product-card-title">
+                        <h2>Analyse en cours</h2>
+                        <p>Nos experts analysent votre entretien</p>
+                    </div>
+                </div>
+                
+                <div class="booking-content-section" style="text-align: center;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="position: relative; width: 100px; height: 100px;">
+                            <svg style="transform: rotate(-90deg); width: 100%; height: 100%;" viewBox="0 0 100 100">
+                                <circle style="fill: none; stroke: #E2E8F0; stroke-width: 6;" cx="50" cy="50" r="45"></circle>
+                                <circle style="fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 85; transition: stroke-dashoffset 1.5s ease;" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.3rem; font-weight: 700; color: var(--primary);">70%</div>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--secondary); margin-bottom: 0.5rem; font-size: 1.1rem;">Analyse IA + expertise humaine</h4>
+                            <p style="color: var(--text-light); margin-bottom: 0.5rem; font-size: 0.9rem;">Synthèse en cours par nos consultants</p>
+                            {% if livrable_date %}
+                            <p style="color: var(--primary); font-weight: 600; font-size: 0.9rem;">Livraison prévue : {{ livrable_date|format_date_fr }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif status == "livrable_dispo" %}
+            <!-- Étape 4: Diagnostic disponible -->
+            <div class="product-content-card product-fade-in">
+                <div class="product-card-header">
+                    <div class="product-card-icon">🌟</div>
+                    <div class="product-card-title">
+                        <h2>Votre diagnostic est prêt !</h2>
+                        <p>Découvrez votre feuille de route personnalisée</p>
+                    </div>
+                </div>
+                
+                <div class="booking-content-section" style="text-align: center;">
+                    <a href="{{ url_for('dashboard.download_pdf', status_id=product_status.id) }}" class="product-btn product-btn-primary" style="padding: 1rem 2rem !important; font-size: 1.1rem !important; margin-bottom: 1rem !important;">
+                        📥 Télécharger mon diagnostic
+                    </a>
+                    
+                    <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <button data-action="showShareModal()" class="product-btn product-btn-secondary">
+                            📤 Partager
+                        </button>
+                        <button data-action="showFeedbackModal()" class="product-btn product-btn-secondary">
+                            💬 Donner mon avis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% elif status == "post_livraison" %}
+            <!-- Étape 5: Processus terminé -->
+            <div class="product-content-card product-fade-in">
+                <div class="product-card-header">
+                    <div class="product-card-icon">🎉</div>
+                    <div class="product-card-title">
+                        <h2>Félicitations !</h2>
+                        <p>Vous avez terminé votre parcours de clarification</p>
+                    </div>
+                </div>
+                
+                <div class="booking-content-section">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 1.5rem; border-radius: 16px; border: 1px solid #bbf7d0;">
+                        <div style="font-size: 3.5rem; color: #22c55e; flex-shrink: 0;">🏆</div>
+                        <div>
+                            <h3 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1.3rem;">Votre parcours en chiffres</h3>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                                <div style="text-align: center;">
+                                    <span style="display: block; font-size: 1.8rem; font-weight: 700; color: #22c55e; margin-bottom: 0.2rem;">1</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-light);">Entretien</span>
+                                </div>
+                                <div style="text-align: center;">
+                                    <span style="display: block; font-size: 1.8rem; font-weight: 700; color: #22c55e; margin-bottom: 0.2rem;">3</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-light);">Pistes</span>
+                                </div>
+                                <div style="text-align: center;">
+                                    <span style="display: block; font-size: 1.8rem; font-weight: 700; color: #22c55e; margin-bottom: 0.2rem;">6</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-light);">Mois d'action</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="product-sidebar">
+            <div class="product-sidebar-card product-fade-in">
+                <h4>📞 Besoin d'aide ?</h4>
+                <p>Notre équipe vous accompagne à chaque étape.</p>
+                <a href="mailto:contact@tilto.ai" class="product-btn product-btn-secondary product-btn-sm product-btn-full">Nous contacter</a>
+            </div>
+            
+            {% if status != 'post_livraison' %}
+            <div class="product-sidebar-card product-fade-in">
+                <h4>⏱️ Prochaines étapes</h4>
+                {% set next_step = namespace(found=false) %}
+                {% for step in timeline %}
+                    {% if not step.is_completed and not step.is_current and not next_step.found %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-light); font-size: 0.9rem;">
+                            <span>{{ step.icon }}</span>
+                            <span>{{ step.title }}</span>
+                        </div>
+                        {% set next_step.found = true %}
+                    {% endif %}
+                {% endfor %}
+                {% if not next_step.found %}
+                    <div style="color: var(--text-light); font-size: 0.9rem;">
+                        <span>🎉</span>
+                        <span>Parcours bientôt terminé !</span>
+                    </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <div class="product-sidebar-card product-fade-in">
+                <h4>📊 Progression</h4>
+                {% set completed_steps = timeline|selectattr('is_completed')|list|length %}
+                {% set total_steps = timeline|length %}
+                <div style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem;">
+                    <div style="height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: 6px; width: {{ (completed_steps / total_steps * 100)|round }}%; transition: width 1s ease;"></div>
+                </div>
+                <p style="color: var(--text-light); font-size: 0.85rem; margin: 0;">{{ completed_steps }}/{{ total_steps }} étapes terminées</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+// Animation des éléments au défilement
+document.addEventListener('DOMContentLoaded', function() {
+    initScrollAnimations();
+    initActionButtons();
+    
+    {% if status == 'rdv_planifié' and booking_info and booking_info.booking_date %}
+    initCountdownTimer();
+    {% endif %}
+    
+    initYouCanBookMeHandlers();
+});
+
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -30px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.product-fade-in').forEach(el => {
+        observer.observe(el);
+    });
+
+    setTimeout(() => {
+        document.querySelectorAll('.product-fade-in').forEach(el => {
+            el.classList.add('visible');
+        });
+    }, 100);
+}
+
+// ✅ SOLUTION: Event listeners robustes avec détection par texte
+function initActionButtons() {
+    // Fonction générique pour attacher un event listener
+    function attachListener(buttons, action, actionName) {
+        buttons.forEach((btn, index) => {
+            // Supprimer l'ancien onclick s'il existe
+            if (btn.hasAttribute('onclick')) {
+                btn.removeAttribute('onclick');
+            }
+            
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                action();
+            });
+        });
+        
+        if (buttons.length > 0) {
+            console.log(`✅ ${buttons.length} bouton(s) ${actionName} configuré(s)`);
+        }
+    }
+    
+    // ✅ BOUTONS CALENDRIER - Détection par texte (ce qui marche chez vous)
+    const calendarButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && (
+            btn.textContent.toLowerCase().includes('calendrier') || 
+            btn.textContent.toLowerCase().includes('ajouter au calendrier')
+        )
+    );
+    attachListener(calendarButtons, addToCalendar, 'calendrier');
+    
+    // ✅ BOUTONS REPROGRAMMER
+    const rescheduleButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && (
+            btn.textContent.toLowerCase().includes('reprogrammer') || 
+            btn.textContent.toLowerCase().includes('reprogrammation')
+        )
+    );
+    attachListener(rescheduleButtons, showRescheduleModal, 'reprogrammation');
+    
+    // ✅ BOUTONS ANNULER
+    const cancelButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && btn.textContent.toLowerCase().includes('annuler')
+    );
+    attachListener(cancelButtons, showCancelModal, 'annulation');
+    
+    // ✅ BOUTONS PARTAGER
+    const shareButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && btn.textContent.toLowerCase().includes('partager')
+    );
+    attachListener(shareButtons, showShareModal, 'partage');
+    
+    // ✅ BOUTONS FEEDBACK
+    const feedbackButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && (
+            btn.textContent.toLowerCase().includes('feedback') || 
+            btn.textContent.toLowerCase().includes('avis') ||
+            btn.textContent.toLowerCase().includes('donner mon avis')
+        )
+    );
+    attachListener(feedbackButtons, showFeedbackModal, 'feedback');
+    
+    // ✅ BOUTONS RECHARGER
+    const reloadButtons = Array.from(document.querySelectorAll('button, a')).filter(btn => 
+        btn.textContent && (
+            btn.textContent.toLowerCase().includes('voir mon planning') ||
+            btn.textContent.toLowerCase().includes('recharger')
+        )
+    );
+    attachListener(reloadButtons, () => window.location.reload(), 'rechargement');
+    
+    // ✅ FALLBACK: Détection par data-action et classes (au cas où)
+    const dataActionButtons = document.querySelectorAll('[data-action="add-to-calendar"], .btn-add-calendar');
+    attachListener(Array.from(dataActionButtons), addToCalendar, 'calendrier (data-action)');
+}
+
+// ✅ FONCTION CALENDRIER ÉPURÉE
+function addToCalendar() {
+    const title = 'Consultation Tilto - {{ product.name|e }}';
+    const details = 'Votre entretien personnalisé avec un expert Tilto';
+    
+    {% if booking_info and booking_info.booking_date %}
+    try {
+        const bookingDateStr = '{{ booking_info.booking_date.strftime("%Y-%m-%dT%H:%M:%S") if booking_info.booking_date else "" }}';
+        
+        if (!bookingDateStr) {
+            alert('Date de rendez-vous non disponible');
+            return;
+        }
+        
+        const startDate = new Date(bookingDateStr);
+        
+        if (isNaN(startDate.getTime())) {
+            alert('Erreur: Date de rendez-vous invalide');
+            return;
+        }
+        
+        const duration = {{ booking_info.duration_minutes or 60 }};
+        const endDate = new Date(startDate.getTime() + (duration * 60 * 1000));
+        
+        const formatDateForGoogle = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            
+            return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        };
+        
+        const startFormatted = formatDateForGoogle(startDate);
+        const endFormatted = formatDateForGoogle(endDate);
+        
+        const calendarParams = new URLSearchParams({
+            action: 'TEMPLATE',
+            text: title,
+            dates: `${startFormatted}/${endFormatted}`,
+            details: details,
+            location: 'Visioconférence'
+        });
+        
+        const calendarUrl = `https://calendar.google.com/calendar/render?${calendarParams.toString()}`;
+        
+        const newWindow = window.open(calendarUrl, '_blank');
+        
+        if (!newWindow) {
+            // Fallback si popup bloqué
+            if (confirm('Le popup a été bloqué. Voulez-vous copier le lien dans le presse-papiers ?')) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(calendarUrl).then(() => {
+                        alert('Lien copié ! Collez-le dans votre navigateur pour ajouter l\'événement.');
+                    }).catch(() => {
+                        prompt('Copiez ce lien pour ajouter l\'événement à votre calendrier:', calendarUrl);
+                    });
+                } else {
+                    prompt('Copiez ce lien pour ajouter l\'événement à votre calendrier:', calendarUrl);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Erreur calendrier:', error);
+        alert('Erreur lors de la création du lien calendrier: ' + error.message);
+    }
+    {% else %}
+    alert('Aucune date de rendez-vous disponible pour ce produit');
+    {% endif %}
+}
+
+function showRescheduleModal() {
+    {% if booking_info and booking_info.booking_date %}
+    const currentDate = '{{ booking_info.booking_date.strftime("%d/%m/%Y à %Hh%M") if booking_info.booking_date else "" }}';
+    
+    if (confirm(`Votre rendez-vous actuel est programmé le ${currentDate}.\n\nVoulez-vous le reprogrammer ?`)) {
+        window.location.href = `/dashboard/product-status/{{ product_status.id }}/booking/reschedule`;
+    }
+    {% else %}
+    alert('Aucun rendez-vous à reprogrammer');
+    {% endif %}
+}
+
+function showCancelModal() {
+    {% if booking_info and booking_info.booking_date %}
+    const currentDate = '{{ booking_info.booking_date.strftime("%d/%m/%Y à %Hh%M") if booking_info.booking_date else "" }}';
+    
+    const reason = prompt(`Vous êtes sur le point d'annuler votre rendez-vous du ${currentDate}.\n\nPourriez-vous nous indiquer la raison (optionnel) ?`, '');
+    
+    if (reason !== null) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/dashboard/product-status/{{ product_status.id }}/booking/cancel`;
+        
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+        
+        const reasonInput = document.createElement('input');
+        reasonInput.type = 'hidden';
+        reasonInput.name = 'reason';
+        reasonInput.value = reason || 'Aucune raison spécifiée';
+        form.appendChild(reasonInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+    {% else %}
+    alert('Aucun rendez-vous à annuler');
+    {% endif %}
+}
+
+function showShareModal() {
+    {% if status in ['livrable_dispo', 'post_livraison'] %}
+    const email = prompt('Entrez l\'adresse email avec laquelle partager votre diagnostic:', '');
+    
+    if (email && email.includes('@')) {
+        const message = prompt('Message personnalisé (optionnel):', '');
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/dashboard/product-status/{{ product_status.id }}/share`;
+        
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+        
+        const fields = [
+            { name: 'email', value: email },
+            { name: 'message', value: message || '' },
+            { name: 'expiry_days', value: '7' }
+        ];
+        
+        fields.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field.name;
+            input.value = field.value;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+    } else if (email !== null) {
+        alert('Veuillez entrer une adresse email valide');
+    }
+    {% else %}
+    alert('Le diagnostic n\'est pas encore disponible pour le partage');
+    {% endif %}
+}
+
+function showFeedbackModal() {
+    {% if status == 'livrable_dispo' %}
+    const rating = prompt('Notez votre expérience de 1 à 5 étoiles:', '5');
+    
+    if (rating && !isNaN(rating) && rating >= 1 && rating <= 5) {
+        const comment = prompt('Commentaire sur votre expérience (optionnel):', '');
+        const suggestions = prompt('Suggestions d\'amélioration (optionnel):', '');
+        const recommend = confirm('Recommanderiez-vous Tilto à un proche ?');
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/dashboard/product-status/{{ product_status.id }}/feedback`;
+        
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+        
+        const fields = [
+            { name: 'rating', value: rating },
+            { name: 'comment', value: comment || '' },
+            { name: 'suggestions', value: suggestions || '' },
+            { name: 'recommend', value: recommend ? 'on' : '' }
+        ];
+        
+        fields.forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field.name;
+            input.value = field.value;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+    } else if (rating !== null) {
+        alert('Veuillez entrer une note entre 1 et 5');
+    }
+    {% else %}
+    alert('Le feedback n\'est disponible que lorsque votre diagnostic est prêt');
+    {% endif %}
+}
+
+// ✅ COUNTDOWN TIMER
+{% if status == 'rdv_planifié' and booking_info and booking_info.booking_date %}
+function initCountdownTimer() {
+    updateCountdown();
+    const countdownInterval = setInterval(updateCountdown, 60000);
+    
+    window.addEventListener('beforeunload', function() {
+        clearInterval(countdownInterval);
+    });
+}
+
+// ✅ CORRECTION SIMPLE: Juste "RDV terminé" au lieu de "avant votre RDV"
+function updateCountdown() {
+    const countdownElement = document.getElementById('countdownValue');
+    const countdownLabel = document.querySelector('.countdown-label-display');
+    
+    if (!countdownElement) return;
+    
+    try {
+        const appointmentDateStr = '{{ booking_info.booking_date.strftime("%Y-%m-%dT%H:%M:%S") if booking_info.booking_date else "" }}';
+        
+        if (!appointmentDateStr) {
+            countdownElement.textContent = "Date non disponible";
+            return;
+        }
+        
+        const appointmentDate = new Date(appointmentDateStr);
+        const now = new Date();
+        const timeUntil = appointmentDate - now;
+        
+        if (isNaN(appointmentDate.getTime())) {
+            countdownElement.textContent = "Date invalide";
+            return;
+        }
+        
+        // ✅ Si RDV passé : afficher "RDV terminé" et changer le label
+        if (timeUntil <= 0) {
+            countdownElement.textContent = "RDV terminé";
+            countdownElement.style.color = '#22c55e';
+            countdownElement.style.fontWeight = 'bold';
+            
+            // Changer le texte du label en dessous
+            if (countdownLabel) {
+                countdownLabel.textContent = ""; // Vide, ou vous pouvez mettre autre chose
+            }
+            return;
+        }
+        
+        // ✅ RDV futur - affichage normal du countdown
+        const days = Math.floor(timeUntil / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeUntil % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60));
+        
+        let countdownText = '';
+        if (days > 0) {
+            countdownText = `${days}j ${hours}h`;
+        } else if (hours > 0) {
+            countdownText = `${hours}h ${minutes}m`;
+        } else if (minutes > 0) {
+            countdownText = `${minutes} min`;
+        } else {
+            countdownText = "Quelques secondes";
+        }
+        
+        countdownElement.textContent = countdownText;
+        
+        // S'assurer que le label reste "avant votre RDV" pour les RDV futurs
+        if (countdownLabel && countdownLabel.textContent !== "avant votre RDV") {
+            countdownLabel.textContent = "avant votre RDV";
+        }
+        
+        // Couleurs selon urgence
+        if (days === 0 && hours < 2) {
+            countdownElement.style.color = '#ef4444';
+        } else if (days === 0) {
+            countdownElement.style.color = '#f59e0b';
+        } else {
+            countdownElement.style.color = 'var(--primary)';
+        }
+        
+    } catch (error) {
+        console.error('Erreur countdown:', error);
+        countdownElement.textContent = "Erreur";
+    }
+}
+{% endif %}
+
+// ✅ YOUCANBOOK.ME
+function initYouCanBookMeHandlers() {
+    window.addEventListener('message', function(event) {
+        const allowedOrigins = ['youcanbook.me', 'ycb.me'];
+        const isAllowedOrigin = allowedOrigins.some(domain => event.origin.includes(domain));
+        
+        if (!isAllowedOrigin) return;
+
+        const data = event.data;
+
+        switch (data.type) {
+            case 'ycbm:booking:confirmed':
+            case 'booking_confirmed':
+            case 'booking.confirmed':
+                handleBookingSuccess(data);
+                break;
+            case 'ycbm:booking:cancelled':
+            case 'booking_cancelled':
+            case 'booking.cancelled':
+                handleBookingCancellation(data);
+                break;
+            case 'ycbm:booking:rescheduled':
+            case 'booking_rescheduled':
+            case 'booking.rescheduled':
+                handleBookingRescheduled(data);
+                break;
+        }
+    });
+}
+
+function handleBookingSuccess(data) {
+    const bookingWidget = document.querySelector('.booking-embed-container');
+    const successMessage = document.getElementById('bookingSuccess');
+    
+    if (bookingWidget) {
+        bookingWidget.style.transition = 'opacity 0.3s ease';
+        bookingWidget.style.opacity = '0';
+        setTimeout(() => bookingWidget.style.display = 'none', 300);
+    }
+    
+    if (successMessage) {
+        successMessage.style.display = 'block';
+        successMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    notifyServerOfBooking(data);
+    setTimeout(() => window.location.reload(), 3000);
+}
+
+function handleBookingCancellation(data) {
+    alert('Votre réservation a été annulée. La page va se recharger.');
+    setTimeout(() => window.location.reload(), 2000);
+}
+
+function handleBookingRescheduled(data) {
+    alert('Votre réservation a été reprogrammée. La page va se recharger.');
+    notifyServerOfBooking(data);
+    setTimeout(() => window.location.reload(), 2000);
+}
+
+function notifyServerOfBooking(data) {
+    console.log('🔔 Notification serveur booking:', data);
+    
+    const statusId = '{{ product_status.id if product_status else "" }}';
+    
+    if (!statusId) {
+        console.error('Status ID manquant pour notification');
+        return;
+    }
+    
+    // Enrichir les données avec des informations par défaut
+    const enrichedData = {
+        id: data.id || `client-${Date.now()}`,
+        type: data.type || 'booking.created',
+        startsAt: data.startsAt || data.startTime || new Date(Date.now() + 7*24*60*60*1000).toISOString(),
+        endsAt: data.endsAt || data.endTime,
+        email: data.email || '{{ current_user.email }}',
+        name: data.name || '{{ current_user.username }}',
+        PRODUCT_ID: '{{ product.id }}',
+        USER_ID: '{{ current_user.id }}',
+        ...data
+    };
+    
+    fetch(`/dashboard/product-status/${statusId}/booking-notification`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+            booking_data: enrichedData,
+            source: 'product_page',
+            timestamp: new Date().toISOString()
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('✅ Réponse serveur:', result);
+        if (result.success) {
+            // Succès : recharger la page pour voir le nouveau statut
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            console.error('❌ Erreur serveur:', result.error);
+        }
+    })
+    .catch(error => {
+        console.error('❌ Erreur notification:', error);
+    });
+}
+
+// AUSSI, modifiez handleBookingSuccess pour déclencher automatiquement :
+
+function handleBookingSuccess(data) {
+    console.log('🎉 Booking success:', data);
+    
+    const bookingWidget = document.querySelector('.booking-embed-container');
+    const successMessage = document.getElementById('bookingSuccess');
+    
+    if (bookingWidget) {
+        bookingWidget.style.transition = 'opacity 0.3s ease';
+        bookingWidget.style.opacity = '0';
+        setTimeout(() => bookingWidget.style.display = 'none', 300);
+    }
+    
+    if (successMessage) {
+        successMessage.style.display = 'block';
+        successMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // ✅ DÉCLENCHER LA NOTIFICATION AUTOMATIQUEMENT
+    notifyServerOfBooking(data);
+}
+
+// AJOUTEZ aussi cette fonction pour tester manuellement :
+
+function testBookingNotification() {
+    console.log('🧪 Test notification booking');
+    
+    const testData = {
+        id: `test-${Date.now()}`,
+        type: 'booking.created',
+        startsAt: new Date(Date.now() + 7*24*60*60*1000).toISOString(),
+        email: '{{ current_user.email }}',
+        name: '{{ current_user.username }}',
+        PRODUCT_ID: '{{ product.id }}',
+        USER_ID: '{{ current_user.id }}'
+    };
+    
+    notifyServerOfBooking(testData);
+}
+
+console.log('✅ JavaScript page produit chargé et fonctionnel');
+</script>
+{% endblock %}

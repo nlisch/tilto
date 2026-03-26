@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Traitement du Paiement - tilto') }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<meta http-equiv="refresh" content="2;url={{ refresh_url }}">
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-white to-gray-100">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center space-y-6 border border-blue-100">
+        <div class="mb-6">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ _('Traitement en cours...') }}</h1>
+            <p class="text-gray-600">{{ _('Votre paiement est en cours de traitement. Veuillez patienter quelques instants.') }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

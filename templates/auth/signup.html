@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Inscription') }}{% endblock %}
+{% block body_class %}flex-layout {% endblock %}
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h1 class="auth-title">{{ _('Inscription') }}</h1>
+        <form id="signupForm" method="POST" action="{{ url_for('auth.signup', lang_code=g.lang_code) }}">
+            {{ form.hidden_tag() }}
+            <!-- Champ honeypot invisible pour les humains -->
+            <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+            
+            <div class="auth-form-group">
+                {{ form.username.label(class="auth-label") }}
+                {{ form.username(class="auth-input", placeholder=_("Nom d'utilisateur")) }}
+                <div class="form-error alert-form-error" id="username-error"></div>
+            </div>
+            <div class="auth-form-group">
+                {{ form.email.label(class="auth-label") }}
+                {{ form.email(class="auth-input", placeholder=_("Email")) }}
+                <div class="form-error alert-form-error" id="email-error"></div>
+            </div>
+            <div class="auth-form-group">
+                {{ form.password.label(class="auth-label") }}
+                {{ form.password(class="auth-input", placeholder=_("Mot de passe")) }}
+                <div class="form-error alert-form-error" id="password-error"></div>
+            </div>
+            <div class="auth-form-group">
+                {{ form.confirm_password.label(class="auth-label") }}
+                {{ form.confirm_password(class="auth-input", placeholder=_("Confirmez votre mot de passe")) }}
+                <div class="form-error alert-form-error" id="confirm-password-error"></div>
+            </div>
+            <div class="auth-form-group">
+                {{ form.newsletter_subscription(class="auth-checkbox") }}
+                {{ form.newsletter_subscription.label(class="auth-checkbox-label") }}
+            </div>
+            <div class="auth-form-group">
+                {{ form.privacy_policy(class="auth-checkbox") }}
+                {{ form.privacy_policy.label(class="auth-checkbox-label") }}
+                <div class="form-error alert-form-error" id="privacy-policy-error"></div>
+            </div>
+            {{ form.submit(class="auth-button") }}
+        </form>
+        <div class="auth-separator">
+            <span>{{ _('ou') }}</span>
+        </div>
+
+        <div class="auth-link">
+            <p>{{ _('Déjà un compte ?') }} <a href="{{ url_for('auth.login', lang_code=g.lang_code) }}">{{ _('Se connecter') }}</a></p>
+        </div>
+    </div>
+</div>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Enregistrer le temps de chargement du formulaire
+    const formLoadTime = Date.now();
+    const form = document.getElementById('signupForm');
+    
+    const errorMessages = {
+        username: "{{ _('Le nom d\'utilisateur doit comporter au moins 3 caractères.') }}",
+        email: "{{ _('Ceci n\'est pas une adresse email valide.') }}",
+        password: "{{ _('Le mot de passe doit comporter au moins 6 caractères, avec une majuscule, une minuscule, et un chiffre.') }}",
+        confirmPassword: "{{ _('Les mots de passe ne correspondent pas.') }}",
+        privacyPolicy: "{{ _('Vous devez accepter la politique de confidentialité pour vous inscrire.') }}"
+    };
+
+    form.addEventListener('submit', function(event) {
+        // Vérifier le temps écoulé depuis le chargement
+        const submissionTime = Date.now();
+        const timeElapsed = submissionTime - formLoadTime;
+        
+        // Si rempli en moins de 2 secondes, probablement un bot
+        if (timeElapsed < 2000) {
+            const botIndicator = document.createElement('input');
+            botIndicator.type = 'hidden';
+            botIndicator.name = 'submission_time';
+            botIndicator.value = timeElapsed;
+            form.appendChild(botIndicator);
+        }
+        
+        let isValid = true;
+        const usernameInput = document.querySelector('input[name="username"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const passwordInput = document.querySelector('input[name="password"]');
+        const confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
+        const privacyPolicyCheckbox = document.querySelector('input[name="privacy_policy"]');
+        
+        // Clear previous errors
+        document.querySelectorAll('.form-error').forEach(error => error.textContent = '');
+
+        // Validate username (min 3 characters)
+        if (usernameInput.value.length < 3) {
+            document.getElementById('username-error').textContent = errorMessages.username;
+            isValid = false;
+        }
+
+        // Validate email format
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(emailInput.value)) {
+            document.getElementById('email-error').textContent = errorMessages.email;
+            isValid = false;
+        } else {
+            // Vérification des domaines suspects (seulement si le format email est valide)
+            const suspiciousDomains = ['mailinator.com', 'yopmail.com', 'tempmail.com', 'guerrillamail.com', 'temp-mail.org', 'throwawaymail.com'];
+            const domain = emailInput.value.split('@')[1];
+            if (suspiciousDomains.includes(domain)) {
+                document.getElementById('email-error').textContent = "{{ _('Les adresses email temporaires ne sont pas acceptées.') }}";
+                isValid = false;
+            }
+        }
+
+        // Validate password strength (min 6 characters, at least 1 uppercase, 1 lowercase, and 1 number)
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+        if (!passwordPattern.test(passwordInput.value)) {
+            document.getElementById('password-error').textContent = errorMessages.password;
+            isValid = false;
+        }
+
+        // Validate confirm password
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            document.getElementById('confirm-password-error').textContent = errorMessages.confirmPassword;
+            isValid = false;
+        }
+
+        // Validate privacy policy acceptance
+        if (!privacyPolicyCheckbox.checked) {
+            document.getElementById('privacy-policy-error').textContent = errorMessages.privacyPolicy;
+            isValid = false;
+        }
+
+        // Prevent form submission if validation fails
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

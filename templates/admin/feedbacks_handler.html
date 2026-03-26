@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Gestion des Feedbacks') }}{% endblock %}
+
+{% block body_class %}admin-page feedbacks-page{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+    .sorting-asc::after {
+        content: " ▲";
+        color: #A11857;
+    }
+    .sorting-desc::after {
+        content: " ▼";
+        color: #A11857;
+    }
+    .table th {
+        cursor: pointer;
+    }
+    .filter-controls {
+        margin-bottom: 20px;
+    }
+    .feedback-badge {
+        display: inline-block;
+        padding: 0.25em 0.4em;
+        font-size: 0.875em;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.25rem;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .audio-wave {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px;
+        gap: 3px;
+    }
+    .wave-bar {
+        background-color: #A11857;
+        width: 3px;
+        height: 100%;
+        border-radius: 2px;
+        animation: sound 0ms -800ms linear infinite alternate;
+    }
+    @keyframes sound {
+        0% { height: 10%; }
+        100% { height: 100%; }
+    }
+    .wave-bar:nth-child(1) { animation-duration: 474ms; }
+    .wave-bar:nth-child(2) { animation-duration: 433ms; }
+    .wave-bar:nth-child(3) { animation-duration: 407ms; }
+    .wave-bar:nth-child(4) { animation-duration: 458ms; }
+    .wave-bar:nth-child(5) { animation-duration: 400ms; }
+    .card-stats {
+        transition: all 0.3s ease;
+    }
+    .card-stats:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    /* Style pour les emojis plus grands */
+    .emoji-rating {
+        font-size: 1.4em;
+    }
+    
+    /* Style pour le texte du feedback */
+    .feedback-text {
+        max-height: 150px;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin: 5px 0;
+    }
+    
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 1050;
+    }
+    
+    .modal.show {
+        display: block;
+    }
+    
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 1.75rem auto;
+        max-width: 500px;
+    }
+    
+    .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.3rem;
+        outline: 0;
+    }
+    
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+    }
+    
+    .modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .btn-close {
+        box-sizing: content-box;
+        width: 1em;
+        height: 1em;
+        padding: 0.25em;
+        background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+        border: 0;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-comments me-2"></i> {{ _('Gestion des Feedbacks') }}
+                    </h3>
+                    <div>
+                        <a href="{{ url_for('audio_capsule.admin_dashboard') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> {{ _('Retour au Dashboard') }}
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Statistiques des feedbacks -->
+                <div class="card-body border-bottom pb-4">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white card-stats">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ _('Total Feedbacks') }}</h5>
+                                    <h2 class="display-4">{{ stats.total }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white card-stats">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ _('Note Moyenne') }}</h5>
+                                    <h2 class="display-4">{{ stats.avg_rating }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white card-stats">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ _('Feedbacks Texte') }}</h5>
+                                    <h2 class="display-4">{{ stats.text_count }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white card-stats">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ _('Feedbacks Audio') }}</h5>
+                                    <h2 class="display-4">{{ stats.audio_count }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtres et contrôles -->
+                <div class="card-body border-bottom">
+                    <div class="filter-controls">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="search-input" class="form-label">{{ _('Recherche') }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="search-input" placeholder="{{ _('Rechercher...') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="type-filter" class="form-label">{{ _('Type de feedback') }}</label>
+                                <select class="form-select" id="type-filter">
+                                    <option value="all">{{ _('Tous les types') }}</option>
+                                    <option value="text">{{ _('Texte uniquement') }}</option>
+                                    <option value="audio">{{ _('Audio uniquement') }}</option>
+                                    <option value="both">{{ _('Texte + Audio') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="user-filter" class="form-label">{{ _('Utilisateur') }}</label>
+                                <select class="form-select" id="user-filter">
+                                    <option value="all">{{ _('Tous les utilisateurs') }}</option>
+                                    {% set unique_users = {} %}
+                                    {% for feedback in feedbacks %}
+                                        {% if feedback.user_id not in unique_users %}
+                                            {% set _ = unique_users.update({feedback.user_id: feedback.username}) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for user_id, username in unique_users.items() %}
+                                        <option value="{{ user_id }}">{{ username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="rating-filter" class="form-label">{{ _('Note') }}</label>
+                                <select class="form-select" id="rating-filter">
+                                    <option value="all">{{ _('Toutes les notes') }}</option>
+                                    <option value="5"><span class="emoji-rating">😍</span> 5/5 (Excellent)</option>
+                                    <option value="4"><span class="emoji-rating">😊</span> 4/5 (Très bien)</option>
+                                    <option value="3"><span class="emoji-rating">😐</span> 3/5 (Neutre)</option>
+                                    <option value="2"><span class="emoji-rating">🙁</span> 2/5 (Décevant)</option>
+                                    <option value="1"><span class="emoji-rating">😢</span> 1/5 (Insatisfaisant)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tableau des feedbacks -->
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="feedbacksTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>{{ _('Utilisateur') }}</th>
+                                    <th>{{ _('Capsule') }}</th>
+                                    <th>{{ _('Date') }}</th>
+                                    <th>{{ _('Type') }}</th>
+                                    <th>{{ _('Note') }}</th>
+                                    <th>{{ _('Contenu') }}</th>
+                                    <th>{{ _('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if feedbacks %}
+                                    {% for feedback in feedbacks %}
+                                        <tr data-user-id="{{ feedback.user_id }}" data-type="{{ feedback.feedback_type }}" data-rating="{{ feedback.rating }}">
+                                            <td>{{ feedback.id }}</td>
+                                            <td>{{ feedback.username }}</td>
+                                            <td>{{ feedback.capsule_title }}</td>
+                                            <td>
+                                                {% if feedback.created_at is defined and feedback.created_at %}
+                                                    {{ feedback.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if feedback.feedback_type == 'text' %}
+                                                    <span class="badge bg-info">{{ _('Texte') }}</span>
+                                                {% elif feedback.feedback_type == 'audio' %}
+                                                    <span class="badge bg-warning">{{ _('Audio') }}</span>
+                                                {% elif feedback.feedback_type == 'both' %}
+                                                    <span class="badge bg-success">{{ _('Texte + Audio') }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ _('Inconnu') }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if feedback.rating == 5 %}
+                                                    <span class="badge bg-success"><span class="emoji-rating">😍</span> {{ feedback.rating }}/5</span>
+                                                {% elif feedback.rating == 4 %}
+                                                    <span class="badge bg-success"><span class="emoji-rating">😊</span> {{ feedback.rating }}/5</span>
+                                                {% elif feedback.rating == 3 %}
+                                                    <span class="badge bg-warning"><span class="emoji-rating">😐</span> {{ feedback.rating }}/5</span>
+                                                {% elif feedback.rating == 2 %}
+                                                    <span class="badge bg-danger"><span class="emoji-rating">🙁</span> {{ feedback.rating }}/5</span>
+                                                {% elif feedback.rating == 1 %}
+                                                    <span class="badge bg-danger"><span class="emoji-rating">😢</span> {{ feedback.rating }}/5</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ feedback.rating }}/5</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if feedback.feedback_text %}
+                                                    <div class="feedback-text">{{ feedback.feedback_text }}</div>
+                                                {% endif %}
+                                                
+                                                {% if feedback.audio_feedback_file %}
+                                                    <button type="button" class="btn btn-sm btn-outline-warning listen-btn" 
+                                                            data-feedback-id="{{ feedback.id }}" 
+                                                            data-filename="{{ feedback.audio_feedback_file }}">
+                                                        <i class="fas fa-headphones"></i> {{ _('Audio') }}
+                                                    </button>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form action="{{ url_for('audio_capsule.delete_feedback', feedback_id=feedback.id) }}" 
+                                                      method="POST" class="d-inline delete-form">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger delete-btn">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr id="no-results-row">
+                                        <td colspan="8" class="text-center">{{ _('Aucun feedback trouvé') }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour la lecture audio -->
+<div class="modal" id="audioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Écoute du Feedback Audio') }}</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="audioLoading" class="mb-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">{{ _('Chargement...') }}</span>
+                    </div>
+                    <p>{{ _('Génération de l\'URL audio sécurisée...') }}</p>
+                </div>
+                <div id="audioPlayer" class="d-none">
+                    <audio controls class="w-100 mb-3">
+                        <source src="" type="audio/webm">
+                        {{ _('Votre navigateur ne supporte pas la lecture audio.') }}
+                    </audio>
+                </div>
+                <div class="audio-wave d-none" id="audioWave">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                <div id="audioError" class="d-none">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage">{{ _('Impossible de charger l\'audio.') }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close">{{ _('Fermer') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Référence aux éléments principaux
+    const table = document.getElementById('feedbacksTable');
+    const rows = table ? Array.from(table.querySelectorAll('tbody tr')).filter(row => !row.id || row.id !== 'no-results-row') : [];
+    const searchInput = document.getElementById('search-input');
+    const typeFilter = document.getElementById('type-filter');
+    const userFilter = document.getElementById('user-filter');
+    const ratingFilter = document.getElementById('rating-filter');
+    
+    // Gestion des modaux personnalisés
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+    }
+    
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+    }
+    
+    // Fermeture des modaux avec les boutons close
+    document.querySelectorAll('.btn-close, .modal-close').forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
+        });
+    });
+    
+    // Tri du tableau
+    let currentSortColumn = 3; // La colonne date par défaut
+    let currentSortDirection = -1; // Décroissant par défaut
+    
+    // Fonction de tri
+    function sortTable(column, direction) {
+        if (!table || rows.length === 0) return;
+        
+        // Mettre à jour les variables globales
+        currentSortColumn = column;
+        currentSortDirection = direction;
+        
+        const headers = Array.from(table.querySelectorAll('thead th'));
+        
+        // Supprimer les indicateurs de tri existants
+        headers.forEach(header => {
+            header.classList.remove('sorting-asc', 'sorting-desc');
+        });
+        
+        // Ajouter l'indicateur de tri à la colonne actuelle
+        if (direction === 1) {
+            headers[column].classList.add('sorting-asc');
+        } else {
+            headers[column].classList.add('sorting-desc');
+        }
+        
+        // Trier les lignes
+        const sortedRows = rows.sort((a, b) => {
+            let cellA = a.cells[column].textContent.trim();
+            let cellB = b.cells[column].textContent.trim();
+            
+            // Tri spécial pour les dates (colonne 3)
+            if (column === 3) {
+                // Convertir la date du format jj/mm/aaaa hh:mm au format timestamp
+                const dateA = cellA !== '-' ? new Date(cellA.split('/').reverse().join('-').replace(' ', 'T')) : new Date(0);
+                const dateB = cellB !== '-' ? new Date(cellB.split('/').reverse().join('-').replace(' ', 'T')) : new Date(0);
+                
+                return (dateA > dateB ? 1 : -1) * direction;
+            }
+            
+            // Tri pour les notes (colonne 5)
+            if (column === 5) {
+                // Extraire la valeur numérique de la note
+                const ratingA = parseInt(cellA.match(/\d+/)?.[0] || '0');
+                const ratingB = parseInt(cellB.match(/\d+/)?.[0] || '0');
+                
+                return (ratingA > ratingB ? 1 : -1) * direction;
+            }
+            
+            // Tri par défaut
+            return (cellA > cellB ? 1 : -1) * direction;
+        });
+        
+        // Réorganiser les lignes dans le tableau
+        const tbody = table.querySelector('tbody');
+        sortedRows.forEach(row => {
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Appliquer le tri initial
+    if (table && rows.length > 0) {
+        sortTable(currentSortColumn, currentSortDirection);
+        
+        // Ajouter les écouteurs de clic pour le tri
+        Array.from(table.querySelectorAll('thead th')).forEach((header, index) => {
+            header.addEventListener('click', function() {
+                // Si on clique sur la même colonne, inverser la direction
+                const direction = (index === currentSortColumn) ? currentSortDirection * -1 : -1;
+                sortTable(index, direction);
+            });
+        });
+    }
+    
+    // Fonction de filtrage
+    function applyFilters() {
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const typeValue = typeFilter ? typeFilter.value : 'all';
+        const userValue = userFilter ? userFilter.value : 'all';
+        const ratingValue = ratingFilter ? ratingFilter.value : 'all';
+        
+        let visibleRowsCount = 0;
+        
+        rows.forEach(row => {
+            // Récupérer les valeurs pour filtrer
+            const rowText = row.textContent.toLowerCase();
+            const rowType = row.getAttribute('data-type');
+            const rowUserId = row.getAttribute('data-user-id');
+            const rowRating = row.getAttribute('data-rating');
+            
+            // Appliquer les filtres
+            const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
+            const matchesType = typeValue === 'all' || rowType === typeValue;
+            const matchesUser = userValue === 'all' || rowUserId === userValue;
+            const matchesRating = ratingValue === 'all' || rowRating === ratingValue;
+            
+            // Afficher ou masquer la ligne
+            const isVisible = matchesSearch && matchesType && matchesUser && matchesRating;
+            row.style.display = isVisible ? '' : 'none';
+            
+            if (isVisible) {
+                visibleRowsCount++;
+            }
+        });
+        
+        // Afficher un message si aucun résultat
+        const noResultsRow = document.getElementById('no-results-row');
+        if (noResultsRow) {
+            if (visibleRowsCount === 0 && rows.length > 0) {
+                noResultsRow.style.display = '';
+            } else {
+                noResultsRow.style.display = 'none';
+            }
+        } else if (visibleRowsCount === 0 && rows.length > 0) {
+            // Créer une ligne "Aucun résultat" si elle n'existe pas
+            const tbody = table.querySelector('tbody');
+            const tr = document.createElement('tr');
+            tr.id = 'no-results-row';
+            const td = document.createElement('td');
+            td.colSpan = 8;
+            td.className = 'text-center';
+            td.textContent = "{{ _('Aucun résultat correspondant aux filtres') }}";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+    }
+    
+    // Ajouter les écouteurs pour les filtres
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    }
+    
+    if (typeFilter) {
+        typeFilter.addEventListener('change', applyFilters);
+    }
+    
+    if (userFilter) {
+        userFilter.addEventListener('change', applyFilters);
+    }
+    
+    if (ratingFilter) {
+        ratingFilter.addEventListener('change', applyFilters);
+    }
+    
+    // Écouter un feedback audio
+    const audioButtons = document.querySelectorAll('.listen-btn');
+    audioButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const feedbackId = this.getAttribute('data-feedback-id');
+            
+            if (!feedbackId) {
+                console.error('ID de feedback manquant');
+                return;
+            }
+            
+            // Réinitialiser le modal
+            const audioLoading = document.getElementById('audioLoading');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioWave = document.getElementById('audioWave');
+            const audioError = document.getElementById('audioError');
+            
+            if (audioLoading) audioLoading.classList.remove('d-none');
+            if (audioPlayer) audioPlayer.classList.add('d-none');
+            if (audioWave) audioWave.classList.remove('d-none');
+            if (audioError) audioError.classList.add('d-none');
+            
+            // Ouvrir le modal
+            openModal('audioModal');
+            
+            // Récupérer l'URL signée
+            fetch(`/audio-capsule/admin/audio-feedback/${feedbackId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur réseau');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Masquer le chargement et l'animation
+                    if (audioLoading) audioLoading.classList.add('d-none');
+                    if (audioWave) audioWave.classList.add('d-none');
+                    
+                    // Afficher le lecteur audio
+                    if (audioPlayer) {
+                        audioPlayer.classList.remove('d-none');
+                        
+                        // Définir la source audio
+                        const audioElement = audioPlayer.querySelector('audio');
+                        if (audioElement) {
+                            audioElement.src = data.url;
+                            
+                            // Lancer la lecture automatiquement
+                            audioElement.load();
+                            try {
+                                const playPromise = audioElement.play();
+                                if (playPromise !== undefined) {
+                                    playPromise.catch(error => {
+                                        console.warn('Lecture automatique bloquée:', error);
+                                    });
+                                }
+                            } catch (playError) {
+                                console.warn('Erreur de lecture:', playError);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    
+                    // Masquer le chargement et l'animation
+                    if (audioLoading) audioLoading.classList.add('d-none');
+                    if (audioWave) audioWave.classList.add('d-none');
+                    
+                    // Afficher l'erreur
+                    if (audioError) {
+                        audioError.classList.remove('d-none');
+                        const errorMessage = document.getElementById('errorMessage');
+                        if (errorMessage) {
+                            errorMessage.textContent = `Impossible de charger l'audio: ${error.message}`;
+                        }
+                    }
+                });
+        });
+    });
+    
+    // Confirmation de suppression
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('{{ _("Êtes-vous sûr de vouloir supprimer ce feedback ?") }}')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Arrêter la lecture audio quand le modal est fermé
+    const audioModal = document.getElementById('audioModal');
+    if (audioModal) {
+        const closeAudioModal = function() {
+            const audioElement = document.querySelector('#audioPlayer audio');
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.src = '';
+            }
+            
+            closeModal('audioModal');
+        };
+        
+        // Ajouter des gestionnaires d'événements pour les boutons de fermeture dans le modal audio
+        const audioCloseButtons = audioModal.querySelectorAll('.btn-close, .modal-close');
+        audioCloseButtons.forEach(button => {
+            button.addEventListener('click', closeAudioModal);
+        });
+    }
+    
+    // Fermeture des modaux en cliquant en dehors
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal.show');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                const audioElement = modal.querySelector('#audioPlayer audio');
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.src = '';
+                }
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
+        });
+    });
+    
+    // Fermeture avec la touche Echap
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                const audioElement = modal.querySelector('#audioPlayer audio');
+                if (audioElement) {
+                    audioElement.pause();
+                    audioElement.src = '';
+                }
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

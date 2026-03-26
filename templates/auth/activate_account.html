@@ -1,0 +1,693 @@
+{% extends "base.html" %}
+
+{% block title %}Active ton compte - Tilto{% endblock %}
+
+{% block content %}
+<div class="activate-wrapper">
+    <div class="activate-container">
+        <!-- Header minimaliste -->
+        <div class="activate-header">
+            <div class="activate-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C9.38 2 7.25 4.13 7.25 6.75V9C6.01 9 5 10.01 5 11.25V18.75C5 19.99 6.01 21 7.25 21H16.75C17.99 21 19 19.99 19 18.75V11.25C19 10.01 17.99 9 16.75 9V6.75C16.75 4.13 14.62 2 12 2ZM12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <h1 class="activate-title">Bienvenue {{ firstname }} ! 🎉</h1>
+            <p class="activate-subtitle">Une dernière étape : choisis ton mot de passe</p>
+        </div>
+
+        <!-- Formulaire -->
+        <form action="{{ url_for('lead.activate_account', token=token) }}" method="POST" class="activate-form" id="activateForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- Email en lecture seule -->
+            <div class="email-display">
+                <span class="email-icon">📧</span>
+                <span class="email-text">{{ email }}</span>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group">
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        class="form-input" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Crée ton mot de passe (min. 8 caractères)"
+                        required 
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+                    <button type="button" class="password-toggle" id="passwordToggle" tabindex="-1">
+                        <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5ZM12 17.5C9.24 17.5 7 15.26 7 12.5C7 9.74 9.24 7.5 12 7.5C14.76 7.5 17 9.74 17 12.5C17 15.26 14.76 17.5 12 17.5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Barre de force -->
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <p class="strength-text" id="strengthText"></p>
+            </div>
+
+            <!-- Critères de sécurité -->
+            <div class="security-checklist" id="securityChecklist" style="display: none;">
+                <p class="checklist-title">Ton mot de passe doit contenir :</p>
+                <ul class="checklist">
+                    <li id="check-length" class="unchecked">
+                        <span class="check-icon">✓</span>
+                        Au moins 8 caractères
+                    </li>
+                    <li id="check-uppercase" class="unchecked">
+                        <span class="check-icon">✓</span>
+                        Une majuscule
+                    </li>
+                    <li id="check-lowercase" class="unchecked">
+                        <span class="check-icon">✓</span>
+                        Une minuscule
+                    </li>
+                    <li id="check-number" class="unchecked">
+                        <span class="check-icon">✓</span>
+                        Un chiffre
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Confirmation (apparaît quand tous les critères sont OK) -->
+            <div class="form-group" id="confirmGroup" style="display: none;">
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        class="form-input" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        placeholder="Confirme ton mot de passe"
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+                    <button type="button" class="password-toggle" id="confirmToggle" tabindex="-1">
+                        <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5ZM12 17.5C9.24 17.5 7 15.26 7 12.5C7 9.74 9.24 7.5 12 7.5C14.76 7.5 17 9.74 17 12.5C17 15.26 14.76 17.5 12 17.5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="error-message" id="passwordError" style="display: none;">
+                    Les mots de passe ne correspondent pas
+                </p>
+            </div>
+
+            <!-- Bouton -->
+            <button type="submit" class="btn-activate" id="submitBtn" disabled>
+                <span class="btn-text">Activer mon compte</span>
+                <span class="btn-loader" style="display: none;">
+                    <svg class="spinner" viewBox="0 0 24 24">
+                        <circle class="spinner-circle" cx="12" cy="12" r="10" fill="none" stroke-width="3"/>
+                    </svg>
+                </span>
+            </button>
+        </form>
+
+        <!-- Info légale -->
+        <p class="legal-info">
+            En continuant, tu acceptes nos 
+            <a href="{{ url_for('terms_of_service') }}" target="_blank">CGU</a> 
+            et notre 
+            <a href="{{ url_for('privacy_policy') }}" target="_blank">politique de confidentialité</a>
+        </p>
+    </div>
+</div>
+
+<script nonce="{{ g.nonce }}">
+const passwordInput = document.getElementById('password');
+const confirmInput = document.getElementById('confirm_password');
+const confirmGroup = document.getElementById('confirmGroup');
+const strengthFill = document.getElementById('strengthFill');
+const strengthText = document.getElementById('strengthText');
+const submitBtn = document.getElementById('submitBtn');
+const passwordError = document.getElementById('passwordError');
+const form = document.getElementById('activateForm');
+const passwordToggle = document.getElementById('passwordToggle');
+const confirmToggle = document.getElementById('confirmToggle');
+const securityChecklist = document.getElementById('securityChecklist');
+
+const checkLength = document.getElementById('check-length');
+const checkUpper = document.getElementById('check-uppercase');
+const checkLower = document.getElementById('check-lowercase');
+const checkNumber = document.getElementById('check-number');
+
+let isPasswordVisible = false;
+let isConfirmVisible = false;
+
+// Toggle password visibility
+passwordToggle.addEventListener('click', function() {
+    isPasswordVisible = !isPasswordVisible;
+    passwordInput.type = isPasswordVisible ? 'text' : 'password';
+});
+
+confirmToggle.addEventListener('click', function() {
+    isConfirmVisible = !isConfirmVisible;
+    confirmInput.type = isConfirmVisible ? 'text' : 'password';
+});
+
+// Check password strength
+passwordInput.addEventListener('input', function() {
+    const password = this.value;
+    const length = password.length;
+    
+    // Afficher la checklist dès qu'on tape
+    if (length > 0) {
+        securityChecklist.style.display = 'block';
+    } else {
+        securityChecklist.style.display = 'none';
+    }
+    
+    // Vérification des critères
+    const checks = {
+        length: length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password)
+    };
+    
+    // Update checklist
+    checkLength.className = checks.length ? 'checked' : 'unchecked';
+    checkUpper.className = checks.upper ? 'checked' : 'unchecked';
+    checkLower.className = checks.lower ? 'checked' : 'unchecked';
+    checkNumber.className = checks.number ? 'checked' : 'unchecked';
+    
+    // Calcul de force (tous les 4 requis)
+    const allValid = checks.length && checks.upper && checks.lower && checks.number;
+    let strength = 0;
+    if (checks.length) strength++;
+    if (checks.upper) strength++;
+    if (checks.lower) strength++;
+    if (checks.number) strength++;
+    
+    // Update strength bar
+    const percentage = (strength / 4) * 100;
+    strengthFill.style.width = percentage + '%';
+    
+    // Update colors and text
+    if (length === 0) {
+        strengthFill.className = 'strength-fill';
+        strengthText.textContent = '';
+        strengthText.className = 'strength-text';
+        confirmGroup.style.display = 'none';
+        submitBtn.disabled = true;
+    } else if (length < 8) {
+        strengthFill.className = 'strength-fill weak';
+        strengthText.textContent = '🔒 Au moins 8 caractères requis';
+        strengthText.className = 'strength-text weak';
+        confirmGroup.style.display = 'none';
+        submitBtn.disabled = true;
+    } else if (strength < 4) {
+        strengthFill.className = 'strength-fill weak';
+        strengthText.textContent = '⚠️ Complète tous les critères de sécurité';
+        strengthText.className = 'strength-text weak';
+        confirmGroup.style.display = 'none';
+        submitBtn.disabled = true;
+    } else {
+        strengthFill.className = 'strength-fill strong';
+        strengthText.textContent = '✅ Mot de passe sécurisé';
+        strengthText.className = 'strength-text strong';
+        confirmGroup.style.display = 'block';
+    }
+    
+    // Check if passwords match
+    if (confirmInput.value) {
+        checkPasswordsMatch();
+    }
+});
+
+// Check password match
+confirmInput.addEventListener('input', checkPasswordsMatch);
+
+function checkPasswordsMatch() {
+    const password = passwordInput.value;
+    const confirm = confirmInput.value;
+    
+    if (confirm.length === 0) {
+        passwordError.style.display = 'none';
+        confirmInput.classList.remove('error');
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    if (password !== confirm) {
+        passwordError.style.display = 'block';
+        confirmInput.classList.add('error');
+        submitBtn.disabled = true;
+    } else {
+        passwordError.style.display = 'none';
+        confirmInput.classList.remove('error');
+        submitBtn.disabled = false;
+    }
+}
+
+// Form submission with loading state
+form.addEventListener('submit', function(e) {
+    const password = passwordInput.value;
+    
+    // Validation finale
+    const checks = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password)
+    };
+    
+    if (!checks.length || !checks.upper || !checks.lower || !checks.number) {
+        e.preventDefault();
+        alert('Le mot de passe doit respecter tous les critères de sécurité');
+        return;
+    }
+    
+    if (password !== confirmInput.value) {
+        e.preventDefault();
+        alert('Les mots de passe ne correspondent pas');
+        return;
+    }
+    
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'flex';
+});
+
+// Enter key handling
+passwordInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        if (confirmGroup.style.display === 'block') {
+            confirmInput.focus();
+        }
+    }
+});
+
+confirmInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !submitBtn.disabled) {
+        form.submit();
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+:root {
+    --tilto-primary: #A11857;
+    --tilto-gradient: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%);
+    --tilto-text: #333333;
+    --tilto-text-light: #666666;
+    --tilto-border: #e0e0e0;
+    --tilto-bg: #f9fafb;
+    --tilto-white: #ffffff;
+    --tilto-success: #10b981;
+    --tilto-error: #ef4444;
+    --tilto-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.activate-wrapper {
+    min-height: 100vh;
+    background: var(--tilto-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.activate-container {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    box-shadow: var(--tilto-shadow);
+    max-width: 420px;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.activate-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.activate-icon {
+    background: #A11857;
+    color: var(--tilto-white);
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 12px rgba(97, 5, 69, 0.25);
+}
+
+.activate-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 0.5rem;
+}
+
+.activate-subtitle {
+    font-size: 0.9375rem;
+    color: var(--tilto-text-light);
+    margin: 0;
+}
+
+.email-display {
+    background: var(--tilto-bg);
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 1.5rem;
+}
+
+.email-icon {
+    font-size: 1.25rem;
+}
+
+.email-text {
+    font-size: 0.9375rem;
+    color: var(--tilto-text);
+    font-weight: 500;
+}
+
+.activate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 200px;
+    }
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 1rem;
+    border: 2px solid var(--tilto-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: var(--tilto-white);
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--tilto-primary);
+    box-shadow: 0 0 0 3px rgba(97, 5, 69, 0.1);
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.form-input.error {
+    border-color: var(--tilto-error);
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--tilto-text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+    will-change: color;
+}
+
+.password-toggle:hover {
+    color: var(--tilto-primary);
+    transform: translateY(-50%);
+}
+
+.strength-bar {
+    height: 3px;
+    background: var(--tilto-border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    background: var(--tilto-border);
+}
+
+.strength-fill.weak {
+    background: var(--tilto-error);
+}
+
+.strength-fill.strong {
+    background: var(--tilto-success);
+}
+
+.strength-text {
+    font-size: 0.8125rem;
+    margin: 0.375rem 0 0;
+    min-height: 1.25rem;
+}
+
+.strength-text.weak {
+    color: var(--tilto-error);
+}
+
+.strength-text.strong {
+    color: var(--tilto-success);
+    font-weight: 600;
+}
+
+/* Checklist */
+.security-checklist {
+    background: var(--tilto-bg);
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.checklist-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--tilto-text);
+    margin: 0 0 0.75rem;
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checklist li {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.checklist li.unchecked { color: var(--tilto-text-light); }
+.checklist li.checked { color: var(--tilto-success); }
+
+.check-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.unchecked .check-icon {
+    background: var(--tilto-border);
+    color: transparent;
+}
+
+.checked .check-icon {
+    background: var(--tilto-success);
+    color: var(--tilto-white);
+}
+
+.error-message {
+    font-size: 0.8125rem;
+    color: var(--tilto-error);
+    margin: 0.25rem 0 0;
+}
+
+.btn-activate {
+    background: #A11857;
+    color: var(--tilto-white);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(97, 5, 69, 0.25);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-activate:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(97, 5, 69, 0.35);
+}
+
+.btn-activate:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-activate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-circle {
+    stroke: var(--tilto-white);
+    stroke-linecap: round;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 0;
+    animation: spinCircle 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinCircle {
+    0%, 100% { stroke-dashoffset: 0; }
+    50% { stroke-dashoffset: 25; }
+}
+
+.legal-info {
+    font-size: 0.75rem;
+    color: var(--tilto-text-light);
+    text-align: center;
+    margin: 1.5rem 0 0;
+}
+
+.legal-info a {
+    color: var(--tilto-primary);
+    text-decoration: none;
+}
+
+.legal-info a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .activate-container {
+        padding: 2rem 1.25rem;
+        border-radius: 16px;
+    }
+    
+    .activate-title {
+        font-size: 1.375rem;
+    }
+    
+    .activate-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .activate-icon {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .activate-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 360px) {
+    .activate-wrapper {
+        padding: 0.5rem;
+    }
+    
+    .activate-container {
+        padding: 1.5rem 1rem;
+    }
+}
+</style>
+{% endblock %}

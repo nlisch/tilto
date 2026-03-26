@@ -1,0 +1,26 @@
+Hello {{ firstname }} 👋
+
+Message bien reçu !
+====================
+
+On a bien reçu ton message et on te répond sous 24h par email.
+
+Ta question :
+"{{ message }}"
+
+En attendant, n'hésite pas à explorer ton espace Tilto si tu ne l'as pas encore fait !
+
+{% if current_user.is_authenticated %}
+Accéder à mon espace : {{ url_for('dashboard.index', _external=True) }}
+{% endif %}
+
+À très vite,
+L'équipe Tilto ❤️
+
+---
+Tilto - Le nouveau réflexe pro
+🌐 tilto.co
+✉️ contact@tilto.ai
+
+Tu reçois cet email car tu as contacté Tilto via notre chat.
+Politique de confidentialité : {{ url_for('privacy_policy', _external=True) }}

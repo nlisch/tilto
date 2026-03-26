@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="{{ g.lang_code }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light">
+    <title>{{ _('Confirmation d\'achat - tilto') }}</title>
+    <style>
+        /* Styles globaux pour l'email */
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+        
+        .email-header {
+            background-color: #ffcc00;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .email-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        
+        .email-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        
+        .email-content {
+            padding: 30px 20px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .order-details {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .item-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .item-value {
+            text-align: right;
+        }
+        
+        .discount {
+            color: #9333ea;
+        }
+        
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .action-button {
+            display: inline-block;
+            background-color: #ffcc00;
+            color: #333;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        .email-footer {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .social-links {
+            margin: 15px 0;
+        }
+        
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+        }
+        
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100%;
+            }
+            
+            .detail-item {
+                flex-direction: column;
+                margin-bottom: 15px;
+            }
+            
+            .item-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <!-- <img class="lazyload" src="https://images.tilto.co/logo.png" alt="tilto" class="email-logo"> -->
+            <h1 class="email-title">{{ _('Merci pour votre achat !') }}</h1>
+        </div>
+        
+        <div class="email-content">
+            <p class="greeting">{{ _('Bonjour,') }}</p>
+            
+            <p>{{ _('Merci pour ton achat. Tes 2 credits ont ete ajoutes a ton compte.') }}</p>
+            
+            <div class="order-details">
+                <h2 class="section-title">{{ _('Détails de votre commande') }}</h2>
+                
+                <div class="detail-item">
+                    <span class="item-label">{{ _('N° de commande:') }}</span>
+                    <span class="item-value">{{ order.order_number }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="item-label">{{ _('Produit:') }}</span>
+                    <span class="item-value">Pack Premium</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="item-label">{{ _('Prix:') }}</span>
+                    <span class="item-value">{{ order.original_amount }} {{ order.currency }}</span>
+                </div>
+                
+                {% if order.discount_code %}
+                <div class="detail-item">
+                    {% if order.discount_type == 'percentage' %}
+                        <span class="item-label">{{ _('Réduction (') }}{{ order.discount_value }}%{{ _('):') }}</span>
+                    {% else %}
+                        <span class="item-label">{{ _('Réduction:') }}</span>
+                    {% endif %}
+                    <span class="item-value discount">-{{ order.discount_amount }} {{ order.currency }}</span>
+                </div>
+                {% endif %}
+                
+                {% if order.vat_amount and order.vat_amount|float > 0 %}
+                <div class="detail-item">
+                    <span class="item-label">{{ _('TVA (20%%):') }}</span>
+                    <span class="item-value">{{ order.vat_amount }} {{ order.currency }}</span>
+                </div>
+            {% else %}
+                <div class="detail-item">
+                    <span class="item-label">{{ _('Franchise de TVA - Auto-entrepreneur') }}</span>
+                    <span class="item-value">{{ _('Article 293B du CGI') }}</span>
+                </div>
+            {% endif %}
+                <div class="detail-item total">
+                    <span class="item-label">{{ _('Total:') }}</span>
+                    <span class="item-value">{{ order.total_amount }} {{ order.currency }}</span>
+                </div>
+            </div>
+            
+            <div class="order-details">
+                <h2 class="section-title">{{ _('Vos credits') }}</h2>
+                
+                <div class="detail-item">
+                    <span class="item-label">{{ _('Credits ajoutes:') }}</span>
+                    <span class="item-value">2 credits</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="item-label">{{ _('Validite:') }}</span>
+                    <span class="item-value">6 mois</span>
+                </div>
+            </div>
+            
+            <p>{{ _('Tes credits sont prets ! Retourne sur ta page d\'analyse pour debloquer tes pistes.') }}</p>
+            
+            <center>
+                <a href="{{ url_for('auth.dashboard', _external=True) }}" class="action-button">{{ _('Debloquer mes pistes') }}</a>
+            </center>
+            
+            <p class="note">{{ _('Si vous avez des questions concernant votre commande, n\'hésitez pas à contacter notre équipe de support à l\'adresse contact@tilto.ai.') }}</p>
+        </div>
+        
+        <div class="email-footer">
+            <p>© {{ now.year }} tilto. {{ _('Tous droits réservés.') }}</p>
+            <p>{{ _('Cet email a été envoyé à') }} {{ order.user_email }}</p>
+            
+            <div class="social-links">
+                <a href="https://www.instagram.com/tilto_official/" class="social-link">Instagram</a>
+                <a href="https://www.linkedin.com/company/tilto/" class="social-link">LinkedIn</a>
+            </div>
+            
+            <p>
+                <a href="{{ url_for('tokens.terms_of_service', _external=True) }}">{{ _('Conditions Générales') }}</a> |
+                <a href="{{ url_for('cookie_bp.cookie_policy', _external=True) }}">{{ _('Politique de Cookies') }}</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

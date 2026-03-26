@@ -1,0 +1,745 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Mon Compte') }}{% endblock %}
+
+{% block body_class %}account-page{% endblock %}
+
+{% block content %}
+<section class="hero account-hero">
+    <div class="container account-container">
+        <div class="account-hero-content fade-in-element">
+            <h1 class="account-hero-title"><i class="fas fa-user-circle"></i> {{ _('Mon Compte') }}</h1>
+        </div>
+    </div>
+</section>
+
+<div class="container account-container">    
+    <div class="account-grid">
+        <div class="info-card fade-in-element">
+            <h2><i class="fas fa-info-circle"></i> {{ _('Informations personnelles') }}</h2>
+            {% if current_user.user_status == 'admin' %}
+                <div class="account-status">
+                    <p>{{ _('Vous êtes connecté en tant qu\'administrateur.') }}</p>
+                    <a href="{{ url_for('auth.setup_two_factor') }}" class="btn btn-primary">
+                        <i class="fas fa-shield-alt"></i> {{ _('Configurer l\'Authentification à Deux Facteurs') }}
+                    </a>
+                </div>
+            {% else %}
+                <div class="account-status">
+                    <p>{{ _('Vous êtes connecté en tant qu\'utilisateur.') }}</p>
+                </div>
+            {% endif %}
+            <div class="user-details">
+                <p><strong>{{ _('Prénom:') }}</strong> {{ current_user.firstname }}</p>
+                <p><strong>{{ _('Email:') }}</strong> {{ current_user.email }}</p>
+            </div>
+            <div class="account-actions">
+                <a href="{{ url_for('user.change_password', lang_code=g.lang_code) }}" class="btn btn-secondary">
+                    <i class="fas fa-key"></i> {{ _('Changer le mot de passe') }}
+                </a>
+            </div>
+        </div>
+
+
+        <div class="info-card fade-in-element">
+            <h2><i class="fas fa-envelope"></i> {{ _('Préférences de communication') }}</h2>
+            <form method="POST" action="{{ url_for('user.my_account', lang_code=g.lang_code) }}" class="consent-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="consent-item">
+                    <label class="consent-label-wrapper">
+                        <input type="checkbox" 
+                               id="newsletter_subscription" 
+                               name="newsletter_subscription" 
+                               class="consent-checkbox"
+                               {% if stats.get('newsletter_subscription') %}checked{% endif %}>
+                        <span class="consent-content">
+                            <strong class="consent-title">📧 Newsletter Tilto</strong>
+                            <span class="consent-description">Recevoir nos conseils carrière, actualités et offres exclusives par email. Tu pourras te désabonner à tout moment.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="consent-item">
+                    <label class="consent-label-wrapper">
+                        <input type="checkbox" 
+                               id="partner_consent" 
+                               name="partner_consent" 
+                               class="consent-checkbox"
+                               {% if stats.get('partner_consent') %}checked{% endif %}>
+                        <span class="consent-content">
+                            <strong class="consent-title">🤝 Offres partenaires</strong>
+                            <span class="consent-description">Accepter d'être contacté(e) par nos partenaires sélectionnés (organismes de formation, cabinets de recrutement) pour des opportunités liées à ton projet pro.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> {{ _('Mettre à jour les préférences') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+
+    <div class="info-card danger-zone fade-in-element">
+        <h2><i class="fas fa-exclamation-triangle"></i> {{ _('Zone de danger') }}</h2>
+        <p>{{ _('Attention : la suppression de votre compte est irréversible.') }}</p>
+        <button id="deleteAccountBtn" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> {{ _('Supprimer mon compte') }}
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour la suppression du compte -->
+<div id="deleteAccountModal" class="modal">
+    <div class="modal-content" id="deleteModalContent">
+        <h2><i class="fas fa-exclamation-triangle"></i> {{ _('Confirmation de suppression') }}</h2>
+        <p>{{ _('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible et supprimera toutes les données associées à ce compte.') }}</p>
+        <div class="modal-actions">
+            <button id="confirmDelete" class="btn btn-danger"><i class="fas fa-trash-alt"></i> {{ _('Confirmer la suppression') }}</button>
+            <button id="cancelDelete" class="btn btn-secondary"><i class="fas fa-times"></i> {{ _('Annuler') }}</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des éléments au défilement
+    const fadeElements = document.querySelectorAll('.fade-in-element');
+    
+    function checkFade() {
+        fadeElements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight * 0.85;
+            
+            if (elementPosition < screenPosition) {
+                element.classList.add('visible');
+            }
+        });
+    }
+    
+    // Vérifier au chargement
+    checkFade();
+    
+    // Vérifier au défilement
+    window.addEventListener('scroll', checkFade);
+
+    // Gestion de la suppression du compte
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const deleteAccountModal = document.getElementById('deleteAccountModal');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const deleteModalContent = document.getElementById('deleteModalContent');
+
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', function() {
+            deleteAccountModal.classList.add('show');
+        });
+    }
+
+    if (cancelDelete) {
+        cancelDelete.addEventListener('click', function() {
+            deleteAccountModal.classList.remove('show');
+        });
+    }
+
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', function() {
+            fetch("{{ url_for('user.supprimer_compte', lang_code=g.lang_code) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                credentials: 'same-origin'
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = "{{ url_for('auth.dashboard', lang_code=g.lang_code) }}";
+                } else {
+                    alert(data.message);
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert("{{ _('Une erreur est survenue lors de la suppression du compte.') }}");
+            });
+        });
+    }
+
+    // Empêcher la propagation des clics dans le contenu modal
+    if (deleteModalContent) {
+        deleteModalContent.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    }
+
+    // Fermer la modal en cliquant à l'extérieur
+    if (deleteAccountModal) {
+        deleteAccountModal.addEventListener('click', function(event) {
+            if (event.target === deleteAccountModal) {
+                deleteAccountModal.classList.remove('show');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+
+/* Hero section */
+.account-hero {
+    padding: 4rem 0 2rem;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--white) 100%);
+    min-height: 25vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.account-container {
+    padding: 0 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tagline {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background-color: rgba(97, 5, 69, 0.08);
+    border-radius: 50px;
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: var(--secondary);
+    font-weight: 800;
+}
+
+/* Account grid layout */
+.account-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: -2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.info-card {
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.info-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--secondary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card h2 i {
+    color: var(--primary);
+}
+
+.info-card p {
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Account status section */
+.account-status {
+    background-color: var(--primary-light);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary);
+}
+
+.user-details {
+    margin-bottom: 1.5rem;
+}
+
+.user-details p {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.user-details p:last-child {
+    border-bottom: none;
+}
+
+/* Button styles */
+.account-page .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-bounce);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    cursor: pointer;
+    gap: 0.5rem;
+}
+
+.account-page .btn-primary {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(97, 5, 69, 0.2);
+}
+
+.account-page .btn-primary:hover {
+    background-color: var(--secondary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(97, 5, 69, 0.3);
+}
+
+.account-page .btn-secondary {
+    background-color: var(--white);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.account-page .btn-secondary:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.account-page .btn-danger {
+    background-color: var(--danger);
+    color: white;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
+}
+
+.account-page .btn-danger:hover {
+    background-color: var(--danger-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+}
+
+/* Statistics styling */
+.stats-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-light);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.stat-item:hover {
+    transform: translateX(5px);
+    background-color: var(--primary-light);
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+/* Quiz types list */
+.quiz-types-list {
+    list-style: none;
+    padding: 0;
+}
+
+.quiz-types-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.quiz-types-list li:last-child {
+    border-bottom: none;
+}
+
+.quiz-types-list li i {
+    color: var(--primary);
+}
+
+/* Empty state styling */
+.empty-state-action {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.empty-history {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--bg-light);
+    border-radius: var(--radius-sm);
+}
+
+/* Chart container */
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+
+/* Quiz list styling */
+.quiz-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.quiz-item {
+    background-color: var(--bg-light);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.quiz-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--border);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--secondary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quiz-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quiz-details p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quiz-details i {
+    color: var(--primary);
+    width: 20px;
+    text-align: center;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Danger zone styling */
+.danger-zone {
+    background-color: #fff5f5;
+    border: 1px solid #ffcccc;
+}
+
+.danger-zone h2 {
+    color: var(--danger);
+}
+
+.danger-zone p {
+    color: var(--danger-dark);
+}
+
+/* Modal styling */
+.modal {
+    display: none; /* Caché par défaut */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex; /* Visible en flex quand la classe .show est ajoutée */
+    opacity: 1;
+}
+
+
+.modal-content {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-content h2 {
+    color: var(--danger);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Form styling - Consent checkboxes */
+.consent-form {
+    margin-top: 1rem;
+}
+
+.consent-item {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #A11857;
+    transition: all 0.3s ease;
+}
+
+.consent-item:hover {
+    background-color: #f0e6ed;
+}
+
+.consent-label-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    width: 100%;
+}
+
+.consent-checkbox {
+    /* Style par défaut de la checkbox */
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    accent-color: #A11857;
+    /* Forcer l'apparence native */
+    -webkit-appearance: checkbox;
+    -moz-appearance: checkbox;
+    appearance: checkbox;
+    pointer-events: auto !important;
+}
+
+.consent-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+}
+
+.consent-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #2c3e50;
+    display: block;
+}
+
+.consent-description {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+/* Animation */
+.fade-in-element {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-element.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Ensure compatibility with homepage classes */
+.account-page .hero-content,
+.account-page .tagline,
+.account-page .hero-title {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .account-actions {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .quiz-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Keep for compatibility with original classes */
+.auth-button {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(97, 5, 69, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-bounce);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.auth-button:hover {
+    background-color: var(--secondary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(97, 5, 69, 0.3);
+}
+
+.quiz-button {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 10px rgba(97, 5, 69, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-bounce);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    cursor: pointer;
+}
+
+.quiz-button:hover {
+    background-color: var(--secondary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(97, 5, 69, 0.3);
+}
+
+.quiz-button.danger {
+    background-color: var(--danger);
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
+}
+
+.quiz-button.danger:hover {
+    background-color: var(--danger-dark);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+}
+
+.container h1 {
+  color: #333;
+}
+
+#deleteAccountModal p {
+  color: #333;
+}
+</style>
+{% endblock %}

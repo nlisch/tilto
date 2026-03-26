@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Accès expiré - Tilto{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+    .expired-container {
+        max-width: 800px;
+        margin: 60px auto;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .expired-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, rgba(169, 55, 67, 0.1), rgba(97, 5, 69, 0.05));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 4rem;
+        color: #A93743;
+    }
+
+    .expired-title {
+        font-size: 2rem;
+        color: var(--primary);
+        margin-bottom: 15px;
+        font-weight: 700;
+    }
+
+    .expired-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 40px 0;
+        text-align: left;
+    }
+
+    .benefit-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        border: 2px solid var(--primary-light);
+        transition: all 0.3s ease;
+    }
+
+    .benefit-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(97, 5, 69, 0.15);
+        border-color: var(--accent);
+    }
+
+    .benefit-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .benefit-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 8px;
+    }
+
+    .benefit-description {
+        font-size: 0.95rem;
+        color: var(--text);
+        line-height: 1.5;
+    }
+
+    .unlock-cta-section {
+        background: linear-gradient(135deg, rgba(97, 5, 69, 0.05), rgba(249, 184, 114, 0.1));
+        border: 3px solid var(--accent);
+        border-radius: 15px;
+        padding: 40px;
+        margin: 40px 0;
+    }
+
+    .price-highlight {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 20px 0;
+    }
+
+    .price-highlight small {
+        font-size: 1.2rem;
+        color: var(--text-light);
+        font-weight: 400;
+    }
+
+    .unlock-button {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 25px rgba(97, 5, 69, 0.3);
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .unlock-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 35px rgba(97, 5, 69, 0.4);
+        color: white;
+    }
+
+    .guarantee-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        color: var(--primary);
+        margin-top: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .testimonial-box {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        border-left: 4px solid var(--accent);
+        margin: 30px auto;
+        max-width: 600px;
+        font-style: italic;
+        color: var(--text);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .testimonial-author {
+        font-style: normal;
+        font-weight: 600;
+        color: var(--primary);
+        margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .expired-container {
+            padding: 20px;
+            margin: 30px auto;
+        }
+
+        .expired-title {
+            font-size: 1.5rem;
+        }
+
+        .price-highlight {
+            font-size: 2.5rem;
+        }
+
+        .unlock-button {
+            padding: 18px 40px;
+            font-size: 1.1rem;
+        }
+
+        .benefits-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="expired-container">
+    <!-- Icône d'expiration -->
+    <div class="expired-icon">
+        <i class="fas fa-hourglass-end"></i>
+    </div>
+
+    <!-- Message principal -->
+    <h1 class="expired-title">Votre accès à l'analyse a expiré</h1>
+    <p class="expired-subtitle">
+        {% if firstname %}
+            Bonjour {{ firstname }}, 
+        {% endif %}
+        votre période d'accès gratuit de 7 jours est terminée.<br>
+        Pour continuer à consulter votre analyse complète et débloquer tous les outils concrets, 
+        <strong>passez à la version Premium</strong>.
+    </p>
+
+    <!-- Section CTA principale -->
+    <div class="unlock-cta-section">
+        <h2 style="color: var(--primary); margin-bottom: 10px;">Débloquez l'accès illimité</h2>
+        <p style="color: var(--text-light); margin-bottom: 20px;">
+            Accès permanent à votre analyse personnalisée + 3 stratégies concrètes + actions immédiates
+        </p>
+        
+        <div class="price-highlight">
+            29€ <small>TTC paiement unique</small>
+        </div>
+
+        <a href="{{ stripe_url }}" class="unlock-button">
+            <i class="fas fa-unlock-alt" style="margin-right: 10px;"></i>
+            Je débloque maintenant ! 
+        </a>
+
+    </div>
+
+
+    <!-- CTA secondaire -->
+    <p style="margin-top: 40px; color: var(--text-light);">
+        Une question ? <a href="mailto:support@tilto.ai" style="color: var(--primary); font-weight: 600;">Contactez-nous</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,512 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('tilto - Le Pack Clarté') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+
+
+.shop-page-wrapper {
+    width: 100%;
+    background: linear-gradient(170deg, var(--white) 0%, var(--primary-light) 100%);
+    min-height: calc(100vh - 180px) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.shop-page-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="3" fill="%237D0057" opacity="0.05"/></svg>');
+    opacity: 0.5;
+    z-index: 0;
+}
+
+.shop-main-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 4rem 1rem !important;
+    font-family: 'Poppins', sans-serif !important;
+    position: relative;
+    z-index: 1;
+}
+
+.shop-header-section {
+    text-align: center !important;
+    margin-bottom: 3rem !important;
+}
+
+.shop-main-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: var(--secondary) !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+}
+
+.shop-subtitle {
+    font-size: 1.2rem;
+    color: var(--text);
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
+}
+
+.shop-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+    gap: 2rem !important;
+    padding: 0 !important;
+    list-style: none !important;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.shop-card {
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: var(--shadow) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border: 1px solid var(--border) !important;
+    margin: 0 !important;
+}
+
+.shop-card:hover {
+    transform: translateY(-10px) !important;
+    box-shadow: 0 15px 30px rgba(125, 0, 87, 0.15) !important;
+}
+
+.shop-ribbon {
+    position: absolute !important;
+    top: 20px !important;
+    right: -30px !important;
+    background: var(--accent) !important;
+    color: var(--secondary) !important;
+    padding: 6px 30px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    transform: rotate(45deg) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+}
+
+.shop-price-container {
+    position: absolute !important;
+    top: 1.5rem !important;
+    right: 1.5rem !important;
+    text-align: right !important;
+}
+
+.shop-price-amount {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: var(--primary) !important;
+    line-height: 1 !important;
+}
+
+.shop-price-tag {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--accent) !important;
+    margin-top: 0.25rem !important;
+}
+
+.shop-card-header {
+    padding: 2rem 1.5rem 1rem !important;
+    border: none !important;
+    background: none !important;
+}
+
+.shop-card-emoji {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.shop-card-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: var(--secondary) !important;
+    margin: 0 0 0.5rem 0 !important;
+    padding-right: 80px !important;
+    text-align: left !important;
+}
+
+.shop-card-subtitle {
+    color: var(--text-light) !important;
+    font-size: 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.shop-features-list {
+    list-style: none !important;
+    padding: 0 1.5rem !important;
+    margin: 0 !important;
+    flex-grow: 1 !important;
+}
+
+.shop-feature-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    margin-bottom: 1.25rem !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    transition: transform 0.3s ease !important;
+}
+
+.shop-feature-item:hover {
+    transform: translateX(5px) !important;
+}
+
+.shop-feature-icon {
+    margin-right: 0.75rem !important;
+    flex-shrink: 0 !important;
+    color: var(--primary) !important;
+    font-size: 1.2rem;
+}
+
+.shop-feature-text {
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.shop-card-footer {
+    padding: 1.5rem !important;
+    background: var(--primary-light) !important;
+    margin-top: auto !important;
+    border-top: 1px solid rgba(125, 0, 87, 0.1) !important;
+}
+
+.shop-cta-button {
+    width: 100% !important;
+    padding: 1rem !important;
+}
+
+.shop-cta-button:hover {
+    background: var(--secondary) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 20px rgba(125, 0, 87, 0.2) !important;
+}
+
+.shop-spinner {
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid rgba(255,255,255,0.3) !important;
+    border-top-color: white !important;
+    border-radius: 50% !important;
+    animation: shop-spin 1s linear infinite !important;
+    margin-right: 0.5rem !important;
+}
+
+.shop-terms {
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.shop-terms a {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.shop-back-button {
+    display: inline-flex;
+    align-items: center;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    transition: var(--transition);
+}
+
+.shop-back-button:hover {
+    color: var(--secondary);
+    transform: translateX(-5px);
+}
+
+.shop-back-button svg {
+    margin-right: 0.5rem;
+}
+
+/* Ajout d'un label "recommandé" pour le Pack Clarté */
+.shop-card.recommended {
+    border: 2px solid var(--accent) !important;
+    box-shadow: 0 10px 25px rgba(125, 0, 87, 0.15) !important;
+}
+
+.shop-recommended-label {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    background: var(--accent) !important;
+    color: var(--secondary) !important;
+    text-align: center !important;
+    padding: 0.5rem 0 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+}
+
+/* Ajouter l'indicateur de temps sur le Pack Clarté */
+.shop-delivery-time {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    background-color: rgba(125, 0, 87, 0.08) !important;
+    color: var(--primary) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 30px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    margin-top: 1rem !important;
+}
+
+/* Garantie de satisfaction */
+.shop-guarantee {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-top: 1rem !important;
+    padding: 0.75rem !important;
+    background-color: rgba(125, 0, 87, 0.05) !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    color: var(--primary) !important;
+}
+
+.shop-guarantee-icon {
+    font-size: 1.2rem !important;
+    color: var(--primary) !important;
+}
+
+@keyframes shop-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .shop-grid {
+        grid-template-columns: 1fr !important;
+        padding: 0 1rem !important;
+    }
+    
+    .shop-main-title {
+        font-size: 2rem !important;
+        padding: 0 1rem !important;
+    }
+    
+    .shop-main-container {
+        padding: 3rem 1rem !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main_class %}shop-page-wrapper{% endblock %}
+
+{% block content %}
+<div class="shop-main-container">
+    <div class="shop-header-section">
+        <a href="/" class="shop-back-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            {{ _('Retour à l\'accueil') }}
+        </a>
+        <h1 class="shop-main-title">{{ page_title|default('Clarifiez enfin votre carrière') }}</h1>
+        <p class="shop-subtitle">{{ page_subtitle|default('Choisissez l\'accompagnement qui répond à vos besoins professionnels.') }}</p>
+    </div>
+
+    <div class="shop-grid">
+        {% if products %}
+            {% for product in products %}
+            <div class="shop-card {% if product.product_id == 'clarte' %}recommended{% endif %}">
+                {% if product.product_id == 'clarte' %}
+                <div class="shop-recommended-label">Pack le plus demandé</div>
+                {% endif %}
+                
+                <div class="shop-card-header">
+                    <div class="shop-price-container">
+                        <div class="shop-price-amount">{{ product.price }}€</div>
+                        <div class="shop-price-tag">{{ _('Investissement unique') }}</div>
+                    </div>
+                    
+                    <span class="shop-card-emoji">{{ product.emoji|default('🧭') }}</span>
+                    <h2 class="shop-card-title">{{ product.product_name }}</h2>
+                    <p class="shop-card-subtitle">{{ product.subtitle|default(_('En 72h, passez du doute à la direction claire')) }}</p>
+                    
+                    {% if product.product_id == 'clarte' %}
+                    <div class="shop-delivery-time">
+                        <span>⏱️</span>
+                        <span>Livraison sous 72h après l'entretien</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <ul class="shop-features-list">
+                    {% if product.features %}
+                        {% for feature in product.features %}
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">{{ feature.icon }}</span>
+                            <span class="shop-feature-text">{{ feature.text }}</span>
+                        </li>
+                        {% endfor %}
+                    {% elif product.product_id == 'clarte' %}
+                        <!-- Fonctionnalités adaptées pour le Pack Clarté -->
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">💬</span>
+                            <span class="shop-feature-text">{{ _('Un échange profond qui va au cœur de vos aspirations (1h)') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">🔍</span>
+                            <span class="shop-feature-text">{{ _('Diagnostic précis de votre situation actuelle') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">🗺️</span>
+                            <span class="shop-feature-text">{{ _('Plan d\'action détaillé sur 6 mois') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">✓</span>
+                            <span class="shop-feature-text">{{ _('3 opportunités professionnelles concrètes avec analyse') }}</span>
+                        </li>
+                    {% else %}
+                        <!-- Fonctionnalités par défaut pour les autres produits -->
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">🎯</span>
+                            <span class="shop-feature-text">{{ _('Session individuelle de 60 minutes avec un coach professionnel') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">🔍</span>
+                            <span class="shop-feature-text">{{ _('Analyse approfondie de votre situation actuelle') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">🗺️</span>
+                            <span class="shop-feature-text">{{ _('Plan d\'action personnalisé sur 6 mois') }}</span>
+                        </li>
+                        <li class="shop-feature-item">
+                            <span class="shop-feature-icon">📄</span>
+                            <span class="shop-feature-text">{{ _('Document de synthèse complet livré sous 24h') }}</span>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <div class="shop-card-footer">
+                    <button
+                    class="shop-cta-button btn btn-primary"
+                    data-product-id="{{ product.product_id }}">
+                    {{ product.button_text|default(_('Réserver mon diagnostic maintenant')) }}
+                    </button>
+                    
+                    {% if product.product_id == 'clarte' %}
+                    <div class="shop-guarantee">
+                        <span class="shop-guarantee-icon">🛡️</span>
+                        <span>Satisfait ou remboursé, sans condition</span>
+                    </div>
+                    {% endif %}
+                    
+                    <p class="shop-terms">
+                        {{ _('En effectuant un achat, vous acceptez nos') }} <a href="{{ url_for('tokens.terms_and_conditions') }}">{{ _('Conditions Générales de Vente') }}</a>
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; grid-column: 1/-1;">{{ _('Aucun produit disponible pour votre pays.') }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/" nonce="{{ g.nonce }}"></script>
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('{{ stripe_public_key }}');
+
+    // Mettre en évidence la carte recommandée
+    const recommendedCard = document.querySelector('.shop-card.recommended');
+    if (recommendedCard) {
+        setTimeout(() => {
+            recommendedCard.style.transform = 'translateY(-10px)';
+        }, 500);
+    }
+
+    // Attacher les événements aux boutons
+    document.querySelectorAll('.shop-cta-button').forEach(button => {
+        button.addEventListener('click', function() {
+            startCheckout(this);
+        });
+    });
+
+    // Animation des éléments au survol
+    document.querySelectorAll('.shop-feature-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('.shop-feature-icon');
+            if (icon) {
+                icon.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 300);
+            }
+        });
+    });
+
+    window.startCheckout = async function(button) {
+        button.disabled = true;
+        const originalText = button.innerHTML;
+        button.innerHTML = `
+            <div class="shop-spinner"></div>
+            {{ _("Préparation de votre session...") }}
+        `;
+
+        try {
+            const response = await fetch('{{ url_for("tokens.create_checkout_session") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    product_id: button.dataset.productId,
+                    coupon_code: document.querySelector('#coupon-code')?.value || ''
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.redirect) {
+                window.location.href = data.url;
+                return;
+            }
+            
+            if (!response.ok) {
+                throw new Error(data.error || "{{ _('Erreur de traitement') }}");
+            }
+
+            if (data.sessionId) {
+                await stripe.redirectToCheckout({
+                    sessionId: data.sessionId
+                });
+            }
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert(error.message || "Une erreur s'est produite");
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    };
+});
+</script>
+{% endblock %}

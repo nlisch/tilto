@@ -1,0 +1,975 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto — Livrable de Clara{% endblock %}
+{% block meta_description %}Analyse complète de ta situation professionnelle.{% endblock %}
+{% block body_class %}livrable-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Cache header/footer du site ── */
+.livrable-page .header-parallax,
+.livrable-page .mobile-nav,
+.livrable-page .secondary-navbar,
+.livrable-page > footer,
+.livrable-page .flash-messages,
+.livrable-page .cookie-banner { display: none !important; }
+.chat-widget { display: none !important; }
+.livrable-page main { padding: 0; max-width: none; }
+
+:root {
+  --primary: #A11857;
+  --primary-light: #FDF2F8;
+  --text: #1A1A1A;
+  --text-light: #999999;
+  --text-medium: #4A4A4A;
+  --bg-light: #A11857;
+  --white: #FFFFFF;
+  --border: #EBD5E3;
+  --cream: #FAF7F2;
+  --rose-pale: #EBD5E3;
+  --rose-light: #FDF2F8;
+  --shadow: 0 25px 80px rgba(0,0,0,0.3);
+  --transition: all 0.3s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Open Sans', -apple-system, sans-serif; }
+
+.livrable-page body, body.livrable-page {
+  background-color: var(--bg-light);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 24px;
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+.lv-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: var(--cream);
+  padding: 12px 24px 0;
+  color: var(--text);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--primary);
+  border-radius: 10px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 90px;
+}
+
+.logo-icon {
+  border-radius: 6px;
+  margin-left: 0;
+  margin-bottom: 9px;
+  margin-right: 0;
+  transition: transform 0.3s ease;
+  filter: brightness(0) saturate(100%) invert(15%) sepia(70%) saturate(3500%) hue-rotate(320deg) brightness(85%) contrast(100%);
+}
+
+.header-logo:hover .logo-icon { transform: rotate(-15deg) scale(1.1); }
+
+.logo-text {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.header-title { flex: 1; text-align: center; }
+.header-spacer { min-width: 90px; flex-shrink: 0; }
+
+.pro-badge {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #FDE68A, #D4A843);
+  color: #5C3D00;
+  margin-left: 2px;
+  position: relative;
+  top: -1px;
+}
+
+.header-icon {
+  width: 48px; height: 48px;
+  background: var(--rose-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+
+h1 {
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0;
+  text-align: center;
+}
+
+/* ── V4 Navigation ── */
+.v4-main-navigation {
+  background: var(--cream);
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-top: 1px solid var(--border);
+  overflow-x: hidden;
+}
+
+.v4-nav-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.v4-nav-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.v4-nav-step {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  position: relative;
+  color: var(--text-light);
+  background: var(--white);
+  border: 2px solid var(--rose-pale);
+  min-width: fit-content;
+  white-space: nowrap;
+  flex: 1;
+  max-width: calc(16.66% - 6px);
+}
+
+.v4-nav-separator {
+  width: 12px; height: 2px;
+  background: var(--rose-pale);
+  border-radius: 1px;
+  margin: 0 2px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.v4-nav-step-number {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--rose-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-right: 6px;
+  border: 2px solid var(--rose-pale);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  color: var(--text-light);
+}
+
+.v4-nav-step:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(161,24,87,0.1); color: var(--text); }
+.v4-nav-step.active { background: var(--rose-light); color: var(--primary); border-color: var(--primary); box-shadow: 0 4px 15px rgba(161,24,87,0.15); font-weight: 700; }
+.v4-nav-step.completed { background: var(--white); color: var(--text-medium); border-color: var(--primary); }
+.v4-nav-step.active .v4-nav-step-number,
+.v4-nav-step.completed .v4-nav-step-number { background: var(--primary); color: white; border-color: var(--primary); }
+.v4-nav-separator.completed { background: var(--primary); }
+
+/* ── Main content ── */
+.lv-main-content {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  min-height: 0;
+  height: 0;
+}
+
+.section {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  position: relative;
+  top: auto; left: auto;
+  height: auto; width: 100%;
+  overflow: visible;
+}
+
+.section.active { display: block; opacity: 1; }
+
+.module-container {
+  padding: 10px 28px 28px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.module { margin-bottom: 28px; background: var(--white); overflow: hidden; }
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.module-icon {
+  width: 40px; height: 40px;
+  background: var(--rose-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.module-icon svg, .header-icon svg {
+  width: 20px; height: 20px;
+  stroke: var(--primary); stroke-width: 2;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.welcome-icon svg {
+  width: 40px; height: 40px;
+  stroke: var(--primary); stroke-width: 1.8;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.module-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.15rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.module-content { padding: 20px 0; }
+
+h3 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1rem;
+  color: var(--text);
+  margin: 24px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+h3.first { margin-top: 0; }
+
+p { margin-bottom: 14px; font-size: 0.92rem; color: var(--text-medium); line-height: 1.65; }
+ul { margin-bottom: 14px; padding-left: 20px; }
+li { margin-bottom: 8px; font-size: 0.92rem; color: var(--text-medium); line-height: 1.55; }
+
+.dimension-highlight {
+  margin: 20px 0;
+  padding: 24px;
+  border-radius: 16px;
+  position: relative;
+}
+.highlight-who { background: var(--rose-light); border-left: 4px solid var(--primary); }
+.highlight-what { background: var(--cream); border-left: 4px solid var(--primary); }
+
+.dimension-title {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.95rem;
+  color: var(--primary);
+}
+
+.citation {
+  background: var(--cream);
+  padding: 28px;
+  border-radius: 20px;
+  margin: 20px 0;
+  position: relative;
+  font-style: italic;
+}
+.citation::before {
+  content: '«';
+  position: absolute; left: 18px; top: 8px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 3rem; opacity: 0.15; color: var(--primary); font-style: normal;
+}
+.citation p {
+  margin: 0 0 0 24px;
+  color: var(--text-medium);
+  padding-right: 20px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.95rem;
+  line-height: 1.9;
+}
+.citation::after {
+  content: '»';
+  position: absolute; right: 18px; bottom: 8px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 3rem; opacity: 0.15; color: var(--primary); font-style: normal;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+.comparison-table th {
+  background: var(--primary);
+  color: white;
+  padding: 12px 10px;
+  text-align: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.comparison-table td {
+  padding: 12px 10px;
+  border: 1px solid var(--border);
+  color: var(--text-medium);
+  line-height: 1.5;
+}
+
+/* ── Welcome screen ── */
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  padding: 24px;
+  min-height: 60vh;
+}
+
+.welcome-icon {
+  width: 90px; height: 90px;
+  background: var(--rose-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  font-size: 2.5rem;
+  color: var(--primary);
+}
+
+.welcome-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin-bottom: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.welcome-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-medium);
+  margin-bottom: 8px;
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+.coach-signature {
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  color: var(--primary);
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 32px;
+}
+
+.start-button {
+  padding: 14px 36px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 15px rgba(161,24,87,0.3);
+}
+.start-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(161,24,87,0.4); }
+
+/* ── Print button ── */
+.print-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(161,24,87,0.25);
+}
+.print-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(161,24,87,0.35); }
+
+/* ── Broken Window Overlay ── */
+.bw-locked-zone {
+  position: relative;
+  margin-top: 8px;
+}
+
+/* Flou progressif sur le contenu */
+.bw-blur-content {
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.7;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
+}
+
+/* Overlay CTA par-dessus le flou */
+.bw-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 40px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.92) 40%, rgba(255,255,255,0.99) 100%);
+  border-radius: 0 0 16px 16px;
+  z-index: 10;
+}
+
+.bw-lock-icon {
+  width: 52px; height: 52px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(161,24,87,0.35);
+}
+
+.bw-lock-icon svg {
+  width: 22px; height: 22px;
+  stroke: white; stroke-width: 2.2;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.bw-headline {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.bw-sub {
+  font-size: 0.88rem;
+  color: var(--text-medium);
+  margin-bottom: 24px;
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.bw-cta {
+  padding: 15px 36px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 20px rgba(161,24,87,0.4);
+  text-decoration: none;
+  display: inline-block;
+}
+.bw-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(161,24,87,0.5); color: white; }
+
+.bw-cta-sub {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 10px;
+}
+
+/* ── Sections locked label ── */
+.locked-sections-preview {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+.locked-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: var(--rose-light);
+  border: 1.5px dashed var(--rose-pale);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.locked-badge svg {
+  width: 12px; height: 12px;
+  stroke: var(--text-light); stroke-width: 2.5;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+footer {
+  background: var(--cream);
+  padding: 20px 30px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+/* ── Demo toast ── */
+#demo-toast {
+  display: none;
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  background: #1A1A1A;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  body { background: var(--white); padding: 0; }
+  .lv-container { height: 100vh; border-radius: 0; box-shadow: none; }
+  header, .module-container { padding: 16px 20px; }
+  .header-content { flex-direction: column; text-align: center; }
+  .v4-nav-step { padding: 6px 8px; font-size: 0.72rem; }
+  .v4-nav-step span { display: none; }
+  .v4-nav-step::after { content: attr(data-short); font-size: 0.72rem; }
+}
+
+@media (max-width: 480px) {
+  .v4-main-navigation { padding: 8px 4px; }
+  .v4-nav-steps { gap: 2px; }
+  .v4-nav-step { padding: 5px 6px; min-width: 0; font-size: 0; border-width: 1.5px; border-radius: 8px; }
+  .v4-nav-step span { display: none; }
+  .v4-nav-step::after { content: attr(data-short); font-size: 0.6rem; }
+  .v4-nav-step-number { width: 16px; height: 16px; font-size: 0.55rem; margin-right: 3px; border-width: 1.5px; }
+  .v4-nav-separator { width: 3px; margin: 0; }
+  .logo-text { display: none; }
+  .header-logo { min-width: 35px; }
+  .header-spacer { min-width: 35px; }
+  h1 { font-size: 1.1rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lv-container">
+
+  <!-- ═══════════════════════════════════
+       HEADER
+  ════════════════════════════════════ -->
+  <header>
+    <div class="header-content">
+      <a href="https://tilto.co/" target="_blank" rel="noopener" class="header-logo" style="text-decoration:none;">
+        <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" alt="Tilto Icon" class="logo-icon" width="27" height="27">
+        <span class="logo-text">Tilto</span>
+      </a>
+      <div class="header-title">
+        <h1 id="headerTitle">Premières pistes de réflexion</h1>
+      </div>
+      <div class="header-spacer">
+        <button class="print-btn" id="btnPrint" title="Imprimer">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          <span>Imprimer</span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="v4-main-navigation">
+      <div class="v4-nav-container">
+        <div class="v4-nav-steps">
+          <div class="v4-nav-step active" data-section="welcome" data-short="Accueil">
+            <div class="v4-nav-step-number">1</div>
+            <span>Accueil</span>
+          </div>
+          <div class="v4-nav-separator"></div>
+          <div class="v4-nav-step" data-section="section1" data-short="Ton point">
+            <div class="v4-nav-step-number">2</div>
+            <span>Ton point de départ</span>
+          </div>
+          <div class="v4-nav-separator"></div>
+          <div class="v4-nav-step locked-nav" data-section="section2" data-short="Analyse">
+            <div class="v4-nav-step-number">3</div>
+            <span>Ton analyse</span>
+          </div>
+          <div class="v4-nav-separator"></div>
+          <div class="v4-nav-step locked-nav" data-section="section3" data-short="Pistes">
+            <div class="v4-nav-step-number">4</div>
+            <span>Tes pistes</span>
+          </div>
+          <div class="v4-nav-separator"></div>
+          <div class="v4-nav-step locked-nav" data-section="section4" data-short="Plan">
+            <div class="v4-nav-step-number">5</div>
+            <span>Ton plan d'action</span>
+          </div>
+          <div class="v4-nav-separator"></div>
+          <div class="v4-nav-step locked-nav" data-section="section5" data-short="Pour toi">
+            <div class="v4-nav-step-number">6</div>
+            <span>Un mot pour toi</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lv-main-content">
+
+    <!-- ═══════════════════════════════════
+         WELCOME
+    ════════════════════════════════════ -->
+    <div class="section active" id="welcome">
+      <div class="welcome-screen">
+        <div class="welcome-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        </div>
+        <h2 class="welcome-title">Un résumé de ta situation professionnelle</h2>
+        <p class="welcome-subtitle">Clara, voici la synthèse de notre entretien — les principaux points de notre échange et des pistes concrètes pour la suite.</p>
+        <p class="welcome-subtitle" style="font-size:0.85rem; color:var(--text-light);">Ceci est un exemple de livrable. Le tien sera construit autour de <strong>ton parcours et tes ambitions.</strong></p>
+        <p class="coach-signature">Claire</p>
+        <button class="start-button" id="btnCommencer">Voir l'exemple →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         SECTION 1 — POINT DE DÉPART (visible entièrement)
+    ════════════════════════════════════ -->
+    <div class="section" id="section1">
+      <div class="module-container">
+        <div class="module">
+          <div class="module-header">
+            <div class="module-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <div class="module-title">Quelques mots pour commencer...</div>
+            </div>
+          </div>
+          <div class="module-content">
+            <p>Clara,</p>
+            <p>Suite à notre entretien, j'ai pris le temps de synthétiser nos échanges pour te proposer une analyse claire de ta situation et des pistes d'évolution concrètes.</p>
+
+            <div class="dimension-highlight highlight-who">
+              <div class="dimension-title">
+                <span>🔍</span> Ton point de départ
+              </div>
+              <p><strong>Ta situation professionnelle au moment de notre échange</strong></p>
+              <ul>
+                <li>6 ans dans la communication et le marketing digital, dont 3 ans en agence et 3 ans en interne pour une marque de grande consommation</li>
+                <li>Un sentiment de vide croissant : produire des contenus pour vendre des produits ne fait plus sens pour toi</li>
+                <li>Un déclic lors d'un atelier bénévole d'aide aux devoirs : une énergie retrouvée, une satisfaction immédiate que tu n'avais plus ressentie au travail depuis longtemps</li>
+                <li>L'envie d'un impact direct et visible sur des personnes — pas d'un impact mesuré en taux de conversion</li>
+                <li>La peur de perdre ton niveau de vie et la stabilité d'un secteur que tu maîtrises</li>
+              </ul>
+
+              <div class="citation">
+                <p>J'ai passé 6 ans à convaincre des gens d'acheter des choses dont ils n'avaient pas besoin. Je veux maintenant faire quelque chose qui aide vraiment.</p>
+              </div>
+
+              <table class="comparison-table">
+                <tr>
+                  <th style="width:50%">Ce qui ne fait plus sens</th>
+                  <th style="width:50%">Ce que tu recherches</th>
+                </tr>
+                <tr><td>"Produire du contenu pour vendre"</td><td>"Un impact direct et visible sur des personnes"</td></tr>
+                <tr><td>"Répondre à des briefs sans conviction"</td><td>"Un travail où je crois vraiment à ce que je fais"</td></tr>
+                <tr><td>"Mesurer le succès en taux de clic"</td><td>"Voir concrètement que j'ai aidé quelqu'un"</td></tr>
+                <tr><td>"Être loin des gens, derrière des écrans"</td><td>"Du contact humain, de la relation, du terrain"</td></tr>
+                <tr><td>"Travailler dans un secteur très stressant"</td><td>"Une structure à taille humaine avec des valeurs"</td></tr>
+              </table>
+              <p><strong>Ce contraste révèle une rupture de sens — pas un burn-out. Tu ne fuis pas ton travail par épuisement : tu cherches quelque chose de plus grand. C'est une position de force.</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA continuer vers section 2 (début du flou) -->
+        <div style="text-align:center; padding: 10px 0 30px;">
+          <button class="start-button" id="btnSection2">Continuer la lecture →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         SECTION 2 — ANALYSE (partiellement visible + broken window)
+    ════════════════════════════════════ -->
+    <div class="section" id="section2">
+      <div class="module-container">
+        <div class="module">
+          <div class="module-header">
+            <div class="module-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div>
+              <div class="module-title">Comprendre ta situation</div>
+            </div>
+          </div>
+          <div class="module-content">
+            <h3 class="first">Le Contexte</h3>
+            <p>Tu traverses une <strong>"reconversion par conviction"</strong> — pas par défaut ou par épuisement, mais parce que tu as eu un aperçu de ce que tu veux vraiment et que ça a tout changé :</p>
+            <ul>
+              <li>Après 6 ans dans un secteur que tu maîtrises techniquement, tu as perdu la motivation intrinsèque</li>
+              <li>L'atelier bénévole d'aide aux devoirs a fonctionné comme un révélateur : tu as retrouvé l'engagement, l'attention aux autres, la satisfaction immédiate</li>
+              <li>Tu arrives avec un vrai bagage — la communication, la pédagogie implicite du marketing, la gestion de projet — que tu ne vois pas encore comme des atouts pour le secteur social</li>
+            </ul>
+
+            <div class="citation">
+              <p>Ce moment où j'expliquais un problème de maths et où j'ai vu dans ses yeux que ça avait cliqué — c'est cette sensation-là que je veux retrouver tous les jours.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BROKEN WINDOW ── -->
+      <div class="bw-locked-zone">
+
+        <!-- Contenu flouté (aperçu des sections suivantes) -->
+        <div class="bw-blur-content">
+          <div class="module-container">
+            <div class="module">
+              <div class="module-header">
+                <div class="module-icon">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div><div class="module-title">Tes pistes métiers personnalisées</div></div>
+              </div>
+              <div class="module-content">
+                <p>Suite à notre échange, j'ai identifié quatre voies qui s'appuient sur ce que tu as déjà — sans te demander de tout recommencer — tout en te donnant l'impact humain que tu cherches.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin:16px 0;">
+                  <div style="padding:10px 18px; background:var(--primary); color:white; border-radius:10px; font-size:0.82rem; font-weight:700;">🧭 CIP / Insertion</div>
+                  <div style="padding:10px 18px; background:var(--white); border:2px solid var(--rose-pale); color:var(--primary); border-radius:10px; font-size:0.82rem; font-weight:700;">📚 Formatrice FLE</div>
+                  <div style="padding:10px 18px; background:var(--white); border:2px solid var(--rose-pale); color:var(--primary); border-radius:10px; font-size:0.82rem; font-weight:700;">🤝 Chargée de projet</div>
+                  <div style="padding:10px 18px; background:var(--white); border:2px solid var(--rose-pale); color:var(--primary); border-radius:10px; font-size:0.82rem; font-weight:700;">💻 Médiatrice numérique</div>
+                </div>
+                <div style="background:var(--rose-light); border-left:4px solid var(--primary); border-radius:12px; padding:20px; margin:16px 0;">
+                  <p style="font-weight:700; color:var(--primary); margin-bottom:8px;">CIP — Conseillère en Insertion Professionnelle</p>
+                  <p>Le métier d'accompagnement qui correspond le mieux à ce que tu as décrit. La CIP accompagne des personnes en recherche d'emploi...</p>
+                  <ul>
+                    <li><strong>Salaire débutant :</strong> ~1 700-2 000 € net</li>
+                    <li><strong>Formation :</strong> 8-12 mois, éligible CPF</li>
+                    <li><strong>Délai d'accès :</strong> 12-18 mois</li>
+                  </ul>
+                </div>
+                <div style="background:var(--cream); border-radius:12px; padding:20px; margin:16px 0;">
+                  <p style="font-weight:700; color:var(--text); margin-bottom:8px;">Ton plan d'action personnalisé — 4 étapes</p>
+                  <p>Phase de découverte · Dossier de candidature · Formation · Insertion...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overlay CTA -->
+        <div class="bw-overlay">
+          <div class="bw-lock-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <p class="bw-headline">Ton livrable complet t'attend</p>
+          <p class="bw-sub">Pistes métiers personnalisées, plan d'action détaillé et un mot de ta coach — construits autour de <strong>ton</strong> parcours.</p>
+
+          <!-- Badges des sections bloquées -->
+          <div class="locked-sections-preview">
+            <div class="locked-badge">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Ton analyse complète
+            </div>
+            <div class="locked-badge">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              4 pistes métiers détaillées
+            </div>
+            <div class="locked-badge">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Ton plan d'action
+            </div>
+            <div class="locked-badge">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Un mot pour toi
+            </div>
+          </div>
+
+          <a href="https://calendly.com/TON_LIEN_ICI" target="_blank" rel="noopener" class="bw-cta">
+            Réserver mon appel gratuit →
+          </a>
+          <p class="bw-cta-sub">Appel découverte · Sans engagement · 30 min</p>
+        </div>
+
+      </div>
+      <!-- /bw-locked-zone -->
+
+    </div>
+    <!-- /section2 -->
+
+  </div><!-- /lv-main-content -->
+
+  <footer>
+    Tilto · Document confidentiel · Exemple de livrable de bilan de compétences
+  </footer>
+
+</div><!-- /lv-container -->
+
+<div id="demo-toast">🔒 Impression disponible dans la version complète</div>
+
+<script nonce="{{ g.nonce }}">
+(function () {
+
+  var sections = ['welcome', 'section1', 'section2'];
+  var currentIdx = 0;
+  var maxReached = 0;
+
+  var headerTitles = {
+    'welcome':  'Premières pistes de réflexion',
+    'section1': 'Ton point de départ',
+    'section2': 'Ton analyse'
+  };
+
+  function showSection(idx) {
+    if (idx > maxReached) maxReached = idx;
+    currentIdx = idx;
+
+    document.querySelectorAll('.section').forEach(function (s) {
+      s.classList.remove('active');
+    });
+    var active = document.getElementById(sections[idx]);
+    if (active) active.classList.add('active');
+
+    var h1 = document.getElementById('headerTitle');
+    if (h1) h1.textContent = headerTitles[sections[idx]] || '';
+
+    // Nav steps
+    document.querySelectorAll('.v4-nav-step').forEach(function (step, i) {
+      step.classList.remove('active', 'completed');
+      if (i === idx) step.classList.add('active');
+      else if (i <= maxReached) step.classList.add('completed');
+    });
+    document.querySelectorAll('.v4-nav-separator').forEach(function (sep, i) {
+      sep.classList.remove('completed');
+      if (i < maxReached) sep.classList.add('completed');
+    });
+
+    // Scroll top
+    var container = document.querySelector('.lv-container');
+    if (container) container.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // Nav steps — seuls welcome et section1 sont cliquables dans la démo
+    document.querySelectorAll('.v4-nav-step').forEach(function (step, i) {
+      step.addEventListener('click', function () {
+        if (i < 2) {
+          showSection(i);
+        } else {
+          // Sections bloquées → scroll vers le CTA
+          showSection(2);
+          setTimeout(function () {
+            var overlay = document.querySelector('.bw-overlay');
+            if (overlay) overlay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 200);
+        }
+      });
+    });
+
+    var btnCommencer = document.getElementById('btnCommencer');
+    if (btnCommencer) btnCommencer.addEventListener('click', function () { showSection(1); });
+
+    var btnSection2 = document.getElementById('btnSection2');
+    if (btnSection2) btnSection2.addEventListener('click', function () { showSection(2); });
+
+    // Print → toast
+    var btnPrint = document.getElementById('btnPrint');
+    if (btnPrint) btnPrint.addEventListener('click', function () {
+      var t = document.getElementById('demo-toast');
+      if (t) { t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 3000); }
+    });
+
+    // Keyboard nav
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        if (currentIdx < sections.length - 1) showSection(currentIdx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        if (currentIdx > 0) showSection(currentIdx - 1);
+      }
+    });
+
+    showSection(0);
+  });
+
+})();
+</script>
+{% endblock %}

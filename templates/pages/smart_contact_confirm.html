@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto Smart Contact — Vous y êtes presque{% endblock %}
+{% block meta_description %}Découvrez comment Smart Contact fonctionne avant de finaliser.{% endblock %}
+{% block body_class %}sc-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.sc-page .header-parallax,.sc-page .mobile-nav,.sc-page .secondary-navbar,
+.sc-page > footer,.sc-page .flash-messages,.sc-page .cookie-banner { display:none !important; }
+.sc-page main { padding:0; max-width:none; }
+
+.sc-page {
+    --p:#A11857; --pd:#7a1142; --pl:#FDF2F8;
+    --bg:#FAF7F2; --ro:#EBD5E3;
+    --t:#1A1A1A; --tm:#4A4A4A; --tl:#999;
+    --w:#fff; --gr:#16A34A;
+    font-family:'DM Sans',-apple-system,sans-serif;
+    background:var(--bg); color:var(--t); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+}
+
+/* NAV */
+.sc-nav {
+    position:fixed; inset:0 0 auto; z-index:1000; height:64px;
+    background:rgba(250,247,242,.96); backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(235,213,227,.5);
+    padding:0 32px; display:flex; align-items:center; justify-content:space-between;
+}
+.sc-nav-back {
+    display:none; align-items:center; gap:5px;
+    font-size:.75rem; font-weight:600; color:var(--tm);
+    text-decoration:none; padding:6px 12px;
+    border:1px solid rgba(161,24,87,.15); border-radius:8px;
+    transition:all .2s;
+}
+.sc-nav-back:hover { border-color:var(--p); color:var(--p); background:var(--pl); }
+.sc-nav-back.sc-visible { display:flex; }
+
+/* PAGE */
+.sc-wrap {
+    max-width:780px; margin:0 auto;
+    padding:110px 32px 80px;
+}
+
+/* OPENING */
+.sc-opening {
+    font-family:'Libre Baskerville',serif;
+    font-size:clamp(1.6rem,3vw,2.2rem);
+    line-height:1.25; color:var(--t);
+    margin-bottom:48px;
+    max-width:520px;
+}
+.sc-opening em { color:var(--p); font-style:normal; }
+
+/* BODY */
+.sc-body {
+    display:grid;
+    grid-template-columns:1fr 260px;
+    gap:48px;
+    align-items:start;
+    margin-bottom:40px;
+}
+
+.sc-prose {
+    font-size:.97rem; color:var(--tm); line-height:1.9;
+    margin-bottom:24px;
+}
+.sc-prose:last-child { margin-bottom:0; }
+.sc-hl { color:var(--p); font-weight:600; }
+
+.sc-question {
+    font-size:.97rem; color:var(--t);
+    font-weight:600; line-height:1.7;
+    margin-top:32px;
+    padding-top:28px;
+    border-top:1px solid rgba(235,213,227,.8);
+}
+
+/* TESTIMONIAL */
+.sc-margin { padding-top:4px; }
+.sc-testi {
+    background:var(--w); border:1px solid #e8e8e8;
+    border-radius:10px; padding:14px 15px;
+    box-shadow:0 1px 8px rgba(0,0,0,.06);
+}
+.sc-testi-src { display:flex; align-items:center; gap:5px; margin-bottom:9px; }
+.sc-testi-logo { font-size:.62rem; font-weight:800; letter-spacing:.2px; }
+.sc-testi-logo span:nth-child(1){color:#4285F4}
+.sc-testi-logo span:nth-child(2){color:#EA4335}
+.sc-testi-logo span:nth-child(3){color:#FBBC05}
+.sc-testi-logo span:nth-child(4){color:#4285F4}
+.sc-testi-logo span:nth-child(5){color:#34A853}
+.sc-testi-logo span:nth-child(6){color:#EA4335}
+.sc-testi-sep { color:#ddd; }
+.sc-testi-ok { font-size:.58rem; color:#999; }
+.sc-testi-head { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.sc-testi-av {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--p); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.72rem; flex-shrink:0;
+}
+.sc-testi-name { font-weight:600; font-size:.74rem; color:#1a1a1a; }
+.sc-testi-meta { font-size:.58rem; color:#999; }
+.sc-testi-stars { color:#F59E0B; font-size:.65rem; margin-bottom:6px; }
+.sc-testi-txt { font-size:.71rem; color:#555; line-height:1.6; }
+
+/* DEMO LINK */
+.sc-demo-link {
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--p); border:2px solid var(--p);
+    border-radius:10px; padding:13px 20px;
+    font-size:.88rem; font-weight:700; color:#fff;
+    text-decoration:none; transition:all .2s;
+    box-shadow:0 4px 20px rgba(161,24,87,.35);
+    margin-bottom:32px;
+}
+.sc-demo-link:hover { background:var(--pd); border-color:var(--pd); transform:translateY(-2px); box-shadow:0 8px 28px rgba(161,24,87,.45); color:#fff; }
+.sc-demo-link .sc-demo-pulse { background:#fff; }
+.sc-demo-link .sc-demo-pulse::after { border-color:#fff; }
+.sc-demo-pulse {
+    width:8px; height:8px; border-radius:50%; background:var(--p);
+    position:relative; flex-shrink:0;
+}
+.sc-demo-pulse::after {
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:1.5px solid var(--p); opacity:0;
+    animation:sc-pulse 1.8s ease-out infinite;
+}
+@keyframes sc-pulse { 0%{opacity:.6;transform:scale(.8)} 100%{opacity:0;transform:scale(1.8)} }
+
+/* HOW IT WORKS — 2 steps */
+.sc-how {
+    margin-bottom:32px;
+    display:grid; grid-template-columns:1fr 1fr; gap:12px;
+}
+.sc-how-step {
+    background:var(--w); border-radius:14px;
+    padding:22px 20px; position:relative; overflow:hidden;
+    border:1px solid rgba(235,213,227,.7);
+    box-shadow:0 2px 16px rgba(161,24,87,.05);
+    transition:transform .2s, box-shadow .2s;
+}
+.sc-how-step:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(161,24,87,.1); }
+.sc-how-step::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(135deg, rgba(161,24,87,.04) 0%, transparent 60%);
+    pointer-events:none;
+}
+.sc-how-num {
+    font-family:'Libre Baskerville',serif;
+    font-size:3rem; font-weight:700; line-height:1;
+    color:rgba(161,24,87,.1); position:absolute;
+    top:10px; right:16px; pointer-events:none;
+}
+.sc-how-icon {
+    width:38px; height:38px; border-radius:10px;
+    background:var(--pl); display:flex; align-items:center;
+    justify-content:center; margin-bottom:14px;
+    border:1px solid rgba(161,24,87,.12);
+}
+.sc-how-icon svg { stroke:var(--p); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; width:18px; height:18px; }
+.sc-how-label {
+    font-family:'Libre Baskerville',serif;
+    font-size:.95rem; color:var(--t); line-height:1.3;
+    margin-bottom:8px;
+}
+.sc-how-sub { font-size:.76rem; color:var(--tm); line-height:1.6; }
+.sc-how-sub strong { color:var(--p); font-weight:600; }
+.sc-how-timing {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:.62rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.8px; color:var(--p);
+    background:var(--pl); border-radius:5px;
+    padding:3px 8px; margin-top:12px;
+}
+
+@media(max-width:680px){ .sc-how { grid-template-columns:1fr; } }
+
+
+
+/* CTA */
+.sc-cta {
+    border-top:1px solid rgba(235,213,227,.8);
+    padding-top:36px;
+    display:flex; align-items:center; gap:32px; flex-wrap:wrap;
+}
+.sc-price-block { flex-shrink:0; min-width:30%; }
+.sc-price {
+    font-family:'Libre Baskerville',serif;
+    font-size:2rem; font-weight:700; color:var(--p); line-height:1;
+}
+.sc-price-note { font-size:.68rem; color:var(--tl); margin-top:3px; }
+.sc-price-offer {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:.68rem; font-weight:700; color:var(--p);
+    background:var(--pl); border:1px solid rgba(161,24,87,.2);
+    border-radius:6px; padding:3px 8px; margin-top:6px;
+}
+.sc-btns { display:flex; flex-direction:column; gap:8px; flex:1; min-width:220px; }
+
+.sc-pay {
+    background:#f7b100; color:#590925; border:none; cursor:pointer;
+    font-family:'DM Sans',sans-serif; font-weight:700; font-size:.9rem;
+    padding:13px 22px; border-radius:10px; width:100%;
+    display:flex; align-items:center; justify-content:center;
+    text-decoration:none; transition:background .2s,transform .2s;
+}
+.sc-pay:hover { background:#e0a000; transform:translateY(-1px); box-shadow: 0 5px 16px rgba(247,177,0,.45); color:#590925; }
+
+.sc-ask {
+    background:transparent; color:var(--tl);
+    border:1px solid rgba(161,24,87,.15); cursor:pointer;
+    font-family:'DM Sans',sans-serif; font-weight:500; font-size:.78rem;
+    padding:10px 18px; border-radius:10px; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    transition:border-color .2s,color .2s,background .2s;
+}
+.sc-ask:hover { border-color:var(--p); color:var(--p); background:var(--pl); }
+
+.sc-secure {
+    font-size:.58rem; color:var(--tl); margin-top:6px;
+    display:flex; align-items:center; gap:4px;
+}
+.sc-secure svg { stroke:var(--gr); stroke-width:2; fill:none; width:9px; height:9px; stroke-linecap:round; }
+
+/* FOOTER */
+.sc-footer {
+    border-top:1px solid rgba(235,213,227,.5);
+    color:var(--tl); padding:24px; text-align:center; font-size:.7rem;
+}
+.sc-footer a { color:var(--tm); text-decoration:none; }
+.sc-footer a:hover { color:var(--p); }
+
+/* FADE */
+.sc-f { opacity:0; transform:translateY(16px); transition:opacity .6s cubic-bezier(.23,1,.32,1),transform .6s cubic-bezier(.23,1,.32,1); }
+.sc-f.sc-v { opacity:1; transform:none; }
+.sc-d1{transition-delay:.08s} .sc-d2{transition-delay:.16s}
+.sc-d3{transition-delay:.24s} .sc-d4{transition-delay:.32s}
+.sc-d5{transition-delay:.40s}
+
+/* RESPONSIVE */
+@media(max-width:680px){
+    .sc-wrap { padding:90px 20px 60px; }
+    .sc-body { grid-template-columns:1fr; gap:32px; }
+    .sc-margin { padding-top:0; }
+    .sc-cta { flex-direction:column; align-items:flex-start; gap:20px; }
+    .sc-btns { width:100%; }
+    .sc-how { padding:20px 18px; }
+    .sc-call { flex-direction:column; align-items:flex-start; gap:14px; }
+    .sc-call-btn { width:100%; justify-content:center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<nav class="sc-nav">
+    <a href="{{ url_for('tilto_smart_contacts', slug_id=session.get('smart_contact_slug', '8793')) }}">
+        <img src="https://images.tilto.co/production/2026/02/bfb592d3_Tilto_SmartContact_Horizontal_transparent_1.webp" alt="Tilto Smart Contact" style="height:80px;width:auto;">
+    </a>
+    <a href="{{ url_for('tilto_smart_contacts_default') }}" class="sc-nav-back" id="scNavBack">
+        ← Retour
+    </a>
+</nav>
+
+<div class="sc-wrap">
+
+    <!-- PHRASE D'OUVERTURE -->
+    <p class="sc-opening sc-f">
+        Vous allez contacter les bonnes personnes,<br>
+        <em>avant tout le monde.</em>
+    </p>
+
+    <!-- CORPS : texte + avis en marge -->
+    <div class="sc-body">
+
+        <div class="sc-text">
+            <p class="sc-prose sc-f sc-d1">La plupart des postes se pourvoient avant d'être publiés. Smart Contact détecte les entreprises qui montrent des <span class="sc-hl">signaux actifs de recrutement</span> — expansion, nouveaux projets, mouvements internes. Smart Contact t'aide à identifier le manager direct et vous prépare un message personnalisé prêt à envoyer. Vous prenez contact avant que l'offre existe.</p>
+
+            <p class="sc-prose sc-f sc-d2">Vous n'êtes plus dans une pile de CVs — vous êtes <span class="sc-hl">la première personne à frapper à la bonne porte.</span> C'est pour ça que sur 10 contacts ciblés, vous obtenez en moyenne <span class="sc-hl">3 à 5 opportunités réelles.</span></p>
+
+            <p class="sc-question sc-f sc-d3">Investir 29,90€ pour décrocher un meilleur poste, plus vite, mieux payé.</p>
+        </div>
+
+        <!-- AVIS GOOGLE EN MARGE -->
+        <div class="sc-margin sc-f sc-d2">
+            <div class="sc-testi">
+                <div class="sc-testi-src">
+                    <div class="sc-testi-logo"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div>
+                    <span class="sc-testi-sep">·</span>
+                    <span class="sc-testi-ok">Avis vérifié</span>
+                </div>
+                <div class="sc-testi-head">
+                    <div class="sc-testi-av">L</div>
+                    <div>
+                        <div class="sc-testi-name">Laurence</div>
+                        <div class="sc-testi-meta">49 ans · évolution vers un autre secteur</div>
+                    </div>
+                </div>
+                <div class="sc-testi-stars">★★★★★</div>
+                <p class="sc-testi-txt">Au début, j'ai hésité à investir. Après plusieurs mois de recherche, j'avais très peu de retours. Mais dépenser moins de 30€ pour accéder directement aux bonnes personnes dans des entreprises que je croyais inaccessibles, c'était un petit risque. Et ça m'a permis d'obtenir un poste avec plus de sens — et mieux rémunéré en plus.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- COMMENT ÇA MARCHE -->
+    <div class="sc-how sc-f sc-d3">
+
+        <div class="sc-how-step">
+            <div class="sc-how-num">1</div>
+            <div class="sc-how-icon">
+                <svg viewBox="0 0 24 24"><path d="M15.05 5A5 5 0 0119 8.95M15.05 1A9 9 0 0123 8.94M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.1 1.18 2 2 0 012.08 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+            </div>
+            <div class="sc-how-label">On vous appelle après votre commande</div>
+            <div class="sc-how-sub">Un échange pour comprendre vos critères : poste visé, secteur, type d'entreprise, localisation.</div>
+        </div>
+
+        <div class="sc-how-step">
+            <div class="sc-how-num">2</div>
+            <div class="sc-how-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="sc-how-label">Vous recevez vos 10 Smart Contacts</div>
+            <div class="sc-how-sub">10 entreprises ciblées, le manager à contacter directement, un message personnalisé prêt à envoyer. <strong>Vous arrivez avant les autres — sans passer par le tri des CV.</strong></div>
+        </div>
+
+    </div>
+
+
+    <!-- DEMO LINK -->
+    <a href="/demo_smart_contact?from=confirm&product_id={{ product_id }}" class="sc-demo-link sc-f sc-d4">
+        <span class="sc-demo-pulse"></span>
+        Voir un exemple →
+    </a>
+
+    <!-- CTA -->
+    <div class="sc-cta sc-f sc-d5">
+        <div class="sc-price-block">
+            <div class="sc-price">29,90€</div>
+            <div class="sc-price-offer">🌸 Offre Printemps · Jusqu'au 31 mars</div>
+        </div>
+        <div class="sc-btns">
+            <form action="{{ url_for('tokens.direct_buy', product_id=product_id) }}" method="GET">
+                {% if coupon_code %}<input type="hidden" name="coupon" value="{{ coupon_code }}">{% endif %}
+                <button type="submit" class="sc-pay">Contacter mes entreprises →</button>
+            </form>
+            <button type="button" class="sc-ask" data-open-chat>
+                <svg viewBox="0 0 24 24" width="12" height="12" style="stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Non, j'ai encore des questions
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<footer class="sc-footer">
+    <p>© 2026 Tilto — <a href="{{ url_for('terms_of_service') }}">Conditions Générales</a> · <a href="{{ url_for('privacy_policy') }}">Politique de confidentialité</a> · <a href="{{ url_for('legal') }}">Mentions légales</a></p>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function(){
+    'use strict';
+    var obs = new IntersectionObserver(function(e){
+        e.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('sc-v'); });
+    },{threshold:0});
+    document.querySelectorAll('.sc-f').forEach(function(el){ obs.observe(el); });
+
+    // Affiche le lien retour uniquement si on vient de confirm
+    if (new URLSearchParams(window.location.search).get('from') === 'confirm') {
+        var btn = document.getElementById('scNavBack');
+        if (btn) btn.classList.add('sc-visible');
+    }
+})();
+</script>
+{% endblock %}

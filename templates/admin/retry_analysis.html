@@ -1,0 +1,5560 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="flash-messages"></div>
+<div class="container-fluid mt-4 px-4">
+  <div class="page-header mb-4">
+    <h2 class="page-title">
+      <span class="title-icon">⚙️</span>
+      Gestion des analyses LLM
+    </h2>
+    <p class="page-subtitle">Interface de gestion des analyses utilisateurs</p>
+  </div>
+
+  <!-- ==================== 1. SÉLECTION UTILISATEUR ==================== -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="header-content">
+          <span class="header-icon">👤</span>
+          <span class="header-title">Sélectionner un utilisateur</span>
+        </div>
+        <div id="loadingSpinner" style="display: none;">
+          <div class="spinner-border spinner-border-sm text-light" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="user-select-wrapper">
+        <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+          <div style="position:relative; flex:1; min-width:200px;">
+            <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--gray-400); pointer-events:none;"></i>
+            <input type="text" id="userSearchInput" placeholder="Rechercher" 
+                   style="width:100%; padding:0.875rem 1rem 0.875rem 2.75rem; font-size:1rem; border-radius:var(--radius-md); border:2px solid var(--gray-200); transition:all var(--transition-normal); background:white;"
+                   autocomplete="off">
+          </div>
+          <div style="flex:2; min-width:250px;">
+            <select id="user_id" name="user_id" class="form-select form-select-lg">
+              <option value="">-- Choisir un utilisateur --</option>
+              {% for user in users %}
+                <option value="{{ user.user_id }}" {% if selected_user_id == user.user_id %}selected{% endif %}
+                        data-search="{{ user.firstname | lower }} {{ user.user_id }}">
+                  {{ user.firstname }} · ID: {{ user.user_id }} · 
+                  Inscrit le {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div id="searchResultsCount" style="margin-top:0.5rem; font-size:0.85rem; color:var(--gray-500); display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  {% if selected_user_id %}
+  
+  <!-- ==================== 2. QUIZ COMPLÉTÉS ==================== -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">📋</span>
+      <span class="header-title">Quiz Complétés</span>
+    </div>
+    <div class="card-body">
+      {% if user_quiz_sessions %}
+        <div class="quiz-sessions-grid">
+          {% for session in user_quiz_sessions %}
+          <div class="quiz-session-card">
+            <div class="quiz-session-header">
+              <div class="quiz-badge">{{ session.quiz_id }}</div>
+              <div class="quiz-meta">
+                <span class="quiz-meta-item">
+                  <i class="fas fa-question-circle"></i> {{ session.questions_answered }} questions
+                </span>
+              </div>
+            </div>
+            <div class="quiz-session-actions">
+              <button class="btn-action btn-action-primary view-responses"
+                      data-quiz="{{ session.quiz_id }}"
+                      data-session="{{ session.quiz_session_id }}"
+                      data-user="{{ selected_user_id }}">
+                <i class="fas fa-eye"></i> Voir les réponses
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-message">
+          <i class="fas fa-inbox fa-3x mb-3"></i>
+          <p>Aucun quiz complété pour cet utilisateur</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ==================== 3. MODAL RÉPONSES ==================== -->
+  <div id="responsesSection" class="modal-section" style="display: none;">
+    <div class="card card-modern mb-4">
+      <div class="card-header-modern">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="header-content">
+            <span class="header-icon">📋</span>
+            <span class="header-title">Réponses du Quiz</span>
+          </div>
+          <button class="btn-close-modal close-responses">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="responsesContent"></div>
+        <div class="modal-actions mt-4" id="downloadSection" style="display: none;">
+          <button class="btn-action btn-action-success" id="downloadBtn">
+            <i class="fas fa-download"></i> Télécharger les réponses (TXT)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 4. TABS ANALYSES ==================== -->
+  {% if user_quiz_sessions %}
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern p-0">
+      <div class="tabs-container">
+        <button class="tab-button active" data-tab="dynamic-content">
+          <i class="fas fa-brain"></i>
+          <span>Analyses Dynamiques</span>
+          <div class="tab-indicator"></div>
+        </button>
+        <button class="tab-button" data-tab="static-content">
+          <i class="fas fa-link"></i>
+          <span>Liens d'Accès à l'analyse statique</span>
+          <div class="tab-indicator"></div>
+        </button>
+      </div>
+    </div>
+    
+    <div class="card-body p-0">
+      <div class="tab-content-wrapper">
+<!-- ========== TAB 1 : ANALYSES DYNAMIQUES (LLM) ========== -->
+<div id="dynamic-content" class="tab-pane active">
+  {% for session in user_quiz_sessions %}
+  <div class="analysis-section">
+  
+    {% if session.is_static_only %}
+    <!-- ========== TEMPLATE STATIQUE ========== -->
+    <div class="analysis-section-header">
+      <div class="quiz-label">
+        <i class="fas fa-file-code"></i>
+        <strong>Template statique</strong>
+      </div>
+    </div>
+    
+    <div class="state-alert state-alert-info">
+      <div class="state-alert-icon">📄</div>
+      <div class="state-alert-content">
+        <strong class="state-alert-title">Analyse HTML statique</strong>
+        <p class="state-alert-text">{{ session.static_template }}</p>
+        {% if session.has_dynamic_override %}
+        <p class="state-alert-text"><em>⚠️ Une analyse dynamique existe aussi (prioritaire)</em></p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="action-group mt-3">
+      <div class="action-group-buttons">
+        <a href="/analysis/admin/preview-static/{{ selected_user_id }}" target="_blank" class="btn-action btn-action-primary">
+          <i class="fas fa-eye"></i> Voir l'analyse
+        </a>
+        <button class="btn-action btn-action-info generate-shareable-link"
+                data-quiz="pack_clarte"
+                data-result="static_{{ selected_user_id }}"
+                data-user="{{ selected_user_id }}">
+          <i class="fas fa-link"></i> Générer lien
+        </button>
+      </div>
+    </div>
+    
+    {% else %}
+    <!-- ========== ANALYSES DYNAMIQUES (LLM) ========== -->
+    <div class="analysis-section-header">
+      <div class="quiz-label">
+        <i class="fas fa-cube"></i>
+        Quiz : <strong>{{ session.quiz_id }}</strong>
+      </div>
+    </div>
+
+    {% set has_any_admin = session.analyses | selectattr('admin_created_at') | list | length > 0 %}
+    {% if not session.analyses or not has_any_admin %}
+      <!-- ========== ÉTAT 0 : AUCUNE ANALYSE ADMIN ========== -->
+      <div class="state-empty">
+        <div class="state-empty-icon">
+          <i class="fas fa-magic" style="font-size: 4rem;"></i>
+        </div>
+        <h3 class="state-empty-title">Aucune analyse générée</h3>
+        <p class="state-empty-subtitle">Créez une première analyse admin pour ce quiz</p>
+        
+        <div class="generation-form">
+          <div class="form-group-modern">
+            <label class="form-label-modern">
+              <i class="fas fa-layer-group"></i> Choisir une étape
+            </label>
+            <select class="form-select-modern initial-step-select" 
+                    data-quiz="{{ session.quiz_id }}" 
+                    data-user="{{ selected_user_id }}">
+              <option value="">-- Sélectionner une étape --</option>
+            </select>
+          </div>
+          
+          <div class="initial-prompts-container" style="display: none;">
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-cog"></i> System Prompt
+              </label>
+              <textarea class="form-textarea-modern initial-system-prompt" rows="4"></textarea>
+              <small class="form-hint">Instructions système pour l'IA</small>
+            </div>
+            
+            <div class="form-group-modern">
+              <label class="form-label-modern">
+                <i class="fas fa-comment"></i> Human Prompt
+              </label>
+              <textarea class="form-textarea-modern initial-human-prompt" rows="6"></textarea>
+              <small class="form-hint">Contient les réponses utilisateur + instructions</small>
+            </div>
+          <div class="form-group-modern">
+            <label class="form-label-modern">
+              <i class="fas fa-check-double"></i> Critères de Validation
+            </label>
+            <textarea class="form-textarea-modern initial-validation-criteria" rows="8"></textarea>
+            <small class="form-hint">Critères pour le LLM validateur ( Par défaut ceux de la BDD )</small>
+          </div>
+            <div class="state-empty-hint">
+              <i class="fas fa-info-circle"></i>
+              L'analyse sera créée en brouillon (invisible pour l'utilisateur)
+            </div>
+            <button class="btn-action btn-action-primary btn-lg w-100 execute-initial-generation">
+              <i class="fas fa-rocket"></i> Générer l'analyse admin
+            </button>
+            <button type="button" 
+            class="btn-action btn-async w-100 mt-3"
+            data-action="generate-async"
+            data-user-id="{{ selected_user_id }}"
+            data-quiz-id="{{ session.quiz_id }}"
+            data-step-id="career_path_v4">
+        <span class="async-icon">⚡</span> Générer en async
+    </button>
+            <button type="button" class="btn-action btn-action-secondary mt-3 w-100 btn-user-history"
+            data-quiz="{{ session.quiz_id }}"
+            data-user="{{ selected_user_id }}">
+            <i class="fas fa-history"></i> Voir historique des générations
+          </button>
+          </div>
+        </div>
+      </div>
+
+      {% endif %}
+    
+      {% if session.analyses %}
+        <!-- ========== ANALYSES EXISTANTES ========== -->
+      {% set user_active = namespace(found=false) %}
+      {% set admin_active = namespace(found=false) %}
+      {% set admin_draft = namespace(found=false) %}
+      {% set user_inactive = namespace(found=false) %}
+      
+      {% for analysis in session.analyses %}
+        {% if analysis.user_created_at and analysis.user_is_active %}
+          {% set user_active.found = true %}
+        {% endif %}
+        {% if analysis.user_created_at and not analysis.user_is_active %}
+          {% set user_inactive.found = true %}
+        {% endif %}
+        {% if analysis.admin_created_at and analysis.admin_is_active %}
+          {% set admin_active.found = true %}
+        {% endif %}
+        {% if analysis.admin_created_at and not analysis.admin_is_active %}
+          {% set admin_draft.found = true %}
+        {% endif %}
+      {% endfor %}
+      
+      <!-- ========== ALERTES CONTEXTUELLES ========== -->
+      {% if not user_active.found and not admin_active.found and admin_draft.found %}
+        <div class="state-alert state-alert-warning">
+          <div class="state-alert-icon">⚠️</div>
+          <div class="state-alert-content">
+            <strong class="state-alert-title">Aucune analyse active</strong>
+            <p class="state-alert-text">L'utilisateur ne voit rien pour l'instant</p>
+          </div>
+        </div>
+        
+      {% elif admin_active.found and not user_active.found and not user_inactive.found %}
+        <div class="state-alert state-alert-success">
+          <div class="state-alert-icon">✅</div>
+          <div class="state-alert-content">
+            <strong class="state-alert-title">Analyse active (version admin)</strong>
+            <p class="state-alert-text">Visible par l'utilisateur final</p>
+          </div>
+        </div>
+        
+      {% elif user_active.found and not admin_draft.found and not admin_active.found %}
+        <div class="state-alert state-alert-success">
+          <div class="state-alert-icon">✅</div>
+          <div class="state-alert-content">
+            <strong class="state-alert-title">Analyse active (version automatique)</strong>
+            <p class="state-alert-text">L'utilisateur voit la version auto-générée</p>
+          </div>
+        </div>
+        
+      {% elif user_active.found and admin_draft.found %}
+        <div class="state-alert state-alert-info">
+          <div class="state-alert-icon">💡</div>
+          <div class="state-alert-content">
+            <strong class="state-alert-title">Version admin en validation</strong>
+            <p class="state-alert-text">L'utilisateur voit actuellement la version user</p>
+          </div>
+        </div>
+        
+      {% elif admin_active.found and user_inactive.found %}
+        <div class="state-alert state-alert-success">
+          <div class="state-alert-icon">✅</div>
+          <div class="state-alert-content">
+            <strong class="state-alert-title">Analyse active (version admin)</strong>
+            <p class="state-alert-text">Visible par l'utilisateur final</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- ========== AFFICHAGE DES VERSIONS ========== -->
+      <div class="versions-container">
+        
+        <!-- VERSIONS ACTIVES -->
+        {% for analysis in session.analyses %}
+        {% if analysis.user_is_active %}
+        <div class="version-card version-card-active">
+          <div class="version-card-header">
+            <div class="version-badge version-badge-active">
+              <i class="fas fa-check-circle"></i> ACTIVE
+            </div>
+            <div class="version-info">
+              <span class="version-type">
+                <i class="fas fa-user"></i> User (auto)
+              </span>
+              <span class="version-date">{{ analysis.user_created_at.strftime('%d/%m %H:%M') }}</span>
+            </div>
+          </div>
+          
+          <div class="version-card-body">
+            <div class="action-group">
+              <div class="action-group-title">Actions principales</div>
+              <div class="action-group-buttons">
+                <button class="btn-action btn-action-outline view-user-analysis"
+                        data-quiz="{{ analysis.quiz_id }}"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}">
+                  <i class="fas fa-eye"></i> Voir
+                </button>
+                <button class="btn-action btn-action-outline edit-json-user"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}"
+                        data-quiz="{{ analysis.quiz_id }}">
+                  <i class="fas fa-edit"></i> Éditer JSON
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <div class="action-group-title">📧 Notification</div>
+              <div class="action-group-buttons">
+                <button class="btn-action btn-action-info send-email-notification"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}"
+                        data-user="{{ selected_user_id }}"
+                        data-quiz="{{ analysis.quiz_id }}">
+                  <i class="fas fa-envelope"></i> Notifier l'utilisateur
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <div class="action-group-title">Gestion</div>
+              <div class="action-group-buttons">
+                <button class="btn-action btn-action-warning unpublish-user-analysis"
+                data-result="{{ analysis.user_result_id }}"
+                data-step="{{ analysis.result_step_id }}">
+          <i class="fas fa-eye-slash"></i> Dépublier
+        </button>
+                <button class="btn-action btn-action-secondary replay-analysis"
+                        data-quiz="{{ analysis.quiz_id }}"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}">
+                  <i class="fas fa-redo"></i> Rejouer
+                </button>
+                <button type="button" 
+                        class="btn-action btn-async btn-small"
+                        data-action="replay-async"
+                        data-user-id="{{ selected_user_id }}"
+                        data-quiz-id="{{ session.quiz_id }}"
+                        data-step-id="{{ analysis.result_step_id }}"
+                        data-result-id="{{ analysis.user_result_id }}"
+                        title="Relancer en async">
+                  <span class="async-icon">⚡</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <div class="action-group-title">Amélioration ciblée</div>
+              <div class="action-group-buttons">
+                <button class="btn-action btn-action-warning manual-retry-btn"
+                        data-quiz="{{ analysis.quiz_id }}"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}"
+                        data-user="{{ selected_user_id }}"
+                        data-generator-type="user">
+                  <i class="fas fa-magic"></i> Relance personnalisée
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <div class="action-group-title">Historique</div>
+              <div class="action-group-buttons">
+                <button type="button" class="btn-action btn-action-secondary btn-history"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-step="{{ analysis.result_step_id }}"
+                        title="Voir l'historique de génération">
+                  <i class="fas fa-history"></i> Historique
+                </button>
+              </div>
+            </div>
+            
+            <div class="action-group">
+              <div class="action-group-title">Partage</div>
+              <div class="action-group-buttons">
+                <button class="btn-action btn-action-info generate-shareable-link"
+                        data-quiz="{{ analysis.quiz_id }}"
+                        data-result="{{ analysis.user_result_id }}"
+                        data-user="{{ selected_user_id }}">
+                  <i class="fas fa-link"></i> Générer lien partageable
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+          
+          {% if analysis.admin_is_active %}
+            <div class="version-card version-card-active">
+              <div class="version-card-header">
+                <div class="version-badge version-badge-active">
+                  <i class="fas fa-check-circle"></i> ACTIVE
+                </div>
+                <div class="version-info">
+                  <span class="version-type">
+                    <i class="fas fa-user-shield"></i> Admin
+                  </span>
+                  <span class="version-date">{{ analysis.admin_created_at.strftime('%d/%m %H:%M') }}</span>
+                </div>
+              </div>
+              
+              <div class="version-card-body">
+                <div class="action-group">
+                  <div class="action-group-title">Actions principales</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-outline view-admin-analysis"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-eye"></i> Voir
+                    </button>
+                    <button class="btn-action btn-action-outline edit-json-admin"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-quiz="{{ analysis.quiz_id }}">
+                      <i class="fas fa-edit"></i> Éditer JSON
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">📧 Notification</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-info send-email-notification"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-user="{{ selected_user_id }}"
+                            data-quiz="{{ analysis.quiz_id }}">
+                      <i class="fas fa-envelope"></i> Notifier l'utilisateur
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Gestion</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-warning unpublish-admin-analysis"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-eye-slash"></i> Dépublier
+                    </button>
+                    <button class="btn-action btn-action-secondary replay-analysis"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-redo"></i> Rejouer
+                    </button>
+                    <button type="button" 
+                    class="btn-action btn-async btn-small"
+                    data-action="replay-async"
+                    data-user-id="{{ selected_user_id }}"
+                    data-quiz-id="{{ session.quiz_id }}"
+                    data-step-id="career_path_v4"
+                    data-result-id="{{ analysis.admin_result_id }}"
+                    title="Relancer en async">
+                      <span class="async-icon">⚡</span>
+                  </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Amélioration ciblée</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-warning manual-retry-btn"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-user="{{ selected_user_id }}"
+                            data-generator-type="{% if analysis.admin_is_active or analysis.admin_created_at %}admin{% else %}user{% endif %}">
+                      <i class="fas fa-magic"></i> Relance personnalisée
+                    </button>
+                  </div>
+                </div>
+                <div class="action-group">
+                  <div class="action-group-title">Historique</div>
+                  <div class="action-group-buttons">
+                    <button type="button" class="btn-action btn-action-secondary btn-history"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            title="Voir l'historique de génération">
+                      <i class="fas fa-history"></i> Historique
+                    </button>
+                  </div>
+                </div>
+                <div class="action-group">
+                  <div class="action-group-title">Partage</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-info generate-shareable-link"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id}}"
+                            data-user="{{ selected_user_id }}">
+                      <i class="fas fa-link"></i> Générer lien partageable
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+        
+        <!-- VERSIONS INACTIVES -->
+        {% for analysis in session.analyses %}
+          {% if analysis.user_created_at and not analysis.user_is_active %}
+            <div class="version-card version-card-inactive">
+              <div class="version-card-header">
+                <div class="version-badge version-badge-inactive">
+                  <i class="fas fa-archive"></i> HISTORIQUE
+                </div>
+                <div class="version-info">
+                  <span class="version-type">
+                    <i class="fas fa-user"></i> User
+                  </span>
+                  <span class="version-date">{{ analysis.user_created_at.strftime('%d/%m %H:%M') }}</span>
+                </div>
+              </div>
+              
+              <div class="version-card-body">
+                <div class="action-group">
+                  <div class="action-group-title">Actions principales</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-outline view-user-analysis"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.user_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-eye"></i> Voir
+                    </button>
+                    <button class="btn-action btn-action-outline edit-json-user"
+                            data-result="{{ analysis.user_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-quiz="{{ analysis.quiz_id }}">
+                      <i class="fas fa-edit"></i> Éditer JSON
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Partage</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-info generate-shareable-link"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.user_result_id }}"
+                            data-user="{{ selected_user_id }}">
+                      <i class="fas fa-link"></i> Générer lien partageable
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Gestion</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-success publish-user-analysis"
+                            data-result="{{ analysis.user_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-undo"></i> Restaurer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+          
+          {% if analysis.admin_created_at and not analysis.admin_is_active %}
+            <div class="version-card version-card-draft">
+              <div class="version-card-header">
+                <div class="version-card version-card-draft" 
+                    data-result-id="{{ analysis.admin_result_id }}"
+                    data-step-id="{{ analysis.result_step_id }}">
+                  <i class="fas fa-clock"></i> BROUILLON
+                </div>
+                <div class="version-info">
+                  <span class="version-type">
+                    <i class="fas fa-user-shield"></i> Admin
+                  </span>
+                  <span class="version-date">{{ analysis.admin_created_at.strftime('%d/%m %H:%M') }}</span>
+                </div>
+              </div>
+              
+              <div class="version-card-body">
+                <div class="action-group">
+                  <div class="action-group-title">Actions principales</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-outline view-admin-analysis"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-eye"></i> Voir
+                    </button>
+                    <button class="btn-action btn-action-outline edit-json-admin"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-quiz="{{ analysis.quiz_id }}">
+                      <i class="fas fa-edit"></i> Éditer JSON
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Partage</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-info generate-shareable-link"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-user="{{ selected_user_id }}">
+                      <i class="fas fa-link"></i> Générer lien partageable
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="action-group">
+                  <div class="action-group-title">Gestion</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-success publish-admin-analysis"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-check"></i> Publier
+                    </button>
+                    <button class="btn-action btn-action-secondary replay-analysis"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}">
+                      <i class="fas fa-redo"></i> Rejouer
+                    </button>
+                    <button class="btn-action btn-action-danger delete-admin-analysis"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-quiz="{{ analysis.quiz_id }}">
+                      <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                  </div>
+                </div>
+                <div class="action-group">
+                  <div class="action-group-title">Historique</div>
+                  <div class="action-group-buttons">
+                    <button type="button" class="btn-action btn-action-secondary btn-history"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            title="Voir l'historique de génération">
+                      <i class="fas fa-history"></i> Historique
+                    </button>
+                  </div>
+                </div>
+                <div class="action-group">
+                  <div class="action-group-title">Amélioration ciblée</div>
+                  <div class="action-group-buttons">
+                    <button class="btn-action btn-action-warning manual-retry-btn"
+                            data-quiz="{{ analysis.quiz_id }}"
+                            data-result="{{ analysis.admin_result_id }}"
+                            data-step="{{ analysis.result_step_id }}"
+                            data-user="{{ selected_user_id }}"
+                            data-generator-type="admin">
+                      <i class="fas fa-magic"></i> Relance personnalisée
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+  
+        {% endif %}
+      {% endif %}
+      </div>
+      {% endfor %}
+  </div>
+
+<!-- ========== TAB 2 : LIENS D'ACCÈS (Tokens) ========== -->
+<div id="static-content" class="tab-pane">
+  {% for session in user_quiz_sessions %}
+  <div class="token-section">
+    <div class="token-section-header">
+      <div class="quiz-label">
+        <i class="fas fa-cube"></i>
+        Quiz : <strong>{{ session.quiz_id }}</strong>
+      </div>
+    </div>
+    <div class="token-info" data-quiz="{{ session.quiz_id }}" data-user="{{ selected_user_id }}">
+      <div class="token-details">
+        <div class="loading-state">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="mt-2">Chargement des informations d'accès...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+</div>
+</div>
+</div>
+{% endif %}
+
+{% endif %}
+
+<!-- ==================== MODALS CACHÉES ==================== -->
+  
+  <!-- Modal Rejouer -->
+  <div id="replaySection" class="modal-section" style="display: none;">
+    <div class="card card-modern">
+      <div class="card-header-modern">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="header-content">
+            <span class="header-icon">🔄</span>
+            <span class="header-title">Rejouer l'analyse</span>
+          </div>
+          <button class="btn-close-modal close-replay">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-banner info-banner-blue mb-4">
+          <i class="fas fa-lightbulb"></i>
+          <div>
+            <strong>Conseil :</strong> Modifiez les prompts ci-dessous puis cliquez sur "Générer" pour régénérer l'analyse.
+          </div>
+        </div>
+        
+        <div class="form-group-modern">
+          <label class="form-label-modern">
+            <i class="fas fa-cog"></i> System Prompt
+          </label>
+          <textarea class="form-textarea-modern" id="replay_system_prompt" rows="5"></textarea>
+          <small class="form-hint">Instructions système</small>
+        </div>
+        
+        <div class="form-group-modern">
+          <label class="form-label-modern">
+            <i class="fas fa-comment"></i> Human Prompt
+          </label>
+          <textarea class="form-textarea-modern" id="replay_human_prompt" rows="8"></textarea>
+          <small class="form-hint">Réponses + instructions + contexte</small>
+        </div>
+      <div class="form-group-modern">
+        <label class="form-label-modern">
+          <i class="fas fa-check-double"></i> Critères de Validation
+        </label>
+        <textarea class="form-textarea-modern" id="replay_validation_criteria" rows="8"></textarea>
+        <small class="form-hint">Critères pour le LLM validateur ( Par défaut ceux de la BDD )</small>
+      </div>
+        <div class="modal-actions">
+          <button class="btn-action btn-action-primary btn-lg w-100 execute-replay" disabled>
+            <i class="fas fa-rocket"></i> Générer l'analyse
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Édition JSON -->
+  <div id="jsonEditorSection" class="modal-section" style="display: none;">
+    <div class="card card-modern">
+      <div class="card-header-modern">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="header-content">
+            <span class="header-icon">📝</span>
+            <span class="header-title">Éditer JSON de l'analyse</span>
+          </div>
+          <button class="btn-close-modal close-json-editor">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="info-banner info-banner-yellow mb-4">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <strong>Attention :</strong> Vous éditez directement le JSON. Assurez-vous de la validité avant de sauvegarder.
+          </div>
+        </div>
+        
+        <div class="json-meta mb-3">
+          <span class="json-meta-item">
+            <strong>Quiz:</strong> <span id="json_quiz_id"></span>
+          </span>
+          <span class="json-meta-item">
+            <strong>Step:</strong> <span id="json_step_id"></span>
+          </span>
+          <span class="json-meta-item">
+            <strong>Type:</strong> <span id="json_generator_type"></span>
+          </span>
+        </div>
+        
+        <div class="form-group-modern">
+          <label class="form-label-modern">
+            <i class="fas fa-code"></i> Contenu JSON
+          </label>
+          <textarea class="form-textarea-code" id="json_content"></textarea>
+          <small class="form-hint">Format JSON valide requis</small>
+        </div>
+        
+        <div id="json-validation-feedback" class="mb-3" style="display: none;"></div>
+        
+        <div class="modal-actions-split">
+          <button class="btn-action btn-action-secondary validate-json">
+            <i class="fas fa-check-circle"></i> Valider JSON
+          </button>
+          <button class="btn-action btn-action-success save-json" disabled>
+            <i class="fas fa-save"></i> Sauvegarder
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Relance Personnalisée -->
+  <div id="manualRetrySection" class="modal-section" style="display: none;">
+    <div class="card card-modern" style="max-width: 1400px;">
+      <div class="card-header-modern">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="header-content">
+            <span class="header-icon">🎯</span>
+            <span class="header-title">Relance personnalisée</span>
+          </div>
+          <button class="btn-close-modal close-manual-retry">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        
+        <!-- Étape 1 : Saisie du feedback -->
+<!-- Étape 1 : Sélection des voies + Saisie du feedback -->
+<div id="manualRetryStep1">
+  <div class="info-banner info-banner-blue mb-4">
+    <i class="fas fa-lightbulb"></i>
+    <div>
+      <strong>Comment ça marche :</strong> 
+      1️⃣ Sélectionnez les voies à modifier • 
+      2️⃣ Décrivez vos corrections • 
+      3️⃣ Prévisualisez avant de sauvegarder
+    </div>
+  </div>
+  
+  <div class="manual-retry-meta mb-3">
+    <span class="meta-item"><strong>Quiz:</strong> <span id="mr_quiz_id"></span></span>
+    <span class="meta-item"><strong>Step:</strong> <span id="mr_step_id"></span></span>
+    <span class="meta-item"><strong>Source:</strong> <span id="mr_generator_type" class="badge-source"></span></span>
+  </div>
+  
+  <!-- Sélection des voies -->
+  <div class="voies-selection-container mb-4">
+    <label class="form-label-modern">
+      <i class="fas fa-check-square"></i> Voies à modifier
+    </label>
+    <div class="voies-selection">
+      <label class="voie-checkbox-label">
+        <input type="checkbox" class="voie-checkbox" value="1" checked>
+        <span class="voie-checkbox-box">
+          <span class="voie-number">1</span>
+          <span class="voie-name" id="voie_name_1">Voie 1</span>
+        </span>
+      </label>
+      <label class="voie-checkbox-label">
+        <input type="checkbox" class="voie-checkbox" value="2" checked>
+        <span class="voie-checkbox-box">
+          <span class="voie-number">2</span>
+          <span class="voie-name" id="voie_name_2">Voie 2</span>
+        </span>
+      </label>
+      <label class="voie-checkbox-label">
+        <input type="checkbox" class="voie-checkbox" value="3" checked>
+        <span class="voie-checkbox-box">
+          <span class="voie-number">3</span>
+          <span class="voie-name" id="voie_name_3">Voie 3</span>
+        </span>
+      </label>
+    </div>
+    <div class="voies-quick-actions">
+      <button type="button" class="btn-voie-quick" id="selectAllVoies">
+        <i class="fas fa-check-double"></i> Toutes
+      </button>
+      <button type="button" class="btn-voie-quick" id="deselectAllVoies">
+        <i class="fas fa-times"></i> Aucune
+      </button>
+    </div>
+    <small class="form-hint mt-2">Les voies non sélectionnées seront conservées telles quelles</small>
+  </div>
+  
+  <div class="form-group-modern">
+    <label class="form-label-modern">
+      <i class="fas fa-edit"></i> Vos instructions de correction
+    </label>
+    <textarea class="form-textarea-modern" id="admin_feedback" rows="6" 
+              placeholder="Exemples :
+- Renforce l'aspect logistique du métier 1, c'est son point fort
+- Change la voie 2 en quelque chose de plus pragmatique, moins startup
+- Ajoute une mention du télétravail possible pour la voie 3
+- Le salaire de la voie 1 est trop bas, monte à 2500€"></textarea>
+    <small class="form-hint">Soyez précis : indiquez le numéro de la voie et ce que vous voulez modifier</small>
+  </div>
+  <div class="form-group-modern">
+    <label class="form-label-modern">
+      <i class="fas fa-check-double"></i> Critères de Validation
+    </label>
+    <textarea class="form-textarea-modern" id="mr_validation_criteria" rows="8"></textarea>
+    <small class="form-hint">Critères pour le LLM validateur ( Par défaut ceux de la BDD )</small>
+  </div>
+  <div class="modal-actions">
+    <button class="btn-action btn-action-primary btn-lg" id="previewManualRetryBtn">
+      <i class="fas fa-eye"></i> Prévisualiser les modifications
+    </button>
+  </div>
+</div>
+        
+        <!-- Étape 2 : Prévisualisation (cachée par défaut) -->
+<div id="manualRetryStep2" style="display: none;">
+          
+  <div class="preview-header mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <h4 class="preview-title"><i class="fas fa-columns"></i> Comparaison Avant / Après</h4>
+      <div class="preview-stats">
+        <span class="preview-stat" id="previewVoiesModified">
+          <i class="fas fa-sync-alt"></i> <span>0</span> voie(s) modifiée(s)
+        </span>
+        <span class="preview-time" id="previewGenerationTime"></span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Légende -->
+  <div class="preview-legend mb-3">
+    <span class="legend-item">
+      <span class="legend-dot legend-dot-unchanged"></span> Conservée
+    </span>
+    <span class="legend-item">
+      <span class="legend-dot legend-dot-changed"></span> Modifiée
+    </span>
+    <span class="legend-item">
+      <i class="fas fa-chevron-down text-muted"></i> Cliquez pour déplier le contenu
+    </span>
+  </div>
+  
+  <div class="preview-container">
+    <div class="preview-accordion" id="previewAccordion">
+      <!-- Généré dynamiquement par JS -->
+    </div>
+  </div>
+  
+  <div class="preview-actions mt-4">
+    <button class="btn-action btn-action-secondary" id="backToFeedbackBtn">
+      <i class="fas fa-arrow-left"></i> Modifier le feedback
+    </button>
+    <button class="btn-action btn-action-success btn-lg" id="saveManualRetryBtn">
+      <i class="fas fa-check"></i> Valider et sauvegarder
+    </button>
+  </div>
+  
+</div>
+        
+      </div>
+    </div>
+  </div>
+<!-- ==================== LOADING OVERLAY ==================== -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <h3 class="loading-title">Génération en cours...</h3>
+    <p class="loading-subtitle">Analyse des réponses</p>
+    <div class="loading-timer" id="loadingTimer">0:00</div>
+    <div class="loading-progress">
+      <div class="loading-progress-bar"></div>
+    </div>
+    <div class="loading-tips" id="loadingTip">
+      💡 La génération prend généralement 3 à 5 minutes
+    </div>
+  </div>
+</div>
+<!-- Modal Historique -->
+<div id="historyModal" class="modal-overlay" style="display: none;">
+  <div class="modal-container modal-xl">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-history"></i> Historique de Génération</h3>
+      <button type="button" class="modal-close" id="closeHistoryModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="historyStats" class="history-stats"></div>
+      <div id="historyTimeline" class="history-timeline"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-action btn-action-secondary" id="closeHistoryModalBtn2">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détail Prompt -->
+<div id="promptDetailModal" class="modal-overlay" style="display: none;">
+  <div class="modal-container modal-xl">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-file-code"></i> Prompt #<span id="promptDetailId"></span></h3>
+      <button type="button" class="modal-close" id="closePromptModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="promptDetailContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-action btn-action-secondary" id="closePromptModalBtn2">Fermer</button>
+      <button type="button" class="btn-action btn-action-primary" id="copyPromptBtn"><i class="fas fa-copy"></i> Copier</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<style>
+/* ==================== VARIABLES GLOBALES ==================== */
+:root {
+  
+  --success: #10b981;
+  --success-light: #34d399;
+  --success-dark: #059669;
+  
+  --warning: #f59e0b;
+  --warning-light: #fbbf24;
+  --warning-dark: #d97706;
+  
+  --danger: #ef4444;
+  --danger-light: #f87171;
+  --danger-dark: #dc2626;
+  
+  --info: #3b82f6;
+  --info-light: #60a5fa;
+  --info-dark: #2563eb;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== RESET & BASE ==================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  color: var(--gray-800);
+  line-height: 1.6;
+}
+
+.container-fluid {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ==================== PAGE HEADER ==================== */
+.page-header {
+  text-align: center;
+  padding: 2rem 0;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.title-icon {
+  font-size: 2.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--gray-500);
+  margin: 0.5rem 0 0;
+}
+
+/* ==================== CARDS MODERNES ==================== */
+.card-modern {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.card-modern:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header-modern {
+  background: var(--tilto-gradient-purple);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* ==================== USER SELECT ==================== */
+.user-select-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-select-lg {
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-200);
+  transition: all var(--transition-normal);
+  background: white;
+}
+
+.form-select-lg:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+  outline: none;
+}
+
+/* ==================== QUIZ SESSIONS GRID ==================== */
+.quiz-sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.quiz-session-card {
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.quiz-session-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.quiz-session-header {
+  margin-bottom: 1rem;
+}
+
+.quiz-badge {
+  display: inline-block;
+  background: var(--tilto-gradient-purple);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.quiz-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.quiz-meta-item i {
+  color: var(--primary);
+  width: 16px;
+  text-align: center;
+}
+
+.quiz-session-actions {
+  margin-top: 1rem;
+}
+
+/* ==================== TABS MODERNES ==================== */
+.tabs-container {
+  display: flex;
+  background: var(--primary);
+  position: relative;
+}
+
+.tab-button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 1.25rem 2rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-size: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-button.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: white;
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.tab-button.active .tab-indicator {
+  transform: scaleX(1);
+}
+
+.tab-content-wrapper {
+  min-height: 400px;
+}
+
+.tab-pane {
+  display: none;
+  animation: fadeIn var(--transition-normal);
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== ÉTAT VIDE ==================== */
+.state-empty-hint {
+    margin-top: 2rem;
+    margin-left: 6rem;
+    margin-right: 6rem;
+    border-radius: var(--radius-lg);
+    gap: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    transition: all var(--transition-normal);
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+    border-left: 4px solid var(--info);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Effet de fond subtil */
+.state-empty::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(76, 3, 54, 0.03) 0%, transparent 70%);
+  animation: pulse-bg 4s ease-in-out infinite;
+  pointer-events: none; /* ✅ AJOUT CRUCIAL */
+  z-index: 0; /* ✅ AJOUT */
+}
+
+@keyframes pulse-bg {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.state-empty-icon {
+  font-size: 6rem;
+  margin-bottom: 2rem;
+  color: var(--primary);
+  position: relative;
+  z-index: 1;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(76, 3, 54, 0.15));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+.state-empty-icon i {
+  animation: pulse 2s infinite;
+}
+
+.state-empty-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.02em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.state-empty-subtitle {
+  font-size: 1.15rem;
+  color: var(--gray-600);
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 1;
+  max-width: 500px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.state-empty-hint {
+  margin-bottom: 2rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  transition: all var(--transition-normal);
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-left: 4px solid var(--info);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  }
+
+.state-empty-hint:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.4);
+}
+
+.state-empty-hint i {
+  font-size: 1.5rem;
+  animation: info-pulse 2s ease-in-out infinite;
+}
+
+@keyframes info-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ==================== FORMS MODERNES ==================== */
+.generation-form {
+  max-width: 2000px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative; /* ✅ Important */
+  z-index: 1; /* ✅ Au-dessus du ::before */
+}
+
+.form-group-modern {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-label-modern {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-label-modern i {
+  color: var(--primary);
+}
+
+.form-select-modern,
+.form-textarea-modern {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all var(--transition-normal);
+  background: white;
+}
+
+.form-select-modern:focus,
+.form-textarea-modern:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+  outline: none;
+}
+
+.form-textarea-modern {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  resize: both;
+  min-height: 450px;
+}
+
+.form-textarea-code {
+  width: 100%;
+  min-height: 400px;
+  padding: 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  resize: vertical;
+}
+
+.form-textarea-code:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+  outline: none;
+  background: white;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+/* ==================== ALERTES D'ÉTAT ==================== */
+.state-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+  border-left: 4px solid;
+  animation: slideInDown var(--transition-normal);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.state-alert-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.state-alert-content {
+  flex: 1;
+}
+
+.state-alert-title {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.state-alert-text {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.state-alert-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left-color: var(--warning);
+  color: #78350f;
+}
+
+.state-alert-success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-left-color: var(--success);
+  color: #065f46;
+}
+
+.state-alert-info {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left-color: var(--info);
+  color: #1e40af;
+}
+
+/* ==================== VERSIONS CONTAINER ==================== */
+.versions-container {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ==================== CARTES DE VERSION ==================== */
+.version-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid;
+  padding: 1.5rem;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.version-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transition: transform var(--transition-normal);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.version-card:hover::before {
+  transform: scaleX(1);
+}
+
+.version-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* VERSION ACTIVE */
+.version-card-active {
+  border-color: var(--success);
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.version-card-active::before {
+  background: var(--success);
+}
+
+/* VERSION BROUILLON */
+.version-card-draft {
+  border-color: var(--warning);
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.version-card-draft::before {
+  background: var(--warning);
+}
+
+/* VERSION INACTIVE */
+.version-card-inactive {
+  border-color: var(--gray-300);
+  background: var(--gray-50);
+  opacity: 0.75;
+}
+
+.version-card-inactive::before {
+  background: var(--gray-400);
+}
+
+/* ==================== VERSION HEADER ==================== */
+.version-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-badge-active {
+  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.version-badge-draft {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.version-badge-inactive {
+  background: linear-gradient(135deg, var(--gray-400) 0%, var(--gray-500) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+}
+
+.version-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.version-type {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.version-type i {
+  color: var(--primary);
+}
+
+.version-date {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+/* ==================== VERSION BODY ==================== */
+.version-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-group {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.action-group-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-group-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.action-group-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* ==================== BOUTONS D'ACTION ==================== */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.btn-action:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.btn-action i {
+  font-size: 0.95rem;
+}
+
+/* PRIMARY */
+.btn-action-primary {
+  background: var(--tilto-gradient-purple);
+  color: white;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.btn-action-primary:hover {
+  box-shadow: 0 4px 12px rgba(76, 3, 54, 0.3);
+}
+
+/* OUTLINE */
+.btn-action-outline {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-action-outline:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* SUCCESS */
+.btn-action-success {
+  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-action-success:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* WARNING */
+.btn-action-warning {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.btn-action-warning:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* DANGER */
+.btn-action-danger {
+  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-action-danger:hover {
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* SECONDARY */
+.btn-action-secondary {
+  background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(75, 85, 99, 0.2);
+}
+
+.btn-action-secondary:hover {
+  box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
+}
+
+/* SIZES */
+.btn-lg {
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* ==================== MODAL SECTIONS ==================== */
+.modal-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  overflow-y: auto;
+  padding: 2rem;
+  animation: fadeIn var(--transition-normal);
+}
+
+.modal-section .card-modern {
+  max-width: 2000px;
+  margin: 0 auto;
+  animation: slideInUp var(--transition-normal);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-close-modal {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.modal-actions {
+  margin-top: 1.5rem;
+}
+
+.modal-actions-split {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modal-actions-split .btn-action {
+  flex: 1;
+}
+
+/* ==================== INFO BANNERS ==================== */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.info-banner i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-banner-blue {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-left: 4px solid var(--info);
+}
+
+.info-banner-yellow {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #78350f;
+  border-left: 4px solid var(--warning);
+}
+
+/* ==================== JSON META ==================== */
+.json-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.json-meta-item {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.json-meta-item strong {
+  color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+.json-meta-item span {
+  font-weight: 600;
+}
+
+/* ==================== SECTIONS ==================== */
+.analysis-section,
+.token-section {
+  padding: 2rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.analysis-section:last-child,
+.token-section:last-child {
+  border-bottom: none;
+}
+
+.analysis-section-header,
+.token-section-header {
+  margin-bottom: 1.5rem;
+}
+
+.quiz-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--gray-700);
+  padding: 0.75rem 1.25rem;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+}
+
+.quiz-label i {
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+/* ==================== LOADING STATE ==================== */
+.loading-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.loading-state .spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.loading-state p {
+  margin-top: 1rem;
+  color: var(--gray-500);
+}
+
+/* ==================== EMPTY MESSAGE ==================== */
+.empty-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--gray-500);
+}
+
+.empty-message i {
+  color: var(--gray-300);
+}
+
+.empty-message p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+/* ==================== FLASH MESSAGES ==================== */
+#flash-messages {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+  width: 100%;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.flash-message {
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight var(--transition-normal);
+}
+
+.flash-message:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .title-icon {
+    font-size: 2rem;
+  }
+  
+  .quiz-sessions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tabs-container {
+    flex-direction: column;
+  }
+  
+  .tab-button {
+    padding: 1rem;
+  }
+  
+  .action-group-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .modal-section {
+    padding: 1rem;
+  }
+  
+  .modal-actions-split {
+    flex-direction: column;
+  }
+  
+  #flash-messages {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+/* ==================== ANIMATIONS UTILITIES ==================== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ==================== UTILITIES ==================== */
+.w-100 { width: 100%; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.text-center { text-align: center; }
+.d-flex { display: flex; }
+.align-items-center { align-items: center; }
+.justify-content-between { justify-content: space-between; }
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+
+
+/* ==================== LOADING INDICATOR ==================== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+.loading-content {
+  background: white;
+  padding: 3rem 4rem;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 30rem;
+  animation: slideInUp 0.4s ease-out;
+}
+
+.loading-spinner {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  position: relative;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+.loading-spinner::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid var(--gray-200);
+  border-radius: 50%;
+}
+
+.loading-spinner::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid var(--primary);
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+  text-align:center;
+}
+
+.loading-subtitle {
+  font-size: 1rem;
+  color: var(--gray-600);
+  margin-bottom: 1.5rem;
+}
+
+.loading-timer {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: 'Monaco', monospace;
+  margin-bottom: 1rem;
+}
+
+.loading-progress {
+  width: 100%;
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 3px;
+  animation: indeterminate 2s ease-in-out infinite;
+  width: 40%;
+}
+
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.loading-tips {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  font-style: italic;
+}
+
+/* INFO BUTTON */
+.btn-action-info {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.btn-action-info:hover {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ==================== MANUAL RETRY STYLES ==================== */
+.manual-retry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.manual-retry-meta .meta-item {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+.manual-retry-meta .meta-item strong {
+  color: var(--primary);
+  margin-right: 0.5rem;
+}
+
+.badge-source {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-source.admin {
+  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  color: white;
+}
+
+.badge-source.user {
+  background: linear-gradient(135deg, var(--info) 0%, var(--info-dark) 100%);
+  color: white;
+}
+
+/* ===== Sélection des voies ===== */
+.voies-selection-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--gray-200);
+}
+
+.voies-selection {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.voie-checkbox-label {
+  cursor: pointer;
+  flex: 1;
+  min-width: 180px;
+}
+
+.voie-checkbox-label input {
+  display: none;
+}
+
+.voie-checkbox-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.voie-checkbox-label input:checked + .voie-checkbox-box {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0.1) 100%);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.voie-checkbox-label:hover .voie-checkbox-box {
+  border-color: var(--primary-light);
+}
+
+.voie-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.voie-checkbox-label input:checked + .voie-checkbox-box .voie-number {
+  background: var(--primary);
+  color: white;
+}
+
+.voie-name {
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.voies-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.btn-voie-quick {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--gray-300);
+  background: white;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--gray-600);
+  transition: all 0.15s ease;
+}
+
+.btn-voie-quick:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+/* ===== Preview Header & Stats ===== */
+.preview-header {
+  border-bottom: 2px solid var(--gray-200);
+  padding-bottom: 1rem;
+}
+
+.preview-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.preview-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.preview-stat {
+  font-size: 0.9rem;
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.preview-time {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  background: var(--gray-100);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-full);
+}
+
+/* ===== Legend ===== */
+.preview-legend {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot-unchanged {
+  background: var(--gray-300);
+  border: 2px solid var(--gray-400);
+}
+
+.legend-dot-changed {
+  background: var(--success);
+  border: 2px solid var(--success-dark);
+}
+
+/* ===== Accordion Preview ===== */
+.preview-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preview-voie-accordion {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--gray-200);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.preview-voie-accordion.is-changed {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.preview-voie-accordion.is-unchanged {
+  border-color: var(--gray-200);
+  opacity: 0.85;
+}
+
+/* Accordion Header */
+.preview-accordion-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  background: var(--gray-50);
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.preview-accordion-header:hover {
+  background: var(--gray-100);
+}
+
+.preview-voie-accordion.is-changed .preview-accordion-header {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, var(--gray-50) 50%);
+}
+
+.accordion-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.preview-voie-accordion.is-open .accordion-toggle {
+  background: var(--primary);
+  color: white;
+  transform: rotate(180deg);
+}
+
+.accordion-voie-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.accordion-voie-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.accordion-voie-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--gray-800);
+  margin-bottom: 0.25rem;
+}
+
+.accordion-voie-subtitle {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accordion-status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.accordion-status-badge.changed {
+  background: var(--success);
+  color: white;
+}
+
+.accordion-status-badge.unchanged {
+  background: var(--gray-300);
+  color: var(--gray-600);
+}
+
+/* Accordion Body */
+.preview-accordion-body {
+  display: none;
+  padding: 0;
+}
+
+.preview-voie-accordion.is-open .preview-accordion-body {
+  display: block;
+}
+
+.preview-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 992px) {
+  .preview-comparison {
+    grid-template-columns: 1fr;
+  }
+}
+
+.preview-side {
+  padding: 1.25rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.preview-side.before {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-right: 1px solid var(--gray-200);
+}
+
+.preview-side.after {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+@media (max-width: 992px) {
+  .preview-side.before {
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+  }
+}
+
+.preview-side-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.preview-side-header .icon {
+  font-size: 1.25rem;
+}
+
+.preview-side-header .label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.preview-side.before .label { color: var(--danger); }
+.preview-side.after .label { color: var(--success); }
+
+.preview-field {
+  margin-bottom: 1rem;
+}
+
+.preview-field:last-child {
+  margin-bottom: 0;
+}
+
+.preview-field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+}
+
+.preview-field-value {
+  font-size: 0.9rem;
+  color: var(--gray-800);
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--gray-300);
+}
+
+.preview-side.before .preview-field-value {
+  border-left-color: var(--danger-light);
+}
+
+.preview-side.after .preview-field-value {
+  border-left-color: var(--success-light);
+}
+
+.preview-field-value.is-different {
+  background: rgba(16, 185, 129, 0.15);
+  border-left-color: var(--success);
+}
+
+/* Listes dans les champs */
+.preview-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.preview-list li {
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+
+.preview-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Groupes imbriqués (premiers_moves) */
+.preview-nested {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-nested-group {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--primary-light);
+}
+
+.preview-nested-label {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.preview-nested-group .preview-list {
+  margin: 0;
+}
+
+/* JSON brut */
+.preview-json {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Texte tronqué avec expansion */
+.preview-truncated,
+.preview-full {
+  display: inline;
+}
+
+.btn-expand {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+  text-decoration: underline;
+}
+
+.btn-expand:hover {
+  color: var(--primary-dark);
+}
+
+/* Champ modifié - bordure gauche accentuée */
+.preview-field.field-changed {
+  position: relative;
+}
+
+.preview-field.field-changed::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--success);
+  border-radius: 2px;
+}
+
+/* Amélioration visuelle des champs */
+.preview-field {
+  position: relative;
+  padding-left: 0;
+}
+
+.preview-side.after .preview-field.field-changed .preview-field-value {
+  animation: highlightPulse 0.5s ease-out;
+}
+
+@keyframes highlightPulse {
+  0% { background-color: rgba(16, 185, 129, 0.3); }
+  100% { background-color: rgba(16, 185, 129, 0.15); }
+}
+
+/* Scrollable pour très longs contenus */
+.preview-accordion-body {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* ===== Preview Actions ===== */
+.preview-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--gray-200);
+}
+
+.h1, h2, h3 {
+    color: white;
+  }
+
+@media (max-width: 576px) {
+  .preview-actions {
+    flex-direction: column;
+  }
+}
+
+/* HISTORY MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal-container{background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);max-height:90vh;display:flex;flex-direction:column}
+.modal-xl{max-width:1000px;width:95%}
+.modal-header{background:var(--tilto-gradient-purple);color:#fff;padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius-xl) var(--radius-xl) 0 0}
+.modal-title{margin:0;font-size:1.25rem;display:flex;align-items:center;gap:0.75rem}
+.modal-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer}
+.modal-close:hover{background:rgba(255,255,255,0.3)}
+.modal-body{padding:1.5rem;overflow-y:auto;flex:1}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:0.75rem}
+.history-stats{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;padding:1rem;background:var(--gray-50);border-radius:var(--radius-md)}
+.stat-badge{display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:#fff;border-radius:var(--radius-md);font-size:0.875rem;box-shadow:var(--shadow-sm)}
+.stat-badge.success{color:var(--success)}.stat-badge.failed{color:var(--danger)}.stat-badge.info{color:var(--info)}.stat-badge.warning{color:var(--warning)}
+.history-timeline{position:relative;padding-left:2rem}
+.history-timeline::before{content:'';position:absolute;left:0.75rem;top:0;bottom:0;width:2px;background:var(--gray-200)}
+.timeline-entry{position:relative;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--gray-100)}
+.timeline-entry::before{content:'';position:absolute;left:-1.65rem;top:0.25rem;width:12px;height:12px;border-radius:50%;background:var(--gray-400);border:2px solid #fff;box-shadow:0 0 0 2px var(--gray-200)}
+.timeline-entry.type-generation::before{background:var(--info)}
+.timeline-entry.type-validation::before{background:#8b5cf6}
+.timeline-entry.status-success::before{background:var(--success)}
+.timeline-entry.status-failed::before{background:var(--danger)}
+.entry-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.entry-id{font-weight:600;color:var(--gray-700);font-family:monospace;background:var(--gray-100);padding:0.25rem 0.5rem;border-radius:4px;font-size:0.85rem}
+.entry-type{font-size:0.7rem;font-weight:700;text-transform:uppercase;padding:0.25rem 0.5rem;border-radius:4px}
+.entry-type.initial{background:#dbeafe;color:#1d4ed8}
+.entry-type.replay{background:#fef3c7;color:#b45309}
+.entry-type.manual_retry{background:#fce7f3;color:#be185d}
+.entry-type.validation_retry{background:#e0e7ff;color:#4338ca}
+.entry-type.validation{background:#ede9fe;color:#6d28d9}
+.entry-timestamp{font-size:0.8rem;color:var(--gray-500)}
+.entry-status{font-size:0.7rem;font-weight:700;padding:0.25rem 0.5rem;border-radius:4px}
+.entry-status.success{background:#d1fae5;color:#065f46}
+.entry-status.failed{background:#fee2e2;color:#991b1b}
+.entry-content{margin-left:0.5rem}
+.entry-section{margin-bottom:0.75rem}
+.entry-section-title{font-size:0.7rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;margin-bottom:0.25rem}
+.issues-list{list-style:none;padding:0;margin:0}
+.issue-item{display:flex;align-items:flex-start;gap:0.5rem;padding:0.5rem;background:#fef2f2;border-radius:4px;margin-bottom:0.5rem;font-size:0.8rem}
+.issue-severity{font-weight:700;font-size:0.65rem;padding:0.125rem 0.375rem;border-radius:3px;text-transform:uppercase}
+.issue-severity.critical{background:var(--danger);color:#fff}
+.issue-severity.moderate{background:var(--warning);color:#fff}
+.issue-severity.minor{background:#4f7fff;color:#fff}
+.issue-field{font-weight:600;color:#991b1b}
+.issue-suggestion{color:#137C36;font-style:italic;margin-top:0.25rem}
+.admin-feedback-history{background:#fef3c7;border-left:3px solid var(--warning);padding:0.75rem;border-radius:0 4px 4px 0;font-size:0.875rem;margin-bottom:0.75rem}
+.prompt-preview{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:4px;padding:0.75rem;font-family:monospace;font-size:0.75rem;max-height:150px;overflow-y:auto;white-space:pre-wrap}
+.btn-view-prompt{display:inline-flex;align-items:center;gap:0.375rem;padding:0.375rem 0.75rem;font-size:0.75rem;background:var(--gray-100);border:1px solid var(--gray-300);border-radius:4px;color:var(--gray-700);cursor:pointer}
+.btn-view-prompt:hover{background:var(--gray-200)}
+.prompt-detail-section{margin-bottom:1.5rem}
+.prompt-detail-title{font-size:0.875rem;font-weight:600;color:var(--gray-700);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem}
+.prompt-full-content{background:#1f2937;color:#f9fafb;border-radius:var(--radius-md);padding:1rem;font-family:monospace;font-size:0.8rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;line-height:1.5}
+.prompt-metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;background:var(--gray-50);padding:1rem;border-radius:var(--radius-md)}
+.metadata-item{display:flex;flex-direction:column;gap:0.25rem}
+.metadata-label{font-size:0.7rem;color:var(--gray-500);text-transform:uppercase}
+.metadata-value{font-size:0.875rem;color:var(--gray-800);font-weight:500}
+.metadata-value a{color:var(--primary);text-decoration:none}
+.validation-result-box{border-radius:var(--radius-md);padding:1rem;margin-top:0.5rem}
+.validation-result-box.success{background:#ecfdf5;border:1px solid #a7f3d0}
+.validation-result-box.failed{background:#fef2f2;border:1px solid #fecaca}
+.criteria-source{display:inline-flex;align-items:center;gap:0.25rem;font-size:0.7rem;padding:0.125rem 0.5rem;border-radius:3px;font-weight:600}
+.criteria-source.database{background:#dbeafe;color:#1e40af}
+.criteria-source.custom{background:#fce7f3;color:#9d174d}
+.criteria-source.fallback{background:#fef3c7;color:#92400e}
+
+
+.version-badge-backup {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.backup-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+/* Badge Backup */
+.version-badge-backup {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Alerte sous le header */
+.backup-alert {
+  background: #fef3c7;
+  color: red;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #fde68a;
+  font-weight: 900;
+}
+
+.backup-alert i {
+  color: #f59e0b;
+}
+
+/* Bouton Voir résultat LLM */
+.btn-view-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.btn-view-result:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-view-result i {
+  font-size: 0.7rem;
+}
+
+/* Bouton Async */
+.btn-async {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.btn-async:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-async.btn-small {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+/* ==================== BOUTON ASYNC AMÉLIORÉ ==================== */
+.btn-async {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    text-decoration: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-async::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.btn-async:hover::before {
+    left: 100%;
+}
+
+.btn-async:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.btn-async:active {
+    transform: translateY(-1px);
+}
+
+.btn-async:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-async.btn-small {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+.btn-async .async-icon {
+    font-style: normal;
+    animation: asyncIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes asyncIconPulse {
+    0%, 100% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 0 transparent);
+    }
+    50% { 
+        transform: scale(1.2); 
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ versioned_asset_url('js_async_analysis') }}" nonce="{{ g.nonce }}"></script>
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+  const csrfToken = "{{ csrf_token() }}";
+  let selectedUserId = "{{ selected_user_id }}";
+  let currentAnalysis = { quiz: null, result: null, step: null, generatorType: null };
+  let currentResponsesData = null;
+
+  // ==================== LOADING OVERLAY MANAGEMENT ====================
+let loadingStartTime = null;
+let loadingTimerInterval = null;
+
+const loadingTips = [
+  "💡 Analyse de chaque réponse en profondeur",
+  "🎯 Personnalisation des stratégies en cours",
+  "🔍 Identification des forces uniques",
+  "✨ Création des actions concrètes",
+  "📊 Validation de la cohérence globale",
+  "🎨 Mise en forme du résultat"
+];
+
+function showLoadingOverlay() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('active');
+  
+  loadingStartTime = Date.now();
+  
+  // Timer
+  loadingTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - loadingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('loadingTimer').textContent = 
+      `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }, 1000);
+  
+  // Rotating tips
+  let tipIndex = 0;
+  setInterval(() => {
+    tipIndex = (tipIndex + 1) % loadingTips.length;
+    document.getElementById('loadingTip').textContent = loadingTips[tipIndex];
+  }, 8000);
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.remove('active');
+  
+  if (loadingTimerInterval) {
+    clearInterval(loadingTimerInterval);
+    loadingTimerInterval = null;
+  }
+}
+
+  // ==================== UTILITAIRES ====================
+  function showFlashMessage(type, message, persistent = false) {
+    const flashContainer = document.getElementById('flash-messages');
+    if (!flashContainer) {
+      alert(message);
+      return;
+    }
+    
+    const typeMap = {
+      'success': { icon: '✓', bg: '#10b981', text: '#fff' },
+      'danger': { icon: '✕', bg: '#ef4444', text: '#fff' },
+      'error': { icon: '✕', bg: '#ef4444', text: '#fff' },
+      'warning': { icon: '⚠', bg: '#f59e0b', text: '#fff' },
+      'info': { icon: 'ℹ', bg: '#3b82f6', text: '#fff' }
+    };
+    
+    const style = typeMap[type] || typeMap['info'];
+    if (type === 'danger') persistent = true;
+    
+    const div = document.createElement('div');
+    div.className = 'flash-message';
+    div.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: ${style.bg};
+      color: ${style.text};
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    `;
+    
+    div.innerHTML = `
+      <span style="font-size: 20px; font-weight: bold;">${style.icon}</span>
+      <span style="flex: 1; font-size: 14px; font-weight: 500;">${message}</span>
+      <button type="button" class="flash-close" style="
+        background: transparent;
+        border: none;
+        color: ${style.text};
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        opacity: 0.7;
+      ">✕</button>
+    `;
+    
+    if (!persistent) {
+      const progressBar = document.createElement('div');
+      progressBar.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255,255,255,0.4);
+        width: 100%;
+        transform-origin: left;
+        animation: shrink 4s linear;
+      `;
+      div.appendChild(progressBar);
+    }
+    
+    flashContainer.appendChild(div);
+    
+    div.querySelector('.flash-close').addEventListener('click', () => {
+      div.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => div.remove(), 300);
+    });
+    
+    if (!persistent) {
+      setTimeout(() => {
+        if (div.parentNode) {
+          div.style.animation = 'slideOutRight 0.3s ease-in';
+          setTimeout(() => div.remove(), 300);
+        }
+      }, 4000);
+    }
+  }
+
+  function setLoadingState(button, loading) {
+    if (loading) {
+      button.dataset.originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      button.disabled = true;
+    } else {
+      button.innerHTML = button.dataset.originalHTML || button.innerHTML;
+      button.disabled = false;
+    }
+  }
+
+    // ==================== Tag echoue ====================
+document.querySelectorAll('.version-card-draft').forEach(async function(card) {
+  const resultId = card.getAttribute('data-result-id');
+  const stepId = card.getAttribute('data-step-id');
+  
+  if (!resultId || !stepId) return;
+  
+  try {
+    const response = await fetch(`/analysis/admin/get-generation-history/${resultId}/${stepId}`, {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+    const data = await response.json();
+    
+    if (data.success && data.stats && data.stats.final_status === 'failed') {
+      // C'est un backup - ajouter le badge
+      const header = card.querySelector('.version-card-header');
+      if (header) {
+        const existingBadge = header.querySelector('.version-badge');
+        if (existingBadge) {
+          existingBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> BACKUP (validation échouée)';
+          existingBadge.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Could not check backup status:', e);
+  }
+});
+
+  // ==================== USER SELECT AUTO-RELOAD ====================
+  const userSelect = document.getElementById('user_id');
+  // ==================== RECHERCHE UTILISATEUR ====================
+const userSearchInput = document.getElementById('userSearchInput');
+const searchResultsCount = document.getElementById('searchResultsCount');
+const allOptions = Array.from(userSelect.options).slice(1); // Exclure "-- Choisir --"
+
+userSearchInput.addEventListener('input', function() {
+  const query = this.value.trim().toLowerCase();
+  let visibleCount = 0;
+
+  allOptions.forEach(opt => {
+    const searchData = (opt.getAttribute('data-search') || opt.textContent).toLowerCase();
+    const match = !query || searchData.includes(query);
+    opt.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+  });
+
+  if (query) {
+    searchResultsCount.textContent = visibleCount + ' résultat(s) trouvé(s)';
+    searchResultsCount.style.display = 'block';
+    // Auto-sélectionner si un seul résultat
+    if (visibleCount === 1) {
+      const found = allOptions.find(opt => opt.style.display !== 'none');
+      if (found) {
+        userSelect.value = found.value;
+        userSelect.style.borderColor = 'var(--success)';
+      }
+    } else {
+      userSelect.style.borderColor = '';
+    }
+  } else {
+    searchResultsCount.style.display = 'none';
+    userSelect.style.borderColor = '';
+  }
+});
+
+userSearchInput.addEventListener('focus', function() {
+  this.style.borderColor = 'var(--primary)';
+  this.style.boxShadow = '0 0 0 3px rgba(76, 3, 54, 0.1)';
+});
+userSearchInput.addEventListener('blur', function() {
+  this.style.borderColor = '';
+  this.style.boxShadow = '';
+});
+  if (userSelect) {
+    userSelect.addEventListener('change', function() {
+      const newUserId = this.value;
+      if (!newUserId) return;
+      document.getElementById('loadingSpinner').style.display = 'block';
+      window.location.href = `?user_id=${newUserId}`;
+    });
+  }
+
+  // ==================== GESTION TABS ====================
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-tab');
+      
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+      
+      this.classList.add('active');
+      document.getElementById(targetId).classList.add('active');
+      
+      if (targetId === 'static-content' && selectedUserId) {
+        setTimeout(() => autoLoadTokens(), 100);
+      }
+    });
+  });
+
+  // ==================== VUE RÉPONSES QUIZ ====================
+  document.querySelectorAll('.view-responses').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const quizId = btn.getAttribute('data-quiz');
+      const userId = selectedUserId || btn.getAttribute('data-user');
+      
+      if (!quizId || !userId) {
+        showFlashMessage('warning', "Paramètres manquants");
+        return;
+      }
+      
+      fetch(`/analysis/get-quiz-responses/${quizId}/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            showFlashMessage('danger', "Erreur : " + data.error);
+            return;
+          }
+          
+          currentResponsesData = data;
+          
+          let html = '<div class="mb-3">';
+          html += '<h5>Quiz: ' + data.quiz_id + '</h5>';
+          html += '<p><strong>Questions répondues:</strong> ' + data.questions_answered + '</p>';
+          html += '</div><hr>';
+          
+          if (data.responses && data.responses.length > 0) {
+            data.responses.forEach((resp, index) => {
+              html += '<div class="response-item" style="border:1px solid #e5e7eb;padding:1rem;margin-bottom:1rem;border-radius:8px;background:#f9fafb;">';
+              html += '<p style="font-weight:600;margin-bottom:0.5rem;">Question ' + (index + 1) + ':</p>';
+              html += '<p style="margin-bottom:1rem;">' + (resp.question_text || 'Question non disponible') + '</p>';
+              
+              if (resp.is_audio_response && resp.audio_file_path) {
+                html += '<div style="background:#dbeafe;padding:1rem;border-radius:6px;margin-top:0.5rem;">';
+                html += '<strong>Réponse Audio</strong><br>';
+                
+                if (resp.has_transcription) {
+                  html += '<div style="background:white;padding:0.75rem;border-radius:4px;margin-top:0.5rem;">';
+                  html += '<strong>Transcription:</strong><br><em>' + resp.transcription + '</em>';
+                  if (resp.confidence_score) {
+                    html += '<br><small>(confiance: ' + (resp.confidence_score * 100).toFixed(1) + '%)</small>';
+                  }
+                  html += '</div>';
+                } else {
+                  html += '<button class="btn-action btn-action-warning btn-sm mt-2 transcribe-btn" ';
+                  html += 'data-quiz-session="' + resp.quiz_session_id + '" ';
+                  html += 'data-question-id="' + resp.question_id + '" ';
+                  html += 'data-user-id="' + data.user_id + '" ';
+                  html += 'data-quiz-id="' + data.quiz_id + '" ';
+                  html += 'data-audio-path="' + resp.audio_file_path + '">';
+                  html += '<i class="fas fa-microphone"></i> Transcrire';
+                  html += '</button>';
+                }
+                html += '</div>';
+              } else {
+                html += '<div style="background:#f0fdf4;padding:0.75rem;border-radius:6px;">';
+                html += '<strong>Réponse:</strong> ' + (resp.answer_text || 'N/A');
+                html += '</div>';
+              }
+              html += '</div>';
+            });
+          } else {
+            html += '<div class="empty-message">Aucune réponse trouvée</div>';
+          }
+          
+          document.getElementById('responsesContent').innerHTML = html;
+          document.getElementById('responsesSection').style.display = 'block';
+          document.getElementById('downloadSection').style.display = 'block';
+          
+          attachAudioEventListeners();
+          
+          setTimeout(() => {
+            document.getElementById('responsesSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        })
+        .catch(error => {
+          console.error("Erreur:", error);
+          showFlashMessage('danger', "Impossible de charger les réponses");
+        });
+    });
+  });
+
+  function attachAudioEventListeners() {
+    document.querySelectorAll('.transcribe-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const quizSessionId = this.getAttribute('data-quiz-session');
+        const questionId = this.getAttribute('data-question-id');
+        const userId = this.getAttribute('data-user-id');
+        const quizId = this.getAttribute('data-quiz-id');
+        const audioPath = this.getAttribute('data-audio-path');
+        
+        transcribeAudio(quizSessionId, questionId, userId, quizId, audioPath, this);
+      });
+    });
+  }
+
+  function transcribeAudio(quizSessionId, questionId, userId, quizId, audioPath, button) {
+    setLoadingState(button, true);
+
+    fetch('/analysis/transcribe-audio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({
+        quiz_session_id: quizSessionId,
+        question_id: questionId,
+        user_id: userId,
+        quiz_id: quizId,
+        audio_file_path: audioPath
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(button, false);
+      
+      if (data.success) {
+        const transcriptionDiv = document.createElement('div');
+        transcriptionDiv.style.cssText = 'background:white;padding:0.75rem;border-radius:4px;margin-top:0.5rem;';
+        transcriptionDiv.innerHTML = `
+          <strong>Transcription:</strong><br>
+          <em>${data.transcription}</em>
+          ${data.confidence_score ? `<br><small>(confiance: ${(data.confidence_score * 100).toFixed(1)}%)</small>` : ''}
+        `;
+        
+        button.parentNode.replaceChild(transcriptionDiv, button);
+        showFlashMessage('success', '✓ Transcription réalisée');
+        
+        if (currentResponsesData && currentResponsesData.responses) {
+          const responseIndex = currentResponsesData.responses.findIndex(r => r.question_id == questionId);
+          if (responseIndex !== -1) {
+            currentResponsesData.responses[responseIndex].has_transcription = true;
+            currentResponsesData.responses[responseIndex].transcription = data.transcription;
+            currentResponsesData.responses[responseIndex].confidence_score = data.confidence_score;
+          }
+        }
+      } else {
+        if (data.error.includes('Limite de taux') || data.error.includes('Too Many Requests') || data.error.includes('429')) {
+          showFlashMessage('warning', '⏳ Limite OpenAI atteinte. Patientez quelques minutes.');
+        } else {
+          showFlashMessage('danger', 'Erreur: ' + data.error);
+        }
+      }
+    })
+    .catch(error => {
+    setLoadingState(e.target, false);
+    hideLoadingOverlay();
+    showFlashMessage('danger', 'Erreur: ' + error.message);
+  });
+  }
+
+  const closeResponsesBtn = document.querySelector('.close-responses');
+  if (closeResponsesBtn) {
+    closeResponsesBtn.addEventListener('click', () => {
+      document.getElementById('responsesSection').style.display = 'none';
+      currentResponsesData = null;
+    });
+  }
+
+  // ==================== TÉLÉCHARGEMENT ====================
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'downloadBtn') {
+      if (!currentResponsesData) {
+        showFlashMessage('warning', 'Aucune donnée à télécharger');
+        return;
+      }
+      
+      let textContent = `Quiz: ${currentResponsesData.quiz_id}\n`;
+      textContent += `Utilisateur ID: ${currentResponsesData.user_id}\n`;
+      textContent += `Date: ${new Date().toLocaleString('fr-FR')}\n\n`;
+      textContent += `${'='.repeat(80)}\n\n`;
+      
+      if (currentResponsesData.responses && currentResponsesData.responses.length > 0) {
+        currentResponsesData.responses.forEach((resp, index) => {
+          textContent += `Question ${index + 1}:\n`;
+          textContent += `${resp.question_text || 'Question non disponible'}\n\n`;
+          
+          if (resp.is_audio_response) {
+            if (resp.has_transcription && resp.transcription) {
+              textContent += `Réponse:\n${resp.transcription}\n`;
+            } else {
+              textContent += `Réponse: [Réponse audio non transcrite]\n`;
+            }
+          } else {
+            textContent += `Réponse:\n${resp.answer_text || 'N/A'}\n`;
+          }
+          
+          textContent += `\n${'-'.repeat(80)}\n\n`;
+        });
+      }
+      
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reponses_${currentResponsesData.quiz_id}_user_${currentResponsesData.user_id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showFlashMessage('success', '✓ Fichier téléchargé');
+    }
+  });
+
+  // ==================== VISUALISATION ANALYSES ====================
+  document.querySelectorAll('.view-user-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const quizId = btn.getAttribute('data-quiz');
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      window.open(`/analysis/view/${quizId}?result_id=${resultId}&step_id=${stepId}&skip_loading=true&generator_type=user`, '_blank');
+    });
+  });
+
+  document.querySelectorAll('.view-admin-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const quizId = btn.getAttribute('data-quiz');
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      window.open(`/analysis/view/${quizId}?result_id=${resultId}&step_id=${stepId}&skip_loading=true&generator_type=admin`, '_blank');
+    });
+  });
+
+  // ==================== PUBLICATION/DÉPUBLICATION ====================
+  document.querySelectorAll('.publish-admin-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (!confirm('Publier cette analyse admin ? Elle remplacera la version user active si existante.')) return;
+      
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      
+      setLoadingState(btn, true);
+      
+      fetch('/analysis/set-official', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        if (data.success) {
+          showFlashMessage('success', "✅ Analyse admin publiée");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+    });
+  });
+
+  document.querySelectorAll('.publish-user-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (!confirm('Restaurer cette analyse user ? Elle remplacera la version admin active.')) return;
+      
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      
+      setLoadingState(btn, true);
+      
+      fetch('/analysis/set-official-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        if (data.success) {
+          showFlashMessage('success', "✅ Analyse user restaurée");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+    });
+  });
+
+  document.querySelectorAll('.unpublish-admin-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (!confirm('Dépublier cette analyse ? Elle deviendra un brouillon.')) return;
+      
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      
+      setLoadingState(btn, true);
+      
+      fetch('/analysis/unpublish-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId, generator_type: 'admin' })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        if (data.success) {
+          showFlashMessage('success', "⚪ Analyse dépubliée");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+    });
+  });
+
+  document.querySelectorAll('.unpublish-user-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (!confirm('Dépublier cette analyse user ? Elle deviendra un historique.')) return;
+      
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      
+      setLoadingState(btn, true);
+      
+      fetch('/analysis/unpublish-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId, generator_type: 'user' })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        if (data.success) {
+          showFlashMessage('success', "⚪ Analyse user dépubliée");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+    });
+  });
+
+  // ==================== REJOUER ANALYSE ====================
+  document.querySelectorAll('.replay-analysis').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const quizId = btn.getAttribute('data-quiz');
+    const resultId = btn.getAttribute('data-result');
+    const stepId = btn.getAttribute('data-step');
+    
+    if (!quizId || !resultId || !stepId) {
+      showFlashMessage('warning', "Paramètres manquants");
+      return;
+    }
+    
+    document.getElementById('jsonEditorSection').style.display = 'none';
+    currentAnalysis = { quiz: quizId, result: resultId, step: stepId, generatorType: 'admin' };
+    
+    setLoadingState(btn, true);
+    
+    fetch(`/analysis/get_prompt/${resultId}/${stepId}?generator_type=admin`)
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        
+        if (data.error) {
+          showFlashMessage('danger', "Erreur : " + data.error);
+          return;
+        }
+        
+        document.getElementById('replay_system_prompt').value = data.system_prompt || '';
+        document.getElementById('replay_human_prompt').value = data.human_prompt || '';
+        // ✅ NOUVEAU
+        document.getElementById('replay_validation_criteria').value = data.validation_criteria || '';
+        
+        document.querySelector('.execute-replay').disabled = false;
+        document.getElementById('replaySection').style.display = 'block';
+        
+        setTimeout(() => {
+          document.getElementById('replaySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        
+        showFlashMessage('success', '✏️ Prompts chargés');
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Impossible de charger les prompts");
+      });
+  });
+});
+
+  const closeReplayBtn = document.querySelector('.close-replay');
+  if (closeReplayBtn) {
+    closeReplayBtn.addEventListener('click', () => {
+      document.getElementById('replaySection').style.display = 'none';
+    });
+  }
+
+  document.querySelector('.execute-replay').addEventListener('click', function() {
+  const systemPrompt = document.getElementById('replay_system_prompt').value;
+  const humanPrompt = document.getElementById('replay_human_prompt').value;
+  // ✅ NOUVEAU : Récupérer les critères de validation
+  const validationCriteria = document.getElementById('replay_validation_criteria').value;
+
+  if (!systemPrompt || !humanPrompt) {
+    showFlashMessage('warning', "Les prompts sont vides");
+    return;
+  }
+  
+  if (!confirm('Rejouer cette analyse ? Cela remplacera l\'analyse admin actuelle.')) return;
+
+  const formData = new FormData();
+  formData.append('csrf_token', csrfToken);
+  formData.append('action', 'replay');
+  formData.append('user_id', selectedUserId);
+  formData.append('quiz_id', currentAnalysis.quiz);
+  formData.append('result_id', currentAnalysis.result);
+  formData.append('step_id', currentAnalysis.step);
+  formData.append('user_system_prompt', systemPrompt);
+  formData.append('user_human_prompt', humanPrompt);
+  formData.append('user_instructions', '');
+  formData.append('user_knowledge', '');
+  // ✅ NOUVEAU : Ajouter les critères de validation
+  formData.append('user_validation_criteria', validationCriteria);
+
+  setLoadingState(this, true);
+  showLoadingOverlay();
+
+  fetch('/analysis/retry-analysis', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    setLoadingState(this, false);
+    hideLoadingOverlay();
+    if (data.success) {
+      document.getElementById('replaySection').style.display = 'none';
+      showFlashMessage('success', "✨ Analyse regénérée !");
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+    }
+  })
+  .catch(error => {
+    setLoadingState(this, false);
+    hideLoadingOverlay();
+    showFlashMessage('danger', "Erreur: " + error.message);
+  });
+});
+
+  // ==================== ÉDITION JSON ====================
+  document.querySelectorAll('.edit-json-user, .edit-json-admin').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      const quizId = btn.getAttribute('data-quiz');
+      const generatorType = btn.classList.contains('edit-json-user') ? 'user' : 'admin';
+      
+      if (!resultId || !stepId) {
+        showFlashMessage('warning', "Paramètres manquants");
+        return;
+      }
+      
+      document.getElementById('replaySection').style.display = 'none';
+      document.getElementById('jsonEditorSection').style.display = 'block';
+      document.getElementById('json_quiz_id').textContent = quizId;
+      document.getElementById('json_step_id').textContent = stepId;
+      document.getElementById('json_generator_type').textContent = generatorType.toUpperCase();
+      
+      const jsonContent = document.getElementById('json_content');
+      jsonContent.dataset.resultId = resultId;
+      jsonContent.dataset.stepId = stepId;
+      jsonContent.dataset.generatorType = generatorType;
+      
+      setLoadingState(btn, true);
+      
+      fetch(`/analysis/get-json/${resultId}/${stepId}?generator_type=${generatorType}`)
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(btn, false);
+          
+          if (data.error) {
+            showFlashMessage('danger', "Erreur : " + data.error);
+            return;
+          }
+          
+          jsonContent.value = JSON.stringify(data.result_json, null, 2);
+          document.querySelector('.save-json').disabled = false;
+          
+          setTimeout(() => {
+            document.getElementById('jsonEditorSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+          
+          showFlashMessage('success', 'JSON chargé');
+        })
+        .catch(error => {
+          setLoadingState(btn, false);
+          showFlashMessage('danger', "Impossible de charger le JSON");
+        });
+    });
+  });
+
+  const closeJsonBtn = document.querySelector('.close-json-editor');
+  if (closeJsonBtn) {
+    closeJsonBtn.addEventListener('click', () => {
+      if (confirm('Fermer l\'éditeur ? Les modifications non sauvegardées seront perdues.')) {
+        document.getElementById('jsonEditorSection').style.display = 'none';
+      }
+    });
+  }
+
+  document.querySelector('.validate-json').addEventListener('click', function() {
+    const jsonContent = document.getElementById('json_content').value;
+    const feedbackDiv = document.getElementById('json-validation-feedback');
+    
+    try {
+      JSON.parse(jsonContent);
+      feedbackDiv.innerHTML = '<div class="info-banner info-banner-blue"><i class="fas fa-check-circle"></i><div><strong>✓ JSON valide</strong></div></div>';
+      feedbackDiv.style.display = 'block';
+      document.querySelector('.save-json').disabled = false;
+      setTimeout(() => feedbackDiv.style.display = 'none', 3000);
+    } catch (e) {
+      feedbackDiv.innerHTML = `<div class="info-banner info-banner-yellow"><i class="fas fa-exclamation-triangle"></i><div><strong>❌ JSON invalide :</strong> ${e.message}</div></div>`;
+      feedbackDiv.style.display = 'block';
+      document.querySelector('.save-json').disabled = true;
+    }
+  });
+
+  document.querySelector('.save-json').addEventListener('click', function() {
+    const jsonContent = document.getElementById('json_content').value;
+    const resultId = document.getElementById('json_content').dataset.resultId;
+    const stepId = document.getElementById('json_content').dataset.stepId;
+    const generatorType = document.getElementById('json_content').dataset.generatorType;
+    
+    try {
+      const parsed = JSON.parse(jsonContent);
+      
+      if (!confirm('Sauvegarder les modifications du JSON ?')) return;
+      
+      setLoadingState(this, true);
+      
+      fetch('/analysis/update-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId, result_json: parsed, generator_type: generatorType })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(this, false);
+        if (data.success) {
+          showFlashMessage('success', "💾 JSON sauvegardé !");
+          document.getElementById('jsonEditorSection').style.display = 'none';
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(this, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+      
+    } catch (e) {
+      showFlashMessage('danger', `JSON invalide : ${e.message}`);
+    }
+  });
+
+  // ==================== SUPPRESSION ====================
+  document.querySelectorAll('.delete-admin-analysis').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const resultId = btn.getAttribute('data-result');
+      const stepId = btn.getAttribute('data-step');
+      
+      if (!confirm('⚠️ SUPPRIMER cette analyse admin ? Action IRRÉVERSIBLE !')) return;
+      if (!confirm('Êtes-vous VRAIMENT sûr ?')) return;
+      
+      setLoadingState(btn, true);
+      
+      fetch('/analysis/delete-admin-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ result_id: resultId, step_id: stepId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(btn, false);
+        if (data.success) {
+          showFlashMessage('success', "🗑️ Analyse supprimée");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', "Erreur: " + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(btn, false);
+        showFlashMessage('danger', "Erreur: " + error.message);
+      });
+    });
+  });
+
+  // ==================== GÉNÉRATION INITIALE ====================
+  document.querySelectorAll('.initial-step-select').forEach(select => {
+    const quizId = select.getAttribute('data-quiz');
+    
+    fetch(`/analysis/admin/get-available-steps/${quizId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.error || !data.steps) return;
+        
+        let hasCareerPath = false;
+        data.steps.forEach(step => {
+          const option = document.createElement('option');
+          option.value = step.result_step_id;
+          option.textContent = `${step.result_step_id} (Rang: ${step.result_step_ranking})`;
+          if (step.result_step_id === 'career_path_v4') {
+            option.selected = true;
+            hasCareerPath = true;
+          }
+          select.appendChild(option);
+        });
+        
+        if (hasCareerPath) loadPromptsForStep(select, 'career_path_v4', quizId);
+      });
+    
+    select.addEventListener('change', function() {
+      const stepId = this.value;
+      const container = this.closest('.state-empty').querySelector('.initial-prompts-container');
+      
+      if (!stepId) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      loadPromptsForStep(this, stepId, this.getAttribute('data-quiz'));
+    });
+  });
+
+  function loadPromptsForStep(selectElement, stepId, quizId) {
+  const emptyState = selectElement.closest('.state-empty');
+  const container = emptyState.querySelector('.initial-prompts-container');
+  
+  fetch(`/analysis/admin/get-default-prompts/${quizId}/${stepId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        showFlashMessage('danger', data.error);
+        return;
+      }
+      
+      fetch(`/analysis/get-quiz-responses/${quizId}/${selectedUserId}`)
+        .then(resp => resp.json())
+        .then(responsesData => {
+          let humanPrompt = "Voici les réponses aux questions du test de profiling:\n\n";
+          
+          if (!responsesData.error && responsesData.responses) {
+            responsesData.responses.forEach((resp, index) => {
+              humanPrompt += `${index + 1}. Question : ${resp.question_text}\n`;
+              if (resp.is_audio_response && resp.has_transcription) {
+                humanPrompt += `Réponse : ${resp.transcription}\n\n`;
+              } else if (resp.is_audio_response) {
+                humanPrompt += `Réponse : [Audio non transcrit]\n\n`;
+              } else {
+                humanPrompt += `Réponse : ${resp.answer_text}\n\n`;
+              }
+            });
+          }
+          
+          if (data.instructions) {
+            humanPrompt += data.instructions;
+            if (data.knowledge) humanPrompt += `\n\nContexte: ${data.knowledge}\n\n`;
+          }
+          
+          emptyState.querySelector('.initial-system-prompt').value = data.system_prompt || '';
+          emptyState.querySelector('.initial-human-prompt').value = humanPrompt;
+          
+          // ✅ NOUVEAU : Charger les critères de validation
+          emptyState.querySelector('.initial-validation-criteria').value = data.validation_criteria || '';
+          
+          container.style.display = 'block';
+        })
+        .catch(() => {
+          emptyState.querySelector('.initial-system-prompt').value = data.system_prompt || '';
+          emptyState.querySelector('.initial-validation-criteria').value = data.validation_criteria || '';
+          container.style.display = 'block';
+        });
+    });
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('execute-initial-generation')) {
+    const emptyState = e.target.closest('.state-empty');
+    const select = emptyState.querySelector('.initial-step-select');
+    const quizId = select.getAttribute('data-quiz');
+    const userId = select.getAttribute('data-user');
+    const stepId = select.value;
+    
+    if (!quizId || !userId || !stepId) {
+      showFlashMessage('warning', 'Données manquantes');
+      return;
+    }
+    
+    if (!confirm(`Générer l'analyse ADMIN pour ${stepId} ?`)) return;
+    
+    const formData = new FormData();
+    formData.append('csrf_token', csrfToken);
+    formData.append('action', 'replay');
+    formData.append('user_id', userId);
+    formData.append('quiz_id', quizId);
+    formData.append('result_id', '');
+    formData.append('step_id', stepId);
+    formData.append('user_system_prompt', emptyState.querySelector('.initial-system-prompt').value);
+    formData.append('user_human_prompt', emptyState.querySelector('.initial-human-prompt').value);
+    formData.append('user_instructions', '');
+    formData.append('user_knowledge', '');
+    // ✅ NOUVEAU
+    formData.append('user_validation_criteria', emptyState.querySelector('.initial-validation-criteria').value);
+    
+    setLoadingState(e.target, true);
+    showLoadingOverlay(); 
+
+    fetch('/analysis/retry-analysis', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(e.target, false);
+      hideLoadingOverlay();
+      if (data.success) {
+        showFlashMessage('success', '✨ Analyse générée !');
+        setTimeout(() => location.reload(), 2000);
+      } else {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      setLoadingState(e.target, false);
+      hideLoadingOverlay();
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  }
+});
+
+// ==================== GESTION DES TOKENS ====================
+  function autoLoadTokens() {
+    document.querySelectorAll('.token-info').forEach(tokenInfo => {
+      const quizId = tokenInfo.getAttribute('data-quiz');
+      const userId = selectedUserId;
+      const detailsDiv = tokenInfo.querySelector('.token-details');
+      
+      if (!userId) return;
+      
+      fetch(`/analysis/admin/check-access-token/${quizId}/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            detailsDiv.innerHTML = `<div class="empty-message"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><p>${data.error}</p></div>`;
+            return;
+          }
+          
+          if (data.exists) {
+            displayTokenInfo(detailsDiv, data);
+          } else {
+            displayNoToken(detailsDiv, quizId, userId, data.result_id);
+          }
+        })
+        .catch(error => {
+          detailsDiv.innerHTML = `<div class="empty-message"><i class="fas fa-times-circle fa-2x mb-2"></i><p>Erreur: ${error.message}</p></div>`;
+        });
+    });
+  }
+
+  async function loadValidationCriteria() {
+  try {
+    const response = await fetch(`/analysis/admin/get-default-prompts/${manualRetryData.quiz_id}/${manualRetryData.step_id}`, {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.validation_criteria) {
+        document.getElementById('mr_validation_criteria').value = data.validation_criteria;
+      }
+    }
+  } catch (e) {
+    console.warn('Could not load validation criteria:', e);
+  }
+}
+
+  function displayTokenInfo(container, data) {
+    const isPaid = data.access_type === 'paid';
+    const expiresAt = data.expires_at ? new Date(data.expires_at).toLocaleString('fr-FR') : 'Illimité';
+    
+    let html = `
+      <div style="background:${isPaid ? '#d1fae5' : '#fef3c7'};border:2px solid ${isPaid ? '#10b981' : '#f59e0b'};border-radius:12px;padding:1.5rem;">
+        <div style="display:flex;gap:2rem;align-items:start;flex-wrap:wrap;">
+          <div style="flex:1;min-width:300px;">
+            <div style="margin-bottom:0.75rem;">
+              <strong>Type:</strong>
+              <span style="display:inline-block;background:${isPaid ? '#10b981' : '#f59e0b'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-weight:600;font-size:0.85rem;margin-left:0.5rem;">${isPaid ? 'PAID' : 'FREE'}</span>
+            </div>
+            <p style="margin-bottom:0.5rem;"><strong>Expiration:</strong> ${expiresAt}</p>
+            <p style="margin-bottom:0.5rem;"><strong>Vues:</strong> ${data.view_count}</p>
+            <p style="margin-bottom:1rem;"><strong>Token:</strong> <code style="background:rgba(0,0,0,0.1);padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;">${data.token.substring(0, 30)}...</code></p>
+            
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <a href="${data.access_url}" target="_blank" class="btn-action btn-action-primary btn-sm">
+                <i class="fas fa-external-link-alt"></i> Ouvrir
+              </a>
+              <button class="btn-action btn-action-secondary btn-sm copy-link-btn" data-url="${data.access_url}">
+                <i class="fas fa-copy"></i> Copier
+              </button>
+              ${data.expires_at ? `<button class="btn-action btn-action-secondary btn-sm reset-expiration-btn" data-token="${data.token}"><i class="fas fa-redo"></i> +7j</button>` : ''}
+            </div>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:0.5rem;min-width:200px;">
+            ${!isPaid ? `
+              <button class="btn-action btn-action-success upgrade-token-btn" data-token="${data.token}">
+                <i class="fas fa-arrow-up"></i> Upgrader PAID
+              </button>
+            ` : `
+              <div style="background:#10b981;color:white;padding:0.75rem;border-radius:8px;text-align:center;font-weight:600;margin-bottom:0.5rem;">
+                <i class="fas fa-check-circle"></i> Accès Premium
+              </div>
+              <button class="btn-action btn-action-warning btn-sm downgrade-token-btn" data-token="${data.token}">
+                <i class="fas fa-arrow-down"></i> Repasser FREE
+              </button>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    attachTokenEventListeners(container);
+  }
+
+  function displayNoToken(container, quizId, userId, resultId) {
+    container.innerHTML = `
+      <div class="empty-message">
+        <i class="fas fa-link fa-3x mb-3" style="color:var(--gray-300);"></i>
+        <p style="margin-bottom:1rem;">Aucun lien d'accès créé</p>
+        <button class="btn-action btn-action-primary create-token-btn" 
+                data-quiz="${quizId}" 
+                data-user="${userId}"
+                data-result="${resultId || ''}">
+          <i class="fas fa-plus"></i> Créer un lien FREE
+        </button>
+      </div>
+    `;
+    attachTokenEventListeners(container);
+  }
+
+  function attachTokenEventListeners(container) {
+    const copyBtn = container.querySelector('.copy-link-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        const url = this.getAttribute('data-url');
+        navigator.clipboard.writeText(url).then(() => {
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i> Copié !';
+          setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
+          showFlashMessage('success', '✓ Lien copié');
+        });
+      });
+    }
+    
+    const createBtn = container.querySelector('.create-token-btn');
+    if (createBtn) {
+      createBtn.addEventListener('click', function() {
+        if (!confirm('Créer un lien d\'accès FREE (7 jours) ?')) return;
+        
+        const quizId = this.getAttribute('data-quiz');
+        const userId = selectedUserId;
+        const resultId = this.getAttribute('data-result');
+        
+        setLoadingState(this, true);
+        
+        fetch('/analysis/admin/create-access-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ quiz_id: quizId, user_id: userId, result_id: resultId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(this, false);
+          if (data.success) {
+            showFlashMessage('success', '✓ Lien créé');
+            autoLoadTokens();
+          } else {
+            showFlashMessage('danger', data.error);
+          }
+        })
+        .catch(error => {
+          setLoadingState(this, false);
+          showFlashMessage('danger', 'Erreur: ' + error.message);
+        });
+      });
+    }
+    
+    const upgradeBtn = container.querySelector('.upgrade-token-btn');
+    if (upgradeBtn) {
+      upgradeBtn.addEventListener('click', function() {
+        if (!confirm('Upgrader en PAID (accès illimité) ?')) return;
+        
+        const token = this.getAttribute('data-token');
+        setLoadingState(this, true);
+        
+        fetch('/analysis/admin/upgrade-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ token: token })
+        })
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(this, false);
+          if (data.success) {
+            showFlashMessage('success', '✓ Token upgradé en PAID');
+            autoLoadTokens();
+          } else {
+            showFlashMessage('danger', data.error);
+          }
+        });
+      });
+    }
+
+    const downgradeBtn = container.querySelector('.downgrade-token-btn');
+    if (downgradeBtn) {
+      downgradeBtn.addEventListener('click', function() {
+        if (!confirm('Repasser en FREE (7 jours) ?')) return;
+        
+        const token = this.getAttribute('data-token');
+        setLoadingState(this, true);
+        
+        fetch('/analysis/admin/downgrade-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ token: token })
+        })
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(this, false);
+          if (data.success) {
+            showFlashMessage('success', '✓ Token repassé en FREE');
+            autoLoadTokens();
+          } else {
+            showFlashMessage('danger', data.error);
+          }
+        });
+      });
+    }
+
+    const resetBtn = container.querySelector('.reset-expiration-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function() {
+        if (!confirm('Réinitialiser expiration (+7 jours) ?')) return;
+        
+        const token = this.getAttribute('data-token');
+        setLoadingState(this, true);
+        
+        fetch('/analysis/admin/reset-token-expiration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ token: token })
+        })
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(this, false);
+          if (data.success) {
+            showFlashMessage('success', data.message);
+            autoLoadTokens();
+          } else {
+            showFlashMessage('danger', data.error);
+          }
+        });
+      });
+    }
+  }
+
+  // ==================== CRÉER VERSION ADMIN (depuis user active) ====================
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('create-admin-version')) {
+      const quizId = e.target.getAttribute('data-quiz');
+      const resultId = e.target.getAttribute('data-result');
+      const stepId = e.target.getAttribute('data-step');
+      
+      if (!quizId || !resultId || !stepId) {
+        showFlashMessage('warning', 'Paramètres manquants');
+        return;
+      }
+      
+      if (!confirm(`Créer une version admin pour améliorer l'analyse user ?\n\nQuiz: ${quizId}\nÉtape: ${stepId}`)) return;
+      
+      // Charger les prompts de la version user
+      setLoadingState(e.target, true);
+      
+      fetch(`/analysis/get_prompt/${resultId}/${stepId}?generator_type=user`)
+        .then(response => response.json())
+        .then(data => {
+          setLoadingState(e.target, false);
+          
+          if (data.error) {
+            showFlashMessage('danger', "Erreur : " + data.error);
+            return;
+          }
+          
+          // Pré-remplir le modal de rejouer avec les prompts user
+          document.getElementById('replay_system_prompt').value = data.system_prompt || '';
+          document.getElementById('replay_human_prompt').value = data.human_prompt || '';
+          document.querySelector('.execute-replay').disabled = false;
+          
+          // Mettre à jour currentAnalysis pour créer une nouvelle version admin
+          currentAnalysis = { quiz: quizId, result: resultId, step: stepId, generatorType: 'admin', createNew: true };
+          
+          document.getElementById('replaySection').style.display = 'block';
+          
+          setTimeout(() => {
+            document.getElementById('replaySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+          
+          showFlashMessage('info', '💡 Modifiez les prompts pour créer une version admin améliorée');
+        })
+        .catch(error => {
+          setLoadingState(e.target, false);
+          showFlashMessage('danger', "Impossible de charger les prompts");
+        });
+    }
+  });
+
+  if (selectedUserId) {
+    setTimeout(() => autoLoadTokens(), 100);
+  }
+
+// ==================== GÉNÉRATION LIEN PARTAGEABLE ====================
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.closest('.generate-shareable-link')) {
+    const btn = e.target.closest('.generate-shareable-link');
+    const quizId = btn.getAttribute('data-quiz');
+    const resultId = btn.getAttribute('data-result');
+    const userId = btn.getAttribute('data-user');  // ✅ AJOUT
+    
+    if (!quizId || !resultId || !userId) {  // ✅ AJOUT userId
+      showFlashMessage('warning', 'Paramètres manquants');
+      return;
+    }
+    
+    // ✅ PAS DE POPUP : On génère directement un lien FREE
+    setLoadingState(btn, true);
+    
+    fetch('/analysis/admin/generate-shareable-link', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': csrfToken 
+      },
+      body: JSON.stringify({ 
+        quiz_id: quizId, 
+        result_id: resultId,
+        user_id: userId,        // ✅ AJOUT
+        access_type: 'free'     // ✅ TOUJOURS FREE PAR DÉFAUT
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(btn, false);
+      
+      if (data.success) {
+        // Copier automatiquement dans le presse-papier
+        navigator.clipboard.writeText(data.shareable_url).then(() => {
+          showFlashMessage('success', `✓ Lien ${data.access_type.toUpperCase()} généré et copié !`);
+          
+          // Afficher la modal avec le lien
+          const modal = `
+            <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:2rem;">
+              <div style="background:white;padding:2rem;border-radius:12px;max-width:600px;width:100%;">
+                <h3 style="margin:0 0 1rem 0;color:var(--primary);">
+                  <i class="fas fa-link"></i> Lien partageable généré
+                </h3>
+                
+                <div style="background:var(--gray-50);padding:1rem;border-radius:8px;margin-bottom:1rem;">
+                  <p style="margin:0 0 0.5rem 0;"><strong>Type:</strong> <span style="background:${data.access_type === 'paid' ? '#10b981' : '#f59e0b'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.85rem;">${data.access_type.toUpperCase()}</span></p>
+                  ${data.expires_at ? `<p style="margin:0;"><strong>Expire:</strong> ${new Date(data.expires_at).toLocaleString('fr-FR')}</p>` : '<p style="margin:0;"><strong>Expiration:</strong> Illimité ♾️</p>'}
+                </div>
+                
+                <div style="margin-bottom:1rem;">
+                  <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:var(--gray-700);">Lien d'accès:</label>
+                  <input type="text" value="${data.shareable_url}" readonly style="width:100%;padding:0.75rem;border:2px solid var(--gray-200);border-radius:8px;font-family:monospace;font-size:0.85rem;">
+                </div>
+                
+                <div style="display:flex;gap:1rem;">
+                  <button class="btn-action btn-action-primary" onclick="navigator.clipboard.writeText('${data.shareable_url}');showFlashMessage('success','✓ Copié');">
+                    <i class="fas fa-copy"></i> Copier
+                  </button>
+                  <a href="${data.shareable_url}" target="_blank" class="btn-action btn-action-outline" style="text-decoration:none;">
+                    <i class="fas fa-external-link-alt"></i> Tester
+                  </a>
+                  <button class="btn-action btn-action-secondary" onclick="this.closest('div[style*=fixed]').remove();">
+                    <i class="fas fa-times"></i> Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          document.body.insertAdjacentHTML('beforeend', modal);
+        });
+        
+      } else {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      setLoadingState(btn, false);
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  }
+});
+// ==================== MANUAL RETRY (Relance Personnalisée) ====================
+  
+let manualRetryData = {
+    quiz_id: null,
+    result_id: null,
+    step_id: null,
+    user_id: null,
+    source_generator_type: null,
+    preview_result: null,
+    current_recommendations: null  // Stocke les recos actuelles pour afficher les noms
+  };
+  
+  // Ouvrir le modal de relance personnalisée
+  document.querySelectorAll('.manual-retry-btn').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    manualRetryData.quiz_id = this.getAttribute('data-quiz');
+    manualRetryData.result_id = this.getAttribute('data-result');
+    manualRetryData.step_id = this.getAttribute('data-step');
+    manualRetryData.user_id = this.getAttribute('data-user');
+    manualRetryData.source_generator_type = this.getAttribute('data-generator-type');
+    manualRetryData.preview_result = null;
+    manualRetryData.current_recommendations = null;
+    
+    // Mettre à jour l'affichage des métadonnées
+    document.getElementById('mr_quiz_id').textContent = manualRetryData.quiz_id;
+    document.getElementById('mr_step_id').textContent = manualRetryData.step_id;
+    
+    const badgeSource = document.getElementById('mr_generator_type');
+    badgeSource.textContent = manualRetryData.source_generator_type.toUpperCase();
+    badgeSource.className = 'badge-source ' + manualRetryData.source_generator_type;
+    
+    // Reset du formulaire
+    document.getElementById('admin_feedback').value = '';
+    // ✅ NOUVEAU : Reset des critères de validation
+    document.getElementById('mr_validation_criteria').value = '';
+    
+    document.querySelectorAll('.voie-checkbox').forEach(cb => cb.checked = true);
+    document.getElementById('manualRetryStep1').style.display = 'block';
+    document.getElementById('manualRetryStep2').style.display = 'none';
+    
+    // Reset des noms de voies (placeholder)
+    document.getElementById('voie_name_1').textContent = 'Chargement...';
+    document.getElementById('voie_name_2').textContent = 'Chargement...';
+    document.getElementById('voie_name_3').textContent = 'Chargement...';
+    
+    // Afficher le modal
+    document.getElementById('manualRetrySection').style.display = 'block';
+    
+    setTimeout(() => {
+      document.getElementById('manualRetrySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    
+    // Charger les noms des voies actuelles
+    await loadCurrentVoiesNames();
+    // ✅ NOUVEAU : Charger les critères de validation par défaut
+    await loadValidationCriteria();
+  });
+});
+  
+  // Charger les noms des voies depuis le JSON actuel
+  async function loadCurrentVoiesNames() {
+    try {
+      // On fait un appel léger pour récupérer le JSON actuel
+      const response = await fetch(`/analysis/admin/get-analysis-json?user_id=${manualRetryData.user_id}&result_id=${manualRetryData.result_id}&step_id=${manualRetryData.step_id}&generator_type=${manualRetryData.source_generator_type}`, {
+        headers: { 'X-CSRFToken': csrfToken }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.recommendations) {
+          manualRetryData.current_recommendations = data.recommendations;
+          
+          data.recommendations.forEach((reco, idx) => {
+            const title = reco.title || reco.label || `Voie ${idx + 1}`;
+            const nameEl = document.getElementById(`voie_name_${idx + 1}`);
+            if (nameEl) {
+              // Tronquer si trop long
+              nameEl.textContent = title.length > 30 ? title.substring(0, 30) + '...' : title;
+              nameEl.title = title;
+            }
+          });
+        }
+      } else {
+        // Fallback : noms génériques
+        [1, 2, 3].forEach(i => {
+          document.getElementById(`voie_name_${i}`).textContent = `Voie ${i}`;
+        });
+      }
+    } catch (e) {
+      console.warn('Could not load voies names:', e);
+      [1, 2, 3].forEach(i => {
+        document.getElementById(`voie_name_${i}`).textContent = `Voie ${i}`;
+      });
+    }
+  }
+  
+  // Sélection rapide
+  document.getElementById('selectAllVoies').addEventListener('click', () => {
+    document.querySelectorAll('.voie-checkbox').forEach(cb => cb.checked = true);
+  });
+  
+  document.getElementById('deselectAllVoies').addEventListener('click', () => {
+    document.querySelectorAll('.voie-checkbox').forEach(cb => cb.checked = false);
+  });
+  
+  // Fermer le modal
+  document.querySelector('.close-manual-retry').addEventListener('click', function() {
+    if (manualRetryData.preview_result) {
+      if (!confirm('Vous avez une prévisualisation en cours. Êtes-vous sûr de vouloir fermer ?')) {
+        return;
+      }
+    }
+    document.getElementById('manualRetrySection').style.display = 'none';
+    manualRetryData.preview_result = null;
+  });
+  
+  // Prévisualiser les modifications
+  document.getElementById('previewManualRetryBtn').addEventListener('click', function() {
+  const feedback = document.getElementById('admin_feedback').value.trim();
+  
+  if (!feedback || feedback.length < 10) {
+    showFlashMessage('warning', 'Veuillez saisir des instructions (minimum 10 caractères)');
+    return;
+  }
+  
+  // Récupérer les voies sélectionnées
+  const selectedVoies = [];
+  document.querySelectorAll('.voie-checkbox:checked').forEach(cb => {
+    selectedVoies.push(parseInt(cb.value));
+  });
+  
+  if (selectedVoies.length === 0) {
+    showFlashMessage('warning', 'Sélectionnez au moins une voie à modifier');
+    return;
+  }
+  
+  setLoadingState(this, true);
+  showLoadingOverlay();
+  
+  document.querySelector('.loading-title').textContent = 'Génération en cours...';
+  document.querySelector('.loading-subtitle').textContent = `Modification de ${selectedVoies.length} voie(s)`;
+  
+  fetch('/analysis/admin/manual-retry-preview', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json', 
+      'X-CSRFToken': csrfToken 
+    },
+    body: JSON.stringify({
+      user_id: manualRetryData.user_id,
+      quiz_id: manualRetryData.quiz_id,
+      result_id: manualRetryData.result_id,
+      step_id: manualRetryData.step_id,
+      admin_feedback: feedback,
+      source_generator_type: manualRetryData.source_generator_type,
+      selected_voies: selectedVoies,
+      // ✅ NOUVEAU : Ajouter les critères de validation
+      validation_criteria: document.getElementById('mr_validation_criteria').value
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    setLoadingState(this, false);
+    hideLoadingOverlay();
+    
+    if (!data.success) {
+      showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      return;
+    }
+    
+    manualRetryData.preview_result = data;
+    
+    renderAccordionPreview(data);
+    
+    document.getElementById('manualRetryStep1').style.display = 'none';
+    document.getElementById('manualRetryStep2').style.display = 'block';
+    
+    document.getElementById('previewGenerationTime').textContent = 
+      `⏱️ ${data.metadata.generation_time_seconds}s`;
+    
+    const voiesChanged = data.preview.voies_changed || [];
+    document.querySelector('#previewVoiesModified span').textContent = voiesChanged.length;
+    
+    showFlashMessage('success', '✨ Prévisualisation générée');
+  })
+  .catch(error => {
+    setLoadingState(this, false);
+    hideLoadingOverlay();
+    showFlashMessage('danger', 'Erreur: ' + error.message);
+  });
+});
+  
+  // Fonction pour afficher la prévisualisation en accordéon
+  function renderAccordionPreview(data) {
+    const container = document.getElementById('previewAccordion');
+    const preview = data.preview;
+    const voiesChanged = preview.voies_changed || [];
+    
+    // Champs à afficher selon le step_id
+// Champs à afficher selon le step_id - TOUS LES CHAMPS
+const fieldsToShow = (preview.step_id === 'career_path_v1' || preview.step_id === 'career_path_v2' || preview.step_id === 'career_path_v3' || preview.step_id === 'career_path_v4')
+      ? [
+          // Champs V1/V2 communs
+          'title', 'label', 'subtitle', 'badge_text', 'story', 'icon', 'color_class',
+          // Contenu détaillé
+          'hero_title', 'quelques_mots', 'projection', 'avantage_unique', 
+          // Listes
+          'premiers_moves', 'formations', 'cibles_employeurs', 'avantages', 'defis',
+          // Résumés
+          'resume_avantages', 'resume_defis', 'resume_salaire', 'resume_duree',
+          // Insights
+          'savais_tu', 'insight', 'insight_icon', 'resume_reality',
+          // Warnings
+          'warning_evite', 'warning_text',
+          // Pratique
+          'salaire', 'temps_credible', 'conseil', 'dernier_conseil', 'dire_quote',
+          // Legacy V0
+          'salary_range', 'timeline', 'strategy', 'transformation', 'atouts'
+        ]
+      : [
+          // Autres steps (vision_360, checkup_pro...)
+          'title', 'label', 'subtitle', 'content'
+        ];
+    
+    const fieldLabels = {
+      // Basiques
+      'title': 'Titre du métier',
+      'label': 'Label',
+      'subtitle': 'Sous-titre',
+      'badge_text': 'Badge',
+      'story': 'Récit accroche',
+      'icon': 'Icône',
+      'color_class': 'Couleur',
+      // Contenu
+      'projection': 'Projection quotidien',
+      'avantage_unique': 'Avantage unique',
+      'premiers_moves': 'Premiers pas (formation + employeurs)',
+      'avantages': 'Avantages',
+      'defis': 'Défis',
+      'insight': 'Insight marché',
+      'insight_icon': 'Icône insight',
+      'resume_reality': 'Résumé réalité',
+      'salaire': 'Salaire',
+      'temps_credible': 'Temps de transition',
+      'conseil': 'Conseil actionnable',
+      // Career path (step ancien)
+      'salary_range': 'Fourchette salaire',
+      'timeline': 'Délai',
+      'strategy': 'Stratégie',
+      'transformation': 'Transformation',
+      'atouts': 'Atouts'
+    };
+    
+    let html = '';
+    
+    preview.original_recommendations.forEach((orig, idx) => {
+      const newItem = preview.new_recommendations[idx];
+      const isChanged = voiesChanged.includes(idx + 1);
+      const voieNum = idx + 1;
+      
+      const title = newItem.title || newItem.label || `Voie ${voieNum}`;
+      const subtitle = newItem.subtitle || newItem.story?.substring(0, 80) || '';
+      
+      html += `
+        <div class="preview-voie-accordion ${isChanged ? 'is-changed' : 'is-unchanged'}" data-voie="${voieNum}">
+          <div class="preview-accordion-header">
+            <span class="accordion-toggle">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+            <span class="accordion-voie-number">${voieNum}</span>
+            <div class="accordion-voie-info">
+              <div class="accordion-voie-title">${escapeHtml(title)}</div>
+              <div class="accordion-voie-subtitle">${escapeHtml(subtitle.substring(0, 60))}${subtitle.length > 60 ? '...' : ''}</div>
+            </div>
+            <span class="accordion-status-badge ${isChanged ? 'changed' : 'unchanged'}">
+              ${isChanged ? '✓ Modifiée' : 'Conservée'}
+            </span>
+          </div>
+          <div class="preview-accordion-body">
+            <div class="preview-comparison">
+              <div class="preview-side before">
+                <div class="preview-side-header">
+                  <span class="icon">📋</span>
+                  <span class="label">AVANT</span>
+                </div>
+                ${renderFieldsComparison(orig, newItem, fieldsToShow, fieldLabels, 'before')}
+              </div>
+              <div class="preview-side after">
+                <div class="preview-side-header">
+                  <span class="icon">✨</span>
+                  <span class="label">APRÈS</span>
+                </div>
+                ${renderFieldsComparison(newItem, orig, fieldsToShow, fieldLabels, 'after')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Ouvrir automatiquement les voies modifiées
+    document.querySelectorAll('.preview-voie-accordion.is-changed').forEach(el => {
+      el.classList.add('is-open');
+    });
+  }
+  
+  function renderFieldsComparison(item, compareItem, fields, labels, side) {
+    let html = '';
+    
+    fields.forEach(field => {
+      const value = item[field];
+      const compareValue = compareItem[field];
+      
+      if (value !== undefined && value !== null && value !== '') {
+        const isDifferent = side === 'after' && JSON.stringify(value) !== JSON.stringify(compareValue);
+        
+        let displayValue = formatFieldValue(value, field);
+        
+        html += `
+          <div class="preview-field ${isDifferent ? 'field-changed' : ''}">
+            <div class="preview-field-label">${labels[field] || field}</div>
+            <div class="preview-field-value ${isDifferent ? 'is-different' : ''}">${displayValue}</div>
+          </div>
+        `;
+      }
+    });
+    
+    return html || '<div class="preview-field"><div class="preview-field-value text-muted">Aucun contenu</div></div>';
+  }
+  
+  // Formater les valeurs selon leur type
+// Formater les valeurs selon leur type
+function formatFieldValue(value, fieldName) {
+    if (value === null || value === undefined) return '<em class="text-muted">—</em>';
+    
+    // Arrays simples (avantages, defis)
+    if (Array.isArray(value) && typeof value[0] === 'string') {
+      return `<ul class="preview-list">${value.map(v => `<li>${escapeHtml(v)}</li>`).join('')}</ul>`;
+    }
+    
+    // Array d'objets (premiers_moves)
+    if (Array.isArray(value) && typeof value[0] === 'object') {
+      let html = '<div class="preview-nested">';
+      value.forEach(obj => {
+        if (obj.label && obj.items) {
+          // Structure premiers_moves
+          html += `
+            <div class="preview-nested-group">
+              <div class="preview-nested-label">${escapeHtml(obj.label)}</div>
+              <ul class="preview-list">
+                ${obj.items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        } else {
+          // Autre structure objet
+          html += `<div class="preview-nested-item">${escapeHtml(JSON.stringify(obj))}</div>`;
+        }
+      });
+      html += '</div>';
+      return html;
+    }
+    
+    // Objet simple
+    if (typeof value === 'object') {
+      return `<pre class="preview-json">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+    }
+    
+    // String avec HTML (avantage_unique contient du <strong>)
+    if (typeof value === 'string' && (value.includes('<strong>') || value.includes('<em>'))) {
+      // Autoriser certaines balises HTML sûres
+      return sanitizeHtml(value);
+    }
+    
+    // String normal
+    if (typeof value === 'string') {
+      // Tronquer si trop long mais permettre expansion
+      if (value.length > 300) {
+        const truncated = value.substring(0, 300);
+        const id = 'expand-' + Math.random().toString(36).substr(2, 9);
+        return `
+          <span class="preview-truncated" id="${id}-short">${escapeHtml(truncated)}... 
+            <button type="button" class="btn-expand" data-expand-id="${id}">Voir plus</button>
+          </span>
+          <span class="preview-full" id="${id}-full" style="display:none;">${escapeHtml(value)}
+            <button type="button" class="btn-expand" data-expand-id="${id}">Voir moins</button>
+          </span>
+        `;
+      }
+      return escapeHtml(value);
+    }
+    
+    // Autres types
+    return escapeHtml(String(value));
+  }
+  
+  // Sanitize HTML pour autoriser <strong> et <em> uniquement
+  function sanitizeHtml(html) {
+    // Échapper tout sauf <strong>, </strong>, <em>, </em>
+    return html
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/&lt;strong&gt;/g, '<strong>')
+      .replace(/&lt;\/strong&gt;/g, '</strong>')
+      .replace(/&lt;em&gt;/g, '<em>')
+      .replace(/&lt;\/em&gt;/g, '</em>');
+  }
+  
+  // Toggle expand/collapse pour textes longs
+  function toggleExpand(id) {
+    const short = document.getElementById(id + '-short');
+    const full = document.getElementById(id + '-full');
+    if (short && full) {
+      if (short.style.display === 'none') {
+        short.style.display = 'inline';
+        full.style.display = 'none';
+      } else {
+        short.style.display = 'none';
+        full.style.display = 'inline';
+      }
+    }
+  }
+  
+  // Délégation d'événements pour les boutons expand (CSP-compatible)
+  document.addEventListener('click', function(e) {
+    // Boutons "Voir plus / Voir moins"
+    if (e.target.classList.contains('btn-expand')) {
+      e.preventDefault();
+      const expandId = e.target.getAttribute('data-expand-id');
+      if (expandId) {
+        toggleExpand(expandId);
+      }
+    }
+  });
+
+// Toggle accordion - appelé via délégation d'événements
+  function toggleAccordionElement(accordion) {
+    accordion.classList.toggle('is-open');
+  }
+  
+  // Délégation d'événements pour les accordéons (CSP-compatible)
+  document.addEventListener('click', function(e) {
+    // Headers d'accordéon
+    const accordionHeader = e.target.closest('.preview-accordion-header');
+    if (accordionHeader) {
+      e.preventDefault();
+      const accordion = accordionHeader.closest('.preview-voie-accordion');
+      if (accordion) {
+        toggleAccordionElement(accordion);
+      }
+    }
+  });
+  
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+  
+  // Retour à l'étape 1
+  document.getElementById('backToFeedbackBtn').addEventListener('click', function() {
+    document.getElementById('manualRetryStep1').style.display = 'block';
+    document.getElementById('manualRetryStep2').style.display = 'none';
+  });
+  
+  // Sauvegarder les modifications
+  document.getElementById('saveManualRetryBtn').addEventListener('click', function() {
+    if (!manualRetryData.preview_result) {
+      showFlashMessage('danger', 'Aucune prévisualisation à sauvegarder');
+      return;
+    }
+    
+    if (!confirm('Sauvegarder cette version ? Elle sera créée en tant que brouillon admin.')) {
+      return;
+    }
+    
+    setLoadingState(this, true);
+    
+    const preview = manualRetryData.preview_result;
+    
+    fetch('/analysis/admin/manual-retry-save', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': csrfToken 
+      },
+      body: JSON.stringify({
+        user_id: manualRetryData.user_id,
+        quiz_id: manualRetryData.quiz_id,
+        result_id: manualRetryData.result_id,
+        step_id: manualRetryData.step_id,
+        merged_json: preview.preview.merged_json,
+        admin_feedback: document.getElementById('admin_feedback').value,
+        original_prompt_id: preview.metadata.original_prompt_id,
+        token_id: preview.metadata.token_id
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(this, false);
+      
+      if (!data.success) {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+        return;
+      }
+      
+      showFlashMessage('success', '✅ Analyse mise à jour avec succès !');
+      
+      document.getElementById('manualRetrySection').style.display = 'none';
+      manualRetryData.preview_result = null;
+      
+      setTimeout(() => location.reload(), 1500);
+    })
+    .catch(error => {
+      setLoadingState(this, false);
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  });
+// ==================== NOTIFICATION EMAIL ====================
+
+// Charger le statut des emails au chargement de la page
+function loadEmailNotificationStatus() {
+  document.querySelectorAll('.send-email-notification').forEach(btn => {
+    const resultId = btn.getAttribute('data-result');
+    const stepId = btn.getAttribute('data-step');
+    const userId = btn.getAttribute('data-user');
+    
+    fetch(`/analysis/check-notification-status/${resultId}/${stepId}/${userId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.already_sent) {
+          // Remplacer le bouton par un badge
+          const badge = document.createElement('div');
+          badge.style.cssText = 'padding: 12px; background: #e5e7eb; border-radius: 8px; text-align: center; color: #6b7280; font-size: 14px;';
+          badge.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Email envoyé le ${data.sent_at}`;
+          btn.parentNode.replaceChild(badge, btn);
+        }
+      })
+      .catch(error => {
+        console.warn('Could not check email status:', error);
+      });
+  });
+}
+
+// Appeler au chargement
+if (selectedUserId) {
+  setTimeout(() => {
+    loadEmailNotificationStatus();
+  }, 100);
+}
+
+// Gestion du clic sur le bouton
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.closest('.send-email-notification')) {
+    const btn = e.target.closest('.send-email-notification');
+    const resultId = btn.getAttribute('data-result');
+    const stepId = btn.getAttribute('data-step');
+    const userId = btn.getAttribute('data-user');
+    const quizId = btn.getAttribute('data-quiz');
+    
+    // ✅ UNE SEULE confirmation
+    if (!confirm('Envoyer un email à l\'utilisateur pour l\'informer que son analyse est prête ?')) {
+      return;
+    }
+    
+    setLoadingState(btn, true);
+    
+    fetch('/analysis/send-notification-email', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-CSRFToken': csrfToken 
+      },
+      body: JSON.stringify({ 
+        result_id: resultId, 
+        step_id: stepId, 
+        user_id: userId, 
+        quiz_id: quizId 
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(btn, false);
+      
+      if (data.success) {
+        showFlashMessage('success', '📧 ' + data.message);
+        
+        // Remplacer le bouton par un badge
+        const badge = document.createElement('div');
+        badge.style.cssText = 'padding: 12px; background: #e5e7eb; border-radius: 8px; text-align: center; color: #6b7280; font-size: 14px;';
+        badge.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> Email envoyé à l'instant`;
+        btn.parentNode.replaceChild(badge, btn);
+        
+      } else {
+        // ✅ Pas de deuxième popup : afficher directement le message d'erreur
+        if (data.already_sent) {
+          showFlashMessage('info', '📧 ' + data.error);
+          
+          // Remplacer le bouton par un badge
+          const badge = document.createElement('div');
+          badge.style.cssText = 'padding: 12px; background: #e5e7eb; border-radius: 8px; text-align: center; color: #6b7280; font-size: 14px;';
+          badge.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981;"></i> ${data.error}`;
+          btn.parentNode.replaceChild(badge, btn);
+        } else {
+          showFlashMessage('danger', '❌ ' + data.error);
+        }
+      }
+    })
+    .catch(error => {
+      setLoadingState(btn, false);
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  }
+});
+
+// ==================== BADGE "BACKUP" SUR LES BROUILLONS ====================
+// Vérifie si les analyses brouillons sont des "backups" (validation échouée)
+document.querySelectorAll('.version-card-draft').forEach(async function(card) {
+  const historyBtn = card.querySelector('.btn-history');
+  if (!historyBtn) return;
+  
+  const resultId = historyBtn.getAttribute('data-result');
+  const stepId = historyBtn.getAttribute('data-step');
+  
+  if (!resultId || !stepId) return;
+  
+  try {
+    const response = await fetch(`/analysis/admin/get-generation-history/${resultId}/${stepId}`, {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+    const data = await response.json();
+    
+    if (data.success && data.stats && data.stats.final_status === 'failed') {
+      // C'est un backup - modifier le badge
+      const badge = card.querySelector('.version-badge-draft');
+      if (badge) {
+        badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> BACKUP';
+        badge.classList.remove('version-badge-draft');
+        badge.classList.add('version-badge-backup');
+      }
+      
+      // Ajouter une alerte sous le header
+      const header = card.querySelector('.version-card-header');
+      if (header) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'backup-alert';
+        alertDiv.innerHTML = '<i class="fas fa-info-circle"></i> Validation échouée - JSON sauvegardé malgré les erreurs';
+        header.insertAdjacentElement('afterend', alertDiv);
+      }
+    }
+  } catch (e) {
+    // Silencieux si erreur
+  }
+});
+
+// ==================== HISTORIQUE GÉNÉRATION - VERSION CORRIGÉE ====================
+// Remplace le bloc existant dans retry_analysis.html (de "let currentHistoryData = null;" jusqu'à la fin de escHist)
+
+let currentHistoryData = null;
+let currentPromptDetail = null;
+
+// Ouvrir historique (délégation)
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.closest('.btn-history')) {
+    const btn = e.target.closest('.btn-history');
+    const resultId = btn.getAttribute('data-result');
+    const stepId = btn.getAttribute('data-step');
+    if (resultId && stepId) openGenerationHistory(resultId, stepId);
+  }
+});
+
+// Fermer modals
+document.addEventListener('click', function(e) {
+  if (e.target && (e.target.id === 'closeHistoryModalBtn' || e.target.id === 'closeHistoryModalBtn2' || e.target.closest('#closeHistoryModalBtn'))) {
+    document.getElementById('historyModal').style.display = 'none';
+  }
+  if (e.target && (e.target.id === 'closePromptModalBtn' || e.target.id === 'closePromptModalBtn2' || e.target.closest('#closePromptModalBtn'))) {
+    document.getElementById('promptDetailModal').style.display = 'none';
+  }
+  if (e.target && e.target.id === 'copyPromptBtn') {
+    copyPromptToClipboard();
+  }
+  if (e.target && e.target.closest('.btn-view-prompt')) {
+    const promptId = e.target.closest('.btn-view-prompt').getAttribute('data-prompt-id');
+    if (promptId) openPromptDetail(parseInt(promptId));
+  }
+  if (e.target && e.target.closest('.btn-view-result')) {
+    const promptId = e.target.closest('.btn-view-result').getAttribute('data-prompt-id');
+    if (promptId) openResultDetail(parseInt(promptId));
+  }
+  if (e.target && e.target.closest('.link-prompt')) {
+    e.preventDefault();
+    const promptId = e.target.closest('.link-prompt').getAttribute('data-prompt-id');
+    if (promptId) openPromptDetail(parseInt(promptId));
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('promptDetailModal').style.display = 'none';
+    document.getElementById('historyModal').style.display = 'none';
+  }
+});
+
+async function openGenerationHistory(resultId, stepId) {
+  const modal = document.getElementById('historyModal');
+  const timeline = document.getElementById('historyTimeline');
+  const stats = document.getElementById('historyStats');
+  modal.style.display = 'flex';
+  timeline.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+  stats.innerHTML = '';
+  try {
+    const response = await fetch(`/analysis/admin/get-generation-history/${resultId}/${stepId}`, { headers: { 'X-CSRFToken': csrfToken } });
+    const data = await response.json();
+    if (!data.success) { timeline.innerHTML = '<div class="empty-message">' + data.error + '</div>'; return; }
+    currentHistoryData = data;
+    renderHistoryStats(data.stats);
+    renderHistoryTimeline(data.history);
+  } catch (err) { timeline.innerHTML = '<div class="empty-message">Erreur: ' + err.message + '</div>'; }
+}
+
+function renderHistoryStats(s) {
+  const c = document.getElementById('historyStats');
+  const sc = s.final_status === 'success' ? 'success' : 'failed';
+  const si = s.final_status === 'success' ? 'check-circle' : 'times-circle';
+  const st = s.final_status === 'success' ? 'Validé' : 'Échec';
+  c.innerHTML = '<div class="stat-badge info"><i class="fas fa-layer-group"></i> ' + s.total_attempts + ' tentative(s)</div>' +
+    '<div class="stat-badge info"><i class="fas fa-file-code"></i> ' + s.generation_prompts + ' génération(s)</div>' +
+    '<div class="stat-badge info"><i class="fas fa-check-double"></i> ' + s.validation_prompts + ' validation(s)</div>' +
+    '<div class="stat-badge ' + sc + '"><i class="fas fa-' + si + '"></i> ' + st + '</div>' +
+    (s.has_manual_retry ? '<div class="stat-badge warning"><i class="fas fa-user-edit"></i> Relance manuelle</div>' : '');
+}
+
+/**
+ * ✅ VERSION CORRIGÉE : Fusionne génération + validation en une seule entrée
+ */
+ function renderHistoryTimeline(history) {
+  const c = document.getElementById('historyTimeline');
+  if (!history || history.length === 0) { 
+    c.innerHTML = '<div class="empty-message"><i class="fas fa-inbox"></i><p>Aucun historique</p></div>'; 
+    return; 
+  }
+  
+  let html = '';
+  history.forEach(function(e) {
+    html += renderTimelineEntry(e);
+  });
+  c.innerHTML = html;
+}
+
+function renderTimelineEntry(e) {
+  const promptType = e.prompt_type || 'generation';
+  const isValidation = promptType === 'validation';
+  
+  // Déterminer le statut
+  let finalStatus = null;
+  if (isValidation && e.validation_result) {
+    finalStatus = e.validation_result.is_valid ? 'success' : 'failed';
+  } else if (!isValidation) {
+    finalStatus = e.validation_status || null;
+  }
+  const stc = finalStatus ? 'status-' + finalStatus : '';
+  
+  // Type et label
+  let typeLabel = '';
+  let typeClass = '';
+  if (isValidation) {
+  // Lire attempt_number depuis plusieurs sources possibles
+  const valNum = e.attempt_number || (e.session_data && e.session_data.attempt_number) || 1;
+  typeLabel = 'VALIDATION #' + valNum;
+  typeClass = 'validation';
+} else {
+    switch (e.generation_type) {
+      case 'initial': typeLabel = 'INITIALE'; typeClass = 'initial'; break;
+      case 'replay': typeLabel = 'REJOUER'; typeClass = 'replay'; break;
+      case 'manual_retry': typeLabel = 'MANUELLE'; typeClass = 'manual_retry'; break;
+      case 'validation_retry': 
+        typeLabel = 'RETRY #' + (e.attempt_number || '?'); 
+        typeClass = 'validation_retry'; 
+        break;
+      default: typeLabel = e.generation_type || 'GÉNÉRATION'; typeClass = 'initial';
+    }
+  }
+  
+  // Badge de statut
+  let statusBadge = '';
+  if (finalStatus) {
+    const statusText = finalStatus === 'success' ? 'Succès' : 'Échec';
+    statusBadge = '<span class="entry-status ' + finalStatus + '">' + statusText + '</span>';
+  }
+  
+  // Timestamp
+  const ts = e.created_at ? new Date(e.created_at).toLocaleString('fr-FR') : '';
+  const dur = (e.generation_duration_seconds || e.validation_duration_seconds || 0).toFixed(1) + 's';
+  
+  // Contenu
+  let content = '';
+  
+  // Admin feedback
+  if (e.admin_feedback) { 
+    content += '<div class="admin-feedback-history"><strong>💬 Feedback:</strong> ' + escHist(e.admin_feedback) + '</div>'; 
+  }
+  
+  // Voies sélectionnées
+  if (e.selected_voies_indices && e.selected_voies_indices.length > 0) {
+    const voiesText = e.selected_voies_indices.map(function(i) { return 'Voie ' + (i + 1); }).join(', ');
+    content += '<div class="entry-section"><div class="entry-section-title">Voies ciblées</div><div>' + voiesText + '</div></div>';
+  }
+  
+  // Trigger issues
+  if (e.trigger_issues && e.trigger_issues.length > 0) { 
+    content += '<div class="entry-section"><div class="entry-section-title">Issues déclenchantes</div>' + renderIssuesHist(e.trigger_issues) + '</div>'; 
+  }
+  
+    // Aperçu prompt
+    if (e.human_prompt_preview) {
+    const preview = e.human_prompt_preview.length > 200 ? e.human_prompt_preview.substring(0, 200) + '...' : e.human_prompt_preview;
+    content += '<div class="entry-section"><div class="entry-section-title">Aperçu prompt</div>';
+    content += '<div class="prompt-preview">' + escHist(preview) + '</div></div>';
+  }
+
+  content += '<div class="entry-section" style="margin-top:0.75rem;">';
+  content += '<button type="button" class="btn-view-prompt" data-prompt-id="' + e.prompt_id + '"><i class="fas fa-expand"></i> Voir prompt</button>';
+  content += '</div>';
+
+  // Résultat de validation (pour les entrées validation OU génération avec résultat)
+  if (e.validation_result) {
+    const vr = e.validation_result;
+    const vrc = vr.is_valid ? 'success' : 'failed';
+    content += '<div class="entry-section"><div class="entry-section-title">Résultat validation</div>';
+    content += '<div class="validation-result-box ' + vrc + '">';
+    if (vr.issues && vr.issues.length > 0) {
+      content += renderIssuesHist(vr.issues);
+    } else if (vr.is_valid) {
+      content += '<div style="color:#059669;"><i class="fas fa-check"></i> Aucun problème détecté</div>';
+    }
+    if (vr.assessment || vr.overall_assessment) {
+      content += '<div style="font-style:italic;margin-top:0.5rem;color:#6b7280;">"' + escHist(vr.assessment || vr.overall_assessment) + '"</div>';
+    }
+    content += '</div></div>';
+  }
+  
+  
+  
+
+  // Boutons voir prompt + voir résultat
+  content += '<div class="entry-section" style="margin-top:0.75rem;">';
+  content += ' <button type="button" class="btn-view-result" data-prompt-id="' + e.prompt_id + '"><i class="fas fa-code"></i> Voir résultat LLM</button>';
+  content += '</div>';
+  
+  return '<div class="timeline-entry type-' + promptType + ' ' + stc + '">' +
+    '<div class="entry-header">' +
+      '<span class="entry-id">#' + e.prompt_id + '</span>' +
+      '<span class="entry-type ' + typeClass + '">' + typeLabel + '</span>' +
+      statusBadge +
+      '<span class="entry-timestamp"><i class="fas fa-clock"></i> ' + ts + ' · ' + dur + '</span>' +
+    '</div>' +
+    '<div class="entry-content">' + content + '</div>' +
+  '</div>';
+}
+
+function renderIssuesHist(issues) {
+  if (!issues || issues.length === 0) return '';
+  let h = '<ul class="issues-list">';
+  issues.forEach(function(i) {
+    const sev = i.severity || 'minor';
+    const fld = i.field || (i.recommendation_index !== undefined ? 'voies[' + i.recommendation_index + ']' : 'N/A');
+    h += '<li class="issue-item">';
+    h += '<span class="issue-severity ' + sev + '">' + sev + '</span>';
+    h += '<div>';
+    h += '<div class="issue-field">' + escHist(fld) + '</div>';
+    h += '<div>' + escHist(i.problem || '') + '</div>';
+    if (i.suggestion) {
+      h += '<div class="issue-suggestion">→ ' + escHist(i.suggestion) + '</div>';
+    }
+    h += '</div></li>';
+  });
+  return h + '</ul>';
+}
+
+async function openPromptDetail(promptId) {
+  const modal = document.getElementById('promptDetailModal');
+  const content = document.getElementById('promptDetailContent');
+  document.getElementById('promptDetailId').textContent = promptId;
+  modal.style.display = 'flex';
+  content.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+  try {
+    const response = await fetch('/analysis/admin/get-prompt-detail/' + promptId, { headers: { 'X-CSRFToken': csrfToken } });
+    const data = await response.json();
+    if (!data.success) { content.innerHTML = '<div class="empty-message">' + data.error + '</div>'; return; }
+    currentPromptDetail = data;
+    renderPromptDetail(data);
+  } catch (err) { content.innerHTML = '<div class="empty-message">Erreur: ' + err.message + '</div>'; }
+}
+
+function renderPromptDetail(d) {
+  const c = document.getElementById('promptDetailContent');
+  const s = d.session_data || {};
+  const p = d.prompt || {};
+  const ap = d.api_params || {};
+  let h = '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-info-circle"></i> Métadonnées</div><div class="prompt-metadata">' +
+    '<div class="metadata-item"><span class="metadata-label">Type</span><span class="metadata-value">' + (s.prompt_type || 'generation') + '</span></div>' +
+    '<div class="metadata-item"><span class="metadata-label">Génération</span><span class="metadata-value">' + (s.generation_type || 'N/A') + '</span></div>' +
+    '<div class="metadata-item"><span class="metadata-label">Tentative</span><span class="metadata-value">#' + (s.attempt_number || 1) + '</span></div>' +
+    '<div class="metadata-item"><span class="metadata-label">Date</span><span class="metadata-value">' + (d.created_at ? new Date(d.created_at).toLocaleString('fr-FR') : 'N/A') + '</span></div>' +
+    '<div class="metadata-item"><span class="metadata-label">Modèle</span><span class="metadata-value">' + (ap.model || 'N/A') + '</span></div>' +
+    '<div class="metadata-item"><span class="metadata-label">Temp.</span><span class="metadata-value">' + (ap.temperature !== undefined ? ap.temperature : 'N/A') + '</span></div>' +
+    (s.parent_prompt_id ? '<div class="metadata-item"><span class="metadata-label">Parent</span><span class="metadata-value"><a href="#" class="link-prompt" data-prompt-id="' + s.parent_prompt_id + '">#' + s.parent_prompt_id + '</a></span></div>' : '') +
+    (s.validation_prompt_id ? '<div class="metadata-item"><span class="metadata-label">Validation</span><span class="metadata-value"><a href="#" class="link-prompt" data-prompt-id="' + s.validation_prompt_id + '">#' + s.validation_prompt_id + '</a></span></div>' : '') +
+    '</div></div>';
+  if (s.admin_feedback) { h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-comment"></i> Feedback</div><div class="admin-feedback-history">' + escHist(s.admin_feedback) + '</div></div>'; }
+  if (s.trigger_issues && s.trigger_issues.length > 0) { h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-exclamation-triangle"></i> Issues</div>' + renderIssuesHist(s.trigger_issues) + '</div>'; }
+  // Affichage différent selon le type de prompt
+if (s.prompt_type === 'validation') {
+  // Pour les validations : afficher le prompt de validation complet
+  if (p.human) { 
+    h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-clipboard-check"></i> Prompt de Validation</div><div class="prompt-full-content">' + escHist(p.human) + '</div></div>'; 
+  }
+} else {
+  // Pour les générations : afficher system + human
+  if (p.system) { 
+    h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-cog"></i> System</div><div class="prompt-full-content">' + escHist(p.system) + '</div></div>'; 
+  }
+  if (p.human) { 
+    h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-user"></i> Human</div><div class="prompt-full-content">' + escHist(p.human) + '</div></div>'; 
+  }
+}
+if (s.validation_result) {
+    const vr = s.validation_result;
+    const vrc = vr.is_valid ? 'success' : 'failed';
+    h += '<div class="prompt-detail-section"><div class="prompt-detail-title"><i class="fas fa-check-double"></i> Validation</div><div class="validation-result-box ' + vrc + '"><div><strong>Statut:</strong> ' + (vr.is_valid ? '✅ OK' : '❌ Échec') + '</div>' + (vr.issues && vr.issues.length > 0 ? renderIssuesHist(vr.issues) : '') + (vr.assessment ? '<div style="font-style:italic;margin-top:0.5rem;">"' + escHist(vr.assessment) + '"</div>' : '') + '</div></div>';
+  }
+  c.innerHTML = h;
+}
+
+function copyPromptToClipboard() {
+  if (!currentPromptDetail) return;
+  const p = currentPromptDetail.prompt || {};
+  let t = '';
+  if (p.system) t += '=== SYSTEM ===\n\n' + p.system + '\n\n';
+  if (p.human) t += '=== HUMAN ===\n\n' + p.human;
+  navigator.clipboard.writeText(t).then(function() { showFlashMessage('success', '✓ Copié'); });
+}
+
+function escHist(t) { 
+  if (!t) return ''; 
+  const d = document.createElement('div'); 
+  d.textContent = String(t); 
+  return d.innerHTML; 
+}
+
+// Historique global par user/quiz
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.closest('.btn-user-history')) {
+    const btn = e.target.closest('.btn-user-history');
+    const quizId = btn.getAttribute('data-quiz');
+    const userId = btn.getAttribute('data-user');
+    
+    if (quizId && userId) {
+      openUserGenerationHistory(userId, quizId);
+    }
+  }
+});
+
+async function openUserGenerationHistory(userId, quizId) {
+  const modal = document.getElementById('historyModal');
+  const timeline = document.getElementById('historyTimeline');
+  const stats = document.getElementById('historyStats');
+  
+  modal.style.display = 'flex';
+  timeline.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+  stats.innerHTML = '<div class="stat-badge info"><i class="fas fa-user"></i> User ' + userId + '</div><div class="stat-badge info"><i class="fas fa-cube"></i> ' + quizId + '</div>';
+  
+  try {
+    const response = await fetch('/analysis/admin/get-user-generation-history/' + userId + '/' + quizId, {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      timeline.innerHTML = '<div class="empty-message">' + data.error + '</div>';
+      return;
+    }
+    
+    if (data.history.length === 0) {
+      timeline.innerHTML = '<div class="empty-message"><i class="fas fa-inbox"></i><p>Aucun historique de génération</p></div>';
+      return;
+    }
+    
+    // ✅ Utiliser la même logique de fusion pour l'historique user
+    renderHistoryTimeline(data.history);
+    
+  } catch (err) {
+    timeline.innerHTML = '<div class="empty-message">Erreur: ' + err.message + '</div>';
+  }
+}
+
+async function openResultDetail(promptId) {
+  const modal = document.getElementById('promptDetailModal');
+  const content = document.getElementById('promptDetailContent');
+  document.getElementById('promptDetailId').textContent = promptId + ' - Réponse LLM';
+  modal.style.display = 'flex';
+  content.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+  
+  try {
+    const response = await fetch('/analysis/admin/get-prompt-result/' + promptId, { 
+      headers: { 'X-CSRFToken': csrfToken } 
+    });
+    const data = await response.json();
+    
+    if (!data.success) { 
+      content.innerHTML = '<div class="empty-message">' + data.error + '</div>'; 
+      return; 
+    }
+    
+    let h = '';
+    
+    if (data.has_result) {
+      // Métadonnées
+      h += '<div class="prompt-metadata" style="margin-bottom:1rem;">';
+      if (data.api_duration) {
+        h += '<div class="metadata-item"><span class="metadata-label">Durée API</span><span class="metadata-value">' + data.api_duration + 's</span></div>';
+      }
+      h += '<div class="metadata-item"><span class="metadata-label">Longueur</span><span class="metadata-value">' + data.llm_response.length + ' chars</span></div>';
+      if (data.truncated) {
+        h += '<div class="metadata-item"><span class="metadata-label">⚠️ Tronqué</span><span class="metadata-value">Longueur totale: ' + data.full_length + '</span></div>';
+      }
+      h += '</div>';
+      
+      // Réponse LLM
+      h += '<div class="prompt-detail-section">';
+      h += '<div class="prompt-detail-title"><i class="fas fa-robot" style="color:var(--primary);"></i> Réponse brute de Claude</div>';
+      h += '<div class="prompt-full-content" style="max-height:500px;overflow:auto;">' + escHist(data.llm_response) + '</div>';
+      h += '</div>';
+    } else {
+      h += '<div class="empty-message">';
+      h += '<i class="fas fa-clock" style="color:var(--warning);font-size:3rem;"></i>';
+      h += '<p style="margin-top:1rem;">' + (data.message || 'Réponse LLM non disponible') + '</p>';
+      h += '<p style="font-size:0.85rem;color:var(--gray-500);">Les prompts générés avant cette mise à jour n\'ont pas de réponse stockée.</p>';
+      h += '</div>';
+    }
+    
+    content.innerHTML = h;
+    
+  } catch (err) { 
+    content.innerHTML = '<div class="empty-message">Erreur: ' + err.message + '</div>'; 
+  }
+}
+});
+</script>
+{% endblock %}

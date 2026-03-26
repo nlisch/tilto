@@ -1,0 +1,2294 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Administration - Tableau de bord') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="page-header mb-4">
+        <h2 class="page-title">
+            <span class="title-icon">⚙️</span>
+            {{ _('Tableau de bord administrateur') }}
+        </h2>
+        <p class="page-subtitle">Gestion centralisée des utilisateurs</p>
+    </div>
+
+    <!-- ==================== STATISTIQUES UTILISATEURS ==================== -->
+    <div class="stats-grid mb-4">
+        
+        <!-- Leads -->
+        <div class="stat-card stat-blue">
+            <div class="stat-number">{{ stats.total_leads }}</div>
+            <div class="stat-label">LEADS</div>
+            <div class="stat-description">Visiteurs ayant enregistré des réponses sans compte utilisateur</div>
+            <div class="stat-icon">
+                <i class="fas fa-user-clock"></i>
+            </div>
+        </div>
+
+        <!-- Utilisateurs gratuits -->
+        <div class="stat-card stat-green">
+            <div class="stat-number">{{ stats.total_free_users }}</div>
+            <div class="stat-label">UTILISATEURS GRATUITS</div>
+            <div class="stat-description">Leads ayant créé un compte avec un mot de passe sans achat</div>
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+        </div>
+
+        <!-- Clients -->
+        <div class="stat-card stat-purple">
+            <div class="stat-number">{{ stats.total_customers }}</div>
+            <div class="stat-label">CLIENTS</div>
+            <div class="stat-description">Utilisateurs qui ont acheté un produit</div>
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+
+        <!-- Administrateurs -->
+        <div class="stat-card stat-pink">
+            <div class="stat-number">{{ stats.total_admins }}</div>
+            <div class="stat-label">ADMINISTRATEURS</div>
+            <div class="stat-description">Accès complet plateforme</div>
+            <div class="stat-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAUX D'OPT-IN ==================== -->
+    <div class="card card-modern mb-4">
+        <div class="card-header-modern">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div class="header-content">
+                    <span class="header-icon">📊</span>
+                    <span class="header-title">{{ _('Taux d\'opt-in (depuis le 9 oct 2025)') }}</span>
+                </div>
+                <button class="btn-refresh" id="refreshOptinStats">
+                    <i class="fas fa-sync-alt"></i> {{ _('Actualiser') }}
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="optin-stats-grid">
+                <!-- Quiz complétés -->
+                <div class="optin-stat-box">
+                    <div class="optin-stat-icon optin-icon-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="optin-stat-content">
+                        <div class="optin-stat-label">QUIZ COMPLÉTÉS</div>
+                        <div class="optin-stat-number" id="totalCompleted">
+                            <div class="spinner-sm"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opt-in Newsletter -->
+                <div class="optin-stat-box">
+                    <div class="optin-stat-icon optin-icon-mail">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="optin-stat-content">
+                        <div class="optin-stat-label">OPT-IN NEWSLETTER</div>
+                        <div class="optin-stat-number" id="optinRate">
+                            <div class="spinner-sm"></div>
+                        </div>
+                        <div class="optin-stat-subtext">(<span id="optinCount">-</span> acceptés)</div>
+                    </div>
+                </div>
+
+                <!-- Opt-in Partenaires -->
+                <div class="optin-stat-box">
+                    <div class="optin-stat-icon optin-icon-partners">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="optin-stat-content">
+                        <div class="optin-stat-label">OPT-IN PARTENAIRES</div>
+                        <div class="optin-stat-number" id="partnersRate">
+                            <div class="spinner-sm"></div>
+                        </div>
+                        <div class="optin-stat-subtext">(<span id="partnersCount">-</span> acceptés)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-banner info-banner-blue mt-3 mb-0">
+                <i class="fas fa-info-circle"></i>
+                <div>{{ _('Ces statistiques ne concernent que les utilisateurs ayant complété le quiz depuis le 9 octobre 2025.') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== BARRE DE RECHERCHE ET FILTRES ==================== -->
+    <div class="card card-modern mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.dashboard') }}" class="search-form">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" 
+                           class="form-control-search" 
+                           name="search" 
+                           placeholder="{{ _('Rechercher par nom, email, téléphone...') }}"
+                           value="{{ search if search else '' }}">
+                </div>
+                
+                <select class="form-select-filter" name="user_status">
+                    <option value="">{{ _('Tous les statuts') }}</option>
+                    <option value="user" {% if user_status_filter == 'user' %}selected{% endif %}>
+                        {{ _('Clients (payants)') }}
+                    </option>
+                    <option value="free_user" {% if user_status_filter == 'free_user' %}selected{% endif %}>
+                        {{ _('Utilisateurs gratuits') }}
+                    </option>
+                    <option value="lead" {% if user_status_filter == 'lead' %}selected{% endif %}>
+                        {{ _('Leads (prospects)') }}
+                    </option>
+                    <option value="coach" {% if user_status_filter == 'coach' %}selected{% endif %}>
+                        {{ _('Coachs') }}
+                    </option>
+                    <option value="admin" {% if user_status_filter == 'admin' %}selected{% endif %}>
+                        {{ _('Administrateurs') }}
+                    </option>
+                </select>
+                
+                <button type="submit" class="btn-action btn-action-primary">
+                    <i class="fas fa-search"></i> {{ _('Rechercher') }}
+                </button>
+                
+                <a href="{{ url_for('admin.dashboard') }}" class="btn-action btn-action-secondary">
+                    <i class="fas fa-redo"></i> {{ _('Réinitialiser') }}
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== LISTE DES UTILISATEURS ==================== -->
+    <div class="card card-modern">
+        <div class="card-header-modern">
+            <div class="header-content">
+                <span class="header-icon">👥</span>
+                <span class="header-title">
+                    {{ _('Tous les utilisateurs') }} 
+                    <span class="badge-count">{{ stats.total_users }}</span>
+                </span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                        <tr>
+                            <th>{{ _('ID') }}</th>
+                            <th>{{ _('Utilisateur') }}</th>
+                            <th>{{ _('Email') }}</th>
+                            <th>{{ _('Téléphone') }}</th>
+                            <th>{{ _('Newsletter') }}</th>
+                            <th>{{ _('Partenaires') }}</th>
+                            <th>{{ _('Statut') }}</th>
+                            <th>{{ _('Création') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if stats.all_users %}
+                            {% for user in stats.all_users %}
+                            <tr data-user-id="{{ user.user_id }}">
+                                <td>
+                                    <span class="user-id">#{{ user.user_id }}</span>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                      <div class="user-avatar">
+                                        {% if user.firstname %}
+                                            {{ user.firstname[0].upper() }}
+                                        {% elif user.username %}
+                                            {{ user.username[0].upper() }}
+                                        {% elif user.email %}
+                                            {{ user.email[0].upper() }}
+                                        {% else %}
+                                            ?
+                                        {% endif %}
+                                    </div>
+                                        <span class="user-name">{{ user.firstname }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:{{ user.email }}" class="user-email">
+                                        {{ user.email }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="user-phone" data-phone="{{ user.phone_number if user.phone_number else '' }}">
+                                        {{ user.phone_number if user.phone_number else '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.newsletter_subscription %}
+                                        <span class="badge badge-yes">
+                                            <i class="fas fa-check"></i> Oui
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-no">
+                                            <i class="fas fa-times"></i> Non
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.partner_consent %}
+                                        <span class="badge badge-yes">
+                                            <i class="fas fa-check"></i> Oui
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-no">
+                                            <i class="fas fa-times"></i> Non
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- ✅ Sélecteur de statut dynamique -->
+                                    <div class="status-selector-wrapper">
+                                        <select class="status-select" 
+                                                data-user-id="{{ user.user_id }}" 
+                                                data-firstname="{{ user.firstname }}"
+                                                data-current-status="{{ user.user_status }}">
+                                            <option value="lead" {% if user.user_status == 'lead' %}selected{% endif %}>
+                                                🎯 Lead
+                                            </option>
+                                            <option value="free_user" {% if user.user_status == 'free_user' %}selected{% endif %}>
+                                                🆓 Utilisateur gratuit
+                                            </option>
+                                            <option value="user" {% if user.user_status == 'user' %}selected{% endif %}>
+                                                💳 Client
+                                            </option>
+                                            <option value="coach" {% if user.user_status == 'coach' %}selected{% endif %}>
+                                                🎓 Coach
+                                            </option>
+                                            <option value="admin" {% if user.user_status == 'admin' %}selected{% endif %}>
+                                                👑 Admin
+                                            </option>
+                                        </select>
+                                        <div class="status-loading" style="display: none;">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="date-text">
+                                        {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '-' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <!-- Bouton voir détails -->
+                                        <a href="{{ url_for('admin.user_details', user_id=user.user_id) }}" 
+                                           class="btn-action btn-action-info"
+                                           title="Voir tous les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        <!-- Bouton réinitialiser mot de passe -->
+                                        <button class="btn-action btn-action-warning btn-reset-password" 
+                                                data-user-id="{{ user.user_id }}"
+                                                data-firstname="{{ user.firstname }}"
+                                                title="Réinitialiser le mot de passe">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                        
+                                        <!-- Bouton de suppression -->
+                                        <button class="btn-action btn-action-danger btn-delete-user" 
+                                                data-user-id="{{ user.user_id }}"
+                                                data-firstname="{{ user.firstname }}"
+                                                data-email="{{ user.email }}"
+                                                title="Supprimer l'utilisateur">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                        <!-- Bouton gérer tokens -->
+                                        <button class="btn-action btn-action-token btn-manage-tokens" 
+                                        data-user-id="{{ user.user_id }}"
+                                        data-firstname="{{ user.firstname }}"
+                                        title="Gérer les crédits">
+                                        <i class="fas fa-ticket-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>{{ _('Aucun utilisateur trouvé') }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- ==================== PAGINATION ==================== -->
+            {% if stats.total_pages > 1 %}
+            <div class="pagination-wrapper">
+                <nav class="pagination-nav">
+                    <!-- Bouton Précédent -->
+                    <a href="{{ url_for('admin.dashboard', page=stats.current_page-1, search=search, user_status=user_status_filter) if stats.current_page > 1 else '#' }}" 
+                       class="pagination-btn {% if stats.current_page == 1 %}disabled{% endif %}">
+                        <i class="fas fa-chevron-left"></i> Précédent
+                    </a>
+                    
+                    <!-- Numéros de page -->
+                    <div class="pagination-numbers">
+                        {% for p in range(1, stats.total_pages + 1) %}
+                            {% if p == stats.current_page %}
+                                <span class="pagination-number active">{{ p }}</span>
+                            {% elif p <= 3 or p > stats.total_pages - 3 or (p >= stats.current_page - 1 and p <= stats.current_page + 1) %}
+                                <a href="{{ url_for('admin.dashboard', page=p, search=search, user_status=user_status_filter) }}" 
+                                   class="pagination-number">{{ p }}</a>
+                            {% elif p == 4 or p == stats.total_pages - 3 %}
+                                <span class="pagination-dots">...</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Bouton Suivant -->
+                    <a href="{{ url_for('admin.dashboard', page=stats.current_page+1, search=search, user_status=user_status_filter) if stats.current_page < stats.total_pages else '#' }}" 
+                       class="pagination-btn {% if stats.current_page == stats.total_pages %}disabled{% endif %}">
+                        Suivant <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* ==================== VARIABLES ==================== */
+:root {
+  --primary: #4C0336;
+  --primary-light: #6b0548;
+  
+  --purple: #667eea;
+  --purple-dark: #5568d3;
+  
+  --green: #48bb78;
+  --green-dark: #38a169;
+  
+  --blue: #4299e1;
+  --blue-dark: #3182ce;
+  
+  --teal: #38b2ac;
+  --teal-dark: #319795;
+  
+  --pink: #ed64a6;
+  --pink-dark: #d53f8c;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+/* ==================== BASE ==================== */
+body {
+  background: var(--gray-50);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.container-fluid {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ==================== PAGE HEADER ==================== */
+.page-header {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.title-icon {
+  font-size: 2.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--gray-500);
+  margin: 0.5rem 0 0;
+}
+
+/* ==================== STATS GRID ==================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  margin-bottom:15px;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.stat-purple::before { background: var(--purple); }
+.stat-green::before { background: var(--green); }
+.stat-blue::before { background: var(--blue); }
+.stat-teal::before { background: var(--teal); }
+.stat-pink::before { background: var(--pink); }
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.stat-description {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  line-height: 1.3;
+}
+
+.stat-icon {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  font-size: 3rem;
+  opacity: 0.1;
+}
+
+/* ==================== CARDS ==================== */
+.card-modern {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: none;
+}
+
+.card-header-modern {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  border-bottom: none;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.badge-count {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+.btn-refresh {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ==================== OPT-IN STATS ==================== */
+.optin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.optin-stat-box {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 2px solid var(--gray-200);
+  transition: all 0.2s;
+  margin-bottom:15px;
+}
+
+.optin-stat-box:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.optin-stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.optin-icon-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.optin-icon-mail {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.optin-icon-partners {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.optin-stat-content {
+  flex: 1;
+}
+
+.optin-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.optin-stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1;
+}
+
+.optin-stat-subtext {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  margin-top: 0.25rem;
+}
+
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== INFO BANNER ==================== */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.info-banner i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.info-banner-blue {
+  background: #dbeafe;
+  color: #1e40af;
+  border-left: 4px solid #3b82f6;
+}
+
+/* ==================== SEARCH FORM ==================== */
+.search-form {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+.form-control-search {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.form-control-search:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+}
+
+.form-select-filter {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background: white;
+  cursor: pointer;
+}
+
+.form-select-filter:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-action-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+}
+
+.btn-action-primary:hover {
+  color: white;
+}
+
+.btn-action-secondary {
+  background: var(--gray-600);
+  color: white;
+}
+
+.btn-action-secondary:hover {
+  background: var(--gray-700);
+  color: white;
+}
+
+.btn-action-info {
+  background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+  color: white;
+}
+
+.btn-action-info:hover {
+  background: linear-gradient(135deg, #2c5aa0 0%, #2a4365 100%);
+  color: white;
+}
+
+.btn-action-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.btn-action-warning:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: white;
+}
+
+.btn-action-danger {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+  color: white;
+}
+
+.btn-action-danger:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+  color: white;
+}
+
+/* ==================== TABLE ==================== */
+.table-modern {
+  width: 100%;
+  margin: 0;
+}
+
+.table-modern thead {
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.table-modern thead th {
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-align: left;
+}
+
+.table-modern tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.15s;
+}
+
+.table-modern tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.table-modern tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+}
+
+.user-id {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.user-email {
+  color: var(--gray-600);
+  text-decoration: none;
+}
+
+.user-email:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.user-phone {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+.date-text {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+/* ==================== BADGES ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.badge i {
+  font-size: 0.7rem;
+}
+
+.badge-yes {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-no {
+  background: var(--gray-200);
+  color: var(--gray-600);
+}
+
+/* ==================== SÉLECTEUR DE STATUT ==================== */
+.status-selector-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 180px;
+}
+
+.status-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  padding-right: 2rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+}
+
+.status-select:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.1);
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+}
+
+.status-loading {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+@keyframes statusChange {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.status-select.status-changing {
+  animation: statusChange 0.3s ease;
+  border-color: var(--primary);
+}
+
+/* ==================== ACTION BUTTONS ==================== */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gray-400);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--gray-500);
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination-wrapper {
+  padding: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn,
+.pagination-number {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  color: var(--gray-700);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+}
+
+.pagination-btn:hover:not(.disabled),
+.pagination-number:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-number.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  border-color: var(--primary);
+  color: white;
+  font-weight: 600;
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-dots {
+  padding: 0.5rem;
+  color: var(--gray-400);
+}
+
+/* ==================== MODALS ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  color:var(--secondary);
+}
+
+.modal-danger .modal-header {
+  background: var(--danger);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modal-danger .modal-header i {
+  font-size: 2rem;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color:white;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.user-info-box {
+  background: #f7fafc;
+  border-left: 4px solid #4299e1;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+.user-info-box p {
+  margin: 0.5rem 0;
+}
+
+.warning-box {
+  background: #fff5f5;
+  border: 2px solid #fc8181;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+.warning-box ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.warning-box li {
+  margin: 0.25rem 0;
+  color: #c53030;
+}
+
+.confirmation-input {
+  margin: 1.5rem 0;
+}
+
+.confirmation-input label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.confirmation-input code {
+  background: #edf2f7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: #2d3748;
+}
+
+.confirmation-input input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.confirmation-input input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229, 62, 62, 0.3);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #718096;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .optin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .pagination-nav {
+    flex-direction: column;
+  }
+  
+  .table-modern {
+    font-size: 0.85rem;
+  }
+  
+  .table-modern thead th,
+  .table-modern tbody td {
+    padding: 0.75rem 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .status-selector-wrapper {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .btn-action {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+input[type="text"], input[type="number"], input[type="email"], input[type="password"], select {
+    padding-left: 2.5rem;
+}
+
+.btn-action-token {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.btn-action-token:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+}
+
+.token-list {
+    margin: 1rem 0;
+}
+
+.token-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--gray-200);
+}
+
+.token-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.token-item-code {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.token-item-meta {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
+
+.token-item-meta span {
+    margin-right: 1rem;
+}
+
+.token-item .btn-delete-token {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.token-item .btn-delete-token:hover {
+    background: #dc2626;
+    color: white;
+}
+
+.token-empty {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+.add-token-form {
+    background: #f0fdf4;
+    border: 2px solid #86efac;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.add-token-form h4 {
+    margin: 0 0 1rem 0;
+    color: #166534;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.btn-add-token {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.btn-add-token:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Token stats */
+.token-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+}
+
+.token-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.token-stat.stat-available {
+    color: #059669;
+}
+
+.token-stat.stat-used {
+    color: #dc2626;
+}
+
+.token-stat.stat-expired {
+    color: #d97706;
+}
+
+/* Token item states */
+.token-item.token-available {
+    border-left: 4px solid #10b981;
+}
+
+.token-item.token-used {
+    border-left: 4px solid #dc2626;
+    opacity: 0.7;
+    background: #fef2f2;
+}
+
+.token-item.token-expired {
+    border-left: 4px solid #d97706;
+    opacity: 0.7;
+    background: #fffbeb;
+}
+
+.token-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+}
+
+.token-status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+}
+
+.token-status-badge.token-available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.token-status-badge.token-used {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.token-status-badge.token-expired {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.token-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.token-item .btn-mark-used {
+    background: #d1fae5;
+    color: #059669;
+    border: none;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.token-item .btn-mark-used:hover {
+    background: #059669;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Dashboard admin chargé');
+    
+    // ==================== FORMATAGE DES NUMÉROS DE TÉLÉPHONE ====================
+    function formatPhoneNumber(phone) {
+        if (!phone || phone === '-') return phone;
+        
+        let cleaned = phone.replace(/[^\d+]/g, '');
+        
+        if (cleaned.startsWith('0') && cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+        }
+        
+        if (cleaned.startsWith('+33') && cleaned.length === 12) {
+            return cleaned.replace(/(\+\d{2})(\d{1})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5 $6');
+        }
+        
+        if (cleaned.startsWith('+')) {
+            let countryCode = cleaned.match(/^\+\d{1,3}/)[0];
+            let rest = cleaned.slice(countryCode.length);
+            return countryCode + ' ' + rest.replace(/(\d{2,3})(?=\d)/g, '$1 ').trim();
+        }
+        
+        return cleaned.replace(/(\d{2})(?=\d)/g, '$1 ');
+    }
+    
+    document.querySelectorAll('.user-phone[data-phone]').forEach(function(cell) {
+        let phone = cell.getAttribute('data-phone');
+        if (phone && phone !== '-' && phone !== '') {
+            cell.innerHTML = '<i class="fas fa-phone" style="color:var(--gray-400);margin-right:0.5rem;"></i>' + formatPhoneNumber(phone);
+        }
+    });
+    
+    // ==================== CHARGEMENT DES STATISTIQUES D'OPT-IN ====================
+    async function loadOptinStats() {
+        try {
+            const response = await fetch('{{ url_for("dashboard.get_optin_rates") }}');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('totalCompleted').textContent = data.total_completed || 0;
+                document.getElementById('optinRate').textContent = (data.optin.rate || 0) + '%';
+                document.getElementById('optinCount').textContent = data.optin.accepted || 0;
+                document.getElementById('partnersRate').textContent = (data.partners.rate || 0) + '%';
+                document.getElementById('partnersCount').textContent = data.partners.accepted || 0;
+            } else {
+                console.error('Erreur API:', data.error);
+                showError();
+            }
+        } catch (error) {
+            console.error('Erreur chargement stats opt-in:', error);
+            showError();
+        }
+    }
+    
+    function showError() {
+        ['totalCompleted', 'optinRate', 'partnersRate'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i>';
+            }
+        });
+        ['optinCount', 'partnersCount'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '-';
+        });
+    }
+    
+    // Charger les stats au chargement
+    loadOptinStats();
+    
+    // Bouton rafraîchissement
+    const refreshBtn = document.getElementById('refreshOptinStats');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const icon = this.querySelector('i');
+            icon.classList.add('fa-spin');
+            
+            loadOptinStats().finally(() => {
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 500);
+            });
+        });
+    }
+    
+    // ==================== CHANGEMENT DE STATUT UTILISATEUR ====================
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            const oldStatus = this.dataset.currentStatus;
+            const newStatus = this.value;
+            
+            console.log('🔄 Change status:', {userId, username, oldStatus, newStatus});
+            
+            // Si le statut n'a pas changé, ne rien faire
+            if (oldStatus === newStatus) {
+                console.log('⚠️ Same status, skipping');
+                return;
+            }
+            
+            // Labels pour l'affichage
+            const statusLabels = {
+                'lead': '🎯 Lead (Prospect)',
+                'free_user': '🆓 Utilisateur gratuit',
+                'user': '💳 Client (Payant)',
+                'admin': '👑 Administrateur',
+                'coach': '🎓 Coach'
+            };
+            
+            // Confirmation pour les changements sensibles
+            const sensitiveChanges = ['admin', 'coach'];
+            if (sensitiveChanges.includes(newStatus) || (oldStatus === 'admin' && newStatus !== 'admin')) {
+                const confirmMsg = `⚠️ Attention !\n\nVoulez-vous vraiment changer le statut de ${username} ?\n\n${statusLabels[oldStatus]} → ${statusLabels[newStatus]}\n\nCette action peut avoir des conséquences importantes.`;
+                
+                if (!confirm(confirmMsg)) {
+                    // Remettre l'ancienne valeur
+                    this.value = oldStatus;
+                    return;
+                }
+            }
+            
+            // Afficher le loader
+            const wrapper = this.closest('.status-selector-wrapper');
+            const loader = wrapper.querySelector('.status-loading');
+            this.disabled = true;
+            this.classList.add('status-changing');
+            loader.style.display = 'block';
+            
+            // Appel AJAX
+            fetch(`/admin/user/${userId}/change-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    new_status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('📥 Response:', data);
+                
+                if (data.success) {
+                    // Mise à jour réussie
+                    this.dataset.currentStatus = newStatus;
+                    
+                    // Animation de succès
+                    this.style.borderColor = '#10b981';
+                    setTimeout(() => {
+                        this.style.borderColor = '';
+                    }, 1000);
+                    
+                    // Afficher notification
+                    showNotification('✅ Statut mis à jour', data.message, 'success');
+                    
+                } else {
+                    // Erreur
+                    alert('❌ Erreur : ' + data.message);
+                    this.value = oldStatus;
+                }
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+                alert('❌ Erreur lors de la mise à jour du statut');
+                this.value = oldStatus;
+            })
+            .finally(() => {
+                // Masquer le loader
+                this.disabled = false;
+                this.classList.remove('status-changing');
+                loader.style.display = 'none';
+            });
+        });
+    });
+    
+    // ==================== RÉINITIALISATION MOT DE PASSE ====================
+    document.querySelectorAll('.btn-reset-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const username = this.dataset.username;
+            
+            if (!confirm(`🔑 Réinitialiser le mot de passe de ${username} ?\n\nUn nouveau mot de passe sera généré et vous sera affiché.`)) {
+                return;
+            }
+            
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            fetch(`/admin/user/${userId}/reset-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Afficher le nouveau mot de passe dans un modal
+                    const modal = document.createElement('div');
+                    modal.className = 'modal-overlay';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; border-radius: 16px 16px 0 0;">
+                                <i class="fas fa-check-circle"></i>
+                                <h2>✅ Mot de passe réinitialisé</h2>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Utilisateur :</strong> ${data.username}</p>
+                                <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                    <p style="margin: 0; font-size: 0.875rem; color: #4a5568;">Nouveau mot de passe :</p>
+                                    <p style="font-family: monospace; font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0.5rem 0;">${data.new_password}</p>
+                                    <button class="btn-secondary" style="margin-top: 0.5rem;" data-copy-password="${data.new_password}">
+                                        <i class="fas fa-copy"></i> Copier
+                                    </button>
+                                </div>
+                                <p style="font-size: 0.875rem; color: #718096;">
+                                    ⚠️ Notez ce mot de passe ou envoyez-le à l'utilisateur. 
+                                    Il ne sera plus accessible après la fermeture de cette fenêtre.
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn-secondary btn-close-modal">
+                                    Fermer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    
+                    // Bouton copier
+                    modal.querySelector('[data-copy-password]').addEventListener('click', function() {
+                        const password = this.dataset.copyPassword;
+                        navigator.clipboard.writeText(password).then(() => {
+                            this.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                            setTimeout(() => {
+                                this.innerHTML = '<i class="fas fa-copy"></i> Copier';
+                            }, 2000);
+                        });
+                    });
+                    
+                    // Bouton fermer
+                    modal.querySelector('.btn-close-modal').addEventListener('click', function() {
+                        modal.remove();
+                    });
+                } else {
+                    alert('❌ Erreur : ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors de la réinitialisation');
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-key"></i>';
+            });
+        });
+    });
+    
+// ==================== SUPPRESSION UTILISATEUR ====================
+document.querySelectorAll('.btn-delete-user').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const userId = this.dataset.userId;
+        const firstname = this.dataset.firstname;  // ← Récupérer firstname
+        const email = this.dataset.email;
+        
+        // Modal de confirmation avec warning fort
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content modal-danger">
+                <div class="modal-header">
+                    <i class="fas fa-exclamation-triangle" style="color: #e53e3e;"></i>
+                    <h2>Suppression définitive</h2>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Vous êtes sur le point de supprimer l'utilisateur :</strong></p>
+                    <div class="user-info-box">
+                        <p><strong>Nom :</strong> ${firstname || '<i>Non renseigné</i>'}</p>
+                        <p><strong>Email :</strong> <code>${email}</code></p>
+                        <p><strong>ID :</strong> #${userId}</p>
+                    </div>
+                    <div class="warning-box">
+                        <p><strong>⚠️ ATTENTION : Cette action est IRRÉVERSIBLE !</strong></p>
+                        <p><strong>Données qui seront supprimées automatiquement (CASCADE) :</strong></p>
+                        <ul>
+                            <li>✗ Profil utilisateur et authentification</li>
+                            <li>✗ Sessions de quiz et réponses</li>
+                            <li>✗ Résultats d'analyse et prompts</li>
+                            <li>✗ Réservations et rendez-vous</li>
+                            <li>✗ Tokens et accès produits</li>
+                            <li>✗ Feedbacks et historiques</li>
+                            <li>✗ Capsules audio et transcriptions</li>
+                        </ul>
+                        <p><strong>Données conservées (anonymisées) :</strong></p>
+                        <ul>
+                            <li>✓ Commandes (user_id = NULL pour comptabilité légale)</li>
+                            <li>✓ Messages chat (pour historique support)</li>
+                        </ul>
+                    </div>
+                    <div class="confirmation-input">
+                        <label for="confirmEmail">
+                            <strong>Pour confirmer, tapez l'email de l'utilisateur :</strong><br>
+                            <code style="background: #fee; color: #c53030; padding: 0.5rem; border-radius: 4px; display: inline-block; margin-top: 0.5rem;">${email}</code>
+                        </label>
+                        <input type="text" 
+                              id="confirmEmail" 
+                              class="form-control" 
+                              placeholder="Tapez l'email exact pour confirmer"
+                              autocomplete="off"
+                              style="margin-top: 0.5rem;">
+                        <small style="color: #718096; display: block; margin-top: 0.5rem;">
+                            ⚠️ La saisie doit correspondre EXACTEMENT (sensible à la casse)
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary btn-cancel-delete">
+                        <i class="fas fa-times"></i> Annuler
+                    </button>
+                    <button class="btn-danger btn-confirm-delete" data-user-id="${userId}" data-firstname="${firstname}" data-email="${email}">
+                        <i class="fas fa-trash-alt"></i> Supprimer définitivement
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Focus sur l'input de confirmation
+        setTimeout(() => {
+            document.getElementById('confirmEmail').focus();  // ← Corrigé : confirmEmail au lieu de confirmUsername
+        }, 100);
+        
+        // Bouton annuler
+        modal.querySelector('.btn-cancel-delete').addEventListener('click', function() {
+            modal.remove();
+        });
+        
+        // Bouton confirmer suppression
+        modal.querySelector('.btn-confirm-delete').addEventListener('click', function() {
+            const confirmInput = document.getElementById('confirmEmail');  // ← Corrigé
+            const deleteBtn = this;
+            const enteredEmail = confirmInput.value.trim();
+            
+            // Validation stricte de l'email
+            if (enteredEmail !== email) {
+                alert('❌ L\'email ne correspond pas exactement. Suppression annulée.\n\nVérifiez la casse et les espaces.');
+                confirmInput.focus();
+                confirmInput.select();
+                return;
+            }
+            
+            // Désactiver le bouton
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression en cours...';
+            
+            // Appel AJAX
+            fetch(`/admin/user/${userId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                  const msg = `✅ Suppression réussie !
+                  
+          Utilisateur : ${data.summary.username}
+          Email : ${data.summary.email}
+
+          Données supprimées automatiquement par MySQL :
+          ✓ Profil utilisateur
+          ✓ Sessions de quiz et réponses
+          ✓ Résultats d'analyse
+          ✓ Réservations
+          ✓ Tokens et accès
+          ✓ Historiques et actions
+
+          Données anonymisées (conservées) :
+          → Commandes (user_id = NULL pour comptabilité)`;
+                  
+                  alert(msg);
+                  modal.remove();
+                  location.reload();
+              } else {
+                    alert(`❌ Erreur : ${data.message}`);
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer définitivement';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('❌ Erreur lors de la suppression : ' + error.message);
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Supprimer définitivement';
+            });
+        });
+    });
+});
+    // ==================== NOTIFICATION SYSTÈME ====================
+    function showNotification(title, message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        `;
+        
+        notification.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                <div style="font-size: 1.5rem;">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">${title}</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">${message}</div>
+                </div>
+                <button class="btn-close-notification" 
+                        style="background: none; border: none; cursor: pointer; font-size: 1.25rem; color: #9ca3af;">
+                    ×
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Bouton fermeture
+        notification.querySelector('.btn-close-notification').addEventListener('click', function() {
+            notification.remove();
+        });
+        
+        // Auto-fermeture après 5 secondes
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    // ==================== ANIMATIONS ====================
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    // ==================== GESTION DES TOKENS ====================
+document.querySelectorAll('.btn-manage-tokens').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const userId = this.dataset.userId;
+        const firstname = this.dataset.firstname || 'Utilisateur';
+        
+        // Créer la modale
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 550px;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 1.5rem; border-radius: 16px 16px 0 0;">
+                    <i class="fas fa-ticket-alt" style="font-size: 1.5rem;"></i>
+                    <h2 style="margin: 0;">Crédits de ${firstname}</h2>
+                </div>
+                <div class="modal-body">
+                    <h4 style="margin: 0 0 0.75rem 0; color: var(--gray-700);">
+                        <i class="fas fa-list"></i> Crédits actuels
+                    </h4>
+                    <div class="token-list" id="tokenList-${userId}">
+                        <div class="token-empty">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement...
+                        </div>
+                    </div>
+                    
+                    <div class="add-token-form">
+                        <h4><i class="fas fa-plus-circle"></i> Ajouter un crédit offert</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tokenExpiry-${userId}">Date d'expiration</label>
+                                <input type="date" id="tokenExpiry-${userId}" value="${getDefaultExpiry()}">
+                            </div>
+                            <div class="form-group">
+                                <label for="tokenDesc-${userId}">Description (optionnel)</label>
+                                <input type="text" id="tokenDesc-${userId}" placeholder="Ex: Offert par admin">
+                            </div>
+                        </div>
+                        <button class="btn-add-token" data-user-id="${userId}">
+                            <i class="fas fa-plus"></i> Ajouter 1 crédit offert
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary btn-close-modal">
+                        <i class="fas fa-times"></i> Fermer
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Charger les tokens existants
+        loadUserTokens(userId);
+        
+        // Bouton fermer
+        modal.querySelector('.btn-close-modal').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        
+        // Bouton ajouter token
+        modal.querySelector('.btn-add-token').addEventListener('click', function() {
+            const expirationDate = document.getElementById(`tokenExpiry-${userId}`).value;
+            const description = document.getElementById(`tokenDesc-${userId}`).value || 'Credit offert par admin';
+            
+            addToken(userId, expirationDate, description, this);
+        });
+    });
+});
+
+// Date par défaut = aujourd'hui + 6 mois
+function getDefaultExpiry() {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 6);
+    return date.toISOString().split('T')[0];
+}
+
+// Charger les tokens d'un utilisateur
+// Charger les tokens d'un utilisateur
+function loadUserTokens(userId) {
+    const container = document.getElementById(`tokenList-${userId}`);
+    
+    fetch(`/admin/user/${userId}/tokens`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.tokens.length > 0) {
+                // Afficher les stats en haut
+                let html = `
+                    <div class="token-stats">
+                        <span class="token-stat stat-available">
+                            <i class="fas fa-check-circle"></i> ${data.stats.available} disponible${data.stats.available > 1 ? 's' : ''}
+                        </span>
+                        <span class="token-stat stat-used">
+                            <i class="fas fa-times-circle"></i> ${data.stats.used} utilisé${data.stats.used > 1 ? 's' : ''}
+                        </span>
+                        ${data.stats.expired > 0 ? `
+                        <span class="token-stat stat-expired">
+                            <i class="fas fa-clock"></i> ${data.stats.expired} expiré${data.stats.expired > 1 ? 's' : ''}
+                        </span>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Liste des tokens
+                html += data.tokens.map(token => {
+                    const statusClass = token.status === 'available' ? 'token-available' : 
+                                       token.status === 'used' ? 'token-used' : 'token-expired';
+                    const statusIcon = token.status === 'available' ? '✅' : 
+                                      token.status === 'used' ? '🔴' : '⏰';
+                    const statusText = token.status === 'available' ? 'Disponible' : 
+                                      token.status === 'used' ? `Utilisé le ${token.used_at_formatted}${token.used_for_piste ? ' (Piste ' + token.used_for_piste + ')' : ''}` : 
+                                      'Expiré';
+                    
+                    return `
+            <div class="token-item ${statusClass}" data-token-code="${token.token_code}">
+                <div class="token-item-info">
+                    <div class="token-item-header">
+                        <span class="token-item-code">🎟️ ${token.token_code}</span>
+                        <span class="token-status-badge ${statusClass}">${statusIcon} ${statusText}</span>
+                    </div>
+                    <div class="token-item-meta">
+                        <span><i class="fas fa-tag"></i> ${token.token_type === 'free' ? 'Offert' : 'Payé'}</span>
+                        <span><i class="fas fa-calendar"></i> Expire: ${token.expiration_date || 'Jamais'}</span>
+                        <span><i class="fas fa-info-circle"></i> ${token.description || '-'}</span>
+                    </div>
+                </div>
+                <div class="token-actions">
+                    ${token.status === 'available' ? `
+                        <button class="btn-mark-used" data-token-code="${token.token_code}" data-user-id="${userId}" title="Marquer comme utilisé">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-delete-token" data-token-code="${token.token_code}" data-user-id="${userId}" title="Supprimer ce crédit">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+                `;
+                }).join('');
+                
+                container.innerHTML = html;
+                
+                // Event listeners pour suppression
+                container.querySelectorAll('.btn-delete-token').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tokenCode = this.dataset.tokenCode;
+                        const userId = this.dataset.userId;
+                        deleteToken(userId, tokenCode, this);
+                    });
+                });
+
+               // Event listeners pour marquer comme utilisé
+                container.querySelectorAll('.btn-mark-used').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tokenCode = this.dataset.tokenCode;
+                        const userId = this.dataset.userId;
+                        markTokenUsed(userId, tokenCode, this);
+                    });
+                });
+            } else {
+                container.innerHTML = '<div class="token-empty"><i class="fas fa-ticket-alt"></i> Aucun crédit</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            container.innerHTML = '<div class="token-empty" style="color: #dc2626;"><i class="fas fa-exclamation-triangle"></i> Erreur de chargement</div>';
+        });
+}
+
+// Ajouter un token
+function addToken(userId, expirationDate, description, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ajout en cours...';
+    
+    fetch(`/admin/user/${userId}/tokens/add`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            expiration_date: expirationDate,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('✅ Crédit ajouté', data.message, 'success');
+            loadUserTokens(userId);
+            // Reset form
+            document.getElementById(`tokenDesc-${userId}`).value = '';
+        } else {
+            alert('❌ Erreur : ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de l\'ajout');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Ajouter 1 crédit offert';
+    });
+}
+
+// Supprimer un token
+function deleteToken(userId, tokenCode, btn) {
+    if (!confirm('🗑️ Supprimer ce crédit ?')) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    fetch(`/admin/user/${userId}/tokens/${encodeURIComponent(tokenCode)}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('🗑️ Crédit supprimé', data.message, 'success');
+            loadUserTokens(userId);
+        } else {
+            alert('❌ Erreur : ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash"></i>';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de la suppression');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash"></i>';
+    });
+}
+
+// Marquer un token comme utilisé
+function markTokenUsed(userId, tokenCode, btn) {
+    if (!confirm('✅ Marquer ce crédit comme utilisé ?\n\nCette action est irréversible.')) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    fetch(`/admin/user/${userId}/tokens/${encodeURIComponent(tokenCode)}/mark-used`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('✅ Crédit utilisé', data.message, 'success');
+            loadUserTokens(userId);
+        } else {
+            alert('❌ Erreur : ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors du marquage');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+    });
+}
+
+});
+</script>
+{% endblock %}

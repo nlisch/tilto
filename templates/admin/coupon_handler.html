@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Gestion des Coupons</h2>
+    
+    <!-- Formulaire de création de coupon -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 style="text-align: left;">Créer un Nouveau Coupon</h4>
+        </div>
+        <div class="card-body">
+            <form id="createCouponForm" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="col-md-6">
+                    <label for="coupon_code" class="form-label">Code du Coupon</label>
+                    <input type="text" class="form-control" id="coupon_code" name="coupon_code" 
+                    placeholder="CHRISTMAS25"
+                    required>
+                <small class="form-text text-muted">Exemple : CHRISTMAS25, PROMO50, etc.</small>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="product_id" class="form-label">ID du Produit</label>
+                    <select class="form-control" id="product_id" name="product_id" required>
+                        <option value="" disabled selected>Choisissez un produit</option>
+                        {% for product in products %}
+                        <option value="{{ product.product_id }}">
+                            {{ product.product_name }} ({{ product.product_id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="country_code" class="form-label">Code Pays</label>
+                    <input type="text" class="form-control" id="country_code" name="country_code" 
+                           maxlength="2" value="FR" placeholder="FR" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="max_uses" class="form-label">Utilisations Maximales</label>
+                    <input type="number" class="form-control" id="max_uses" name="max_uses" 
+                           min="1" value="1" placeholder="100" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="discount_type" class="form-label">Type de Réduction</label>
+                    <select class="form-control" id="discount_type" name="discount_type" required>
+                        <option value="" disabled selected>Choisissez le type de réduction</option>
+                        <option value="percentage">Pourcentage (%)</option>
+                        <option value="fixed">Montant Fixe (€)</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="discount_value" class="form-label">Valeur de la Réduction</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="discount_value" 
+                           name="discount_value" 
+                           min="0.01" 
+                           step="0.01"
+                           placeholder="10" 
+                           required>
+                    <small class="form-text text-muted" id="discountHelp">Entrez le montant fixe de la réduction en euros (par exemple, 9.90 pour 9.90€).</small>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="start_date" class="form-label">Date de Début</label>
+                    <input type="datetime-local" class="form-control" id="start_date" name="start_date"
+                           value="{{ datetime.now().strftime('%Y-%m-%dT%H:%M') }}" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="end_date" class="form-label">Date de Fin</label>
+                    <input type="datetime-local" class="form-control" id="end_date" name="end_date"
+                           value="{{ (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%dT%H:%M') }}" required>
+                </div>
+                
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Créer le Coupon</button>
+                </div>
+            </form>
+            <div id="createResult" class="mt-4"></div>
+        </div>
+    </div>
+    
+    <!-- Liste des coupons existants -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 style="text-align: left;">Liste des Coupons</h4>
+            <button id="reloadCoupons" class="btn btn-sm btn-outline-secondary">Recharger la Liste</button>
+        </div>
+        <div class="card-body">
+            <div id="couponsList" class="table-responsive">
+                <!-- Les coupons seront affichés ici sous forme de tableau -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles pour la prévisualisation flottante (si nécessaire) -->
+<style>
+    .preview-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 1000;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .preview-overlay img {
+        max-height: 90vh;
+        max-width: 90vw;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        border-radius: 4px;
+    }
+
+    .preview-overlay.show {
+        display: flex;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .preview-overlay.hide {
+        animation: fadeOut 0.3s forwards;
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Script personnalisé pour gérer la création et l'affichage des coupons -->
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', () => {
+    const createCouponForm = document.getElementById('createCouponForm');
+    const createResult = document.getElementById('createResult');
+    const couponsList = document.getElementById('couponsList');
+    const reloadCouponsBtn = document.getElementById('reloadCoupons');
+    const discountTypeSelect = document.getElementById('discount_type');
+    const discountValueInput = document.getElementById('discount_value');
+    const discountHelp = document.getElementById('discountHelp');
+
+    // Fonction pour générer un code de coupon unique
+    function generateCouponCode() {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let code = 'PROMO';
+    for (let i = 0; i < 4; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+}
+
+    // Générer un nouveau code lors du chargement de la page
+    document.getElementById('coupon_code').value = generateCouponCode();
+
+    // Ajouter un bouton pour regénérer le code
+    const couponCodeInput = document.getElementById('coupon_code');
+    const regenerateButton = document.createElement('button');
+    regenerateButton.type = 'button';
+    regenerateButton.className = 'btn btn-outline-secondary btn-sm';
+    regenerateButton.style.marginLeft = '10px';
+    regenerateButton.innerText = '🔄 Générer un nouveau code';
+    regenerateButton.addEventListener('click', () => {
+    couponCodeInput.value = generateCouponCode();
+    });
+    
+    couponCodeInput.parentNode.insertBefore(regenerateButton, couponCodeInput.nextSibling);
+
+    // Fonction pour charger la liste des coupons
+    async function loadCoupons() {
+        try {
+            const response = await fetch('/api/coupons', {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                couponsList.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
+
+            if (!data.coupons || data.coupons.length === 0) {
+                couponsList.innerHTML = `<div class="alert alert-info">Aucun coupon disponible.</div>`;
+                return;
+            }
+
+            // Créer un tableau pour afficher les coupons
+            let tableHTML = `
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code du Coupon</th>
+                            <th>Produit</th>
+                            <th>Type de Réduction</th>
+                            <th>Valeur de la Réduction</th>
+                            <th>Code Pays</th>
+                            <th>Utilisations Maximales</th>
+                            <th>Utilisations Actuelles</th>
+                            <th>Date de Début</th>
+                            <th>Date de Fin</th>
+                            <th>Créé le</th>
+                            <th>Mis à Jour le</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.coupons.forEach(coupon => {
+                let discountInfo = '';
+                if (coupon.discount_type === 'percentage') {
+                    discountInfo = `${coupon.discount_value}%`;
+                } else if (coupon.discount_type === 'fixed') {
+                    discountInfo = `${(coupon.discount_value / 100).toFixed(2)}€`;
+                }
+
+                tableHTML += `
+                    <tr>
+                        <td>${coupon.coupon_code}</td>
+                        <td>${coupon.product_name} (${coupon.product_id})</td>
+                        <td>${coupon.discount_type === 'percentage' ? 'Pourcentage (%)' : 'Montant Fixe (€)'}</td>
+                        <td>${discountInfo}</td>
+                        <td>${coupon.country_code}</td>
+                        <td>${coupon.max_uses}</td>
+                        <td>${coupon.current_uses}</td>
+                        <td>${coupon.start_date ? new Date(coupon.start_date).toLocaleString() : 'N/A'}</td>
+                        <td>${coupon.end_date ? new Date(coupon.end_date).toLocaleString() : 'N/A'}</td>
+                        <td>${coupon.created_at ? new Date(coupon.created_at).toLocaleString() : 'N/A'}</td>
+                        <td>${coupon.updated_at ? new Date(coupon.updated_at).toLocaleString() : 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm delete-coupon" 
+                                    data-coupon-id="${coupon.coupon_code}"
+                                    data-coupon-code="${coupon.coupon_code}">
+                                Supprimer
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            couponsList.innerHTML = tableHTML;
+        } catch (error) {
+            couponsList.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+        }
+    }
+
+    // Charger les coupons au chargement de la page
+    loadCoupons();
+
+    // Recharger la liste des coupons lors du clic sur le bouton
+    reloadCouponsBtn.addEventListener('click', loadCoupons);
+
+    // Gestion de la suppression des coupons
+    couponsList.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-coupon')) {
+            const couponId = e.target.dataset.couponId;
+            const couponCode = e.target.dataset.couponCode;
+            
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le coupon ${couponCode} ?`)) {
+                try {
+                    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+                    const response = await fetch(`/api/coupons/${couponId}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        await loadCoupons(); // Recharger la liste
+                        alert('Coupon supprimé avec succès');
+                    } else {
+                        alert(`Erreur: ${data.error}`);
+                    }
+                } catch (error) {
+                    alert(`Erreur lors de la suppression: ${error.message}`);
+                }
+            }
+        }
+    });
+
+    // Gestion de la soumission du formulaire de création de coupon
+    createCouponForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        const couponCode = document.getElementById('coupon_code').value.trim();
+        const productId = document.getElementById('product_id').value.trim();
+        const countryCode = document.getElementById('country_code').value.trim().toUpperCase();
+        const maxUses = document.getElementById('max_uses').value.trim();
+        const discountType = document.getElementById('discount_type').value;
+        const discountValue = document.getElementById('discount_value').value.trim();
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        // Validation de base
+        if (!couponCode || !productId || !countryCode || !maxUses || !discountType || !discountValue) {
+            createResult.innerHTML = `<div class="alert alert-danger">
+                    Tous les champs obligatoires doivent être remplis.
+                </div>
+            `;
+            return;
+        }
+
+        // Préparer les données à envoyer
+        const payload = {
+            coupon_code: couponCode,
+            product_id: productId,
+            country_code: countryCode,
+            max_uses: parseInt(maxUses),
+            discount_type: discountType,
+            discount_value: parseFloat(discountValue) * (discountType === 'percentage' ? 1 : 100),  // Pourcentage ou montant en cents
+            start_date: startDate ? new Date(startDate).toISOString().slice(0, 19).replace('T', ' ') : null,
+            end_date: endDate ? new Date(endDate).toISOString().slice(0, 19).replace('T', ' ') : null
+        };
+
+        createResult.innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/api/coupons', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                createResult.innerHTML = `
+                    <div class="alert alert-success">
+                        Coupon créé avec succès !
+                    </div>
+                `;
+                createCouponForm.reset();
+                // Générer un nouveau code après réinitialisation
+                document.getElementById('coupon_code').value = generateCouponCode();
+                await loadCoupons();
+            } else {
+                // Si le code existe déjà, générer un nouveau code
+                if (data.error && data.error.toLowerCase().includes('exists')) {
+                    const newCode = generateCouponCode();
+                    document.getElementById('coupon_code').value = newCode;
+                    createResult.innerHTML = `
+                        <div class="alert alert-danger">
+                            Le code existe déjà. Un nouveau code a été généré : ${newCode}
+                        </div>
+                    `;
+                } else {
+                    createResult.innerHTML = `
+                        <div class="alert alert-danger">
+                            Erreur: ${data.error}
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            createResult.innerHTML = `
+                <div class="alert alert-danger">
+                    Erreur: ${error.message}
+                </div>
+            `;
+        }
+    });
+
+    // Changement du texte d'aide en fonction du type de réduction
+    discountTypeSelect.addEventListener('change', () => {
+        if (discountTypeSelect.value === 'percentage') {
+            discountHelp.textContent = 'Entrez le pourcentage de réduction (par exemple, 10 pour 10%).';
+        } else if (discountTypeSelect.value === 'fixed') {
+            discountHelp.textContent = 'Entrez le montant fixe de la réduction en euros (par exemple, 5 pour 5.00€).';
+        } else {
+            discountHelp.textContent = 'Entrez le pourcentage ou le montant fixe.';
+        }
+    });
+});
+</script>
+{% endblock %}

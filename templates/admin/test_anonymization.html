@@ -1,0 +1,216 @@
+<!-- templates/test_anonymization.html -->
+{% extends "base.html" %}
+
+{% block title %}Test d'anonymisation - tilto{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-8 text-indigo-600">Test du service d'anonymisation</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-indigo-800">Instructions</h2>
+        <p class="mb-4">Cette page vous permet de tester le service d'anonymisation des données personnelles. Entrez un texte contenant des informations sensibles et cliquez sur "Tester l'anonymisation" pour voir comment elles sont masquées avant d'être envoyées à Claude.</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-indigo-800">Texte à anonymiser</h2>
+        <div class="mb-4">
+            <textarea id="text-input" class="free-text-input" placeholder="Entrez votre texte ici...">Je m'appelle Marie Dupont, j'ai 34 ans et je vis à Paris. Mon email est marie.dupont@example.com et mon numéro de téléphone est le 06 12 34 56 78.</textarea>
+        </div>
+        <div class="text-center">
+            <button id="test-button" class="bg-indigo-600 text-white py-2 px-6 rounded-md hover:bg-indigo-700 transition-colors">
+                Tester l'anonymisation
+            </button>
+        </div>
+    </div>
+
+    <div id="result" class="bg-white p-6 rounded-lg shadow-md mb-6" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4 text-indigo-800">Résultats</h2>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-medium mb-2 text-indigo-700">Texte original :</h3>
+            <pre id="original-text" class="bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap"></pre>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-medium mb-2 text-indigo-700">Texte anonymisé :</h3>
+            <pre id="anonymized-text" class="bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap"></pre>
+        </div>
+        
+        <div>
+            <h3 class="text-lg font-medium mb-2 text-indigo-700">Détails :</h3>
+            <div id="diff-details" class="bg-gray-100 p-4 rounded-md"></div>
+        </div>
+    </div>
+
+    <div id="loading" class="text-center p-6" style="display: none;">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <p class="mt-2 text-indigo-600">Traitement en cours...</p>
+    </div>
+
+    <div id="error-message" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md" style="display: none;">
+        <p class="font-bold">Erreur</p>
+        <p id="error-text"></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+    document.getElementById('test-button').addEventListener('click', async function() {
+        const textInput = document.getElementById('text-input');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        
+        // Masquer les résultats précédents et les erreurs
+        resultDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+        
+        // Afficher le chargement
+        loadingDiv.style.display = 'block';
+        
+        try {
+            const csrfToken = "{{ csrf_token() }}";
+            const response = await fetch('/api/test-anonymization', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ text: textInput.value })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Remplir les résultats
+            document.getElementById('original-text').textContent = data.original;
+            document.getElementById('anonymized-text').textContent = data.anonymized;
+            
+            // Afficher les différences
+            const diffDetails = document.getElementById('diff-details');
+            diffDetails.innerHTML = '';
+            
+            if (data.original === data.anonymized) {
+                diffDetails.innerHTML = '<p class="text-yellow-600">Aucune différence détectée - le texte n\'a pas été anonymisé.</p>';
+            } else {
+                // Trouver les entités anonymisées et les correspondances probables
+                let html = '<p class="mb-3 font-medium">Éléments anonymisés :</p><ul class="list-disc pl-5">';
+                
+                // Regex pour trouver les tokens d'anonymisation (ex: [PER_1], [LOC_1], etc.)
+                const regex = /\[(PER|LOC|DATE|EMAIL|PHONE|ORG)_\d+\]/g;
+                let anonymizedText = data.anonymized;
+                let match;
+                const matches = [];
+                
+                // Trouver tous les tokens d'anonymisation
+                while ((match = regex.exec(anonymizedText)) !== null) {
+                    matches.push({
+                        token: match[0],
+                        position: match.index,
+                        length: match[0].length,
+                        type: match[1]
+                    });
+                }
+                
+                // Trier les matches par position (du plus tard au plus tôt) pour les remplacer en ordre inverse
+                matches.sort((a, b) => b.position - a.position);
+                
+                if (matches.length === 0) {
+                    // Pas de token trouvé, comparer mot par mot
+                    const originalWords = data.original.split(/\s+/);
+                    const anonymizedWords = data.anonymized.split(/\s+/);
+                    
+                    for (let i = 0; i < originalWords.length; i++) {
+                        if (i < anonymizedWords.length && originalWords[i] !== anonymizedWords[i]) {
+                            html += `<li class="mb-2"><span class="bg-red-100 px-1 rounded">${originalWords[i]}</span> → <span class="bg-green-100 px-1 rounded">${anonymizedWords[i]}</span></li>`;
+                        }
+                    }
+                } else {
+                    // Analyser les différences en fonction des tokens trouvés
+                    let originalTextCopy = data.original;
+                    let anonymizedTextCopy = data.anonymized;
+                    
+                    // Extraire des correspondances probables pour chaque token
+                    const mappedEntities = [];
+                    
+                    for (const entity of matches) {
+                        // Trouver les positions qui correspondent entre texte original et anonymisé
+                        // Cette approche est simplifiée et pourrait être améliorée
+                        const beforeToken = anonymizedTextCopy.substring(0, entity.position);
+                        const wordCount = beforeToken.split(/\s+/).length - 1;
+                        const originalWords = originalTextCopy.split(/\s+/);
+                        
+                        // Essayer de trouver une correspondance probable
+                        let originalEntity = "";
+                        
+                        if (entity.type === "PER") {
+                            // Pour les personnes, rechercher des mots avec majuscule
+                            const nameIndex = originalWords.findIndex((word, idx) => 
+                                idx >= wordCount - 3 && idx <= wordCount + 3 && /^[A-Z]/.test(word));
+                            if (nameIndex !== -1) {
+                                // Prendre possiblement le nom + prénom
+                                if (nameIndex + 1 < originalWords.length && /^[A-Z]/.test(originalWords[nameIndex + 1])) {
+                                    originalEntity = `${originalWords[nameIndex]} ${originalWords[nameIndex + 1]}`;
+                                } else {
+                                    originalEntity = originalWords[nameIndex];
+                                }
+                            }
+                        } else if (entity.type === "LOC") {
+                            // Pour les lieux, chercher des mots avec majuscule
+                            const locIndex = originalWords.findIndex((word, idx) => 
+                                idx >= wordCount - 2 && idx <= wordCount + 2 && /^[A-Z]/.test(word));
+                            if (locIndex !== -1) {
+                                originalEntity = originalWords[locIndex];
+                            }
+                        } else if (entity.type === "EMAIL") {
+                            // Pour les emails, chercher par pattern
+                            const emailMatch = originalTextCopy.match(/\S+@\S+\.\S+/);
+                            if (emailMatch) {
+                                originalEntity = emailMatch[0];
+                            }
+                        } else if (entity.type === "PHONE") {
+                            // Pour les téléphones, chercher par pattern
+                            const phoneMatch = originalTextCopy.match(/\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}/);
+                            if (phoneMatch) {
+                                originalEntity = phoneMatch[0];
+                            }
+                        }
+                        
+                        if (originalEntity) {
+                            mappedEntities.push({
+                                token: entity.token,
+                                original: originalEntity
+                            });
+                        }
+                    }
+                    
+                    // Afficher les correspondances trouvées
+                    for (const entity of mappedEntities) {
+                        html += `<li class="mb-2"><span class="bg-red-100 px-1 rounded">${entity.original}</span> → <span class="bg-green-100 px-1 rounded">${entity.token}</span></li>`;
+                    }
+                }
+                
+                html += '</ul>';
+                diffDetails.innerHTML = html;
+            }
+            
+            // Masquer le chargement et afficher les résultats
+            loadingDiv.style.display = 'none';
+            resultDiv.style.display = 'block';
+            
+        } catch (error) {
+            // Afficher l'erreur
+            loadingDiv.style.display = 'none';
+            errorText.textContent = error.message;
+            errorDiv.style.display = 'block';
+            console.error('Erreur:', error);
+        }
+    });
+</script>
+{% endblock %}

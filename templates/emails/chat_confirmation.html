@@ -1,0 +1,59 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Message bien reçu - Tilto{% endblock %}
+
+{% block header_title %}Message bien reçu ! ✅{% endblock %}
+
+{% block content %}
+    <!-- Salutation -->
+    <p style="margin: 0 0 24px; color: #333333; font-size: 18px; line-height: 1.6;">
+        Hello <strong>{{ firstname }}</strong> 👋
+    </p>
+    
+    <!-- Message principal -->
+    <p style="margin: 0 0 24px; color: #333333; font-size: 16px; line-height: 1.6;">
+        On a bien reçu ton message et on te répond <strong style="color: #A11857;">sous 24h par email</strong>.
+    </p>
+    
+    <!-- Carte avec le message de l'utilisateur -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 32px 0;">
+        <tr>
+            <td style="background: #f9fafb; border-left: 4px solid #A11857; padding: 24px; border-radius: 8px;">
+                <p style="margin: 0 0 12px; color: #666666; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Ta question :
+                </p>
+                <p style="margin: 0; color: #333333; font-size: 15px; line-height: 1.6; font-style: italic;">
+                    "{{ message }}"
+                </p>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Call to action -->
+    <p style="margin: 0 0 32px; color: #666666; font-size: 15px; line-height: 1.6;">
+        En attendant, n'hésite pas à explorer ton espace Tilto si tu ne l'as pas encore fait ! 🚀
+    </p>
+    
+    <!-- Bouton CTA (optionnel) -->
+    {% if current_user.is_authenticated %}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <a href="{{ url_for('dashboard.index', _external=True) }}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(97, 5, 69, 0.25);">
+                    Accéder à mon espace
+                </a>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <!-- Signature -->
+    <p style="margin: 32px 0 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        À très vite,<br>
+        <strong style="color: #A11857;">L'équipe Tilto</strong> ❤️
+    </p>
+{% endblock %}
+
+{% block footer_legal %}
+Tu reçois cet email car tu as contacté Tilto via notre chat.<br>
+{% endblock %}

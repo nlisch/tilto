@@ -1,0 +1,1263 @@
+{% extends "base.html" %}
+
+{% block title %}Administration des commandes{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-shopping-cart text-primary me-2"></i>
+            Gestion des commandes
+        </h1>
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group me-2">
+                <button class="btn btn-outline-primary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+                <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#conflictsModal">
+                    <i class="fas fa-exclamation-triangle"></i> Conflits Bookings
+                </button>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline-success" id="bulkActionsBtn" disabled>
+                    <i class="fas fa-tasks"></i> Actions groupées
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de gestion des conflits de bookings -->
+<div class="modal fade" id="conflictsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Résolution des conflits de bookings
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Conflits détectés:</strong> Les bookings suivants sont liés à plusieurs commandes. 
+                    Assignez-les manuellement à la bonne commande.
+                </div>
+                
+                <div id="conflictsContainer">
+                    <!-- Chargé dynamiquement -->
+                    <div class="text-center p-4">
+                        <div class="spinner-border text-danger" role="status">
+                            <span class="visually-hidden">Recherche de conflits...</span>
+                        </div>
+                        <p class="mt-2">Analyse des conflits en cours...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fermer
+                </button>
+                <button type="button" class="btn btn-primary" onclick="refreshConflicts()">
+                    <i class="fas fa-sync-alt me-1"></i>Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'actions groupées -->
+<div class="modal fade" id="bulkActionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks me-2"></i>
+                    Actions groupées
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('dashboard.admin_bulk_actions') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Commandes sélectionnées</label>
+                        <div id="selectedOrdersList" class="form-control bg-light" style="min-height: 60px;">
+                            <em class="text-muted">Aucune commande sélectionnée</em>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulk_action" class="form-label fw-bold">Action à effectuer</label>
+                        <select id="bulk_action" name="action" class="form-select" required>
+                            <option value="">-- Choisir une action --</option>
+                            <option value="bulk_status_update">Mettre à jour le statut</option>
+                            <option value="bulk_send_notifications">Envoyer des notifications</option>
+                            <option value="bulk_export">Exporter les données</option>
+                            <option value="bulk_delete">Supprimer (dangereux)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Options conditionnelles -->
+                    <div id="bulk_status_options" style="display: none;">
+                        <div class="mb-3">
+                            <label for="bulk_new_status" class="form-label fw-bold">Nouveau statut</label>
+                            <select id="bulk_new_status" name="bulk_new_status" class="form-select">
+                                {% for status_key, status_info in order_statuses.items() %}
+                                <option value="{{ status_key }}">{{ status_info.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bulk_note" class="form-label fw-bold">Note</label>
+                            <textarea id="bulk_note" name="bulk_note" class="form-control" rows="2" placeholder="Note pour toutes les commandes..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div id="bulk_notification_options" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-envelope me-2"></i>
+                            Des notifications seront envoyées selon le statut actuel de chaque commande.
+                        </div>
+                    </div>
+                    
+                    <div id="bulk_delete_warning" style="display: none;">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Attention!</strong> Cette action est irréversible. Tapez "SUPPRIMER" pour confirmer.
+                            <input type="text" class="form-control mt-2" id="delete_confirmation" placeholder="Tapez SUPPRIMER">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="bulk_submit_btn" disabled>
+                        <i class="fas fa-bolt me-1"></i>Exécuter l'action
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>
+    .avatar-sm {
+        width: 35px;
+        height: 35px;
+        font-size: 12px;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .booking-status {
+        min-width: 120px;
+    }
+    
+    .order-row:hover {
+        background-color: rgba(0,123,255,0.05);
+    }
+    
+    .card-header.bg-gradient-primary {
+        background: linear-gradient(45deg, #007bff, #0056b3) !important;
+    }
+    
+    .table th {
+        font-weight: 600;
+        border-top: none;
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .btn-group-vertical .btn {
+        margin-bottom: 2px;
+    }
+    
+    .modal-xl {
+        max-width: 1200px;
+    }
+    
+    .conflict-item {
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        background: #fff3cd;
+    }
+    
+    .conflict-resolved {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+</style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales
+    const ordersTable = document.getElementById('ordersTable');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+    const bulkActionsBtn = document.getElementById('bulkActionsBtn');
+    const searchInput = document.getElementById('searchInput');
+    
+    // Sélection en masse
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        orderCheckboxes.forEach(checkbox => {
+            if (checkbox.closest('tr').style.display !== 'none') {
+                checkbox.checked = isChecked;
+            }
+        });
+        updateBulkActionsButton();
+    });
+    
+    orderCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActionsButton);
+    });
+    
+    function updateBulkActionsButton() {
+        const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+        bulkActionsBtn.disabled = checkedBoxes.length === 0;
+        bulkActionsBtn.textContent = checkedBoxes.length > 0 
+            ? `Actions groupées (${checkedBoxes.length})` 
+            : 'Actions groupées';
+    }
+    
+    // Ouverture du modal d'actions groupées
+    bulkActionsBtn.addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('.order-checkbox:checked');
+        const selectedOrders = Array.from(checkedBoxes).map(cb => {
+            const row = cb.closest('tr');
+            const orderId = cb.value;
+            const clientName = row.cells[2].textContent.trim().split('\n')[0];
+            return `#${orderId} - ${clientName}`;
+        });
+        
+        document.getElementById('selectedOrdersList').innerHTML = 
+            selectedOrders.map(order => `<span class="badge bg-primary me-1">${order}</span>`).join('');
+        
+        // Ajouter les IDs comme inputs cachés
+        const form = document.querySelector('#bulkActionsModal form');
+        // Supprimer les anciens inputs
+        form.querySelectorAll('input[name="selected_orders"]').forEach(input => input.remove());
+        // Ajouter les nouveaux
+        Array.from(checkedBoxes).forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'selected_orders';
+            input.value = cb.value;
+            form.appendChild(input);
+        });
+        
+        new bootstrap.Modal(document.getElementById('bulkActionsModal')).show();
+    });
+    
+    // Gestion des options conditionnelles dans le modal d'actions groupées
+    document.getElementById('bulk_action').addEventListener('change', function() {
+        const value = this.value;
+        
+        // Cacher toutes les options
+        document.querySelectorAll('[id^="bulk_"][id$="_options"], [id$="_warning"]').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Afficher les options pertinentes
+        if (value === 'bulk_status_update') {
+            document.getElementById('bulk_status_options').style.display = 'block';
+        } else if (value === 'bulk_send_notifications') {
+            document.getElementById('bulk_notification_options').style.display = 'block';
+        } else if (value === 'bulk_delete') {
+            document.getElementById('bulk_delete_warning').style.display = 'block';
+        }
+        
+        updateBulkSubmitButton();
+    });
+    
+    // Validation pour la suppression
+    document.getElementById('delete_confirmation').addEventListener('input', updateBulkSubmitButton);
+    
+    function updateBulkSubmitButton() {
+        const action = document.getElementById('bulk_action').value;
+        const submitBtn = document.getElementById('bulk_submit_btn');
+        
+        if (!action) {
+            submitBtn.disabled = true;
+            return;
+        }
+        
+        if (action === 'bulk_delete') {
+            const confirmation = document.getElementById('delete_confirmation').value;
+            submitBtn.disabled = confirmation !== 'SUPPRIMER';
+            submitBtn.className = confirmation === 'SUPPRIMER' 
+                ? 'btn btn-danger' 
+                : 'btn btn-primary';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.className = 'btn btn-primary';
+        }
+    }
+    
+    // Filtrage par statut
+    const filterLinks = document.querySelectorAll('.filter-status');
+    filterLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const status = this.dataset.status;
+            filterByStatus(status);
+            
+            // Mettre à jour le bouton de filtre
+            const filterBtn = document.getElementById('filterDropdown');
+            if (status === 'all') {
+                filterBtn.innerHTML = '<i class="fas fa-filter"></i> Filtrer';
+            } else {
+                const statusInfo = this.innerHTML;
+                filterBtn.innerHTML = '<i class="fas fa-filter"></i> ' + statusInfo.split(' ').slice(-1)[0];
+            }
+        });
+    });
+    
+    function filterByStatus(status) {
+        const rows = document.querySelectorAll('.order-row');
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+                // Décocher si masqué
+                const checkbox = row.querySelector('.order-checkbox');
+                if (checkbox) checkbox.checked = false;
+            }
+        });
+        updateBulkActionsButton();
+    }
+    
+    // Recherche
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = this.value.toLowerCase();
+            filterBySearch(query);
+        }, 300);
+    });
+    
+    document.getElementById('searchBtn').addEventListener('click', function() {
+        const query = searchInput.value.toLowerCase();
+        filterBySearch(query);
+    });
+    
+    function filterBySearch(query) {
+        const rows = document.querySelectorAll('.order-row');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (!query || text.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+                // Décocher si masqué
+                const checkbox = row.querySelector('.order-checkbox');
+                if (checkbox) checkbox.checked = false;
+            }
+        });
+        updateBulkActionsButton();
+    }
+    
+    // Actualisation
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+    
+    // Auto-actualisation toutes les 30 secondes
+    setInterval(() => {
+        // Actualiser seulement les données critiques sans recharger la page
+        updateOrderStatuses();
+    }, 30000);
+});
+
+// Fonctions pour la gestion des bookings
+function loadBookingsForProduct(productId, userId, orderId) {
+    const container = document.getElementById(`bookingsListContainer${orderId}`);
+    container.innerHTML = '<div class="text-center p-3"><div class="spinner-border text-primary"><span class="visually-hidden">Chargement...</span></div></div>';
+    
+    fetch(`/dashboard/api/bookings/${productId}/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayBookings(data.bookings, orderId, productId, userId);
+            } else {
+                container.innerHTML = `<div class="alert alert-danger">Erreur: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            container.innerHTML = `<div class="alert alert-danger">Erreur de connexion: ${error.message}</div>`;
+        });
+}
+
+function displayBookings(bookings, orderId, productId, userId) {
+    const container = document.getElementById(`bookingsListContainer${orderId}`);
+    
+    if (bookings.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun booking trouvé pour ce produit.
+            </div>`;
+        return;
+    }
+    
+    let html = '<div class="list-group">';
+    bookings.forEach(booking => {
+        const isAssigned = booking.assigned_order_id == orderId;
+        const statusClass = isAssigned ? 'success' : (booking.assigned_order_id ? 'warning' : 'primary');
+        const statusText = isAssigned ? 'Assigné à cette commande' : 
+                          (booking.assigned_order_id ? `Assigné à commande #${booking.assigned_order_id}` : 'Non assigné');
+        
+        html += `
+            <div class="list-group-item ${isAssigned ? 'border-success' : ''}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            <i class="fas fa-calendar me-2"></i>
+                            ${booking.formatted_date}
+                        </h6>
+                        <p class="mb-1">
+                            <strong>ID:</strong> ${booking.booking_id}<br>
+                            <strong>Email:</strong> ${booking.attendee_email || 'Non renseigné'}<br>
+                            <strong>Durée:</strong> ${booking.duration_minutes} minutes
+                        </p>
+                        <small class="text-${statusClass}">
+                            <i class="fas fa-info-circle me-1"></i>
+                            ${statusText}
+                        </small>
+                    </div>
+                    <div class="btn-group-vertical btn-group-sm">
+                        ${!isAssigned ? `
+                            <button class="btn btn-outline-primary" onclick="assignBookingToOrder('${booking.booking_id}', ${orderId})">
+                                <i class="fas fa-link me-1"></i>Assigner
+                            </button>
+                        ` : `
+                            <button class="btn btn-outline-warning" onclick="unassignBooking('${booking.booking_id}', ${orderId})">
+                                <i class="fas fa-unlink me-1"></i>Désassigner
+                            </button>
+                        `}
+                        ${booking.zoom_link ? `
+                            <a href="${booking.zoom_link}" target="_blank" class="btn btn-outline-info">
+                                <i class="fas fa-video me-1"></i>Zoom
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>`;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function assignBookingToOrder(bookingId, orderId) {
+    if (!confirm('Assigner ce booking à cette commande ?')) return;
+    
+    fetch('/dashboard/api/assign-booking', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            booking_id: bookingId,
+            order_id: orderId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'Booking assigné avec succès !');
+            // Recharger les bookings pour cette commande
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const orderId = modal.id.replace('bookingModal', '');
+                loadBookingsForProduct(getCurrentProductId(), getCurrentUserId(), orderId);
+            }
+            // Optionnel: recharger la page pour voir les changements
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showAlert('danger', `Erreur: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', `Erreur de connexion: ${error.message}`);
+    });
+}
+
+function unassignBooking(bookingId, orderId) {
+    if (!confirm('Désassigner ce booking de cette commande ?')) return;
+    
+    fetch('/dashboard/api/unassign-booking', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            booking_id: bookingId,
+            order_id: orderId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'Booking désassigné avec succès !');
+            // Recharger les bookings
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const orderId = modal.id.replace('bookingModal', '');
+                loadBookingsForProduct(getCurrentProductId(), getCurrentUserId(), orderId);
+            }
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showAlert('danger', `Erreur: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', `Erreur de connexion: ${error.message}`);
+    });
+}
+
+function createManualBooking(orderId, productId, userId) {
+    const dateTime = prompt('Date et heure du RDV (format: YYYY-MM-DD HH:MM)');
+    if (!dateTime) return;
+    
+    const email = prompt('Email du participant (optionnel)');
+    
+    fetch('/dashboard/api/create-manual-booking', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            order_id: orderId,
+            product_id: productId,
+            user_id: userId,
+            booking_datetime: dateTime,
+            attendee_email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', 'RDV manuel créé avec succès !');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showAlert('danger', `Erreur: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        showAlert('danger', `Erreur de connexion: ${error.message}`);
+    });
+}
+
+function reassignBooking(orderId) {
+    showAlert('info', 'Fonctionnalité de réassignation en cours de développement...');
+}
+
+// Fonctions pour la gestion des conflits
+function refreshConflicts() {
+    const container = document.getElementById('conflictsContainer');
+    container.innerHTML = `
+        <div class="text-center p-4">
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Recherche de conflits...</span>
+            </div>
+            <p class="mt-2">Analyse des conflits en cours...</p>
+        </div>`;
+    
+    fetch('/dashboard/api/booking-conflicts')
+        .then(response => response.json())
+        .then(data => {
+            displayConflicts(data.conflicts || []);
+        })
+        .catch(error => {
+            container.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+        });
+}
+
+function displayConflicts(conflicts) {
+    const container = document.getElementById('conflictsContainer');
+    
+    if (conflicts.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Aucun conflit détecté!</strong> Tous les bookings sont correctement assignés.
+            </div>`;
+        return;
+    }
+    
+    let html = '';
+    conflicts.forEach(conflict => {
+        html += `
+            <div class="conflict-item mb-3 p-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Booking: ${conflict.booking_id}</h6>
+                        <p><strong>Date:</strong> ${conflict.formatted_date}</p>
+                        <p><strong>Produit:</strong> ${conflict.product_name}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Commandes en conflit:</h6>
+                        <div class="mb-2">
+                            ${conflict.order_ids.split(',').map(orderId => 
+                                `<span class="badge bg-warning me-1">#${orderId}</span>`
+                            ).join('')}
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="resolveConflict('${conflict.booking_id}')">
+                            <i class="fas fa-tools me-1"></i>Résoudre
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function resolveConflict(bookingId) {
+    showAlert('info', 'Interface de résolution en cours de développement...');
+}
+
+// Fonctions utilitaires
+function showAlert(type, message) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // Auto-dismiss après 5 secondes
+    setTimeout(() => {
+        const alert = document.querySelector('.alert:last-of-type');
+        if (alert) {
+            bootstrap.Alert.getOrCreateInstance(alert).close();
+        }
+    }, 5000);
+}
+
+function updateOrderStatuses() {
+    // Mise à jour silencieuse des statuts sans recharger la page
+    fetch('/dashboard/api/order-statuses')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour les statuts affichés
+                data.orders.forEach(order => {
+                    const row = document.querySelector(`tr[data-order-id="${order.order_id}"]`);
+                    if (row) {
+                        // Mettre à jour le badge de statut
+                        const statusBadge = row.querySelector('.badge');
+                        if (statusBadge) {
+                            statusBadge.className = `badge bg-${order.status_color} rounded-pill`;
+                            statusBadge.textContent = order.status_label;
+                        }
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.warn('Erreur lors de la mise à jour des statuts:', error);
+        });
+}
+
+// Charger les conflits à l'ouverture du modal
+document.addEventListener('shown.bs.modal', function (event) {
+    if (event.target.id === 'conflictsModal') {
+        refreshConflicts();
+    }
+});
+
+// Helpers pour récupérer les données contextuelles
+function getCurrentProductId() {
+    const modal = document.querySelector('.modal.show');
+    return modal ? modal.querySelector('input[name="product_id"]').value : null;
+}
+
+function getCurrentUserId() {
+    const modal = document.querySelector('.modal.show');
+    return modal ? modal.querySelector('input[name="user_id"]').value : null;
+}
+</script>
+{% endblock %} Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Total commandes</h5>
+                            <h3>{{ stats.total_orders or 0 }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">En attente RDV</h5>
+                            <h3>{{ stats.pending_bookings or 0 }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">RDV planifiés</h5>
+                            <h3>{{ stats.scheduled_appointments or 0 }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Livrables prêts</h5>
+                            <h3>{{ stats.ready_deliverables or 0 }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-gradient-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Liste des commandes
+                        </h3>
+                        <div class="d-flex gap-2">
+                            <!-- Filtre de recherche -->
+                            <div class="input-group input-group-sm" style="width: 250px;">
+                                <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                                <button class="btn btn-outline-light" type="button" id="searchBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Filtre par statut -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown">
+                                    <i class="fas fa-filter"></i> Filtrer
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item filter-status" href="#" data-status="all">
+                                        <i class="fas fa-globe me-2"></i>Tous les statuts
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    {% for status_key, status_info in order_statuses.items() %}
+                                    <li><a class="dropdown-item filter-status" href="#" data-status="{{ status_key }}">
+                                        <span class="badge bg-{{ status_info.color }} me-2">{{ status_info.label }}</span>
+                                        {{ status_info.description }}
+                                    </a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <!-- Sélection en masse -->
+                            <div class="form-check form-switch align-self-center">
+                                <input class="form-check-input" type="checkbox" id="selectAllOrders">
+                                <label class="form-check-label text-white" for="selectAllOrders">
+                                    <small>Tout sélectionner</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="ordersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40"><input type="checkbox" id="selectAllCheckbox"></th>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Email</th>
+                                    <th>Produit</th>
+                                    <th>Statut</th>
+                                    <th>RDV</th>
+                                    <th>Livraison</th>
+                                    <th>Booking Status</th>
+                                    <th>Âge</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr class="order-row" data-status="{{ order.status }}" data-order-id="{{ order.order_id }}">
+                                    <td>
+                                        <input type="checkbox" class="order-checkbox" value="{{ order.order_id }}">
+                                    </td>
+                                    <td>
+                                        <strong>#{{ order.order_id }}</strong>
+                                        {% if order.needs_attention %}
+                                        <i class="fas fa-exclamation-triangle text-warning ms-1" title="Attention requise"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <span class="text-white small fw-bold">{{ order.name[0:2].upper() }}</span>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ order.name }}</div>
+                                                <small class="text-muted">ID: {{ order.user_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ order.email }}" class="text-decoration-none">
+                                            {{ order.email }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-2">📦</span>
+                                            <div>
+                                                <div class="fw-bold">{{ order.product_name }}</div>
+                                                <small class="text-muted">{{ order.product_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ order.status_info.color }} rounded-pill">
+                                            {{ order.status_info.label }}
+                                        </span>
+                                        {% if order.hours_since_creation > 72 and order.status == 'achat_confirmé' %}
+                                        <br><small class="text-danger">⚠️ Ancien</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.rdv_date %}
+                                        <div class="text-success">
+                                            <i class="fas fa-calendar-check me-1"></i>
+                                            <strong>{{ order.formatted_rdv }}</strong>
+                                            {% if order.zoom_link %}
+                                            <br><a href="{{ order.zoom_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-video me-1"></i>Zoom
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-calendar-times me-1"></i>Non planifié
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.livrable_date %}
+                                        <div class="text-info">
+                                            <i class="fas fa-truck me-1"></i>
+                                            {{ order.livrable_date.strftime('%d/%m/%Y') }}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- NOUVEAU: Statut booking détaillé -->
+                                        {% if order.attendee_email %}
+                                        <div class="booking-status">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator bg-success"></div>
+                                                <div class="ms-2">
+                                                    <small class="text-success fw-bold">Booking confirmé</small>
+                                                    <br><small class="text-muted">{{ order.attendee_email }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% elif order.status == 'rdv_planifié' %}
+                                        <div class="booking-status">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator bg-warning"></div>
+                                                <div class="ms-2">
+                                                    <small class="text-warning fw-bold">RDV sans booking</small>
+                                                    <br><small class="text-muted">Créé manuellement</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <div class="booking-status">
+                                            <div class="d-flex align-items-center">
+                                                <div class="status-indicator bg-secondary"></div>
+                                                <div class="ms-2">
+                                                    <small class="text-muted">Pas de booking</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ order.age_display }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm">
+                                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ order.order_id }}" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#historyModal{{ order.order_id }}" title="Historique">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#uploadModal{{ order.order_id }}" title="Upload livrable">
+                                                <i class="fas fa-file-upload"></i>
+                                            </button>
+                                            <!-- NOUVEAU: Bouton de gestion des bookings -->
+                                            {% if order.product_id == 'pack_clarte_fr' %}
+                                            <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#bookingModal{{ order.order_id }}" title="Gérer booking">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal de modification (existant amélioré) -->
+                                <div class="modal fade" id="editModal{{ order.order_id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-edit me-2"></i>
+                                                    Modifier la commande #{{ order.order_id }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('dashboard.admin_update_status') }}" method="post">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                                                    <input type="hidden" name="user_id" value="{{ order.user_id }}">
+                                                    <input type="hidden" name="product_id" value="{{ order.product_id }}">
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Client</label>
+                                                                <input type="text" class="form-control" value="{{ order.name }}" disabled>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Email</label>
+                                                                <input type="email" class="form-control" value="{{ order.email }}" disabled>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Produit</label>
+                                                                <input type="text" class="form-control" value="{{ order.product_name }}" disabled>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Statut actuel</label>
+                                                                <div class="input-group">
+                                                                    <span class="input-group-text">
+                                                                        <span class="badge bg-{{ order.status_info.color }}">{{ order.status_info.label }}</span>
+                                                                    </span>
+                                                                    <input type="text" class="form-control" value="{{ order.status }}" disabled>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label for="new_status" class="form-label fw-bold">Nouveau statut</label>
+                                                                <select id="new_status" name="new_status" class="form-select" required>
+                                                                    {% for status_key, status_info in order_statuses.items() %}
+                                                                    <option value="{{ status_key }}" {% if status_key == order.status %}selected{% endif %}>
+                                                                        {{ status_info.label }} - {{ status_info.description }}
+                                                                    </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label for="rdv_date" class="form-label fw-bold">Date de RDV</label>
+                                                                <input type="datetime-local" id="rdv_date" name="rdv_date" class="form-control"
+                                                                       value="{% if order.rdv_date %}{{ order.rdv_date.strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="livrable_date" class="form-label fw-bold">Date de livraison prévue</label>
+                                                        <input type="date" id="livrable_date" name="livrable_date" class="form-control"
+                                                               value="{% if order.livrable_date %}{{ order.livrable_date.strftime('%Y-%m-%d') }}{% endif %}">
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="admin_note" class="form-label fw-bold">Note administrative</label>
+                                                        <textarea id="admin_note" name="admin_note" class="form-control" rows="3" placeholder="Note visible uniquement par les administrateurs..."></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="send_notification" name="send_notification" checked>
+                                                        <label class="form-check-label" for="send_notification">
+                                                            Notifier le client par email
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times me-1"></i>Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="fas fa-save me-1"></i>Enregistrer les modifications
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- NOUVEAU: Modal de gestion des bookings -->
+                                <div class="modal fade" id="bookingModal{{ order.order_id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning text-dark">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-calendar-alt me-2"></i>
+                                                    Gestion des bookings - {{ order.name }}
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold mb-3">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            Informations de la commande
+                                                        </h6>
+                                                        <div class="card bg-light">
+                                                            <div class="card-body">
+                                                                <p><strong>Commande:</strong> #{{ order.order_id }}</p>
+                                                                <p><strong>Client:</strong> {{ order.name }} ({{ order.email }})</p>
+                                                                <p><strong>Produit:</strong> {{ order.product_name }}</p>
+                                                                <p><strong>Statut:</strong> 
+                                                                    <span class="badge bg-{{ order.status_info.color }}">{{ order.status_info.label }}</span>
+                                                                </p>
+                                                                <p><strong>Date commande:</strong> {{ order.formatted_created }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold mb-3">
+                                                            <i class="fas fa-calendar-check me-2"></i>
+                                                            Bookings disponibles pour ce produit
+                                                        </h6>
+                                                        <div id="bookingsListContainer{{ order.order_id }}">
+                                                            <!-- Chargé dynamiquement via JavaScript -->
+                                                            <div class="text-center p-3">
+                                                                <div class="spinner-border text-primary" role="status">
+                                                                    <span class="visually-hidden">Chargement...</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <hr class="my-4">
+                                                
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <h6 class="fw-bold mb-3">
+                                                            <i class="fas fa-tools me-2"></i>
+                                                            Actions rapides
+                                                        </h6>
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button" class="btn btn-outline-primary" onclick="loadBookingsForProduct('{{ order.product_id }}', {{ order.user_id }}, {{ order.order_id }})">
+                                                                <i class="fas fa-sync-alt me-1"></i>Actualiser les bookings
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-success" onclick="createManualBooking({{ order.order_id }}, '{{ order.product_id }}', {{ order.user_id }})">
+                                                                <i class="fas fa-plus me-1"></i>Créer un RDV manuel
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-warning" onclick="reassignBooking({{ order.order_id }})">
+                                                                <i class="fas fa-exchange-alt me-1"></i>Réassigner un booking
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times me-1"></i>Fermer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Modal historique (existant amélioré) -->
+                                <div class="modal fade" id="historyModal{{ order.order_id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-info text-white">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-history me-2"></i>
+                                                    Historique - Commande #{{ order.order_id }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Date</th>
+                                                                <th>Changement</th>
+                                                                <th>Type</th>
+                                                                <th>Admin</th>
+                                                                <th>Note</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <!-- Historique chargé dynamiquement -->
+                                                            <tr>
+                                                                <td colspan="5" class="text-center text-muted">
+                                                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                                                    Chargement de l'historique...
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Modal upload (existant amélioré) -->
+                                <div class="modal fade" id="uploadModal{{ order.order_id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-success text-white">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-file-upload me-2"></i>
+                                                    Upload Livrable - {{ order.name }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('dashboard.upload_livrable', order_id=order.order_id) }}" method="post" enctype="multipart/form-data">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="livrable_file" class="form-label fw-bold">
+                                                            <i class="fas fa-file-pdf me-2"></i>
+                                                            Fichier du livrable
+                                                        </label>
+                                                        <input class="form-control" type="file" id="livrable_file" name="livrable_file" 
+                                                               accept=".pdf,.docx,.zip" required>
+                                                        <div class="form-text">
+                                                            <i class="fas fa-info-circle me-1"></i>
+                                                            Formats acceptés: PDF, DOCX, ZIP (max 50MB)
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-check mb-3">
+                                                                <input class="form-check-input" type="checkbox" id="notify_user{{ order.order_id }}" name="notify_user" checked>
+                                                                <label class="form-check-label" for="notify_user{{ order.order_id }}">
+                                                                    <i class="fas fa-envelope me-1"></i>
+                                                                    Notifier le client
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-check mb-3">
+                                                                <input class="form-check-input" type="checkbox" id="auto_complete{{ order.order_id }}" name="auto_complete" checked>
+                                                                <label class="form-check-label" for="auto_complete{{ order.order_id }}">
+                                                                    <i class="fas fa-check-circle me-1"></i>
+                                                                    Marquer comme terminé
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        Le statut sera automatiquement mis à jour vers "livrable_dispo".
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times me-1"></i>Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="fas fa-upload me-1"></i>Télécharger et traiter
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--

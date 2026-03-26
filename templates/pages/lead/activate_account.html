@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Activer votre compte - Tilto{% endblock %}
+
+{% block content %}
+<section class="activation-section">
+    <div class="container">
+        <div class="activation-card">
+            <!-- Header -->
+            <div class="activation-header">
+                <h1>Bienvenue {{ firstname }} ! 👋</h1>
+                <p class="activation-subtitle">
+                    Votre email <strong>{{ email }}</strong> est validé ✓
+                </p>
+            </div>
+
+            <!-- Formulaire de création de mot de passe -->
+            <form method="POST" action="{{ url_for('lead.activate_account', token=token) }}" id="activation-form">
+                
+                <!-- Option : Créer un mot de passe -->
+                <div class="password-option-section">
+                    <h3>Créer un mot de passe (optionnel)</h3>
+                    <p class="help-text">
+                        Vous pouvez créer un mot de passe pour vous connecter facilement, 
+                        ou choisir de recevoir un lien de connexion par email à chaque fois.
+                    </p>
+
+                    <!-- Toggle : Créer password ou skip -->
+                    <div class="toggle-password-creation">
+                        <label class="toggle-option">
+                            <input type="radio" name="create_password" value="yes" checked>
+                            <span>Créer un mot de passe</span>
+                        </label>
+                        <label class="toggle-option">
+                            <input type="radio" name="create_password" value="skip">
+                            <span>Me connecter par email</span>
+                        </label>
+                    </div>
+
+                    <!-- Champs password (affichés conditionnellement) -->
+                    <div id="password-fields" class="password-fields">
+                        <div class="form-field">
+                            <label for="password">Mot de passe</label>
+                            <div class="password-input-wrapper">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    placeholder="Minimum 8 caractères"
+                                    autocomplete="new-password">
+                                <button type="button" class="toggle-password" data-target="password">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- Indicateur de force -->
+                            <div id="password-strength" class="password-strength"></div>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="confirm_password">Confirmer le mot de passe</label>
+                            <div class="password-input-wrapper">
+                                <input 
+                                    type="password" 
+                                    id="confirm_password" 
+                                    name="confirm_password" 
+                                    placeholder="Retapez votre mot de passe"
+                                    autocomplete="new-password">
+                                <button type="button" class="toggle-password" data-target="confirm_password">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="password-tips">
+                            <p><strong>Conseils :</strong></p>
+                            <ul>
+                                <li>8 caractères minimum</li>
+                                <li>Majuscules + minuscules + chiffres recommandés</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton submit -->
+                <button type="submit" class="btn-activate">
+                    Activer mon compte
+                </button>
+            </form>
+
+            <!-- Lien vers login si déjà activé -->
+            <div class="activation-footer">
+                <p>Déjà activé ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.activation-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.activation-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.activation-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.activation-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.activation-subtitle {
+    font-size: 16px;
+    color: #666;
+}
+
+.password-option-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.help-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.toggle-password-creation {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.toggle-option {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-option input[type="radio"] {
+    margin: 0;
+}
+
+.toggle-option:has(input:checked) {
+    border-color: #A11857;
+    background: #fef3f9;
+}
+
+.password-fields {
+    display: block;
+}
+
+.password-fields.hidden {
+    display: none;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.form-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    width: 100%;
+    padding: 12px;
+    padding-right: 44px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.password-input-wrapper input:focus {
+    outline: none;
+    border-color: #A11857;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.password-strength {
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.password-tips {
+    background: #f9fafb;
+    border-left: 3px solid #A11857;
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 16px;
+}
+
+.password-tips p {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.password-tips ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.password-tips li {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.btn-activate {
+    width: 100%;
+    padding: 14px;
+    background: #A11857;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 24px;
+}
+
+.btn-activate:hover {
+    background: #4a0336;
+}
+
+.btn-activate:active {
+    transform: scale(0.98);
+}
+
+.activation-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #666;
+}
+
+.activation-footer a {
+    color: #A11857;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.activation-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .activation-card {
+        padding: 24px;
+    }
+
+    .activation-header h1 {
+        font-size: 24px;
+    }
+
+    .toggle-password-creation {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+// Toggle affichage des champs password
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordFields = document.getElementById('password-fields');
+    const radioButtons = document.querySelectorAll('input[name="create_password"]');
+    
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'yes') {
+                passwordFields.classList.remove('hidden');
+            } else {
+                passwordFields.classList.add('hidden');
+            }
+        });
+    });
+
+    // Toggle password visibility
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>`;
+            } else {
+                input.type = 'password';
+                this.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>`;
+            }
+        });
+    });
+
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    const strengthDiv = document.getElementById('password-strength');
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let color, text;
+            
+            if (password.length >= 8) strength += 25;
+            if (password.length >= 12) strength += 25;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+            if (/\d/.test(password)) strength += 15;
+            if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
+            
+            if (strength < 40) {
+                color = '#ef4444';
+                text = 'Faible';
+            } else if (strength < 70) {
+                color = '#f59e0b';
+                text = 'Moyen';
+            } else {
+                color = '#10b981';
+                text = 'Fort';
+            }
+            
+            strengthDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="flex: 1; height: 3px; background: #e5e7eb; border-radius: 2px; overflow: hidden;">
+                        <div style="width: ${strength}%; height: 100%; background: ${color}; transition: width 0.3s ease;"></div>
+                    </div>
+                    <span style="color: ${color}; font-weight: 500;">${text}</span>
+                </div>
+            `;
+        });
+    }
+});
+</script>
+{% endblock %}

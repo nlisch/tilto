@@ -1,0 +1,1261 @@
+{% extends "base.html" %}
+{% block title %}Mon espace Tilto{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+
+/* ==================== VARIABLES ==================== */
+:root {
+    --tilto-primary: #A11857;
+    --tilto-primary-light: #c92a6e;
+    --tilto-primary-lighter: #d4447a;
+    --tilto-text: #1a1a1a;
+    --tilto-text-light: #666666;
+    --tilto-text-muted: #888888;
+    --tilto-border: #e5e7eb;
+    --tilto-bg: #f9fafb;
+    --tilto-white: #ffffff;
+    --tilto-success: #10b981;
+    --tilto-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ==================== RESET HEADER ==================== */
+body.dashboard-page .header-parallax {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+body.dashboard-page main {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* ==================== DASHBOARD CONTAINER ==================== */
+.dashboard-container {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    background: var(--tilto-white);
+}
+
+/* ==================== HEADER ==================== */
+.dash-header {
+    background: var(--tilto-primary);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.dash-header-content {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.dash-greeting {
+    font-size: clamp(1.5rem, 4vw, 1.75rem);
+    font-weight: 600;
+    color: white;
+    margin: 1rem;
+    line-height: 1.2;
+}
+
+/* ==================== CONTENT ==================== */
+.dash-content {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+/* ==================== ANIMATIONS DE BASE ==================== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ==================== MAIN CARD ==================== */
+.main-card {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    box-shadow: var(--tilto-shadow);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+    border: 1px solid var(--tilto-border);
+}
+
+.card-icon {
+    font-size: 70px;
+    margin-bottom: 1.5rem;
+    display: block;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.card-description {
+    font-size: clamp(0.9375rem, 2vw, 1rem);
+    color: var(--tilto-text-light);
+    line-height: 1.6;
+    margin: 0 0 2rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-primary {
+    background: var(--tilto-primary);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(161, 24, 87, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(161, 24, 87, 0.35);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ==================== PENDING STATE ==================== */
+.pending-state {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    box-shadow: var(--tilto-shadow);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.pending-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.pending-title {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 1rem;
+}
+
+.pending-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    font-weight: 500;
+    color: #333;
+    margin: 0 0 1.5rem;
+    text-align: center;
+}
+
+.pending-description {
+    font-size: clamp(0.9375rem, 2vw, 1rem);
+    color: var(--tilto-text-light);
+    line-height: 1.6;
+    margin: 0 0 2rem;
+}
+
+/* Garantie box */
+.garantie-box {
+    padding: 24px;
+    margin: 28px 0 24px;
+    text-align: center;
+}
+
+.garantie-img {
+    max-width: 120px;
+    height: auto;
+    margin-bottom: 12px;
+}
+
+.garantie-box .garantie-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 16px;
+}
+
+.garantie-badges {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.garantie-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.badge-incluse {
+    background: #85E0A3;
+    color: #1a5a2e;
+}
+
+.badge-gratuite {
+    background: #F59E0D;
+    color: #1a1a1a;
+}
+
+.garantie-separator {
+    font-size: 0.9rem;
+    color: var(--tilto-text-light);
+}
+
+.garantie-text {
+    font-size: 0.95rem;
+    color: var(--tilto-text-light);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ==================== PROCESSING STATE - AURORA WHITE ==================== */
+.processing-wrapper {
+    position: relative;
+    min-height: 45vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aurora {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.5;
+    animation: aurora-float 15s ease-in-out infinite;
+}
+
+.aurora-blob-1 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(161,24,87,0.2) 0%, transparent 70%);
+    top: -150px; right: -100px;
+    animation-delay: 0s;
+}
+
+.aurora-blob-2 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(201,42,110,0.15) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+    animation-delay: -5s;
+}
+
+.aurora-blob-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(212,68,122,0.12) 0%, transparent 70%);
+    top: 50%; left: 40%;
+    animation-delay: -10s;
+}
+
+@keyframes aurora-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -20px) scale(1.1); }
+    50% { transform: translate(-20px, 30px) scale(0.95); }
+    75% { transform: translate(20px, 20px) scale(1.05); }
+}
+
+.processing-card {
+    max-width: 420px;
+    width: 100%;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(161,24,87,0.08);
+    border-radius: 32px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(161,24,87,0.06);
+    position: relative;
+    z-index: 10;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* ==================== ORB ==================== */
+.orb-container {
+    width: 120px; height: 120px;
+    margin: 0 auto 2rem;
+    position: relative;
+}
+
+.orb-glow {
+    position: absolute; inset: -30px;
+    background: radial-gradient(circle, rgba(161,24,87,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.orb-ring {
+    position: absolute; inset: -12px;
+    border-radius: 50%;
+    border: 2px solid rgba(161,24,87,0.2);
+    animation: ring-rotate 6s linear infinite;
+}
+
+.orb-ring::before {
+    content: '';
+    position: absolute;
+    width: 10px; height: 10px;
+    background: var(--tilto-primary);
+    border-radius: 50%;
+    top: -5px; left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 12px rgba(161,24,87,0.6);
+}
+
+@keyframes ring-rotate { to { transform: rotate(360deg); } }
+
+.orb {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A11857 0%, #c92a6e 40%, #d4447a 70%, #c92a6e 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease-in-out infinite, orb-breathe 3s ease-in-out infinite;
+    box-shadow: 
+        0 10px 40px rgba(161,24,87,0.35),
+        inset 0 -15px 30px rgba(0,0,0,0.15),
+        inset 0 15px 30px rgba(255,255,255,0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.orb::before {
+    content: '';
+    position: absolute;
+    width: 60%; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 50%;
+    top: 8%; left: 20%;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes orb-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.97); }
+}
+
+.processing-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.processing-subtitle {
+    color: var(--tilto-text-light);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+/* ==================== PROGRESS ==================== */
+.progress-wrapper { margin-bottom: 2rem; }
+
+.progress-bar-analysis {
+    height: 6px;
+    background: rgba(161,24,87,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 5%;
+    background: linear-gradient(90deg, #A11857, #c92a6e, #d4447a);
+    border-radius: 100px;
+    position: relative;
+    transition: width 0.5s ease-out;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.progress-percent { font-weight: 700; color: var(--tilto-primary); }
+.progress-time { color: var(--tilto-text-muted); }
+
+/* ==================== STEPS DOTS ==================== */
+.steps-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.step-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(161,24,87,0.15);
+    transition: all 0.3s ease;
+}
+
+.step-dot.done { background: var(--tilto-success); }
+.step-dot.active {
+    background: var(--tilto-primary);
+    width: 28px;
+    border-radius: 100px;
+    animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.current-step {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    background: linear-gradient(135deg, rgba(161,24,87,0.08), rgba(201,42,110,0.08));
+    border-radius: 100px;
+    font-size: 0.85rem;
+    color: var(--tilto-primary);
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+.current-step .arrow { animation: blink 1.5s ease-in-out infinite; }
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.tip-box {
+    background: rgba(161,24,87,0.04);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+    min-height: 72px;
+}
+
+.tip-icon { font-size: 1.25rem; flex-shrink: 0; }
+.tip-text {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+    transition: opacity 0.3s ease;
+}
+
+.status-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    display: none;
+}
+
+.status-message.slow {
+    display: block;
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* ==================== SMART CONTACT PHONE FORM ==================== */
+.sc-phone-card {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    box-shadow: var(--tilto-shadow);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+    border: 1px solid var(--tilto-border);
+}
+
+.sc-phone-card .sc-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 1.25rem;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.sc-phone-card h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 0.75rem;
+    text-align:center;
+}
+
+.sc-phone-card .sc-description {
+    font-size: 0.95rem;
+    color: var(--tilto-text-light);
+    line-height: 1.6;
+    margin: 0 0 2rem;
+}
+
+.sc-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.sc-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    background: var(--tilto-bg);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: var(--tilto-text);
+}
+
+.sc-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--tilto-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.sc-phone-input-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.sc-phone-input {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--tilto-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.sc-phone-input:focus {
+    border-color: var(--tilto-primary);
+    box-shadow: 0 0 0 3px rgba(161, 24, 87, 0.08);
+}
+
+.sc-phone-note {
+    font-size: 0.8rem;
+    color: var(--tilto-text-muted);
+    margin-bottom: 0;
+}
+
+.sc-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+/* ==================== SMART CONTACT WAITING STATE ==================== */
+.sc-waiting-card {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    box-shadow: var(--tilto-shadow);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+    border: 1px solid var(--tilto-border);
+}
+
+.sc-waiting-card .sc-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 1.25rem;
+}
+
+.sc-waiting-card h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 0.75rem;
+}
+
+.sc-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.5rem 0;
+    text-align: left;
+    position: relative;
+}
+
+.sc-timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    background: var(--tilto-border);
+}
+
+.sc-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.sc-timeline-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    background: white;
+    border: 2px solid var(--tilto-border);
+}
+
+.sc-timeline-dot.done {
+    background: #d1fae5;
+    border-color: var(--tilto-success);
+}
+
+.sc-timeline-dot.current {
+    background: rgba(161, 24, 87, 0.08);
+    border-color: var(--tilto-primary);
+    animation: dot-pulse 2s ease-in-out infinite;
+}
+
+.sc-timeline-dot.pending {
+    background: var(--tilto-bg);
+    border-color: var(--tilto-border);
+    opacity: 0.5;
+}
+
+.sc-timeline-content {
+    padding-top: 0.5rem;
+}
+
+.sc-timeline-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--tilto-text);
+    margin: 0 0 0.2rem;
+}
+
+.sc-timeline-desc {
+    font-size: 0.8rem;
+    color: var(--tilto-text-muted);
+    margin: 0;
+}
+
+/* ==================== SUPPORT LINK ==================== */
+.support-link {
+    display: block;
+    text-align: center;
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--tilto-text-light);
+}
+
+.support-link a {
+    color: var(--tilto-primary);
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.support-link a:hover { text-decoration: none; }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 480px) {
+    .dash-header { padding: 1.25rem 0.75rem; }
+    .dash-content { padding: 1.25rem 0.75rem 1.5rem; }
+    
+    .processing-card,
+    .pending-state,
+    .main-card,
+    .sc-phone-card,
+    .sc-waiting-card {
+        padding: 2rem 1.5rem;
+        border-radius: 24px;
+    }
+    
+    .orb-container { width: 100px; height: 100px; }
+    .processing-title { font-size: 1.3rem; }
+    .aurora-blob { filter: blur(60px); }
+    .aurora-blob-1 { width: 280px; height: 280px; }
+    .aurora-blob-2 { width: 240px; height: 240px; }
+    .aurora-blob-3 { width: 200px; height: 200px; }
+    .garantie-box { padding: 18px 14px; }
+    .garantie-badges { flex-wrap: wrap; }
+    .garantie-img { max-width: 80px; }
+    .sc-phone-input-wrapper { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.dash-header { display: none; }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <div class="dash-header">
+        <div class="dash-header-content">
+            <h1 class="dash-greeting">Votre espace Tilto</h1>
+        </div>
+    </div>
+
+    <div class="dash-content">
+
+        {# ================================================================
+           ÉTAT 1 : PAS ACHETÉ → proposer Smart Contact
+        ================================================================ #}
+        {% if dashboard_state == 'locked' %}
+        <div class="pending-state">
+            <h2 class="pending-subtitle">Bienvenue 👋</h2>
+            <p class="pending-description">
+                Contactez les bonnes personnes avant tout le monde.<br>
+                10 contacts ciblés + messages personnalisés, prêts à envoyer.
+            </p>
+            <a href="{{ url_for('tokens.direct_buy', product_id=smart_contact_product_id) }}" class="btn-primary">
+                👉 Obtenir mes 10 contacts — 29,90€
+            </a>
+
+        </div>
+
+        {# ================================================================
+            ÉTAT BILAN EXPRESS — TÉLÉPHONE MANQUANT
+         ================================================================ #}
+         {% elif dashboard_state == 'bilan_phone_needed' %}
+         <div class="sc-phone-card">
+             <span class="sc-icon">🧭</span>
+             <h2>Plus qu'une étape !</h2>
+             <p class="sc-description">
+                 Pour planifier votre entretien de 45 min, laissez-nous votre numéro.
+                 On vous rappelle dans les 24h pour convenir d'un créneau.
+             </p>
+         
+             <div class="sc-steps">
+                 <div class="sc-step">
+                     <div class="sc-step-num">1</div>
+                     <span>Vous nous laissez votre numéro ci-dessous</span>
+                 </div>
+                 <div class="sc-step">
+                     <div class="sc-step-num">2</div>
+                     <span>On vous appelle dans les 24h pour planifier votre entretien de 45 min</span>
+                 </div>
+                 <div class="sc-step">
+                     <div class="sc-step-num">3</div>
+                     <span>Votre feuille de route avec vos 3 meilleurs choix pro livrée sous 48h</span>
+                 </div>
+             </div>
+         
+             <div class="sc-phone-input-wrapper">
+                 <input
+                     type="tel"
+                     id="scPhoneInput"
+                     class="sc-phone-input"
+                     placeholder="06 12 34 56 78"
+                     autocomplete="tel"
+                 >
+                 <button class="btn-primary" id="scPhoneSubmit">
+                     Envoyer →
+                 </button>
+             </div>
+             <p class="sc-phone-note">📵 Uniquement pour vous appeler, jamais partagé.</p>
+             <p class="sc-error" id="scPhoneError">Merci d'entrer un numéro valide (min. 8 chiffres).</p>
+         </div>
+         
+         {# ================================================================
+            ÉTAT BILAN EXPRESS — EN ATTENTE D'APPEL
+         ================================================================ #}
+         {% elif dashboard_state == 'bilan_waiting' %}
+         <div class="pending-state">
+             <h2 class="pending-subtitle">On s'occupe de vous ! 🎉</h2>
+             <p class="pending-description">
+                 On vous rappelle sous 24h pour planifier votre entretien de 45 min.<br>
+                 Votre feuille de route sera livrée dans les 48h après l'entretien.
+             </p>
+             <div class="garantie-box">
+                 <p class="garantie-text" style="color: var(--tilto-primary);">
+                     <strong>📧 Vous recevrez un email dès que votre bilan sera prêt !</strong>
+                 </p>
+             </div>
+         </div>
+
+        {# ================================================================
+           ÉTAT 2 : SMART CONTACT — TÉLÉPHONE MANQUANT
+           L'utilisateur a acheté Smart Contact mais n'a pas encore
+           renseigné son numéro de téléphone.
+        ================================================================ #}
+        {% elif dashboard_state == 'smart_contact_phone_needed' %}
+        <div class="sc-phone-card">
+            <h2>Une dernière étape !</h2>
+            <p class="sc-description">
+                Pour préparer vos 10 contacts personnalisés, on a besoin de 10 minutes avec vous
+                pour définir ton profil et tes critères.
+            </p>
+
+            <div class="sc-steps">
+                <div class="sc-step">
+                    <div class="sc-step-num">1</div>
+                    <span>Vous nous laissez votre numéro ci-dessous</span>
+                </div>
+                <div class="sc-step">
+                    <div class="sc-step-num">2</div>
+                    <span>On vous appelle dans les 24h pour un échange de 10 min</span>
+                </div>
+                <div class="sc-step">
+                    <div class="sc-step-num">3</div>
+                    <span>On prépare vos contacts + messages personnalisés</span>
+                </div>
+            </div>
+
+            <div class="sc-phone-input-wrapper">
+                <input 
+                    type="tel" 
+                    id="scPhoneInput" 
+                    class="sc-phone-input" 
+                    placeholder="06 12 34 56 78"
+                    autocomplete="tel"
+                >
+                <button class="btn-primary" id="scPhoneSubmit">
+                    Envoyer →
+                </button>
+            </div>
+            <p class="sc-phone-note">📵 Uniquement pour vous appeler, jamais partagé.</p>
+            <p class="sc-error" id="scPhoneError">Merci d'entrer un numéro valide (min. 8 chiffres).</p>
+        </div>
+
+        {# ================================================================
+           ÉTAT 3 : SMART CONTACT — EN ATTENTE
+           Téléphone renseigné, équipe en cours de préparation.
+           product_status = 'analyse_en_cours'
+        ================================================================ #}
+        {% elif dashboard_state == 'smart_contact_waiting' %}
+        <div class="pending-state">
+            <h2 class="pending-subtitle">On s'occupe de vous !</h2>
+            <p class="pending-description">
+                On vous rappelle sous 24h pour un échange de 10 min.<br>
+                On prépare ensuite tes contacts sur mesure.
+            </p>
+            <div class="garantie-box">
+                <p class="garantie-text" style="color: var(--tilto-primary);">
+                    <strong>📧 Vous recevrez un email dès que vos contacts seront prêts !</strong>
+                </p>
+            </div>
+        </div>
+
+        {# ================================================================
+           ÉTAT 4 : SMART CONTACT — CONTACTS LIVRÉS
+           product_status = 'livrable_dispo' ou 'post_livraison'
+        ================================================================ #}
+        {% elif dashboard_state == 'smart_contact_delivered' %}
+        <div class="main-card">
+            <h2 class="pending-subtitle">Vos contacts sont prêts !</h2>
+            <p class="card-description">
+                Vos 10 contacts personnalisés avec leurs messages sont disponibles.
+            </p>
+            <a href="/dashboard/product/{{ smart_contact_product_id }}" class="btn-primary">
+                👉 Voir mes contacts
+            </a>
+        </div>
+
+        {# ================================================================
+           ÉTAT 5 : ANALYSE PACK CLARTÉ EN COURS
+        ================================================================ #}
+        {% elif dashboard_state == 'processing' %}
+
+            {% if processing_status == 'humanized_wait' %}
+            <div class="pending-state">
+                <h2 class="pending-subtitle">On prépare ton diagnostic</h2>
+                <div class="garantie-box">
+                    <p class="garantie-text" style="color: var(--tilto-primary);">
+                        <strong>📧 Tu recevras un email d'ici 24h dès qu'il sera prêt !</strong>
+                    </p>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="processing-wrapper">
+                <div class="aurora">
+                    <div class="aurora-blob aurora-blob-1"></div>
+                    <div class="aurora-blob aurora-blob-2"></div>
+                    <div class="aurora-blob aurora-blob-3"></div>
+                </div>
+                <div class="processing-card">
+                    <div class="orb-container">
+                        <div class="orb-glow"></div>
+                        <div class="orb-ring"></div>
+                        <div class="orb"></div>
+                    </div>
+                    <h2 class="processing-title" id="processingTitle">
+                        Recherche de tes meilleures pistes
+                    </h2>
+                    <p class="processing-subtitle" id="processingSubtitle">
+                        On croise ton profil avec les vraies opportunités du marché
+                    </p>
+                    <div class="progress-wrapper">
+                        <div class="progress-bar-analysis">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span class="progress-percent" id="progressPercent">5%</span>
+                            <span class="progress-time" id="progressTime">~3 min restantes</span>
+                        </div>
+                    </div>
+                    <div class="steps-dots" id="stepsDots">
+                        <div class="step-dot active" data-step="1"></div>
+                        <div class="step-dot" data-step="2"></div>
+                        <div class="step-dot" data-step="3"></div>
+                        <div class="step-dot" data-step="4"></div>
+                        <div class="step-dot" data-step="5"></div>
+                    </div>
+                    <div class="current-step">
+                        <span class="arrow">→</span> <span id="currentStepText">Analyse de ton parcours</span>
+                    </div>
+                    <div class="tip-box">
+                        <span class="tip-icon" id="tipIcon">💡</span>
+                        <span class="tip-text" id="tipText"><strong>73%</strong> des personnes qui changent de voie conservent ou augmentent leur salaire.</span>
+                    </div>
+                    <div class="status-message" id="statusMessage"></div>
+                </div>
+            </div>
+            {% endif %}
+
+        {# ================================================================
+           ÉTAT 6 : ANALYSE PRÊTE
+        ================================================================ #}
+        {% elif dashboard_state == 'ready' %}
+        <div class="main-card ready-state">
+            <h2 class="pending-subtitle">Ton diagnostic est prêt !</h2>
+            {% if analysis_url %}
+                <a href="{{ analysis_url }}" class="btn-primary">
+                    👉 Découvrir
+                </a>
+            {% else %}
+                <button class="btn-primary" disabled>⏳ Chargement...</button>
+            {% endif %}
+        </div>
+
+        {# ================================================================
+           FALLBACK ERREUR
+        ================================================================ #}
+        {% else %}
+        <div class="pending-state">
+            <span class="pending-icon">⚠️</span>
+            <h2 class="pending-subtitle">Oups 😅</h2>
+            <p class="pending-description">
+                Nous rencontrons un problème technique.<br>
+                Notre équipe a été notifiée.
+            </p>
+            <a href="/dashboard" class="btn-primary">← Retour au dashboard</a>
+        </div>
+        {% endif %}
+
+        <p class="support-link">
+            Une question ? <a href="mailto:contact@tilto.ai">contact@tilto.ai</a>
+        </p>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{# ── Script polling pour l'analyse en cours ── #}
+{% if dashboard_state == 'processing' %}
+<script nonce="{{ g.nonce }}">
+(function() {
+    'use strict';
+
+    const CONFIG = {
+        phases: [
+            { end: 20,  progress: 20,  step: 1, label: "Analyse de ton parcours" },
+            { end: 50,  progress: 45,  step: 2, label: "Identification de tes forces" },
+            { end: 90,  progress: 70,  step: 3, label: "Recherche d'opportunités" },
+            { end: 130, progress: 90,  step: 4, label: "Sélection des meilleures pistes" },
+            { end: 180, progress: 97,  step: 5, label: "Finalisation de ton rapport" }
+        ],
+        pollInterval: 5000,
+        tipInterval: 10000
+    };
+
+    const TIPS = [
+        { icon: "💰", text: "<strong>73%</strong> des personnes qui changent de voie conservent ou augmentent leur salaire." },
+        { icon: "🚀", text: "En moyenne, on change <strong>5 à 7 fois</strong> de métier au cours de sa carrière." },
+        { icon: "💪", text: "<strong>85%</strong> des emplois de 2030 n'existent pas encore. Ta capacité d'adaptation est ton meilleur atout." },
+        { icon: "🎯", text: "Les reconversions les mieux réussies s'appuient sur des <strong>compétences déjà acquises</strong>." },
+        { icon: "📈", text: "<strong>67%</strong> des recruteurs préfèrent les profils atypiques pour leur vision différente." },
+        { icon: "✨", text: "Il n'est jamais trop tard : l'âge moyen d'une reconversion réussie est <strong>39 ans</strong>." },
+        { icon: "🔥", text: "Les personnes qui changent de voie par choix sont <strong>2x plus épanouies</strong> au travail." },
+        { icon: "💡", text: "<strong>80%</strong> des opportunités ne sont jamais publiées. Le bon réseau fait la différence." }
+    ];
+
+    let state = { startTime: Date.now(), currentTipIndex: 0, isReady: false };
+
+    const els = {
+        progressFill:      document.getElementById('progressFill'),
+        progressPercent:   document.getElementById('progressPercent'),
+        progressTime:      document.getElementById('progressTime'),
+        processingTitle:   document.getElementById('processingTitle'),
+        processingSubtitle:document.getElementById('processingSubtitle'),
+        stepsDots:         document.getElementById('stepsDots'),
+        currentStepText:   document.getElementById('currentStepText'),
+        tipIcon:           document.getElementById('tipIcon'),
+        tipText:           document.getElementById('tipText'),
+        statusMessage:     document.getElementById('statusMessage')
+    };
+
+    function calculateProgress(elapsedSeconds) {
+        for (let i = 0; i < CONFIG.phases.length; i++) {
+            const phase = CONFIG.phases[i];
+            const prevPhase = CONFIG.phases[i - 1] || { end: 0, progress: 5 };
+            if (elapsedSeconds <= phase.end) {
+                const phaseProgress = (elapsedSeconds - prevPhase.end) / (phase.end - prevPhase.end);
+                const progressRange = phase.progress - prevPhase.progress;
+                return {
+                    progress: Math.min(prevPhase.progress + (progressRange * phaseProgress), phase.progress),
+                    step: phase.step,
+                    label: phase.label
+                };
+            }
+        }
+        return { progress: Math.min(97 + (elapsedSeconds - 600) * 0.005, 99), step: 5, label: "Finalisation de ton rapport" };
+    }
+
+    function formatTimeRemaining(elapsedSeconds) {
+        const remaining = Math.max(0, 150 - elapsedSeconds);
+        if (remaining <= 0) return "Quelques instants...";
+        if (remaining < 60) return `~${Math.ceil(remaining)}s restantes`;
+        return `~${Math.ceil(remaining / 60)} min restantes`;
+    }
+
+    function updateProgress() {
+        if (state.isReady) return;
+        const elapsed = (Date.now() - state.startTime) / 1000;
+        const { progress, step, label } = calculateProgress(elapsed);
+
+        els.progressFill.style.width = `${progress}%`;
+        els.progressPercent.textContent = `${Math.round(progress)}%`;
+        els.progressTime.textContent = formatTimeRemaining(elapsed);
+
+        const dots = els.stepsDots.querySelectorAll('.step-dot');
+        dots.forEach((dot, index) => {
+            const stepNum = index + 1;
+            dot.classList.remove('done', 'active');
+            if (stepNum < step) dot.classList.add('done');
+            else if (stepNum === step) dot.classList.add('active');
+        });
+
+        els.currentStepText.textContent = label;
+
+        if (elapsed > 180) {
+            els.processingTitle.textContent = "On affine la sélection...";
+            els.processingSubtitle.textContent = "On pousse l'analyse pour te trouver les pistes les plus pertinentes";
+            if (!els.statusMessage.classList.contains('slow')) {
+                els.statusMessage.textContent = "⏳ Ton profil est riche, l'analyse prend un peu plus de temps. Tu recevras un email dès que c'est prêt !";
+                els.statusMessage.classList.add('slow');
+            }
+        }
+
+        if (elapsed > 240) {
+            els.processingTitle.textContent = "Dernières vérifications...";
+            els.processingSubtitle.textContent = "Plus que quelques instants, ça vaut le coup d'attendre !";
+        }
+    }
+
+    function rotateTip() {
+        state.currentTipIndex = (state.currentTipIndex + 1) % TIPS.length;
+        const tip = TIPS[state.currentTipIndex];
+        els.tipText.style.opacity = '0';
+        setTimeout(() => {
+            els.tipIcon.textContent = tip.icon;
+            els.tipText.innerHTML = tip.text;
+            els.tipText.style.opacity = '1';
+        }, 300);
+    }
+
+    function completeAnimation() {
+        state.isReady = true;
+        els.progressFill.style.width = '100%';
+        els.progressPercent.textContent = '100%';
+        els.progressTime.textContent = 'Terminé !';
+        const dots = els.stepsDots.querySelectorAll('.step-dot');
+        dots.forEach(dot => { dot.classList.remove('active'); dot.classList.add('done'); });
+        els.currentStepText.textContent = "C'est prêt !";
+        els.processingTitle.textContent = "Tes pistes sont prêtes 🎉";
+        els.processingSubtitle.textContent = "Redirection...";
+        els.statusMessage.style.display = 'none';
+        setTimeout(() => window.location.reload(), 1500);
+    }
+
+    async function checkStatus() {
+        if (state.isReady) return;
+        try {
+            const response = await fetch('/dashboard/refresh-status', {
+                headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.ready === true) completeAnimation();
+            }
+        } catch (e) { console.warn('Status check error:', e); }
+    }
+
+    function init() {
+        setInterval(updateProgress, 500);
+        setInterval(rotateTip, CONFIG.tipInterval);
+        setInterval(checkStatus, CONFIG.pollInterval);
+        setTimeout(checkStatus, 2000);
+        updateProgress();
+    }
+
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', init)
+        : init();
+})();
+</script>
+{% endif %}
+
+{# ── Script soumission téléphone Smart Contact ── #}
+{% if dashboard_state == 'smart_contact_phone_needed' or dashboard_state == 'bilan_phone_needed' %}
+<script nonce="{{ g.nonce }}">
+async function submitPhone() {
+    const input = document.getElementById('scPhoneInput');
+    const btn   = document.getElementById('scPhoneSubmit');
+    const error = document.getElementById('scPhoneError');
+    const phone = input.value.trim();
+
+    error.style.display = 'none';
+
+    // Validation basique
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 8) {
+        error.style.display = 'block';
+        input.focus();
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Envoi...';
+
+    try {
+        const response = await fetch('/dashboard/smart-contact/save-phone', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ phone: phone })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Recharger la page → affichera smart_contact_waiting_call
+            window.location.reload();
+        } else {
+            error.textContent = data.message || 'Une erreur est survenue, réessaie.';
+            error.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Envoyer →';
+        }
+    } catch (e) {
+        error.textContent = 'Erreur réseau, réessaie dans quelques instants.';
+        error.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Envoyer →';
+    }
+}
+
+// Soumettre avec Entrée
+document.getElementById('scPhoneSubmit').addEventListener('click', submitPhone);
+document.getElementById('scPhoneInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitPhone();
+});
+</script>
+{% endif %}
+
+{% endblock %}

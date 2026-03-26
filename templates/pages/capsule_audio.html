@@ -1,0 +1,2887 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Moment de Décantation - Bulle d\'Énergie') }}{% endblock %}
+
+{% block body_class %}audio-capsule-page{% endblock %}
+
+{% block content %}
+<h1 class="audio-title">tilto {{ program_user.username }} !</h1>
+   <!-- Parcours audio enrichi - Code HTML uniquement pour cette section -->
+<div class="journey-progression">
+    <!-- Header Section -->
+    <div class="audio-header">
+        
+    </div>
+    <div class="journey-header">
+        <div class="journey-title-container">
+            <h2 class="journey-main-title"><span class="bubble-emoji">⚡</span> Tes Bulles d'Énergie </h2>
+            <p class="journey-subtitle">Des capsules sonores pour propulser ton action et transformer tes intentions en résultats</p>
+        </div>
+    </div>
+    
+    <div class="capsules-journey">
+        <div class="capsules-timeline"
+             id="capsulesTimeline"
+             data-current-seq="{{ current_seq }}">
+          <!-- Ligne de progression -->
+          <div class="timeline-line"></div>
+      
+          {% for i in range(1, capsule.total_capsules + 1) %}
+          {% set listened = capsule.user_capsules[i-1][1] %}
+          {% set token = (capsule.all_capsules
+                           | selectattr('sequence_number','equalto',i)
+                           | map(attribute='access_token')
+                           | first) or '' %}
+        
+          {% if i == current_seq and listened %}
+            {% set status = 'current_completed' %}
+            {% set tooltip = "Bulle " ~ i ~ " : Déjà écoutée (en cours)" %}
+          {% elif i == current_seq %}
+            {% set status = 'current' %}
+            {% set tooltip = "Bulle " ~ i ~ " : Disponible maintenant" %}
+          {% elif listened %}
+            {% set status = 'completed' %}
+            {% set tooltip = "Bulle " ~ i ~ " : Déjà écoutée" %}
+          {% elif token %}
+            {% set status = 'unlocked' %}
+            {% set tooltip = "Bulle " ~ i ~ " : Disponible" %}
+          {% else %}
+            {% set status = 'locked' %}
+            {% set tooltip = "Bulle " ~ i ~ " : À venir" %}
+          {% endif %}
+        
+          <div class="capsule-bubble {{ status }}"
+               data-sequence="{{ i }}"
+               {% if token %}data-token="{{ token }}"{% endif %}
+               data-tooltip="{{ tooltip }}">
+            <div class="capsule-number">{{ i }}</div>
+            <div class="capsule-status">
+              <i class="fas
+                 {% if status=='current'   %}fa-headphones{% endif %}
+                 {% if status=='unlocked'  %}fa-headphones-alt{% endif %}
+                 {% if status=='locked'    %}fa-lock{% endif %}
+              "></i>
+            </div>
+          </div>
+          {% endfor %}
+      
+        </div>
+      </div>
+      
+</div>
+
+<div class="container capsule-container">
+    <div class="audio-container">
+        
+        <!-- Action card - Apparaît après les insights -->
+        <div class="action-card" id="actionCard">
+            <div class="action-card-header">
+                <div class="action-card-icon"><i class="fas fa-rocket"></i></div>
+                <h3 class="action-card-title">Ton action à accomplir</h3>
+            </div>
+            <div class="action-card-content">
+                <p class="action-description">{{ capsule.action_description|default("Aujourd'hui, contacte la personne identifiée dans ton plan d'action. Cet appel de 15 minutes est la première étape concrète vers ton objectif.") }}</p>
+                
+                <div class="action-checklist">
+                    <div class="checklist-title">Micro-étapes:</div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step1" class="checklist-checkbox">
+                        <label for="step1">{{ capsule.step1|default("Préparer tes 3 questions clés (5 min)") }}</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step2" class="checklist-checkbox">
+                        <label for="step2">{{ capsule.step2|default("Envoyer le message/email de prise de contact (5 min)") }}</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="step3" class="checklist-checkbox">
+                        <label for="step3">{{ capsule.step3|default("Programmer l'appel dans ton agenda (2 min)") }}</label>
+                    </div>
+                </div>
+                
+                <div class="action-timer">
+                    <div class="timer-label">Temps estimé: <span class="timer-value">{{ capsule.action_time|default("12 min") }}</span></div>
+                </div>
+                
+                <button class="action-complete-btn" id="actionCompleteBtn">
+                    <i class="fas fa-check-circle"></i> J'ai accompli cette action
+                </button>
+            </div>
+        </div>
+        
+        <!-- Image inspirante -->
+        <div class="inspiration-image-container">
+            <img src="{{ capsule.image_url|default('https://images.tilto.co/production/2025/04/c3ada15e_20250419_2014_Golden_Swirl_Capsule_simple_compose_01js7m0stzfb7sj5zeccje6tje.webp') }}" 
+                alt="{{ _('Image inspirante') }}" 
+                class="inspiration-image">
+            <div class="inspiration-image-caption">{{ inspiration_image_caption|default(_('Ta dose d\'inspiration pour activer ton potentiel')) }}</div>
+        </div>
+
+        {% if error_message %}
+        <div class="alert-audio alert-danger mt-4">
+            <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> {{ error_message }}</h4>
+            <p>{{ _('Veuillez contacter un administrateur si le problème persiste.') }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Player Section -->
+        <div class="player-section">
+            <div class="play-button-wrapper">
+                <button class="play-button" id="playButton">
+                    <div class="play-aura"></div>
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="play-label">Écoute ta bulle d'énergie</div>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="time-display">
+                <span id="currentTime">00:00</span>
+                <span id="duration">{{ capsule.duration }}</span>
+            </div>
+            
+        </div>
+        
+        <!-- Insights Feature - Révélée après écoute -->
+        <div class="insights-feature" id="insightsFeature">
+            <div class="insights-header">
+                <div class="star-container">
+                    <span class="insights-icon">✨</span>
+                </div>
+                <h3 class="insights-title">Ton mot d'encouragement</h3>
+            </div>
+            <p class="insight-text">
+                {{ capsule.personalized_reflection|default("Tu viens d'activer une ressource intérieure puissante. Cette énergie te permet de voir au-delà des obstacles et de te connecter à ton intention véritable. Prends un moment pour ressentir cette force en toi avant de passer à l'action.") }}
+            </p>
+            {% if insight_tags %}
+            <div class="insight-tags">
+                {% for tag in insight_tags %}
+                    <span class="insight-tag">💎 {{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+            
+            
+        <!-- Feedback Section -->
+        <div class="feedback-section">
+            <div class="feedback-title" id="feedbackTitle">Cette bulle a-t-elle activé ton énergie d'action ?</div>
+            
+            <div class="feedback-options">
+                <button class="feedback-button" id="feedbackExcellent" data-rating="5">
+                    😍
+                </button>
+                
+                <button class="feedback-button" id="feedbackGood" data-rating="4">
+                    😊
+                </button>
+                
+                <button class="feedback-button" id="feedbackNeutral" data-rating="3">
+                    😐
+                </button>
+                
+                <button class="feedback-button" id="feedbackBad" data-rating="2">
+                    🙁
+                </button>
+                
+                <button class="feedback-button" id="feedbackTerrible" data-rating="1">
+                    😢
+                </button>
+            </div>
+            
+            <!-- Feedback Input Options -->
+            <div class="feedback-input-selector" id="feedbackInputSelector">
+                <span class="input-option active" data-input="text"><i class="fas fa-keyboard"></i> Texte</span>
+                <span class="input-option" data-input="voice"><i class="fas fa-microphone"></i> Vocal</span>
+            </div>
+            
+            <!-- Text Feedback Container -->
+            <div class="feedback-text-container" id="feedbackTextContainer">
+                <textarea class="feedback-text" id="feedbackText" placeholder="Partage ton ressenti et comment cette bulle t'a aidé à passer à l'action (optionnel)"></textarea>
+                <button class="feedback-send" id="feedbackSend">Envoyer</button>
+            </div>
+            
+            <!-- Voice Feedback Container -->
+            <div class="feedback-voice-container" id="feedbackVoiceContainer" style="display: none;">
+                <div class="listen-button-wrapper">
+                    <button class="listen-button" id="feedbackVoiceBtn">
+                        <div class="pulse-ring"></div>
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+                
+                <div class="listen-state">
+                    <p class="ready">Appuie pour commencer à parler</p>
+                    <p class="recording" style="display: none;">Parle librement de ton ressenti...</p>
+                </div>
+                
+                <div class="audio-wave" style="display: none;">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                
+                <div class="timer" id="feedbackTimerDisplay" style="display: none;">00:00</div>
+                
+                <div class="audio-player" id="feedbackAudioPlayer" style="display: none;">
+                    <audio controls class="audio-element" id="feedbackAudioElement">
+                        Votre navigateur ne supporte pas l'élément audio.
+                    </audio>
+                    <div class="audio-controls">
+                        <button type="button" class="delete-audio-btn" id="feedbackDeleteAudio" title="Supprimer l'enregistrement">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="feedback-send" id="feedbackVoiceSend" style="display: none;">Envoyer mon feedback vocal</button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+    
+<!-- Hidden Audio Element -->
+<audio id="audioElement" preload="auto" controlslist="nodownload">
+    <source src="{{ audio_url }}" type="audio/mpeg">
+    <p>Votre navigateur ne supporte pas la lecture audio. <a href="{{ audio_url }}" target="_blank">Télécharger l'audio</a></p>
+</audio>
+{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+    :root {
+        --primary: #A11857;
+        --primary-light: #FAF4F8;
+        --primary-medium: #8F3C78;
+        --secondary: #4C0336;
+        --accent: #F9B872;
+        --accent-light: #FFF1E5;
+        --success: #2b8a3e;
+        --success-light: #e6f7ec;
+        --energy: #FFB400;
+        --energy-light: #FFF0E5;
+        --action: #0077B6;
+        --action-light: #E1F2FB;
+        --text: #2c3e50;
+        --text-light: #7f8c8d;
+        --bg-light: #f9f9f9;
+        --white: #ffffff;
+        --border: #e0e0e0;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.12);
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-xl: 32px;
+        --transition: all 0.3s ease;
+        --transition-bounce: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .audio-capsule-page {
+        background: linear-gradient(135deg, var(--primary-light) 0%, #fff8f3 100%);
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+    
+    /* Conteneur principal */
+    .capsule-container {
+        max-width: 650px;
+        position: relative;
+        padding: 1px;
+        border-radius: var(--radius-xl);
+        background: linear-gradient(to right bottom, var(--primary), var(--accent));
+        margin: 0 auto;
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .audio-container {
+        background-color: var(--white);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        position: relative;
+        transition: var(--transition);
+        padding: 30px 30px 25px;
+        height: 100%;
+    }
+    
+    /* Journey Map - Parcours visuel amélioré */
+    .journey-progression {
+        max-width: 650px;
+        margin: 0 auto 30px;
+        background-color: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 25px 30px;
+        box-shadow: var(--shadow);
+        position: relative;
+    }
+    
+    .journey-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .journey-title-container {
+        max-width: 100%;
+        margin-bottom: 25px;
+    }
+    
+    .journey-main-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2D3748;
+        margin-bottom: 10px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        line-height: 1.1;
+    }
+    
+    .bubble-emoji {
+        display: inline-block;
+        transform: scale(1.2);
+        margin-left: 8px;
+    }
+    
+    .journey-subtitle {
+        font-size: 1.1rem;
+        color: #A11857;
+        font-weight: 500;
+        margin-top: 0;
+        line-height: 1.4;
+    }
+    
+    .journey-stats {
+        background: linear-gradient(to right, #A11857, #8F3C78);
+        color: white;
+        font-weight: 500;
+        padding: 12px 24px;
+        border-radius: 32px;
+        box-shadow: 0 4px 15px rgba(97, 5, 69, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 140px;
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .journey-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+        z-index: 1;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 500;
+        margin-bottom: 2px;
+        position: relative;
+        z-index: 2;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        letter-spacing: 0.5px;
+    }
+    
+    .capsules-timeline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 10px;
+    }
+    
+    .timeline-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 3px;
+        background-color: rgba(97, 5, 69, 0.1);
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+    
+    .capsule-bubble {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        cursor: pointer;
+        background-color: var(--white);
+        border: 2px solid var(--border);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                    box-shadow 0.3s ease,
+                    background-color 0.3s ease;
+        flex-direction: column;
+    }
+    
+    
+    
+    .capsule-bubble.current_completed::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background-color: #F8ECF4;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        animation: bubble-pulse-success 2s infinite;
+    }
+    
+    .capsule-bubble.completed::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background-color: #F8ECF4;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        animation: bubble-pulse-success 2s infinite;
+}
+    
+    .capsule-bubble.locked {
+        background-color: var(--bg-light);
+        border-color: var(--border);
+        opacity: 0.7;
+        cursor: default;
+    }
+    
+    .capsule-number {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    
+    .capsule-status {
+        font-size: 0.75rem;
+        color: var(--text-light);
+    }
+    
+    
+    .capsule-bubble.current .capsule-status i {
+        color: var(--white);
+    }
+    
+    .capsule-bubble.locked .capsule-status i {
+        color: var(--text-light);
+    }
+    
+    
+    [data-tooltip]:hover::after {
+  content: attr(data-tooltip) !important;
+  position: absolute !important;
+  bottom: -40px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background-color: rgba(44, 62, 80, 0.95) !important;
+  color: white !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+  z-index: 1000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+[data-tooltip]:hover::before {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border-left: 8px solid transparent !important;
+  border-right: 8px solid transparent !important;
+  border-bottom: 8px solid rgba(44, 62, 80, 0.95) !important;
+  z-index: 1000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+    
+    .journey-footer {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .action-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: var(--energy-light);
+        border-radius: 50px;
+        color: var(--energy);
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 2px 6px rgba(255, 125, 0, 0.2);
+    }
+    
+    .action-tag-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background-color: var(--energy);
+        border-radius: 50%;
+        color: white;
+    }
+    
+    /* Header */
+    .audio-header {
+        position: relative;
+        margin-bottom: 25px;
+    }
+    
+    .audio-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #A11857 0%, #8F3C78 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 16px;
+        line-height: 1.1;
+        position: relative;
+        width: 100%;
+        text-align: center;
+        padding-bottom: 12px;
+    }
+    
+    .audio-title::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(to right, var(--accent), var(--accent-light));
+        border-radius: 2px;
+    }
+    
+    /* Energy Context */
+    .energy-context {
+        text-align: center;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, var(--energy-light), #FFF8F0);
+        padding: 20px;
+        border-radius: var(--radius-lg);
+    }
+    
+    .energy-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--energy);
+        margin-bottom: 8px;
+    }
+    
+    .energy-subtitle {
+        font-size: 1rem;
+        color: var(--text);
+        opacity: 0.9;
+    }
+    
+    /* Image inspirante */
+    .inspiration-image-container {
+        margin: 0 auto 25px;
+        text-align: center;
+        max-width: 200px;
+        max-height: 230px;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+        display:none
+    }
+    
+    .inspiration-image {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .inspiration-image-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .inspiration-image-caption {
+        background-color: rgba(255, 125, 0, 0.07);
+        color: var(--energy);
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+    
+    /* Message d'intention */
+    .intention-message {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px;
+        background-color: var(--primary-light);
+        border-radius: var(--radius-lg);
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(97, 5, 69, 0.1);
+    }
+    
+    .intention-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .intention-text {
+        font-size: 0.95rem;
+        color: var(--text);
+        line-height: 1.5;
+    }
+    
+    /* Player Section */
+    .player-section {
+        background: linear-gradient(145deg, #FFF6E9 0%, #FFF0F5 100%);
+        border-radius: var(--radius-lg);
+        padding: 30px;
+        margin-bottom: 30px;
+        position: relative;
+        border: 1px solid rgba(255, 125, 0, 0.1);
+        box-shadow: 0 10px 25px rgba(255, 125, 0, 0.1);
+    }
+    
+    .play-button-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    
+    .play-button {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--energy) 0%, #FFB400 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(255, 125, 0, 0.3);
+        border: none;
+        position: relative;
+        transition: var(--transition-bounce);
+        z-index: 1;
+    }
+    
+    .play-button:hover {
+        transform: scale(1.08);
+        box-shadow: 0 10px 25px rgba(255, 125, 0, 0.4);
+    }
+    
+    .play-button i {
+        color: white;
+        font-size: 2.5rem;
+        position: relative;
+        z-index: 3;
+    }
+    
+    .play-aura {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: rgba(255, 125, 0, 0.2);
+        border-radius: 50%;
+        z-index: 1;
+        animation: pulse 2s infinite;
+    }
+    
+    .play-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--energy);
+        text-align: center;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1.5);
+            opacity: 0;
+        }
+    }
+    
+    .progress-container {
+        height: 8px;
+        background-color: rgba(255, 125, 0, 0.15);
+        border-radius: 4px;
+        margin-bottom: 10px;
+        position: relative;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        width: 0;
+        border-radius: 4px;
+        background: linear-gradient(to right, var(--energy), #FF5003);
+        transition: width 0.1s linear;
+    }
+    
+    .time-display {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 10px;
+    }
+    
+    /* Insights feature */
+    .insights-feature {
+        margin-top: 25px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.6s ease;
+        background: linear-gradient(145deg, #FFFFFF 0%, #FFF6E9 100%);
+        border-radius: var(--radius-lg);
+        padding: 0;
+        box-shadow: 0 8px 30px rgba(255, 125, 0, 0.15);
+        border-left: 4px solid var(--energy);
+        position: relative;
+    }
+    
+    .insights-feature.visible {
+        opacity: 1;
+        max-height: 500px;
+        padding: 25px;
+        margin-bottom: 30px;
+        transform: translateY(0);
+        animation: gentle-reveal 0.8s ease-out;
+    }
+    
+    @keyframes gentle-reveal {
+        0% { transform: translateY(15px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    
+    .insights-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 125, 0, 0.1);
+        position: relative;
+    }
+    
+    .star-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF7D00 0%, #FF5003 100%);
+        margin-right: 15px;
+        box-shadow: 0 3px 10px rgba(255, 125, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .star-container::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+        opacity: 0.6;
+        animation: rotate 8s linear infinite;
+    }
+    
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .insights-icon {
+        font-size: 1.6rem;
+        color: #FFFFFF;
+        animation: sparkle 3s infinite alternate;
+        position: relative;
+        z-index: 2;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+    
+    @keyframes sparkle {
+        0% { opacity: 0.8; transform: scale(0.9) rotate(-5deg); }
+        25% { opacity: 1; transform: scale(1.1) rotate(0deg); }
+        50% { opacity: 0.9; transform: scale(0.95) rotate(5deg); }
+        100% { opacity: 1; transform: scale(1.05) rotate(0deg); }
+    }
+    
+    .insights-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, var(--energy) 0%, #FFB400 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: 0.5px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .insight-text {
+        font-style: italic;
+        margin-bottom: 20px;
+        color: var(--text);
+        font-size: 1.15rem;
+        line-height: 1.7;
+        position: relative;
+        padding: 0 15px 0 25px;
+        text-shadow: 0 1px 1px rgba(255,255,255,0.7);
+    }
+    
+    .insight-text::before {
+        content: '"';
+        position: absolute;
+        left: 0px;
+        top: -8px;
+        font-size: 3.5rem;
+        color: var(--energy);
+        opacity: 0.15;
+        font-family: Georgia, serif;
+    }
+    
+    .insight-text::after {
+        content: '"';
+        display: inline;
+        margin-left: 5px;
+        font-size: 2.5rem;
+        color: var(--energy);
+        opacity: 0.15;
+        line-height: 0;
+        vertical-align: -0.5em;
+        font-family: Georgia, serif;
+    }
+    
+    .insight-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .insight-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 15px;
+        background: linear-gradient(to right, rgba(255, 125, 0, 0.07), rgba(255, 80, 3, 0.07));
+        color: var(--energy);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(255, 125, 0, 0.05);
+    }
+    
+    .insight-tag:hover {
+        background: linear-gradient(to right, rgba(255, 125, 0, 0.12), rgba(255, 80, 3, 0.12));
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(255, 125, 0, 0.1);
+    }
+    
+    /* Action Card */
+    .action-card {
+        background: linear-gradient(145deg, #E1F2FB 0%, #F0F8FF 100%);
+        border-radius: var(--radius-lg);
+        padding: 0;
+        margin: 30px 0;
+        box-shadow: 0 8px 25px rgba(0, 119, 182, 0.1);
+        border-left: 4px solid var(--action);
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.6s ease;
+    }
+    
+    .action-card.visible {
+        opacity: 1;
+        max-height: 700px;
+        padding: 25px;
+        animation: gentle-reveal 0.8s ease-out;
+    }
+    
+    .action-card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 119, 182, 0.1);
+    }
+    
+    .action-card-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--action) 0%, #005B8C 100%);
+        margin-right: 15px;
+        box-shadow: 0 3px 10px rgba(0, 119, 182, 0.2);
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .action-card-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, var(--action) 0%, #005B8C 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: 0.5px;
+    }
+    
+    .action-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: var(--text);
+        margin-bottom: 25px;
+    }
+    
+    .action-checklist {
+        background-color: rgba(0, 119, 182, 0.05);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .checklist-title {
+        font-weight: 700;
+        color: var(--action);
+        margin-bottom: 15px;
+    }
+    
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .checklist-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 22px;
+        height: 22px;
+        border: 2px solid var(--action);
+        border-radius: 5px;
+        margin-right: 12px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+    
+    .checklist-checkbox:checked {
+        background-color: var(--action);
+    }
+    
+    .checklist-checkbox:checked::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .checklist-checkbox:checked + label {
+        text-decoration: line-through;
+        opacity: 0.7;
+    }
+    
+    .action-timer {
+        display: flex;
+        justify-content: flex-end;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+    
+    .timer-value {
+        font-weight: 600;
+        color: var(--action);
+    }
+    
+    .action-complete-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .action-complete-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 119, 182, 0.2);
+    }
+    
+    .action-complete-btn i {
+        font-size: 1.2rem;
+    }
+    
+    /* Message d'encouragement */
+    .encouragement-message {
+        background-color: var(--primary-light);
+        border-radius: var(--radius-lg);
+        padding: 25px;
+        margin: 30px 0;
+        position: relative;
+    }
+    
+    .quote-icon {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        color: var(--primary);
+        opacity: 0.2;
+        font-size: 2rem;
+    }
+    
+    .quote-text {
+        font-size: 1.1rem;
+        color: var(--primary);
+        font-style: italic;
+        line-height: 1.6;
+        padding-left: 30px;
+    }
+    
+    /* Feedback Section */
+    .feedback-section {
+        text-align: center;
+        padding-top: 20px;
+        margin-top: 30px;
+        border-top: 1px solid var(--border);
+    }
+    
+    .feedback-title {
+        font-size: 1.1rem;
+        color: var(--text);
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    
+    .feedback-options {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-bottom: 15px;
+    }
+    
+    .feedback-button {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition-bounce);
+        position: relative;
+        font-size: 1.8rem;
+    }
+    
+    .feedback-button:hover {
+        transform: scale(1.1);
+        border-color: var(--energy);
+        background-color: var(--energy-light);
+    }
+    
+    .feedback-button.selected {
+        border-color: var(--energy);
+        background-color: var(--energy-light);
+        transform: scale(1.1);
+    }
+    
+    /* Next Capsule Preview */
+    .next-capsule-preview {
+        margin-top: 40px;
+        border-top: 1px solid var(--border);
+        padding-top: 30px;
+    }
+    
+    .next-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .next-content {
+        display: flex;
+        align-items: center;
+        background-color: var(--bg-light);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        gap: 15px;
+    }
+    
+    .next-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(97, 5, 69, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .next-info {
+        flex: 1;
+    }
+    
+    .next-name {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 5px;
+    }
+    
+    .next-description {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 10px;
+    }
+    
+    .next-availability {
+        font-size: 0.85rem;
+        color: var(--primary);
+    }
+    
+    .next-time {
+        font-weight: 600;
+    }
+    
+    /* Feedback Input Options */
+    .feedback-input-selector {
+        display: flex;
+        justify-content: center;
+        margin: 15px auto;
+        background-color: var(--energy-light);
+        border-radius: 20px;
+        padding: 3px;
+        width: fit-content;
+        max-width: 250px;
+    }
+    
+    .input-option {
+        padding: 8px 15px;
+        border-radius: 17px;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .input-option.active {
+        background-color: var(--energy);
+        color: white;
+        box-shadow: 0 2px 5px rgba(255, 125, 0, 0.2);
+    }
+    
+    .input-option:not(.active):hover {
+        background-color: rgba(255, 125, 0, 0.1);
+    }
+    
+    /* Feedback Text Container */
+    .feedback-text-container {
+        margin: 0 auto 20px;
+        max-width: 100%;
+        height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        opacity: 0;
+    }
+    
+    .feedback-text-container.visible {
+        height: 130px;
+        opacity: 1;
+    }
+    
+    .feedback-text {
+        width: 100%;
+        height: 80px;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        resize: none;
+        font-size: 0.95rem;
+        transition: var(--transition);
+    }
+    
+    .feedback-text:focus {
+        outline: none;
+        border-color: var(--energy);
+        box-shadow: 0 0 0 3px rgba(255, 125, 0, 0.1);
+    }
+    
+    .feedback-send {
+        background-color: var(--energy);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 8px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .feedback-send:hover {
+        background-color: #FF5003;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(255, 125, 0, 0.2);
+    }
+    
+    /* Voice Feedback Styles */
+    .feedback-voice-container {
+        margin: 0 auto 20px;
+        max-width: 100%;
+        height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        opacity: 0;
+    }
+    
+    .feedback-voice-container.visible {
+        height: auto;
+        opacity: 1;
+        padding: 15px 0;
+    }
+    
+    .listen-button-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    
+    .listen-button {
+        width: 110px;
+        height: 110px;
+        background: linear-gradient(135deg, var(--energy) 0%, #FF5003 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: white;
+        box-shadow: 0 5px 20px rgba(255, 125, 0, 0.3);
+    }
+    
+    .listen-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(255, 125, 0, 0.4);
+    }
+    
+    .listen-button i {
+        font-size: 2.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .pulse-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: rgba(255, 125, 0, 0.3);
+        z-index: 1;
+    }
+    
+    @keyframes pulseRing {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.8;
+        }
+        100% {
+            transform: scale(1.5);
+            opacity: 0;
+        }
+    }
+    
+    .listen-state {
+        text-align: center;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 15px;
+    }
+    
+    /* Audio Wave */
+    .audio-wave {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60px;
+        margin: 15px 0;
+        gap: 5px;
+    }
+    
+    .wave-bar {
+        background-color: var(--energy);
+        width: 4px;
+        height: 100%;
+        border-radius: 3px;
+        animation: sound 0ms -800ms linear infinite alternate;
+    }
+    
+    @keyframes sound {
+        0% { height: 10%; }
+        100% { height: 100%; }
+    }
+    
+    .wave-bar:nth-child(1) { animation-duration: 474ms; }
+    .wave-bar:nth-child(2) { animation-duration: 433ms; }
+    .wave-bar:nth-child(3) { animation-duration: 407ms; }
+    .wave-bar:nth-child(4) { animation-duration: 458ms; }
+    .wave-bar:nth-child(5) { animation-duration: 400ms; }
+    .wave-bar:nth-child(6) { animation-duration: 427ms; }
+    .wave-bar:nth-child(7) { animation-duration: 441ms; }
+    .wave-bar:nth-child(8) { animation-duration: 419ms; }
+    .wave-bar:nth-child(9) { animation-duration: 487ms; }
+    .wave-bar:nth-child(10) { animation-duration: 442ms; }
+    
+    /* Timer */
+    .timer {
+        display: flex;
+        justify-content: center;
+        margin: 15px 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--energy);
+        font-variant-numeric: tabular-nums;
+    }
+    
+    /* Animation */
+    @keyframes emphasize-current {
+        0% { box-shadow: 0 0 0 5px rgba(255, 125, 0, 0.15), 0 4px 10px rgba(255, 125, 0, 0.2); }
+        100% { box-shadow: 0 0 0 8px rgba(255, 125, 0, 0.3), 0 6px 15px rgba(255, 125, 0, 0.35); }
+    }
+    
+    @keyframes emphasize-success {
+        0% { box-shadow: 0 0 0 5px rgba(97, 5, 69, 0.15); }
+        100% { box-shadow: 0 0 0 8px rgba(97, 5, 69, 0.3); }
+    }
+    
+    @keyframes bubble-pulse {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+        50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    }
+    
+    @keyframes bubble-pulse-success {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+        50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.1; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    }
+    
+    @keyframes gentle-glow {
+        0% { text-shadow: 0 0 5px rgba(249, 184, 114, 0.5); }
+        100% { text-shadow: 0 0 15px rgba(249, 184, 114, 0.8); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .journey-progression {
+            padding: 20px 15px;
+        }
+        
+        .capsule-bubble {
+            width: 48px;
+            height: 48px;
+        }
+        
+        
+        .capsule-number {
+            font-size: 0.8rem;
+        }
+        
+        .audio-container {
+            padding: 25px 20px 20px;
+        }
+        
+        .audio-title {
+            font-size: 2rem;
+        }
+        
+        .player-section {
+            padding: 25px 20px;
+        }
+        
+        .play-button {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .play-button i {
+            font-size: 2rem;
+        }
+        
+        .feedback-options {
+            gap: 20px;
+        }
+        
+        .feedback-button {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .journey-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .journey-stats {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .capsule-bubble {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .capsule-bubble.current {
+            transform: scale(1.15);
+        }
+        
+        .capsule-bubble[data-tooltip]:hover::after {
+            bottom: -25px;
+            font-size: 0.7rem;
+        }
+        
+        .play-button {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .play-button i {
+            font-size: 1.8rem;
+        }
+        
+        .play-label {
+            font-size: 1rem;
+        }
+
+        /* Fin des styles CSS responsifs */
+        .feedback-options {
+            gap: 15px;
+        }
+        
+        .feedback-button {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+        
+        .next-content {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .next-icon {
+            margin-bottom: 10px;
+        }
+    }
+
+    /* Action Card - Transition du bleu vers le bordeaux/orange */
+
+/* 1. Fond de la carte */
+.action-card {
+    background: linear-gradient(145deg, #F8ECF4 0%, #FFF4FA 100%); /* Dégradé de bordeaux clair */
+    border-left: 4px solid var(--primary-medium); /* Utilise la couleur bordeaux moyenne */
+    box-shadow: 0 8px 25px rgba(97, 5, 69, 0.1); /* Ajuste l'ombre avec la couleur bordeaux */
+}
+
+/* 2. Icône de la carte */
+.action-card-icon {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Dégradé de bordeaux */
+    box-shadow: 0 3px 10px rgba(97, 5, 69, 0.2); /* Ombre bordeaux */
+}
+
+/* 3. Titre de la carte */
+.action-card-title {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Dégradé de bordeaux */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* 4. Liste de vérification */
+.action-checklist {
+    background-color: rgba(97, 5, 69, 0.05); /* Fond légèrement teinté de bordeaux */
+}
+
+.checklist-title {
+    color: var(--primary); /* Couleur bordeaux */
+}
+
+.checklist-checkbox {
+    border: 2px solid var(--primary); /* Bordure bordeaux */
+}
+
+.checklist-checkbox:checked {
+    background-color: var(--primary); /* Fond bordeaux quand coché */
+}
+
+/* 5. Chronomètre */
+.timer-value {
+    font-weight: 600;
+    color: var(--primary); /* Texte bordeaux */
+}
+
+/* 6. Bouton de complétion */
+.action-complete-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); /* Dégradé de bordeaux */
+}
+
+.action-complete-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(97, 5, 69, 0.2); /* Ombre bordeaux plus prononcée au survol */
+}
+
+/* 7. Modification de l'animation pour le bouton quand toutes les cases sont cochées */
+@keyframes pulse-theme {
+    0% { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%); }
+    100% { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
+}
+
+/* Version alternative avec validation plus visible */
+.capsule-bubble.completed {
+    background-color: #F8ECF4; /* Fond bordeaux très clair */
+    border-color: #8F3C78; /* Bordure bordeaux moyenne */
+    position: relative; /* Pour positionner le mini-badge de validation */
+}
+
+/* Icône de validation dans la bulle */
+.capsule-bubble.completed .capsule-status i {
+    color: #8F3C78; /* Icône de validation en bordeaux */
+}
+
+/* Bulle actuelle complétée */
+.capsule-bubble.current_completed {
+    transform: scale(1.25);
+    background-color: #F8ECF4; /* Bordeaux clair */
+    border-color: #8F3C78; /* Bordeaux moyen */
+    box-shadow: 0 0 0 5px rgba(97, 5, 69, 0.15);
+    animation: emphasize-success 2s infinite alternate;
+}
+
+.capsule-bubble.current_completed::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-color: rgba(97, 5, 69, 0.1);
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    animation: bubble-pulse-success 2s infinite;
+}
+
+/* Animation pour la bulle complétée */
+@keyframes emphasize-success {
+    0% { box-shadow: 0 0 0 5px rgba(97, 5, 69, 0.15); }
+    100% { box-shadow: 0 0 0 8px rgba(97, 5, 69, 0.3); }
+}
+
+@keyframes bubble-pulse-success {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+}
+
+/* Marqueur de bulle complétée (point en bas) */
+.capsule-completed-marker {
+    background-color: #8F3C78 !important; /* Point bordeaux au lieu de vert */
+}
+
+.capsule-bubble.completed .capsule-status i {
+    color: #8F3C78; /* Icône en bordeaux */
+}
+
+/* Style pour les icônes de statut dans les bulles */
+.capsule-bubble .capsule-status i {
+    font-size: 1rem; /* Taille légèrement plus grande */
+    transition: all 0.2s ease;
+}
+
+/* Style spécifique pour chaque statut */
+.capsule-bubble.current .capsule-status i.fa-headphones {
+    color: white; /* Contraste sur fond bordeaux/orange */
+}
+
+.capsule-bubble.unlocked .capsule-status i.fa-headphones-alt {
+    color: #8F3C78; /* Icône en bordeaux pour disponible */
+}
+
+.capsule-bubble.locked .capsule-status i.fa-lock {
+    color: #999; /* Gris neutre pour verrouillé */
+}
+
+.alert-success {
+    background-color: var(--primary-light);
+    border-color: var(--primary-medium);
+    color: var(--primary);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Variables pour le feedback vocal
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let audioContext;
+    let analyzer;
+    let audioBlob = null;
+    let audioURL = null;
+    let animationFrame;
+    let audioStream;
+    let recordingStartTime = null;
+    let recordingTimer = null;
+    let feedbackAudioTranscript = "";
+    const MAX_RECORDING_TIME = 60; // 1 minute maximum
+    
+    // Créer un objet global contenant les données des capsules
+    window.capsuleData = [
+    {% if capsule.all_capsules and capsule.all_capsules|length > 0 %}
+        {% for cap in capsule.all_capsules %}
+        {
+            id: {{ cap.id }},
+            capsule_id: {{ cap.capsule_id }},
+            sequence_number: {{ cap.sequence_number }},
+            title: "{{ cap.title }}",
+            access_token: "{{ cap.access_token }}",
+            is_listened: {% if cap.is_listened %}true{% else %}false{% endif %}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    {% endif %}
+    ];
+    
+    // Fonction pour déboguer les données des capsules
+    function debugCapsuleData() {
+        console.log("capsuleData:", window.capsuleData);
+        console.log("Capsules sur la page:", document.querySelectorAll('.capsule-bubble').length);
+        
+        document.querySelectorAll('.capsule-bubble').forEach(bubble => {
+            const sequence = bubble.getAttribute('data-sequence');
+            const token = bubble.getAttribute('data-token');
+            const status = bubble.classList.contains('completed') ? 'completed' :
+                           bubble.classList.contains('current')   ? 'current'   :
+                           bubble.classList.contains('unlocked')  ? 'unlocked'  :
+                           bubble.classList.contains('locked')    ? 'locked'    :
+                                                                  'autre';
+            console.log(`Capsule ${sequence}, status: ${status}, token: ${token || 'non défini'}`);
+        });
+    }
+    
+    // Appeler la fonction de débogage
+    debugCapsuleData();
+
+    // Elements
+    const playButton = document.getElementById('playButton');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const durationDisplay = document.getElementById('duration');
+    const audioElement = document.getElementById('audioElement');
+    const feedbackExcellent = document.getElementById('feedbackExcellent');
+    const feedbackGood = document.getElementById('feedbackGood');
+    const feedbackNeutral = document.getElementById('feedbackNeutral');
+    const feedbackBad = document.getElementById('feedbackBad');
+    const feedbackTerrible = document.getElementById('feedbackTerrible');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackTextContainer = document.getElementById('feedbackTextContainer');
+    const feedbackText = document.getElementById('feedbackText');
+    const feedbackSend = document.getElementById('feedbackSend');
+    const insightsFeature = document.getElementById('insightsFeature');
+    const actionCard = document.getElementById('actionCard');
+    const actionCompleteBtn = document.getElementById('actionCompleteBtn');
+    
+    // Éléments pour le feedback vocal
+    const feedbackInputSelector = document.getElementById('feedbackInputSelector');
+    const feedbackVoiceContainer = document.getElementById('feedbackVoiceContainer');
+    const feedbackVoiceBtn = document.getElementById('feedbackVoiceBtn');
+    const audioWave = document.querySelector('.audio-wave');
+    const listenStateReady = document.querySelector('.listen-state .ready');
+    const listenStateRecording = document.querySelector('.listen-state .recording');
+    const feedbackTimerDisplay = document.getElementById('feedbackTimerDisplay');
+    const feedbackAudioPlayer = document.getElementById('feedbackAudioPlayer');
+    const feedbackAudioElement = document.getElementById('feedbackAudioElement');
+    const feedbackDeleteAudio = document.getElementById('feedbackDeleteAudio');
+    const feedbackVoiceSend = document.getElementById('feedbackVoiceSend');
+    const pulseRing = document.querySelector('.pulse-ring');
+    
+    // Variables globales
+    let isPlaying = false;
+    let hasListened = false;
+    let hasFeedback = false;
+    let selectedRating = null;
+    const listenSessionId = "{{ listen_session_id }}";
+    const token = "{{ capsule.access_token }}";
+    let listenTimer = null;
+    let progressTracking = {};
+    
+    // Nouvelle variable pour suivre l'enregistrement à 90%
+    let hasRecorded90PercentListen = false;
+    
+    // Identifiants de stockage local
+    const capsuleStorageId = `capsule-${token.substr(0, 8)}`;
+    const feedbackStorageId = `feedback-${capsuleStorageId}`;
+    const feedbackTextStorageId = `feedback-text-${capsuleStorageId}`;
+    const actionCompletedStorageId = `action-completed-${capsuleStorageId}`;
+    
+    // Éléments de la checklist
+    const checklistItems = document.querySelectorAll('.checklist-checkbox');
+    
+    // Suivi de progression
+    function trackProgress() {
+        if (!isPlaying) return;
+        const currentTime = Math.round(audioElement.currentTime);
+        const duration = Math.round(audioElement.duration);
+        const key = `${currentTime}`;
+        
+        // Calculer le pourcentage de progression
+        const progressPercent = (currentTime / duration) * 100;
+        
+        // Vérifier si on a atteint 90% et qu'on n'a pas encore enregistré
+        if (progressPercent >= 90 && !hasRecorded90PercentListen) {
+            hasRecorded90PercentListen = true;
+            console.log("90% atteint - Enregistrement de l'écoute complète");
+            
+            // Enregistrer l'écoute complète dans l'historique
+            fetch('{{ url_for("audio_capsule.record_listen") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ 
+                    token, 
+                    duration_seconds: currentTime, 
+                    completion_percentage: Math.round(progressPercent),
+                    listenSessionId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Écoute enregistrée à 90%:', data);
+                
+                // Mettre à jour visuellement si nécessaire
+                const currentBubble = document.querySelector('.capsule-bubble.current');
+                if (currentBubble && !currentBubble.classList.contains('completed')) {
+                    currentBubble.classList.add('current_completed');
+                }
+            })
+            .catch(err => console.error('Erreur enregistrement écoute:', err));
+        }
+        
+        // Continuer avec le tracking normal (pour les points intermédiaires)
+        if (progressTracking[key]) return;
+        progressTracking[key] = true;
+        fetch('{{ url_for("audio_capsule.track_progress") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ token, currentTime, duration, listenSessionId })
+        })
+        .then(res => res.json())
+        .then(data => console.log('Progression enregistrée:', data))
+        .catch(err => console.error('Erreur progression:', err));
+    }
+    
+    // Play/Pause
+    playButton.addEventListener('click', () => {
+        if (isPlaying) {
+            audioElement.pause();
+            playButton.innerHTML = '<div class="play-aura"></div><i class="fas fa-play"></i>';
+            clearInterval(listenTimer);
+            listenTimer = null;
+        } else {
+            audioElement.play().then(() => {
+                playButton.innerHTML = '<div class="play-aura"></div><i class="fas fa-pause"></i>';
+                if (!hasListened) {
+                    hasListened = true;
+                    const listened = JSON.parse(localStorage.getItem('listenedCapsules')||'[]');
+                    if (!listened.includes(capsuleStorageId)) {
+                        listened.push(capsuleStorageId);
+                        localStorage.setItem('listenedCapsules', JSON.stringify(listened));
+                        localStorage.setItem('rating-' + capsuleStorageId, selectedRating);
+                    }
+                }
+                listenTimer = setInterval(trackProgress, 5000);
+            }).catch(e => {
+                console.error('Erreur lecture audio:', e);
+                alert("{{ _('Impossible de lire l\'audio. Veuillez vérifier votre connexion et réessayer.') }}");
+            });
+        }
+        isPlaying = !isPlaying;
+    });
+    
+    // Mise à jour barre de progression
+    audioElement.addEventListener('timeupdate', () => {
+        const currentTime = audioElement.currentTime;
+        const duration = audioElement.duration;
+        
+        // Si la durée est définie (donc pas NaN)
+        if (duration) {
+            const pct = (currentTime / duration) * 100;
+            progressBar.style.width = pct + '%';
+            
+            // Vérifier si on a atteint 90% et qu'on n'a pas encore enregistré
+            if (pct >= 90 && !hasRecorded90PercentListen && currentTime > 10) { // Éviter les faux positifs en début de lecture
+                hasRecorded90PercentListen = true;
+                console.log("90% atteint - Enregistrement de l'écoute complète");
+                
+                // Enregistrer l'écoute dans l'historique
+                fetch('{{ url_for("audio_capsule.record_listen") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ 
+                        token, 
+                        duration_seconds: Math.round(currentTime), 
+                        completion_percentage: Math.round(pct),
+                        listenSessionId
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Écoute enregistrée à 90%:', data);
+                    
+                    // Mettre à jour visuellement si nécessaire
+                    const currentBubble = document.querySelector('.capsule-bubble.current');
+                    if (currentBubble && !currentBubble.classList.contains('completed')) {
+                        currentBubble.classList.add('current_completed');
+                    }
+                })
+                .catch(err => console.error('Erreur enregistrement écoute:', err));
+            }
+        }
+        
+        // Mise à jour de l'affichage du temps
+        const m = Math.floor(currentTime/60).toString().padStart(2,'0');
+        const s = Math.floor(currentTime%60).toString().padStart(2,'0');
+        currentTimeDisplay.textContent = `${m}:${s}`;
+    });
+    
+    audioElement.addEventListener('loadedmetadata', () => {
+        const m = Math.floor(audioElement.duration/60).toString().padStart(2,'0');
+        const s = Math.floor(audioElement.duration%60).toString().padStart(2,'0');
+        durationDisplay.textContent = `${m}:${s}`;
+    });
+    
+    progressContainer.addEventListener('click', e => {
+        const pct = e.offsetX/ progressContainer.offsetWidth;
+        audioElement.currentTime = audioElement.duration * pct;
+    });
+    
+    // Fin de lecture
+    audioElement.addEventListener('ended', () => {
+        playButton.innerHTML = '<div class="play-aura"></div><i class="fas fa-redo"></i>';
+        isPlaying = false;
+        clearInterval(listenTimer);
+        setTimeout(() => {
+            if (insightsFeature) insightsFeature.classList.add('visible');
+            // Après 2 secondes, afficher la carte d'action
+            setTimeout(() => {
+                if (actionCard) actionCard.classList.add('visible');
+            }, 2000);
+        }, 500);
+        
+        // S'assurer que l'écoute est bien enregistrée à 100%
+        if (!hasRecorded90PercentListen) {
+            hasRecorded90PercentListen = true;
+            
+            // Enregistrer l'écoute complète
+            fetch('{{ url_for("audio_capsule.record_listen") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ 
+                    token, 
+                    duration_seconds: Math.round(audioElement.duration), 
+                    completion_percentage: 100,
+                    listenSessionId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Écoute complète enregistrée:', data);
+                
+                // Mettre à jour visuellement
+                const currentBubble = document.querySelector('.capsule-bubble.current');
+                if (currentBubble) {
+                    currentBubble.classList.add('current_completed');
+                }
+            })
+            .catch(err => console.error('Erreur enregistrement écoute finale:', err));
+        }
+        
+        // Enregistrer 100%
+        fetch('{{ url_for("audio_capsule.track_progress") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ token, currentTime: Math.round(audioElement.duration), duration: Math.round(audioElement.duration), listenSessionId })
+        });
+    });
+    
+    // Gestion des items de la checklist
+    checklistItems.forEach(item => {
+        item.addEventListener('change', () => {
+            saveChecklistState();
+            
+            // Vérifier si tous les items sont cochés
+            const allChecked = Array.from(checklistItems).every(checkbox => checkbox.checked);
+            
+            // Si tous les items sont cochés, mettre en surbrillance le bouton d'achèvement
+            if (allChecked) {
+                actionCompleteBtn.classList.add('all-checked');
+                actionCompleteBtn.innerHTML = '<i class="fas fa-check-circle"></i> Tout est prêt, confirmer mon action';
+            } else {
+                actionCompleteBtn.classList.remove('all-checked');
+                actionCompleteBtn.innerHTML = '<i class="fas fa-check-circle"></i> J\'ai accompli cette action';
+            }
+        });
+    });
+    
+    // Sauvegarder l'état de la checklist
+    function saveChecklistState() {
+        const checklistState = Array.from(checklistItems).map(item => item.checked);
+        localStorage.setItem(`checklist-${capsuleStorageId}`, JSON.stringify(checklistState));
+    }
+    
+    // Restaurer l'état de la checklist
+    function restoreChecklistState() {
+        const savedState = localStorage.getItem(`checklist-${capsuleStorageId}`);
+        if (savedState) {
+            const checklistState = JSON.parse(savedState);
+            checklistItems.forEach((item, index) => {
+                if (index < checklistState.length) {
+                    item.checked = checklistState[index];
+                }
+            });
+            
+            // Vérifier si tous les items sont cochés
+            const allChecked = checklistState.every(state => state);
+            if (allChecked) {
+                actionCompleteBtn.classList.add('all-checked');
+                actionCompleteBtn.innerHTML = '<i class="fas fa-check-circle"></i> Tout est prêt, confirmer mon action';
+            }
+        }
+    }
+    
+    // Action accomplissement
+    if (actionCompleteBtn) {
+        actionCompleteBtn.addEventListener('click', () => {
+            // Marquer l'action comme accomplie
+            localStorage.setItem(actionCompletedStorageId, 'true');
+            
+            // Ajouter une classe d'animation
+            actionCompleteBtn.classList.add('action-completed');
+            actionCompleteBtn.innerHTML = '<i class="fas fa-check-circle"></i> Action accomplie !';
+            
+            // Enregistrer l'accomplissement côté serveur
+            fetch('{{ url_for("audio_capsule.record_listen") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ 
+                    token, 
+                    action_completed: true,
+                    listenSessionId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Action enregistrée:', data);
+                
+                // Après quelques secondes, afficher un message de félicitations
+                setTimeout(() => {
+                    const actionContent = actionCard.querySelector('.action-card-content');
+                    if (actionContent) {
+                        actionContent.innerHTML = `
+                            <div class="completion-message">
+                                <div class="completion-icon">🎉</div>
+                                <h3 class="completion-title">Bravo pour ton action !</h3>
+                                <p class="completion-text">Tu viens de faire un pas concret vers ton objectif. Cet élan d'action va créer une dynamique positive pour la suite de ton parcours.</p>
+
+                            </div>
+                        `;
+                        
+                        // Ajouter du CSS pour le message de complétion
+                        const styleEl = document.createElement('style');
+                        styleEl.textContent = `
+                            .completion-message {
+                                text-align: center;
+                                padding: 20px 0;
+                            }
+                            .completion-icon {
+                                font-size: 3rem;
+                                margin-bottom: 20px;
+                                animation: pop 0.5s ease;
+                            }
+                            @keyframes pop {
+                                0% { transform: scale(0); }
+                                70% { transform: scale(1.2); }
+                                100% { transform: scale(1); }
+                            }
+                            .completion-title {
+                                color: #8F3C78;
+                                font-size: 1.5rem;
+                                margin-bottom: 15px;
+                            }
+                            .completion-text {
+                                font-size: 1.1rem;
+                                line-height: 1.6;
+                                margin-bottom: 25px;
+                            }
+                            .next-action-preview {
+                                background-color: var(--primary-light);
+                                padding: 15px;
+                                border-radius: var(--radius-md);
+                            }
+                        `;
+                        document.head.appendChild(styleEl);
+                    }
+                }, 1500);
+            })
+            .catch(err => console.error('Erreur enregistrement action:', err));
+        });
+    }
+    
+    // Vérifier si l'action a déjà été accomplie
+    function checkActionStatus() {
+        const isActionCompleted = localStorage.getItem(actionCompletedStorageId) === 'true';
+        
+        if (isActionCompleted && actionCard && actionCompleteBtn) {
+            actionCompleteBtn.classList.add('action-completed');
+            actionCompleteBtn.innerHTML = '<i class="fas fa-check-circle"></i> Action accomplie !';
+            actionCompleteBtn.disabled = true;
+            
+            // Cocher toutes les cases
+            checklistItems.forEach(item => {
+                item.checked = true;
+                item.disabled = true;
+            });
+            
+            // Modifier le contenu pour montrer que c'est accompli
+            const actionContent = actionCard.querySelector('.action-card-content');
+            if (actionContent) {
+                actionContent.innerHTML = `
+                    <div class="completion-message">
+                        <div class="completion-icon">🎉</div>
+                        <h3 class="completion-title">Action déjà accomplie !</h3>
+                        <p class="completion-text">Tu as déjà réalisé cette action. Continue sur ta lancée pour maintenir cette belle dynamique.</p>
+                    </div>
+                `;
+                
+                // Ajouter du CSS pour le message de complétion s'il n'existe pas déjà
+                if (!document.querySelector('style[data-completion-styles]')) {
+                    const styleEl = document.createElement('style');
+                    styleEl.setAttribute('data-completion-styles', 'true');
+                    styleEl.textContent = `
+                        .completion-message {
+                            text-align: center;
+                            padding: 20px 0;
+                        }
+                        .completion-icon {
+                            font-size: 3rem;
+                            margin-bottom: 20px;
+                        }
+                        .completion-title {
+                            color:#8F3C78;
+                            font-size: 1.5rem;
+                            margin-bottom: 15px;
+                        }
+                        .completion-text {
+                            font-size: 1.1rem;
+                            line-height: 1.6;
+                            margin-bottom: 25px;
+                        }
+                        .next-action-preview {
+                            background-color: var(--primary-light);
+                            padding: 15px;
+                            border-radius: var(--radius-md);
+                        }
+                    `;
+                    document.head.appendChild(styleEl);
+                }
+            }
+        }
+    }
+    
+    // Feedback
+    function handleFeedback(type) {
+        feedbackTitle.textContent = "{{ _('Merci pour ton retour !') }}";
+        hasFeedback = true;
+        localStorage.setItem(feedbackStorageId, type);
+        
+        // Afficher les options d'input uniquement après sélection d'une émotion
+        if (feedbackInputSelector) {
+            feedbackInputSelector.style.display = 'flex';
+        }
+    }
+    
+    const feedbackButtons = [feedbackExcellent, feedbackGood, feedbackNeutral, feedbackBad, feedbackTerrible];
+    feedbackButtons.forEach(btn => {
+        if (!btn) return;
+        
+        btn.addEventListener('click', () => {
+            // Retirer la classe selected de tous les boutons
+            feedbackButtons.forEach(b => b.classList.remove('selected'));
+            
+            // Ajouter la classe selected au bouton cliqué
+            btn.classList.add('selected');
+            
+            // Récupérer la valeur de notation
+            selectedRating = btn.getAttribute('data-rating');
+            
+            // Déterminer le type pour le stockage local
+            let feedbackType = 'neutral';
+            if (btn === feedbackExcellent || btn === feedbackGood) {
+                feedbackType = 'positive';
+            } else if (btn === feedbackBad || btn === feedbackTerrible) {
+                feedbackType = 'negative';
+            }
+            
+            // Appeler la fonction de traitement
+            handleFeedback(feedbackType);
+            
+            // Afficher les options de saisie
+            if (feedbackInputSelector) {
+                feedbackInputSelector.style.display = 'flex';
+            }
+            
+            // Montrer le champ texte par défaut
+            if (feedbackTextContainer) {
+                feedbackTextContainer.classList.add('visible');
+            }
+        });
+    });
+
+    
+    if (feedbackSend) {
+    feedbackSend.addEventListener('click', () => {
+        const content = feedbackText.value.trim();
+        if (content) localStorage.setItem(feedbackTextStorageId, content);
+        fetch('{{ url_for("audio_capsule.submit_feedback") }}', {
+            method: 'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token() }}'},
+            body: JSON.stringify({ token, rating:selectedRating, feedback:content, listenSessionId })
+        })
+        .then(r=>r.json())
+        .then(d=>{
+            console.log('Feedback enregistré:', d);
+            feedbackTextContainer.classList.remove('visible');
+            feedbackTitle.textContent = "{{ _('Merci pour ton retour détaillé !') }}";
+            
+            // Ajouter ce bloc d'alerte ici
+            const feedbackAlert = document.createElement('div');
+            feedbackAlert.className = 'alert-audio alert-success mt-3 mb-3';
+            feedbackAlert.innerHTML = `<p>✅ Ton feedback a bien été enregistré. Merci de ta contribution !</p>`;
+            feedbackTitle.parentNode.insertBefore(feedbackAlert, feedbackTitle.nextSibling);
+            
+            // Faire disparaître l'alerte après 5 secondes
+            setTimeout(() => {
+                feedbackAlert.style.opacity = '0';
+                setTimeout(() => feedbackAlert.remove(), 500);
+            }, 5000);
+        })
+        .catch(e=>{
+            console.error('Erreur feedback:',e); 
+            alert("{{ _('Une erreur s\'est produite lors de l\'envoi de votre feedback.') }}");
+        });
+    });
+}
+    
+    // Bascule entre les modes de saisie
+    if (feedbackInputSelector) {
+        const inputOptions = feedbackInputSelector.querySelectorAll('.input-option');
+        inputOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const inputType = this.getAttribute('data-input');
+                
+                // Mettre à jour les classes actives
+                inputOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Afficher le conteneur approprié
+                if (inputType === 'text') {
+                    if (feedbackVoiceContainer) {
+                        feedbackVoiceContainer.classList.remove('visible');
+                        setTimeout(() => {
+                            feedbackVoiceContainer.style.display = 'none';
+                            feedbackTextContainer.style.display = 'block';
+                            feedbackTextContainer.classList.add('visible');
+                        }, 300);
+                    }
+                    
+                    // Arrêter l'enregistrement s'il est en cours
+                    if (isRecording) {
+                        stopRecording();
+                    }
+                } else {
+                    if (feedbackTextContainer) {
+                        feedbackTextContainer.classList.remove('visible');
+                        setTimeout(() => {
+                            feedbackTextContainer.style.display = 'none';
+                            feedbackVoiceContainer.style.display = 'block';
+                            setTimeout(() => {
+                                feedbackVoiceContainer.classList.add('visible');
+                            }, 10);
+                        }, 300);
+                    }
+                }
+            });
+        });
+    }
+    
+    // Démarrer l'animation pulse pour le bouton d'enregistrement
+    function startPulseAnimation() {
+        if (pulseRing) {
+            pulseRing.style.animation = 'pulseRing 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite';
+        }
+    }
+    
+    // Arrêter l'animation pulse
+    function stopPulseAnimation() {
+        if (pulseRing) {
+            pulseRing.style.animation = 'none';
+        }
+    }
+    
+    // Fonctions du timer
+    function startTimer() {
+        recordingStartTime = new Date();
+        recordingTimer = setInterval(updateTimer, 1000);
+        updateTimer(); // Mettre à jour immédiatement
+    }
+    
+    function updateTimer() {
+        const now = new Date();
+        const timeDiff = Math.floor((now - recordingStartTime) / 1000);
+        const minutes = Math.floor(timeDiff / 60);
+        const seconds = timeDiff % 60;
+        
+        if (feedbackTimerDisplay) {
+            feedbackTimerDisplay.textContent = 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(seconds).padStart(2, '0');
+        }
+        
+        // Arrêt automatique après la durée définie
+        if (timeDiff >= MAX_RECORDING_TIME && isRecording) {
+            stopRecording();
+        }
+    }
+    
+    function stopTimer() {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+    }
+    
+    // Gestion de l'enregistrement vocal
+    if (feedbackVoiceBtn) {
+        feedbackVoiceBtn.addEventListener('click', toggleVoiceRecording);
+        
+        // Initialiser l'animation pulse
+        startPulseAnimation();
+    }
+    
+    // Suppression de l'audio enregistré
+    if (feedbackDeleteAudio) {
+        feedbackDeleteAudio.addEventListener('click', function() {
+            if (feedbackAudioElement) {
+                feedbackAudioElement.src = '';
+                feedbackAudioPlayer.style.display = 'none';
+                feedbackVoiceSend.style.display = 'none';
+                audioBlob = null;
+                audioURL = null;
+                feedbackAudioTranscript = "";
+            }
+        });
+    }
+    
+    // Fonctions pour l'enregistrement vocal
+    function toggleVoiceRecording() {
+        if (!isRecording) {
+            startRecording();
+        } else {
+ stopRecording();
+        }
+    }
+    
+    async function startRecording() {
+        try {
+            // Réinitialiser l'état
+            audioChunks = [];
+            audioBlob = null;
+            audioURL = null;
+            
+            // Cacher le lecteur audio s'il était visible
+            if (feedbackAudioPlayer) {
+                feedbackAudioPlayer.style.display = 'none';
+            }
+            
+            if (feedbackVoiceSend) {
+                feedbackVoiceSend.style.display = 'none';
+            }
+            
+            // Demander l'autorisation d'utiliser le microphone
+            audioStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { 
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+               } 
+           });
+           
+           // Changer l'interface visuelle
+           feedbackVoiceBtn.innerHTML = '<div class="pulse-ring"></div><i class="fas fa-stop"></i>';
+           feedbackVoiceBtn.classList.add('recording');
+           
+           if (listenStateReady) listenStateReady.style.display = 'none';
+           if (listenStateRecording) listenStateRecording.style.display = 'block';
+           if (audioWave) audioWave.style.display = 'flex';
+           if (feedbackTimerDisplay) feedbackTimerDisplay.style.display = 'flex';
+           
+           startPulseAnimation();
+           startTimer();
+           
+           // Créer un nouvel enregistreur média
+           mediaRecorder = new MediaRecorder(audioStream, {
+               mimeType: 'audio/webm;codecs=opus',
+               audioBitsPerSecond: 128000 // 128kbps
+           });
+           
+           // Collecter les données audio
+           mediaRecorder.addEventListener('dataavailable', event => {
+               if (event.data.size > 0) {
+                   audioChunks.push(event.data);
+               }
+           });
+           
+           // Lorsque l'enregistrement est terminé
+           mediaRecorder.addEventListener('stop', async () => {
+               // Arrêter le timer
+               stopTimer();
+               stopPulseAnimation();
+               
+               // Masquer les éléments d'enregistrement
+               if (listenStateRecording) listenStateRecording.style.display = 'none';
+               if (listenStateReady) listenStateReady.style.display = 'block';
+               if (audioWave) audioWave.style.display = 'none';
+               if (feedbackTimerDisplay) feedbackTimerDisplay.style.display = 'none';
+               
+               // Convertir les chunks audio en blob
+               audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+               
+               // Créer une URL pour le blob
+               audioURL = URL.createObjectURL(audioBlob);
+               
+               // Afficher le lecteur audio
+               if (feedbackAudioPlayer && feedbackAudioElement) {
+                   feedbackAudioElement.src = audioURL;
+                   feedbackAudioPlayer.style.display = 'flex';
+                   feedbackVoiceSend.style.display = 'block';
+               }
+               
+               try {
+                   // Essayer de transcrire l'audio (si l'API de transcription est disponible)
+                   const formData = new FormData();
+                   formData.append('audio', audioBlob, 'feedback.webm');
+                   
+                   const response = await fetch('/api/transcribe-whisper', {
+                       method: 'POST',
+                       headers: {
+                           'X-CSRFToken': '{{ csrf_token() }}'
+                       },
+                       body: formData
+                   });
+                   
+                   const result = await response.json();
+                   
+                   if (result.success) {
+                       feedbackAudioTranscript = result.transcript;
+                       console.log('Transcription:', feedbackAudioTranscript);
+                   }
+               } catch (error) {
+                   console.error('Erreur lors de la transcription:', error);
+               }
+               
+               // Arrêter toutes les pistes du flux
+               if (audioStream) {
+                   audioStream.getTracks().forEach(track => track.stop());
+                   audioStream = null;
+               }
+           });
+           
+           // Démarrer l'enregistrement
+           mediaRecorder.start();
+           isRecording = true;
+           
+       } catch (error) {
+           console.error('Erreur d\'accès au microphone:', error);
+           alert("Impossible d'accéder au microphone. Veuillez vérifier les permissions de votre navigateur.");
+       }
+   }
+   
+   function stopRecording() {
+       if (mediaRecorder && isRecording) {
+           mediaRecorder.stop();
+           isRecording = false;
+           
+           // Mettre à jour l'interface utilisateur
+           feedbackVoiceBtn.innerHTML = '<div class="pulse-ring"></div><i class="fas fa-microphone"></i>';
+           feedbackVoiceBtn.classList.remove('recording');
+       }
+   }
+
+   // Envoi du feedback vocal
+   if (feedbackVoiceSend) {
+       feedbackVoiceSend.addEventListener('click', function() {
+           if (audioBlob) {
+               if (!selectedRating) {
+                   alert("{{ _('Veuillez d\'abord choisir un niveau de satisfaction avant d\'envoyer votre feedback.') }}");
+                   return;
+               }
+               
+               // Désactiver le bouton pendant l'envoi
+               feedbackVoiceSend.disabled = true;
+               feedbackVoiceSend.textContent = "Envoi en cours...";
+               
+               // Utiliser l'URL appropriée pour les soumissions FormData
+               const formData = new FormData();
+               formData.append('token', token);
+               formData.append('rating', selectedRating);
+               formData.append('audio_feedback', audioBlob, 'feedback.webm');
+               formData.append('feedback_text', feedbackAudioTranscript);
+               formData.append('listenSessionId', listenSessionId);
+               
+               // Ajouter les informations de temps d'écoute
+               formData.append('current_time', Math.round(audioElement.currentTime));
+               formData.append('total_duration', Math.round(audioElement.duration));
+               
+               // Envoyer le feedback à une URL qui gère FormData
+               fetch('{{ url_for("audio_capsule.submit_feedback_with_audio") }}', {
+                   method: 'POST',
+                   headers: {
+                       'X-CSRFToken': '{{ csrf_token() }}'
+                   },
+                   body: formData
+               })
+               .then(response => response.json())
+               .then(data => {
+                   console.log('Feedback vocal envoyé avec succès:', data);
+                   feedbackVoiceSend.textContent = "Envoyé !";
+                   
+                   // Mise à jour de l'interface
+                   feedbackVoiceContainer.classList.remove('visible');
+                   feedbackTitle.textContent = "{{ _('Merci pour ton retour audio !') }}";
+                   
+                   // Ajouter ce bloc d'alerte ici
+                   const feedbackAlert = document.createElement('div');
+                   feedbackAlert.className = 'alert-audio alert-success mt-3 mb-3';
+                   feedbackAlert.innerHTML = `<p>✅ Ton feedback audio a bien été enregistré. Merci de ta contribution !</p>`;
+                   feedbackTitle.parentNode.insertBefore(feedbackAlert, feedbackTitle.nextSibling);
+                   
+                   // Faire disparaître l'alerte après 5 secondes
+                   setTimeout(() => {
+                       feedbackAlert.style.opacity = '0';
+                       setTimeout(() => feedbackAlert.remove(), 500);
+                   }, 5000);
+               })
+               .catch(error => {
+                   console.error('Erreur lors de l\'envoi du feedback vocal:', error);
+                   alert("Une erreur s'est produite lors de l'envoi de votre feedback vocal.");
+                   feedbackVoiceSend.disabled = false;
+                   feedbackVoiceSend.textContent = "Réessayer";
+               });
+           }
+       });
+   }
+   
+   // Utilitaires
+   function findCapsuleTokenBySequence(seq) {
+       const cap = window.capsuleData.find(c=>parseInt(c.sequence_number)===parseInt(seq));
+       return cap?cap.access_token:null;
+   }
+   
+   function updateProgressPath() {
+       document.querySelectorAll('.capsule-bubble').forEach(bubble=>{
+           bubble.querySelectorAll('.capsule-marker').forEach(m=>m.remove());
+           if (bubble.classList.contains('current')) {
+               const mk = document.createElement('div');
+               mk.className='capsule-marker capsule-current-marker';
+               mk.style.cssText='position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:8px;height:8px;background-color:#FF7D00;border-radius:50%;box-shadow:0 0 8px rgba(255,125,0,0.5)';
+               bubble.appendChild(mk);
+           }
+           if (bubble.classList.contains('completed')) {
+               const mk = document.createElement('div');
+               mk.className='capsule-marker capsule-completed-marker';
+               mk.style.cssText='position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:6px;height:6px;background-color:#2b8a3e;border-radius:50%';
+               bubble.appendChild(mk);
+           }
+       });
+       addCapsuleIndicator();
+   }
+   
+   function addCapsuleIndicator() {
+       const cur = document.querySelector('.capsule-bubble.current');
+       if (!cur) return;
+       const seq = cur.getAttribute('data-sequence');
+       const hdr = document.querySelector('.audio-header');
+       if (!hdr) return;
+       document.querySelectorAll('.capsule-indicator').forEach(e=>e.remove());
+       const ind = document.createElement('div');
+       ind.className='capsule-indicator';
+       ind.textContent=`Bulle ${seq}`;
+       ind.style.cssText='text-align:center;font-size:0.95rem;color:#FF7D00;font-weight:600;margin-bottom:10px;padding:5px 15px;background-color:#FFF0E5;border-radius:20px;display:inline-block;position:relative;left:50%;transform:translateX(-50%)';
+       const title = hdr.querySelector('.audio-title');
+       hdr.insertBefore(ind, title);
+   }
+   
+   function fixCapsuleClicks() {
+       document.querySelectorAll('.capsule-bubble').forEach(bubble=>{
+           const seq = bubble.getAttribute('data-sequence');
+           // Assigner token si manquant
+           if ((bubble.classList.contains('completed')||bubble.classList.contains('unlocked')) && !bubble.getAttribute('data-token')) {
+               const t = findCapsuleTokenBySequence(seq);
+               if (t) bubble.setAttribute('data-token', t);
+           }
+           // Curseurs
+           bubble.style.cursor = (bubble.classList.contains('completed')||bubble.classList.contains('current')||bubble.classList.contains('unlocked')) ? 'pointer' : 'default';
+           // Clic
+           bubble.addEventListener('click', function(e) {
+               e.preventDefault();
+               e.stopPropagation();
+
+               const tkn = bubble.getAttribute('data-token');
+               const isAccessible = bubble.classList.contains('completed')
+                               || bubble.classList.contains('current')
+                               || bubble.classList.contains('unlocked');
+
+               if (isAccessible && tkn) {
+                   // on retire l'ancienne current
+                   document.querySelectorAll('.capsule-bubble.current')
+                           .forEach(cb => cb.classList.remove('current'));
+                   // **nouveau** : on retire aussi completed de celle qu'on clique
+                   bubble.classList.remove('completed');
+                   // on marque current
+                   bubble.classList.add('current');
+                   updateProgressPath();
+
+                   // puis on redirige
+                   bubble.style.transform = 'scale(0.95)';
+                   setTimeout(() => {
+                       window.location.href = `/audio-capsule/${tkn}`;
+                   }, 150);
+               }
+               else if (bubble.classList.contains('locked')) {
+                   bubble.classList.add('shake');
+                   setTimeout(()=>bubble.classList.remove('shake'),500);
+                   alert("Cette bulle sera disponible après avoir écouté les précédentes");
+               }
+           });
+           // Hover
+           bubble.addEventListener('mouseenter', ()=> {
+               if (bubble.classList.contains('completed')||bubble.classList.contains('current')||bubble.classList.contains('unlocked')) {
+                   bubble.style.transform='scale(1.1)';
+                   bubble.style.boxShadow='0 0 0 5px rgba(255,125,0,0.2)';
+               }
+           });
+           bubble.addEventListener('mouseleave', ()=> {
+               bubble.style.transform = bubble.classList.contains('current')?'scale(1.25)':'';
+               bubble.style.boxShadow = bubble.classList.contains('current')?'0 0 0 5px rgba(255,125,0,0.15)':'';
+           });
+       });
+   }
+   
+   // Init stockage local
+   function initializeFromStorage() {
+       const lst = JSON.parse(localStorage.getItem('listenedCapsules')||'[]');
+       if (lst.includes(capsuleStorageId) && insightsFeature) insightsFeature.classList.add('visible');
+       
+       const fb = localStorage.getItem(feedbackStorageId);
+       if (fb) {
+           feedbackTitle.textContent = "{{ _('Merci pour ton retour !') }}";
+           
+           // Mettre en évidence le bouton correspondant selon le type enregistré
+           if (fb === 'positive') {
+               // Vérifier si on avait une note spécifique
+               const storedRating = localStorage.getItem('rating-' + capsuleStorageId);
+               if (storedRating === '5' && feedbackExcellent) {
+                   feedbackExcellent.classList.add('selected');
+               } else if (storedRating === '4' && feedbackGood) {
+                   feedbackGood.classList.add('selected');
+               } else if (feedbackExcellent) {
+                   // Par défaut pour des raisons de compatibilité
+                   feedbackExcellent.classList.add('selected');
+               }
+           } else if (fb === 'neutral' && feedbackNeutral) {
+               feedbackNeutral.classList.add('selected');
+           } else if (fb === 'negative') {
+               const storedRating = localStorage.getItem('rating-' + capsuleStorageId);
+               if (storedRating === '1' && feedbackTerrible) {
+                   feedbackTerrible.classList.add('selected');
+               } else if (storedRating === '2' && feedbackBad) {
+                   feedbackBad.classList.add('selected');
+               } else if (feedbackTerrible) {
+                   // Par défaut pour des raisons de compatibilité
+                   feedbackTerrible.classList.add('selected');
+               }
+           }
+       }
+       
+       // Récupérer le texte sauvegardé
+       const fbtxt = localStorage.getItem(feedbackTextStorageId);
+       if (fbtxt && feedbackText) feedbackText.value = fbtxt;
+       
+       // Vérifier si l'utilisateur a déjà écouté la capsule
+       if (lst.includes(capsuleStorageId)) {
+           // Si oui, afficher directement les insights et l'action card
+           setTimeout(() => {
+               if (insightsFeature) insightsFeature.classList.add('visible');
+               setTimeout(() => {
+                   if (actionCard) actionCard.classList.add('visible');
+                   
+                   // Vérifier si l'action a été accomplie
+                   checkActionStatus();
+               }, 500);
+           }, 500);
+       }
+       
+       // Restaurer l'état de la checklist
+       restoreChecklistState();
+   }
+   
+   // Animation d'entrée
+   function animateElements() {
+       const els = [
+           document.querySelector('.energy-context'),
+           document.querySelector('.inspiration-image-container'),
+           document.querySelector('.intention-message'),
+           document.querySelector('.player-section'),
+           document.querySelector('.encouragement-message')
+       ];
+       els.forEach((el,i)=>{
+           if (!el) return;
+           el.style.opacity='0';
+           el.style.transform='translateY(20px)';
+           setTimeout(()=>{
+               el.style.transition='all 0.6s ease';
+               el.style.opacity='1';
+               el.style.transform='translateY(0)';
+           },100*(i+1));
+       });
+   }
+   
+   // Gestion erreur audio
+   audioElement.addEventListener('error', e=>{
+       console.error('Erreur de chargement audio:', e);
+       alert("{{ _('Erreur de chargement audio. Vérifiez votre connexion et réessayez.') }}");
+   });
+   
+   // Styles animations
+   const styleEl = document.createElement('style');
+   styleEl.textContent = `
+       .pulse-animation { animation: pulse-effect 1s ease; }
+       @keyframes pulse-effect { 0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)} }
+       .shake { animation: shake-effect 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+       @keyframes shake-effect { 0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-5px)}20%,40%,60%,80%{transform:translateX(5px)} }
+       
+       /* Actions finalisées */
+       .action-completed {
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent) 100%) !important;
+            transition: all 0.3s ease !important;
+       }
+       
+       .all-checked {
+           animation: pulse-theme 1.5s infinite alternate;
+       }
+   `;
+   document.head.appendChild(styleEl);
+   
+   // Appels init
+   initializeFromStorage();
+   animateElements();
+   updateProgressPath();
+   fixCapsuleClicks();
+   
+   // Masquer sélecteur si présent
+   const capSel = document.querySelector('.capsule-selector');
+   if (capSel) capSel.style.display = 'none';
+   
+   // Cacher le sélecteur d'input feedback au chargement, il sera affiché après la sélection d'une émotion
+   if (feedbackInputSelector) {
+       feedbackInputSelector.style.display = 'none';
+   }
+   
+   // Initialiser l'animation pulse si disponible
+   if (pulseRing) {
+       startPulseAnimation();
+   }
+});
+
+// Script spécifique pour gérer le timeline des capsules
+document.addEventListener('DOMContentLoaded', function(){
+   const tl = document.getElementById('capsulesTimeline')
+   if (!tl) return;
+   
+   const current = tl.dataset.currentSeq
+   if (!current) return
+
+   // on retire d'abord TOUTES les classes "current"…
+   tl.querySelectorAll('.capsule-bubble.current')
+     .forEach(el => el.classList.remove('current'))
+
+   // …et on ne remet "current" que si la bulle n'est PAS déjà en "current_completed"
+   const active = tl.querySelector(`.capsule-bubble[data-sequence="${current}"]`)
+   if (active && !active.classList.contains('current_completed')) {
+     active.classList.add('current')
+   }
+   
+   // Amélioration de l'expérience utilisateur avec les touches du clavier
+   document.addEventListener('keydown', function(e) {
+       // Espace pour lecture/pause
+       if (e.key === ' ' || e.key === 'Spacebar') {
+           const playButton = document.getElementById('playButton');
+           if (playButton) {
+               playButton.click();
+               e.preventDefault(); // Empêcher le défilement de la page
+           }
+       }
+       
+       // Flèches gauche/droite pour avancer/reculer dans l'audio
+       if (e.key === 'ArrowLeft') {
+           const audioElement = document.getElementById('audioElement');
+           if (audioElement) {
+               audioElement.currentTime = Math.max(0, audioElement.currentTime - 15); // Reculer de 15 secondes
+               e.preventDefault();
+           }
+       }
+       
+       if (e.key === 'ArrowRight') {
+           const audioElement = document.getElementById('audioElement');
+           if (audioElement) {
+               audioElement.currentTime = Math.min(audioElement.duration, audioElement.currentTime + 15); // Avancer de 15 secondes
+               e.preventDefault();
+           }
+       }
+   });
+});
+</script>
+    
+    {% endblock %}

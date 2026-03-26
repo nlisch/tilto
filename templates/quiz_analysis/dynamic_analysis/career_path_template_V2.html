@@ -1,0 +1,532 @@
+{% extends "quiz_analysis/static_analysis/analysis_base_V2.html" %}
+
+{% block content %}
+    <!-- SVG caché pour le clip-path -->
+    <svg class="clip-svg">
+        <defs>
+            <clipPath id="torn-paper-clip" clipPathUnits="objectBoundingBox">
+                <path d="
+                    M 0.02 0.06
+                    C 0.04 0.03, 0.07 0.05, 0.10 0.02
+                    C 0.14 0.00, 0.18 0.03, 0.23 0.01
+                    C 0.28 -0.01, 0.34 0.02, 0.40 0.01
+                    C 0.47 -0.01, 0.54 0.02, 0.61 0.01
+                    C 0.68 -0.01, 0.75 0.02, 0.82 0.01
+                    C 0.88 0.00, 0.94 0.02, 0.98 0.04
+                    
+                    C 0.99 0.15, 0.98 0.25, 0.99 0.35
+                    C 1.00 0.45, 0.98 0.55, 0.99 0.65
+                    C 1.00 0.75, 0.98 0.85, 0.99 0.94
+                    
+                    C 0.94 0.96, 0.88 0.94, 0.82 0.96
+                    C 0.75 0.98, 0.68 0.95, 0.61 0.97
+                    C 0.54 0.99, 0.47 0.96, 0.40 0.98
+                    C 0.33 1.00, 0.26 0.97, 0.19 0.99
+                    C 0.12 1.00, 0.06 0.97, 0.02 0.96
+                    
+                    C 0.01 0.85, 0.02 0.75, 0.01 0.65
+                    C 0.00 0.55, 0.02 0.45, 0.01 0.35
+                    C 0.00 0.25, 0.02 0.15, 0.02 0.06
+                    Z
+                "/>
+            </clipPath>
+        </defs>
+    </svg>
+
+    <div class="analysis-container">
+
+        <!-- ===== COVER ===== -->
+        <section class="cover">
+            <div class="cover-logo">TILTO</div>
+            
+            <div class="cover-card">
+                <div class="cover-name">{{ firstname|upper }}</div>
+                
+                <div class="cover-quote">
+                    <span class="cover-guillemet cover-guillemet-open">«</span>
+                    <p class="cover-quote-text">
+                        {{ analysis.cover_quote }}
+                    </p>
+                    <span class="cover-guillemet cover-guillemet-close">»</span>
+                </div>
+                
+                <div class="cover-date">
+                    <span class="cover-date-icon">🗓</span>
+                    <span>{{ analysis.cover_date }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== INTRO - Papier déchiré ===== -->
+        <section class="intro-section">
+            <div class="paper-wrapper">
+                <div class="paper">
+                    <div class="paper-content">
+                        <p class="intro-greeting">{% if analysis.finale_gender_pronoun == 'seule' %}Chère{% else %}Cher{% endif %} {{ firstname }},</p>
+                        <p class="intro-text">
+                            {{ analysis.intro_text_bloc1 }}
+                        </p>
+                        <p class="intro-text intro-text_bloc2">
+                            {{ analysis.intro_text_bloc2 }}
+                        </p>
+                    </div>
+                </div>
+                <img class="scotch-img" src="https://images.tilto.co/production/2025/12/23eb9847_scotch.webp" alt="">
+            </div>
+            <p class="paper-signature">— Claire de Tilto <span class="heart">♥</span></p>
+        </section>
+
+        <!-- ===== SECTION 1 ===== -->
+        <section class="section-cap">
+            <div class="section-header-simple">
+                <div class="section-number-big">1</div>
+                <h2 class="section-title-simple">Ton cap Tilto</h2>
+            </div>
+
+            <div class="quote-verbatim-wrapper">
+                <div class="quote-verbatim-tab">Tes mots</div>
+                <div class="quote-verbatim-card">
+                    <p class="quote-verbatim-text">
+                        <span class="quote-verbatim-guillemet">«</span> {{ analysis.section1_quote_verbatim|safe }} <span class="quote-verbatim-guillemet">»</span>
+                    </p>
+                    <p class="quote-verbatim-source">— extrait de ton questionnaire</p>
+                </div>
+            </div>
+
+            <div class="tilto-comprend">
+                <div class="tilto-comprend-wrapper">
+                    <div class="tilto-comprend-tab">Ce que Tilto comprend</div>
+                    <div class="tilto-comprend-card">
+                        <p class="tilto-comprend-text">
+                            {{ analysis.section1_tilto_comprend|safe }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION 2 ===== -->
+        <section class="section-transformations">
+            <div class="section-header-simple">
+                <div class="section-number-big">2</div>
+                <h2 class="section-title-simple">Tes transformations concrètes</h2>
+            </div>
+
+            <div class="tabs-nav">
+                {% for i in range(analysis.transformations_count) %}
+                <button class="tab-btn {% if loop.first %}active{% endif %}" data-tab="{{ loop.index0 }}">{{ loop.index }}</button>
+                {% endfor %}
+            </div>
+
+            <div class="tabs-content">
+                {% for transformation in analysis.transformations %}
+                <div class="tab-panel {% if loop.first %}active{% endif %}" data-panel="{{ loop.index0 }}">
+                    <div class="transform-card">
+                        <div class="transform-side before">
+                            <div class="transform-label">Ce qui te pèse</div>
+                            <p class="transform-text">{{ transformation.before }}</p>
+                        </div>
+                        <div class="transform-arrow-center">
+                            <div class="transform-arrow-icon">→</div>
+                        </div>
+                        <div class="transform-side after">
+                            <div class="transform-label">Ce dont tu as besoin</div>
+                            <p class="transform-text">{{ transformation.after }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Version print des transformations -->
+            <div class="print-transformations">
+                {% for transformation in analysis.transformations %}
+                <div class="print-transform-item">
+                    <div class="print-transform-content">
+                        <div class="print-transform-before">
+                            <div class="print-transform-label">Ce qui te pèse</div>
+                            <p class="print-transform-text">{{ transformation.before }}</p>
+                        </div>
+                        <span class="print-transform-arrow">→</span>
+                        <div class="print-transform-after">
+                            <div class="print-transform-label">Ce dont tu as besoin</div>
+                            <p class="print-transform-text">{{ transformation.after }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="tilto-comprend">
+                <div class="tilto-comprend-wrapper">
+                    <div class="tilto-comprend-tab">Ce que Tilto comprend</div>
+                    <div class="tilto-comprend-card">
+                        <p class="tilto-comprend-text">
+                            {{ analysis.section2_tilto_comprend|safe }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION 3 ===== -->
+        <section class="section-options" id="section-options">
+            <div class="section-header-simple">
+                <div class="section-number-big">3</div>
+                <h2 class="section-title-simple">Tes 3 opportunités pro qui te ressemblent</h2>
+            </div>
+            
+            <p class="section-subtitle">
+                <img src="https://images.tilto.co/production/2025/12/81f56033_fleche_magenta.webp" alt="">
+                <span>Chacune ouvre une façon différente <span class="highlight-pink">d'avancer</span>.</span>
+            </p>
+
+            <!-- Indication pour le print -->
+            <p class="print-options-indication">👉 Découvre tes 3 options en détail sur les pages suivantes</p>
+
+            <div class="options-grid">
+                {% for option in analysis.options %}
+                <div class="option-card-new option-{{ option.number }}">
+                    <img src="https://images.tilto.co/production/2025/12/{{ 'b4278a22_option_1' if option.number == 1 else '91526b0f_option_2' if option.number == 2 else '761331ba_option_3' }}.webp" alt="Option {{ option.number }}" class="option-badge-img">
+                    <div class="option-icon-new">{{ option.icon }}</div>
+                    <div class="option-title-new">{{ option.title }}</div>
+                    <div class="option-tags">
+                        {% for tag in option.tags %}
+                        <span class="option-tag tag-{{ option.number }}">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="options-hint">
+                <img src="https://images.tilto.co/production/2025/11/863f98b0_ampoule.webp" alt="">
+                <span class="ampoule-text">Sélectionne l'option pro que tu souhaites découvrir</span>
+            </div>
+
+            <!-- Conclusion pour le print -->
+            <div class="print-conclusion">
+                <div class="paper-wrapper">
+                    <div class="paper">
+                        <div class="paper-content">
+                            <p class="finale-text">
+                                Tu as maintenant <strong>3 pistes solides</strong> pour y arriver.
+                            </p>
+                            <p class="finale-text finale-text-bloc2">
+                                Envoie cette analyse à <strong>1-2 personnes</strong> qui te connaissent bien. Leur regard extérieur va <strong>débloquer des trucs que tu ne vois pas</strong> {{ analysis.finale_gender_pronoun }}.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <p class="paper-signature">— Claire de Tilto</p>
+            </div>
+        </section>
+
+        <!-- ===== OPTIONS POUR IMPRESSION ===== -->
+        <div class="print-options-wrapper">
+            {% for voie in analysis.voies %}
+            <!-- Option {{ voie.number }} -->
+            <div class="print-option-page">
+                <div class="voie-hero {{ voie.color_class }}">
+                    <h2 class="voie-hero-title">Option {{ voie.number }} : {{ voie.hero_title }}</h2>
+                    <div class="voie-hero-emoji-badge">
+                        <span class="voie-hero-emoji">{{ voie.icon }}</span>
+                    </div>
+                </div>
+
+                <div class="voie-quelques-mots {{ voie.color_class }}">
+                    <div class="voie-quelques-mots-icon-wrapper">
+                        <img src="https://images.tilto.co/production/2025/12/0178906e_recap_1.webp" alt="" class="voie-quelques-mots-icon">
+                    </div>
+                    <div class="voie-quelques-mots-content">
+                        <h3>En quelques mots...</h3>
+                        <p>{{ voie.quelques_mots }}</p>
+                    </div>
+                </div>
+
+                <div class="voie-section-header {{ voie.color_class }}">
+                    <h3>Ton avantage unique</h3>
+                </div>
+                <div class="voie-avantage-content">
+                    <p>{{ voie.avantage_unique|safe }}</p>
+                </div>
+
+                <div class="voie-dire-section">
+                    <div class="voie-dire-label">
+                        <span>✏️</span>
+                        <span>Ce que tu devrais dire</span>
+                    </div>
+                    <p class="voie-dire-quote">{{ voie.dire_quote }}</p>
+                </div>
+
+                <div class="voie-warning-inline">
+                    <img src="https://images.tilto.co/production/2025/11/61f71b85_warning.webp" alt="">
+                    <p class="voie-warning-inline-text">
+                        {{ voie.warning_text|safe }}<br>
+                        <span class="evite">Évite :</span> {{ voie.warning_evite }}
+                    </p>
+                </div>
+
+                <div class="voie-section-header {{ voie.color_class }}">
+                    <h3>Tes premiers moves</h3>
+                </div>
+
+                <div class="voie-info-card {{ voie.color_class }}-bg">
+                    <div class="voie-info-card-icon-wrapper">
+                        <img src="https://images.tilto.co/production/2025/12/dbb16130_formation.webp" alt="" class="voie-info-card-icon">
+                    </div>
+                    <div class="voie-info-card-content">
+                        <h4>Les formations</h4>
+                        <ul>
+                            {% for formation in voie.formations %}
+                            <li>{{ formation }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="voie-info-card {{ voie.color_class }}-bg">
+                    <div class="voie-info-card-icon-wrapper">
+                        <img src="https://images.tilto.co/production/2025/12/b973987f_nouvelle_cible_1.webp" alt="" class="voie-info-card-icon">
+                    </div>
+                    <div class="voie-info-card-content">
+                        <h4>Cibles employeurs:</h4>
+                        <ul>
+                            {% for cible in voie.cibles_employeurs %}
+                            <li>{{ cible }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="print-page-closer"></div>
+
+                <div class="print-resume-wrapper">
+                    <div class="voie-resume-header {{ voie.color_class }}">
+                        <h3>En résumé</h3>
+                    </div>
+                    <div class="voie-resume-table {{ voie.color_class }}">
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">✅ Les avantages</div>
+                            <div class="voie-resume-value">
+                                <ul>
+                                    {% for avantage in voie.resume_avantages %}
+                                    <li>{{ avantage }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">⚠️ Les défis</div>
+                            <div class="voie-resume-value">{{ voie.resume_defis }}</div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">💶 Salaire</div>
+                            <div class="voie-resume-value"><strong>{{ voie.resume_salaire }}</strong></div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">⏱️ Durée estimée</div>
+                            <div class="voie-resume-value"><strong>{{ voie.resume_duree }}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="voie-dernier-conseil">
+                        <img src="https://images.tilto.co/production/2025/11/863f98b0_ampoule.webp" alt="" class="voie-dernier-conseil-icon">
+                        <div class="voie-dernier-conseil-title">
+                            <span>——</span>
+                            <span>Un dernier conseil</span>
+                            <span>——</span>
+                        </div>
+                        <p>{{ voie.dernier_conseil|safe }}</p>
+                    </div>
+                    <div class="print-page-closer"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ===== SECTION FINALE ===== -->
+        <section class="section-finale">
+            <div class="paper-wrapper">
+                <div class="paper">
+                    <div class="paper-content">
+                        <p class="finale-text">
+                            Tu as maintenant <strong>3 pistes solides</strong> pour y arriver.
+                        </p>
+                        <p class="finale-text finale-text-bloc2">
+                            Envoie cette analyse à <strong>1-2 personnes</strong> qui te connaissent bien. Leur regard extérieur va <strong>débloquer des trucs que tu ne vois pas</strong> {{ analysis.finale_gender_pronoun }}.
+                        </p>
+                    </div>
+                </div>
+                <img class="scotch-img" src="https://images.tilto.co/production/2025/12/23eb9847_scotch.webp" alt="">
+            </div>
+            <p class="paper-signature">— Claire de Tilto</p>
+            
+            {% if not is_shared %}
+            <button class="btn-export">Télécharger en PDF</button>
+            <button class="btn-share">Générer mon lien de partage</button>
+            {% endif %}
+        </section>
+
+        <!-- ===== VOIES DÉTAILLÉES (WEB) ===== -->
+        {% for voie in analysis.voies %}
+        <section class="voie-detail" id="voie{{ voie.number }}">
+            <div class="voie-header">
+                <button class="voie-close">×</button>
+                <div class="voie-progress">
+                    {% for i in range(3) %}
+                    <div class="voie-dot {% if loop.index == voie.number %}active{% endif %}"></div>
+                    {% endfor %}
+                </div>
+                <button class="voie-next" data-voie="{{ voie.number }}">
+                    {% if voie.number < 3 %}Option suivante →{% else %}Retour ←{% endif %}
+                </button>
+            </div>
+
+            <div class="voie-wrapper">
+                <div class="voie-content">
+                    <div class="voie-hero {{ voie.color_class }}">
+                        <h2 class="voie-hero-title">{{ voie.hero_title }}</h2>
+                        <div class="voie-hero-emoji-badge">
+                            <span class="voie-hero-emoji">{{ voie.icon }}</span>
+                        </div>
+                    </div>
+
+                    <div class="voie-quelques-mots {{ voie.color_class }}">
+                        <div class="voie-quelques-mots-icon-wrapper">
+                            <img src="https://images.tilto.co/production/2025/12/0178906e_recap_1.webp" alt="" class="voie-quelques-mots-icon">
+                        </div>
+                        <div class="voie-quelques-mots-content">
+                            <h3>En quelques mots...</h3>
+                            <p>{{ voie.quelques_mots }}</p>
+                        </div>
+                    </div>
+
+                    <div class="voie-section-header {{ voie.color_class }}">
+                        <h3>Ton avantage unique</h3>
+                    </div>
+                    <div class="voie-avantage-content">
+                        <p>{{ voie.avantage_unique|safe }}</p>
+                    </div>
+
+                    <button class="voie-btn-savoir-plus">En savoir plus</button>
+
+                    <div class="voie-collapsible-content">
+                        <div class="voie-dire-section">
+                            <div class="voie-dire-label">
+                                <span>✏️</span>
+                                <span>Ce que tu devrais dire</span>
+                            </div>
+                            <p class="voie-dire-quote">{{ voie.dire_quote }}</p>
+                        </div>
+
+                        <div class="voie-warning-inline">
+                            <img src="https://images.tilto.co/production/2025/11/61f71b85_warning.webp" alt="">
+                            <p class="voie-warning-inline-text">
+                                {{ voie.warning_text|safe }}<br>
+                                <span class="evite">Évite :</span> {{ voie.warning_evite }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="voie-section-header {{ voie.color_class }}">
+                        <h3>Tes premiers moves</h3>
+                    </div>
+
+                    <div class="voie-info-card {{ voie.color_class }}-bg">
+                        <div class="voie-info-card-icon-wrapper">
+                            <img src="https://images.tilto.co/production/2025/12/dbb16130_formation.webp" alt="" class="voie-info-card-icon">
+                        </div>
+                        <div class="voie-info-card-content">
+                            <h4>Les formations</h4>
+                            <ul>
+                                {% for formation in voie.formations %}
+                                <li>{{ formation }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="voie-info-card {{ voie.color_class }}-bg">
+                        <div class="voie-info-card-icon-wrapper">
+                            <img src="https://images.tilto.co/production/2025/12/b973987f_nouvelle_cible_1.webp" alt="" class="voie-info-card-icon">
+                        </div>
+                        <div class="voie-info-card-content">
+                            <h4>Cibles employeurs:</h4>
+                            <ul>
+                                {% for cible in voie.cibles_employeurs %}
+                                <li>{{ cible }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="voie-savais-tu">
+                        <img src="https://images.tilto.co/production/2025/11/24b4a2dc_question_mark.webp" alt="" class="voie-savais-tu-icon">
+                        <div class="voie-savais-tu-title">
+                            <span>——</span>
+                            <span>Le savais-tu ?</span>
+                            <span>——</span>
+                        </div>
+                        <p>{{ voie.savais_tu|safe }}</p>
+                    </div>
+
+                    <div class="voie-resume-header {{ voie.color_class }}">
+                        <h3>En résumé</h3>
+                    </div>
+                    <div class="voie-resume-table {{ voie.color_class }}">
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">✅ Les avantages</div>
+                            <div class="voie-resume-value">
+                                <ul>
+                                    {% for avantage in voie.resume_avantages %}
+                                    <li>{{ avantage }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">⚠️ Les défis</div>
+                            <div class="voie-resume-value">{{ voie.resume_defis }}</div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">💶 Salaire</div>
+                            <div class="voie-resume-value"><strong>{{ voie.resume_salaire }}</strong></div>
+                        </div>
+                        <div class="voie-resume-row">
+                            <div class="voie-resume-label">⏱️ Durée estimée</div>
+                            <div class="voie-resume-value"><strong>{{ voie.resume_duree }}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="voie-dernier-conseil">
+                        <img src="https://images.tilto.co/production/2025/11/863f98b0_ampoule.webp" alt="" class="voie-dernier-conseil-icon">
+                        <div class="voie-dernier-conseil-title">
+                            <span>——</span>
+                            <span>Un dernier conseil</span>
+                            <span>——</span>
+                        </div>
+                        <p>{{ voie.dernier_conseil|safe }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endfor %}
+
+        <!-- Modal de partage -->
+        <div class="share-modal" id="shareModal">
+            <div class="share-modal-content">
+                <button class="share-modal-close">×</button>
+                <h3 class="share-modal-title">Envoie à 1-2 personnes de confiance</h3>
+                <p class="share-modal-subtitle">Leur regard extérieur va débloquer des trucs que tu ne vois pas.</p>
+                
+                <div class="share-link-box">
+                    <input type="text" class="share-link-input" id="shareLink" value="Clique sur Copier pour générer le lien" readonly>
+                    <button class="share-link-copy">Copier</button>
+                </div>
+                <p class="share-link-expiry">🔗 Lien unique valide 7 jours</p>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

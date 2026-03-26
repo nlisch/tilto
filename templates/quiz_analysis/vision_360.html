@@ -1,0 +1,828 @@
+{% extends "base.html" %}
+
+{% block title %}{{ username|capitalize }}: {{ _('ta vision 360') }}{% endblock %}
+
+{% block content %}
+<!-- Écran de chargement -->
+<div id="loadingScreen" class="loading-screen hide" data-skip-loading="{{ skip_loading|default(false)|tojson }}">
+    <div class="loading-content">
+        <div class="loading-title">
+            <h2>{{ _('Analyse de ton profil') }}</h2>
+        </div>
+        
+        <div class="loading-percentage">
+            <div class="percentage-text">0%</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+        
+        <div class="stickman-container">
+            <!-- Explorateur -->
+            <div class="stickman-animation hidden" id="explorer">
+                <img class="lazyload" src="https://cdn.prod.website-files.com/5a7edf0d432d43000114d381/6631222a42634fe71c950b91_summit%20hiking.svg" 
+                     alt="Explorateur" 
+                     class="stickman-image"/>
+                <p class="stickman-text">Check exploration</p>
+            </div>
+    
+            <!-- Artiste -->
+            <div class="stickman-animation hidden" id="artist">
+                <img class="lazyload" src="https://cdn.prod.website-files.com/5a7edf0d432d43000114d381/65d0f2b56f8340256ba898b1_trumpeter.svg" 
+                     alt="Artiste" 
+                     class="stickman-image"/>
+                <p class="stickman-text">Check créativité</p>
+            </div>
+    
+            <!-- Communicant -->
+            <div class="stickman-animation hidden" id="speaker">
+                <img class="lazyload" src="https://cdn.prod.website-files.com/5a7edf0d432d43000114d381/65c25015da6798f95ffbcd0e_announcement.svg" 
+                     alt="Communicant" 
+                     class="stickman-image"/>
+                <p class="stickman-text">Check communication</p>
+            </div>
+    
+            <!-- Analyste -->
+            <div class="stickman-animation hidden" id="analyst">
+                <img class="lazyload" src="https://cdn.prod.website-files.com/5a7edf0d432d43000114d381/6631231d88e02dcaad95d13c_writing.svg" 
+                     alt="Analyste" 
+                     class="stickman-image"/>
+                <p class="stickman-text">Check analyse</p>
+            </div>
+    
+            <!-- Collaborateur -->
+            <div class="stickman-animation hidden" id="collaborator">
+                <img class="lazyload" src="https://cdn.prod.website-files.com/5a7edf0d432d43000114d381/65c24b0736e07b812bd96fd6_agreeing.svg" 
+                     alt="Collaborateur" 
+                     class="stickman-image"/>
+                <p class="stickman-text">Check collaboration</p>
+            </div>
+        </div>
+
+        <div class="loading-steps">
+            <div class="loading-step">
+                <span class="step-icon">✓</span>
+                <span class="step-text">{{ _('Tes super-pouvoirs') }}</span>
+            </div>
+            <div class="loading-step">
+                <span class="step-icon">✓</span>
+                <span class="step-text">{{ _('Tes axes de développement') }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenu principal -->
+<main class="container">
+    <div class="header">
+        <meta name="request-id" content="{{ request_id }}">
+        <meta name="quiz-id" content="{{ quiz_id }}"> 
+        <meta name="csrf-token" content="{{ csrf_token() }}"> 
+        <h1>{{ username|capitalize }} : {{ _('ta vision 360') }}</h1>
+        <p class="subheader">
+            {{ _('Track tes super-pouvoirs, tes axes de développement, et bien d\'autres aspects pour te permettre de t\'épanouir dans ta carrière grâce à ton rapport 360') }}
+        </p>
+    </div>
+
+    <div class="superpowers">
+        {% for power in analysis.superpowers %}
+        <div class="superpower-card" data-power-id="{{power.id}}">
+            <h3 class="superpower-title">
+                {{power.superpower_card.emoji}} 
+                {{power.superpower_card.superpower_title}}
+            </h3>
+            <p class="tags-intro">{{power.superpower_card.tags_intro}}</p>
+            <div class="tags">
+                {% for tag in power.superpower_card.tags.tag %}
+                <span class="tag">{{tag}}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div id="details" class="details">
+        {% for power in analysis.superpowers %}
+        <div id="{{power.id}}" class="detail-card">
+            <h3>{{power.detail_card.emoji}} {{power.detail_card.title}}</h3>
+            <p>{{power.detail_card.description}}</p>
+            
+            <div class="did-you-know">
+                <div class="did-you-know-title">
+                    <span>💡</span> {{ _('Le savais-tu ?') }}
+                </div>
+                <div class="did-you-know-content">
+                    {{power.detail_card.did_you_know.content}}
+                </div>
+            </div>
+    
+            <div class="action-steps">
+                <h4>{{power.detail_card.action_steps.emoji}} {{ _('Actions concrètes') }}</h4>
+                <ul>
+                    {% for step in power.detail_card.action_steps.steps %}
+                    <li>{{step}}</li>
+                    {% endfor %}
+                </ul>
+                {% if next_step %}
+                <button class="action-button"  data-next-step="{{ next_step }}">
+                    {{ _('Passer à l\'étape suivante') }} <span>→</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* ======================
+   1. Variables globales
+   ====================== */
+   :root {
+    --primary: #0E2023;
+    --secondary: #4C0336;
+    --accent: #E0F4F4;
+    --background: #F3F4F6;
+    --text: #0E2023;
+    --text-light: #4A6572;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition-standard: all 0.3s ease;
+}
+
+/* =====================
+   Styles de base
+   ===================== */
+
+
+main.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    visibility: visible;
+    transition: opacity 0.5s ease;
+}
+
+
+
+/* Quand on veut l'afficher, on ajoute .show */
+main.container.show {
+    opacity: 1;
+}
+
+.superpowers.show {
+  opacity: 1; /* Devient visible */
+}
+
+/* =====================
+   Écran de chargement
+   ===================== */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease-out;
+    /* Par défaut, on ne l'affiche pas */
+    display: none;
+}
+
+.loading-screen.show {
+    display: flex;
+    opacity: 1;
+}
+
+.loading-screen.hide {
+    display: none;
+    opacity: 0;
+}
+
+.loading-title h2 {
+    margin-top: 0;
+}
+
+.loading-steps {
+    margin-top: 2rem;
+}
+
+/* Animations steps */
+.loading-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease-out;
+    margin-bottom: 1rem;
+}
+
+.loading-step.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================
+   Barre de progression
+   ========================= */
+.loading-percentage {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.percentage-text {
+    font-size: 1.5rem;
+    color: #4C0336;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #e0e0e0;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: #4C0336;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =========================
+   Animations Stickman
+   ========================= */
+.stickman-container {
+    height: 300px;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.stickman-animation {
+    /* positionnement absolu + transitions */
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+/* Par défaut caché */
+.stickman-animation.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+/* Quand on l'affiche */
+.stickman-animation.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.stickman-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.stickman-text {
+    margin-top: 1rem;
+    color: var(--text);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* ===================
+   Header & superpowers
+   =================== */
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.subheader {
+    font-size: 1.2rem;
+    color: var(--text);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* =========================
+   Liste des super-pouvoirs
+   ========================= */
+.superpowers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+    opacity:0;
+}
+
+.superpower-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.superpower-card:hover {
+    transform: translateY(-5px);
+}
+
+.superpower-title {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.tags-intro {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+.tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.tag {
+    background: #F2E0EA;
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   Détails / modales
+   ========================= */
+.details {
+    display: none;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.details.active {
+    display: block;
+}
+
+.detail-card {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-left: 4px solid var(--primary);
+    background: var(--background);
+}
+
+.detail-card h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.detail-card p {
+    margin-bottom: 1rem;
+}
+
+/* =========================
+   Action steps (liste)
+   ========================= */
+.action-steps {
+    background: linear-gradient(150deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-top: 1.5rem;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.action-steps:hover {
+    transform: translateY(-4px);
+}
+
+.action-steps::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.action-steps:hover::before {
+    opacity: 1;
+}
+
+.action-steps h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    position: relative;
+}
+
+.action-steps h4::after {
+    content: '→';
+    position: absolute;
+    right: 0;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.action-steps:hover h4::after {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-steps ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.action-steps li {
+    margin-bottom: 0.75rem;
+    padding-left: 2rem;
+    position: relative;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.action-steps li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    color: var(--secondary);
+    opacity: 0.7;
+    font-size: 1.2rem;
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
+
+.action-steps li:hover {
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+.action-steps li:hover::before {
+    opacity: 1;
+    transform: scale(1.2);
+    color: var(--primary);
+}
+
+/* ======================
+   Bouton d'action
+   ====================== */
+.action-button {
+    background: transparent;
+    color: #4C0336;
+    border: 1.5px solid #4C0336;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    background: rgba(76, 3, 54, 0.05);
+    transform: translateY(-1px);
+}
+
+.action-button span {
+    transition: transform 0.2s ease;
+}
+
+.action-button:hover span {
+    transform: translateX(4px);
+}
+
+.emoji {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* ======================
+   Bloc "Le savais-tu ?"
+   ====================== */
+.did-you-know {
+    background: #FFFFFF;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    position: relative;
+    box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.did-you-know-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #4A5568;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.did-you-know-content {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #2D3748;
+}
+
+.did-you-know-content strong {
+    color: #FFA726;
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+const superpowerCards = document.querySelectorAll('.superpower-card');
+superpowerCards.forEach(card => {
+    card.addEventListener('click', function() {
+        const powerId = this.getAttribute('data-power-id');
+        if (powerId) {
+            showDetails(powerId);
+        }
+    });
+});
+
+const nextStepButtons = document.querySelectorAll('.action-button[data-next-step]');
+nextStepButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        const nextStep = this.getAttribute('data-next-step');
+        if (nextStep) {
+            generateNextAnalysis(nextStep);
+        }
+    });
+});
+
+/**
+ * Gère l'affichage/masquage des cartes de détail pour chaque super-pouvoir
+ * @param {string} superpowerId - L'ID du super-pouvoir sélectionné (ex: 'explorer', 'creator', etc.)
+ */
+function showDetails(superpowerId) {
+    const details = document.getElementById('details'); 
+    const selectedCard = document.getElementById(superpowerId); 
+    const allCards = details.getElementsByClassName('detail-card');
+
+    // Toggle : si déjà "display: block", on la masque
+    if (selectedCard.style.display === 'block') {
+        selectedCard.style.display = 'none';
+        // Vérifie si toutes sont masquées
+        if ([...allCards].every(card => card.style.display === 'none')) {
+            details.classList.remove('active');
+        }
+        return;
+    }
+
+    // Sinon, on masque toutes les autres cartes...
+    for (let card of allCards) {
+        card.style.display = (card.id === superpowerId ? 'block' : 'none');
+    }
+    // ... et on montre la zone details
+    details.classList.add('active');
+}
+
+/**
+ * Affiche toutes les cartes de détail en même temps
+ */
+function showAllDetails() {
+    const details = document.getElementById('details');
+    const allCards = details.getElementsByClassName('detail-card');
+    for (let card of allCards) {
+        card.style.display = 'block';
+    }
+    details.classList.add('active');
+}
+
+// Au chargement du DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé');
+    
+    const loadingScreen = document.getElementById('loadingScreen');
+    const mainContent = document.querySelector('.container');
+    const superpowersSection = document.querySelector('.superpowers');
+    const progressBar = document.querySelector('.progress-fill');
+    const percentageText = document.querySelector('.percentage-text');
+    const skipLoading = (loadingScreen.dataset.skipLoading === 'true');
+    
+    // On masque l'écran si skipLoading = true
+    // et on affiche directement le container
+    if (skipLoading) {
+        loadingScreen.classList.add('hide');
+        mainContent.classList.add('show');
+        superpowersSection.classList.add('show');
+        return;
+    }
+
+    // Sinon, on affiche l'écran de chargement
+    loadingScreen.classList.remove('hide');
+    loadingScreen.classList.add('show');
+
+    // La page principale reste masquée (pas de .show)
+    // jusqu’à la fin de l’animation
+
+    let progress = 0;
+    const stickmen = ['explorer', 'artist', 'speaker', 'analyst', 'collaborator'];
+    let currentIndex = 0;
+
+    function updateProgress(targetValue) {
+        const duration = 800;
+        const fps = 60;
+        const frames = duration / (1000 / fps);
+        const increment = (targetValue - progress) / frames;
+        let currentFrame = 0;
+
+        function animate() {
+            if (currentFrame >= frames) return;
+            currentFrame++;
+            progress += increment;
+            progressBar.style.width = `${progress}%`;
+            percentageText.textContent = `${Math.round(progress)}%`;
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function animateSteps() {
+        const steps = document.querySelectorAll('.loading-step');
+        steps.forEach((step, index) => {
+            setTimeout(() => {
+                step.classList.add('visible');
+            }, index * 2000 + 1000);
+        });
+    }
+
+    function showNextStickman() {
+        console.log('Affichage stickman:', currentIndex);
+
+        // On masque le précédent si > 0
+        if (currentIndex > 0) {
+            const previous = document.getElementById(stickmen[currentIndex - 1]);
+            if (previous) {
+                previous.classList.add('hidden');
+                previous.classList.remove('visible');
+            }
+        }
+
+        // On affiche le suivant si on est encore dans le tableau
+        if (currentIndex < stickmen.length) {
+            const current = document.getElementById(stickmen[currentIndex]);
+            if (current) {
+                current.classList.remove('hidden');
+                current.classList.add('visible');
+                currentIndex++;
+
+                // Met à jour la barre
+                const progressIncrement = 100 / stickmen.length;
+                updateProgress(progressIncrement * currentIndex);
+
+                // Prochain stickman après 2,5 s
+                setTimeout(showNextStickman, 2500);
+            }
+        } else {
+            // Fin de l'animation => on masque l'écran de chargement
+            console.log('Animation finale');
+            loadingScreen.classList.remove('show');
+            loadingScreen.classList.add('hide');
+
+            // Et on rend la page visible
+            mainContent.classList.add('show');
+            superpowersSection.classList.add('show');
+        }
+    }
+
+    // Lance l'animation
+    animateSteps();
+    setTimeout(showNextStickman, 500);
+});
+
+async function generateNextAnalysis(stepId) {
+    console.log('Début generateNextAnalysis:', { stepId });
+    if (!stepId) {
+        console.error('Step ID is required');
+        return;
+    }
+
+    const container = document.querySelector('.container');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const quizId = document.querySelector('meta[name="quiz-id"]').content;
+    const requestId = document.querySelector('meta[name="request-id"]').content;
+
+    // Récupérer le result_id actuel depuis l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentResultId = urlParams.get('result_id');
+    const currentTokenId = urlParams.get('token_id');
+
+    function showFlashMessage(message, type = 'error') {
+        // [Code existant du message flash]
+    }
+
+    try {
+        // D'abord, vérifier si l'analyse existe déjà pour ce result_id et step_id
+        const checkViewUrl = `/analysis/view/${quizId}?result_id=${currentResultId}&step_id=${stepId}&skip_loading=true`;
+        
+        const checkResponse = await fetch(checkViewUrl, {
+            method: 'HEAD'
+        });
+
+        if (checkResponse.ok) {
+            // Si l'analyse existe déjà, rediriger directement vers la vue avec skip_loading=true
+            window.location.href = checkViewUrl;
+            return;
+        }
+
+        // Si l'analyse n'existe pas, la générer
+        const response = await fetch(`/analysis/generate/${stepId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Request-ID': requestId
+            },
+            body: JSON.stringify({ 
+                quiz_id: quizId,
+                result_id: currentResultId,
+                token_id: currentTokenId,
+                force_new: true
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            // Attendre un court instant pour s'assurer que l'analyse est bien sauvegardée
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Double vérification rapide que l'analyse est disponible
+            const verifyResponse = await fetch(checkViewUrl, {
+                method: 'HEAD'
+            });
+
+            // Rediriger vers la vue avec skip_loading=false pour la première génération
+            const viewUrl = `/analysis/view/${quizId}?result_id=${currentResultId}&step_id=${stepId}&skip_loading=false`;
+            
+            // Si la vérification échoue, on réessaie une fois après un délai plus long
+            if (!verifyResponse.ok) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            window.location.href = viewUrl;
+        } else {
+            throw new Error('Erreur lors de la génération');
+        }
+    } catch (error) {
+        console.error('Error in generateNextAnalysis:', error);
+        showFlashMessage(getTranslation('erreurGenerationAnalyse'), 'error');
+    }
+}
+
+</script>
+{% endblock %}

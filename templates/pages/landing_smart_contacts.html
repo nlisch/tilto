@@ -1,0 +1,883 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto Smart Contact — Contactez les entreprises qui recrutent avant tout le monde{% endblock %}
+
+{% block meta_description %}Tilto Smart Contact détecte les signaux de recrutement avant la publication des offres. Contactez le manager direct en 2 semaines et décrochez un entretien sans passer par les RH.{% endblock %}
+
+{% block body_class %}sc-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Tilto Smart Contact",
+    "provider": { "@type": "Organization", "name": "Tilto" },
+    "description": "Prospection intelligente par IA : identification d'entreprises qui recrutent, contacts clés vérifiés, messages personnalisés prêts à envoyer.",
+    "serviceType": "Prospection emploi assistée par IA",
+    "areaServed": { "@type": "Country", "name": "France" },
+    "offers": { "@type": "Offer", "price": "49.90", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════
+   TILTO SMART CONTACT — Landing Page
+   Jinja2 template (extends base.html)
+   All classes sc- prefixed
+   ═══════════════════════════════════ */
+
+/* Hide base layout for standalone landing */
+.sc-page .header-parallax,
+.sc-page .mobile-nav,
+.sc-page .secondary-navbar,
+.sc-page > footer,
+.sc-page .flash-messages,
+.sc-page main { padding: 0; max-width: none; }
+
+.sc-page {
+    --pri: #A11857; --pri-dk: #7a1142; --pri-lt: #FDF2F8;
+    --cream: #FAF7F2; --sand: #F5F0E8; --rose: #EBD5E3;
+    --txt: #1A1A1A; --txt-md: #4A4A4A; --txt-lt: #777;
+    --wh: #FFFFFF; --gold: #FFB400; --gold-lt: #FFD54F;
+    --green: #16A34A; --green-lt: #F0FDF4; --r: 16px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--cream); color: var(--txt); line-height: 1.6;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+
+/* ═══ NAV ═══ */
+.sc-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(250,247,242,0.82); backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid rgba(235,213,227,0.6);
+    padding: 0 32px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: all 0.3s;
+}
+.sc-nav.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.04); background: rgba(250,247,242,0.95); }
+.sc-nav-brand { display: flex; align-items: baseline; gap: 3px; text-decoration: none; }
+.sc-nav-logo { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 1.25rem; color: var(--pri); }
+.sc-nav-badge { font-family: 'Caveat', cursive; font-weight: 600; font-size: 1.1rem; color: var(--pri); margin-left: 2px; }
+.sc-nav-cta {
+    background: var(--pri); color: var(--wh); padding: 9px 22px; border-radius: 10px;
+    font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all 0.25s;
+    box-shadow: 0 2px 8px rgba(161,24,87,0.2);
+}
+.sc-nav-cta:hover { background: var(--pri-dk); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(161,24,87,0.3); }
+
+/* ═══ HERO ═══ */
+.sc-hero {
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px 10px 10px; position: relative; overflow: hidden;
+}
+.sc-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 30%, rgba(161,24,87,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 70% 20%, rgba(255,180,0,0.04) 0%, transparent 45%);
+    pointer-events: none;
+}
+.sc-hero-inner {
+    max-width: 1000px; width: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0;
+    position: relative; z-index: 1;
+}
+
+/* ═══ HERO TEXT (centered) ═══ */
+.sc-hero-form {
+    width: 100%; max-width: 1200px;
+    padding: 0 24px 40px; text-align: center;
+}
+.sc-hero-form h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+    line-height: 1.22; color: var(--txt); margin-bottom: 20px;
+}
+.sc-hero-form h1 span { color: var(--pri); }
+.sc-subtitle {
+    font-size: 1.05rem; color: var(--txt-md); line-height: 1.8;
+    margin-bottom: 32px; max-width: 640px; margin-left: auto; margin-right: auto;
+}
+
+/* Badge réassurance */
+.sc-reassurance-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #F7C164;
+    border-radius: 12px; padding: 10px 20px;
+    margin-bottom: 28px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.88rem; font-weight: 700; color: var(--txt);
+    letter-spacing: 0.2px;
+}
+.sc-reassurance-icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--pri); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.sc-reassurance-icon svg { width: 11px; height: 11px; stroke: white; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.sc-reassurance-num { color: var(--pri); }
+
+/* Offer block */
+.sc-offer {
+    background: rgba(255,255,255,0.5); border-radius: 20px; padding: 22px 24px; margin-bottom: 16px;
+    border: 1.5px solid var(--rose); box-shadow: 0 8px 32px rgba(161,24,87,.04);
+    text-align: left;
+}
+.sc-offer-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sc-offer-what { display: flex; align-items: center; gap: 14px; }
+.sc-offer-num { font-family: 'Libre Baskerville', serif; font-size: 2.2rem; font-weight: 700; color: var(--pri); line-height: 1; }
+.sc-offer-detail { display: flex; flex-direction: column; }
+.sc-offer-detail strong { font-size: .92rem; color: var(--txt); }
+.sc-offer-detail span { font-size: .72rem; color: var(--txt-md); margin-top: 2px; }
+.sc-price-amount { font-family: 'Libre Baskerville', serif; font-size: 1.8rem; font-weight: 700; color: var(--pri); line-height: 1; display: block; }
+
+.sc-stat-proof { font-size: .78rem; color: var(--txt-md); text-align: center; margin-bottom: 14px; }
+.sc-stat-proof-num { font-family: 'Libre Baskerville', serif; font-weight: 700; color: var(--pri); font-size: .88rem; }
+
+/* Email CTA */
+.sc-email-wrap {
+    display: flex; gap: 0; border-radius: 16px; overflow: hidden;
+    border: 2.5px solid var(--rose); background: var(--wh);
+    transition: border-color .3s, box-shadow .3s; margin-top: 4px;
+    max-width: 540px; margin-left: auto; margin-right: auto;
+}
+.sc-email-wrap:focus-within {
+    border-color: var(--pri);
+    box-shadow: 0 0 0 5px rgba(161,24,87,.08), 0 8px 30px rgba(161,24,87,.1);
+}
+.sc-email-field {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    padding: 4px 4px 4px 18px; min-width: 0;
+}
+.sc-email-icon {
+    width: 20px; height: 20px; flex-shrink: 0;
+    stroke: var(--txt-lt); stroke-width: 1.8; fill: none;
+    stroke-linecap: round; stroke-linejoin: round; transition: stroke .3s;
+}
+.sc-email-wrap:focus-within .sc-email-icon { stroke: var(--pri); }
+.sc-email-field input {
+    border: none; outline: none; background: transparent;
+    font-family: 'DM Sans', sans-serif; font-size: .92rem;
+    color: var(--txt); width: 100%; padding: 14px 0;
+}
+.sc-email-field input::placeholder { color: #c4b5a8; }
+.sc-email-btn {
+    flex-shrink: 0; border: none; cursor: pointer;
+    background: var(--pri); color: var(--wh);
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: .88rem;
+    padding: 0 28px; margin: 5px; border-radius: 12px;
+    transition: all .25s; white-space: nowrap;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 2px 10px rgba(161,24,87,.2);
+}
+.sc-email-btn:hover { background: var(--pri-dk); box-shadow: 0 4px 18px rgba(161,24,87,.3); }
+.sc-email-btn:active { transform: scale(.98); }
+.sc-email-btn.loading { pointer-events: none; opacity: .85; }
+
+.sc-email-error {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px; padding: 10px 16px;
+    background: #FEF2F2; border: 1px solid #FECACA; border-radius: 12px;
+    font-size: .82rem; font-weight: 600; color: #991B1B;
+    animation: sc-shakeX .4s ease; max-width: 540px; margin-left: auto; margin-right: auto;
+}
+.sc-email-error svg { flex-shrink: 0; fill: #DC2626; stroke: white; stroke-width: 2; }
+@keyframes sc-shakeX {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+}
+.sc-email-wrap.error { border-color: #DC2626; animation: sc-shakeX .4s ease; }
+.sc-email-wrap.success { border-color: var(--green); }
+.sc-form-note { font-size: 0.7rem; color: var(--txt-lt); margin-top: 10px; text-align: center; }
+.sc-form-note a { color: var(--txt-md); text-decoration: underline; }
+.sc-form-note a:hover { color: var(--pri); }
+
+/* ═══ VIDEO (below, full width of hero) ═══ */
+.sc-hero-visual {
+    width: 100%; max-width: 960px;
+    display: flex; align-items: center; justify-content: center;
+}
+.sc-video-frame {
+    position: relative; width: 100%;
+    border-radius: 10px!important; overflow: hidden;
+    box-shadow:
+        0 -8px 40px rgba(161,24,87,0.08),
+        0 -2px 16px rgba(0,0,0,0.06),
+        0 32px 80px rgba(161,24,87,0.10);
+    transition: transform .5s cubic-bezier(.23,1,.32,1);
+}
+.sc-video-wrapper {
+    position: relative; width: 100%;
+    aspect-ratio: 1684 / 1080;
+    background: #0d0d14; overflow: hidden;
+    cursor: pointer;
+}
+.sc-hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+/* Click-to-play overlay */
+.sc-video-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    background: rgba(10,8,20,0.45);
+    backdrop-filter: blur(2px);
+    transition: opacity .35s ease;
+    z-index: 2;
+}
+.sc-video-overlay.hidden { opacity: 0; pointer-events: none; }
+.sc-video-play-circle {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--pri);
+    display: flex; align-items: center; justify-content: center;
+    animation: sc-playPulse 2.5s ease-in-out infinite;
+    transition: transform .25s, background .25s;
+}
+.sc-video-overlay:hover .sc-video-play-circle { transform: scale(1.1); background: var(--pri-dk); }
+.sc-video-play-circle svg { width: 30px; height: 30px; fill: white; margin-left: 4px; }
+.sc-video-play-label { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: 0.3px; }
+@keyframes sc-playPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(161,24,87,0.5); }
+    50% { box-shadow: 0 0 0 18px rgba(161,24,87,0); }
+}
+
+/* ═══ SECTION COMMONS ═══ */
+.sc-section-label {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 2.5px; color: var(--pri); margin-bottom: 12px; text-align: center;
+}
+.sc-section-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+    color: var(--txt); margin-bottom: 14px; line-height: 1.3; text-align: center;
+}
+.sc-section-title em { font-family: 'Caveat', cursive; color: var(--pri); font-style: normal; font-size: 1.15em; }
+.sc-section-sub {
+    font-size: 0.93rem; color: var(--txt-md); max-width: 600px;
+    margin: 0 auto 56px; line-height: 1.7; text-align: center;
+}
+.sc-btn-primary {
+    background: var(--pri); color: var(--wh); padding: 16px 36px; border-radius: 14px;
+    text-decoration: none; font-weight: 700; font-size: 0.95rem;
+    transition: all 0.3s; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(161,24,87,0.25);
+}
+.sc-btn-primary:hover { background: var(--pri-dk); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(161,24,87,0.3); }
+
+/* ═══ LIGHTBOX ═══ */
+.sc-lightbox {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(10,8,20,0.92); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s ease;
+    padding: 20px;
+}
+.sc-lightbox.active { opacity: 1; pointer-events: all; }
+.sc-lightbox-inner {
+    position: relative; width: 100%; max-width: 1000px;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+    background: #0d0d14;
+}
+.sc-lightbox-video {
+    width: 100%; aspect-ratio: 1684 / 1080;
+    display: block; object-fit: cover;
+}
+.sc-lightbox-close {
+    position: fixed; top: 20px; right: 20px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--wh);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .2s; z-index: 10001;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.sc-lightbox-close:hover { background: var(--pri); transform: scale(1.1); }
+.sc-lightbox-close:hover svg { stroke: white; }
+.sc-lightbox-close svg { width: 18px; height: 18px; stroke: var(--txt); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+
+/* ═══ HOW IT WORKS ═══ */
+.sc-how {
+    padding: 100px 32px; background: var(--cream);
+    position: relative; text-align: center;
+}
+.sc-how::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+}
+.sc-how-inner { max-width: 1100px; margin: 0 auto; }
+.sc-steps {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px; margin-bottom: 56px; position: relative;
+    align-items: stretch;
+}
+/* Connector line through circle centers (top: 28px = half of 56px circles) */
+.sc-steps::before {
+    content: ''; position: absolute;
+    top: 28px;
+    left: calc(16.66% + 4px);
+    right: calc(16.66% + 4px);
+    height: 1.5px;
+    background: linear-gradient(90deg,
+        var(--pri) 0%,
+        rgba(161,24,87,0.2) 50%,
+        var(--pri) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+.sc-step {
+    position: relative; text-align: left;
+    display: flex; flex-direction: column;
+}
+/* Step number bubble */
+.sc-step-num {
+    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+    background: var(--pri);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Libre Baskerville', serif; font-weight: 700;
+    font-size: 1.2rem; color: var(--wh);
+    box-shadow: 0 6px 20px rgba(161,24,87,0.3);
+    position: relative; z-index: 1;
+    margin-bottom: 20px;
+    transition: transform .3s, box-shadow .3s;
+}
+.sc-step:hover .sc-step-num {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 12px 32px rgba(161,24,87,0.4);
+}
+/* Card */
+.sc-step-card {
+    background: var(--wh);
+    border: 1.5px solid rgba(235,213,227,0.8);
+    border-radius: 20px; padding: 28px 26px;
+    box-shadow: 0 4px 24px rgba(161,24,87,0.05), 0 1px 4px rgba(0,0,0,0.04);
+    transition: all .35s cubic-bezier(.23,1,.32,1);
+    display: flex; flex-direction: column; flex: 1;
+}
+.sc-step:hover .sc-step-card {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 56px rgba(161,24,87,0.10), 0 4px 12px rgba(0,0,0,0.05);
+    border-color: rgba(161,24,87,0.25);
+}
+/* Tag pill */
+.sc-step-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--pri-lt); border: 1px solid rgba(161,24,87,0.12);
+    border-radius: 20px; padding: 4px 12px; margin-bottom: 14px;
+    font-size: 0.63rem; font-weight: 700; color: var(--pri);
+    text-transform: uppercase; letter-spacing: 1.2px; width: fit-content;
+}
+.sc-step-title {
+    font-family: 'Libre Baskerville', serif; font-size: 1rem;
+    font-weight: 700; color: var(--txt); margin-bottom: 12px; line-height: 1.4;
+}
+.sc-step-body {
+    font-size: 0.83rem; color: var(--txt-md); line-height: 1.8;
+    flex: 1;
+}
+/* Stat badge pinned to bottom */
+.sc-step-stat {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin-top: 20px;
+    background: var(--pri-lt);
+    border: 1px solid rgba(161,24,87,0.12); border-radius: 10px;
+    padding: 10px 14px; font-size: 0.75rem; font-weight: 700; color: var(--pri);
+    line-height: 1.4;
+}
+.sc-step-stat svg { width: 13px; height: 13px; stroke: var(--pri); stroke-width: 2.5; fill: none; stroke-linecap: round; flex-shrink: 0; margin-top: 1px; }
+
+@media (max-width: 900px) {
+    .sc-steps { grid-template-columns: 1fr; gap: 20px; align-items: stretch; }
+    .sc-steps::before { display: none; }
+    .sc-step { padding: 0; }
+}
+@media (max-width: 768px) {
+    .sc-how { padding: 70px 20px; }
+}
+
+
+/* ═══ FAQ ═══ */
+.sc-faq-section {
+    padding: 100px 32px; background: var(--cream); text-align: center; position: relative;
+}
+.sc-faq-section::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rose), transparent);
+}
+.sc-faq-inner { max-width: 780px; margin: 0 auto; }
+.sc-faq-list { text-align: left; }
+.sc-faq-item {
+    border: 1.5px solid rgba(235,213,227,0.6); border-radius: 16px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.4); overflow: hidden; transition: all 0.3s;
+}
+.sc-faq-item:hover { border-color: rgba(161,24,87,0.2); }
+.sc-faq-item.sc-open { border-color: rgba(161,24,87,0.25); background: rgba(255,255,255,0.6); }
+.sc-faq-question {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; cursor: pointer;
+    font-weight: 600; font-size: 0.92rem; color: var(--txt);
+    user-select: none; gap: 16px; transition: color 0.2s;
+}
+.sc-faq-question:hover { color: var(--pri); }
+.sc-faq-chevron {
+    width: 20px; height: 20px; flex-shrink: 0;
+    stroke: var(--txt-lt); stroke-width: 2; fill: none;
+    stroke-linecap: round; stroke-linejoin: round; transition: all 0.35s;
+}
+.sc-faq-item.sc-open .sc-faq-chevron { transform: rotate(180deg); stroke: var(--pri); }
+.sc-faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.23, 1, 0.32, 1), padding 0.3s; }
+.sc-faq-item.sc-open .sc-faq-answer { max-height: 600px; }
+.sc-faq-answer-inner { padding: 0 24px 22px; font-size: 0.85rem; color: var(--txt-md); line-height: 1.75; }
+.sc-faq-answer-inner ul { list-style: none; padding: 0; margin: 8px 0; }
+.sc-faq-answer-inner ul li { padding: 4px 0 4px 20px; position: relative; }
+.sc-faq-answer-inner ul li::before { content: '✓'; position: absolute; left: 0; color: var(--pri); font-weight: 700; font-size: 0.8rem; }
+.sc-faq-cta { margin-top: 48px; }
+
+/* ═══ FOOTER ═══ */
+.sc-footer {
+    background: var(--cream); border-top: 1px solid rgba(235,213,227,0.5);
+    color: var(--txt-lt); padding: 36px 32px; text-align: center; font-size: 0.78rem;
+}
+.sc-footer a { color: var(--txt-md); text-decoration: none; transition: color 0.2s; }
+.sc-footer a:hover { color: var(--pri); }
+.sc-footer-logo {
+    display: inline-flex; align-items: baseline; gap: 4px;
+    font-family: 'Libre Baskerville', serif; font-weight: 700;
+    font-size: 1rem; color: var(--pri); margin-bottom: 8px;
+}
+.sc-footer-badge { font-family: 'Caveat', cursive; font-weight: 600; font-size: 1.05rem; color: var(--pri); margin-left: 2px; }
+
+/* ═══ ANIMATIONS ═══ */
+.sc-fade-up {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.sc-fade-up.sc-visible { opacity: 1; transform: translateY(0); }
+.sc-d1 { transition-delay: 0.08s; }
+.sc-d2 { transition-delay: 0.16s; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 900px) {
+    .sc-hero-form { max-width: 100%; padding: 0 16px 28px; }
+    .sc-offer-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+@media (max-width: 768px) {
+    .sc-hero { padding: 72px 0 0; }
+    .sc-hero-form h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); }
+    .sc-subtitle { font-size: 0.84rem; }
+    .sc-video-frame { border-radius: 12px 12px 0 0; }
+    .sc-how { padding: 60px 20px; }
+    .sc-section-title { font-size: 1.3rem; }
+    .sc-faq-section { padding: 60px 16px; }
+    .sc-faq-question { padding: 16px 18px; font-size: 0.85rem; }
+    .sc-faq-answer-inner { padding: 0 18px 16px; font-size: 0.82rem; }
+}
+@media (max-width: 600px) {
+    .sc-email-wrap { flex-direction: column; border-radius: 14px; }
+    .sc-email-field { padding: 4px 16px; }
+    .sc-email-btn { margin: 0 5px 5px; padding: 15px 20px; border-radius: 10px; justify-content: center; }
+}
+@media (max-width: 480px) {
+    .sc-nav { padding: 0 14px; height: 56px; }
+    .sc-nav-logo { font-size: 1.05rem; }
+    .sc-nav-badge { font-size: 0.95rem; }
+    .sc-nav-cta { padding: 7px 14px; font-size: 0.78rem; }
+    .sc-hero { padding: 68px 0 0; }
+    .sc-hero-inner { gap: 28px; margin-left: 1rem; margin-right: 1rem; }
+    .sc-hero-form { padding: 0; }
+    .sc-hero-form h1 { font-size: 1.4rem; margin-bottom: 14px; }
+    .sc-subtitle { font-size: 0.78rem; margin-bottom: 20px; }
+    .sc-faq-section { padding: 48px 0; }
+    .sc-faq-inner { margin-left: 1rem; margin-right: 1rem; }
+    .sc-faq-question { padding: 14px 14px; font-size: 0.82rem; gap: 10px; }
+    .sc-faq-answer-inner { padding: 0 14px 14px; font-size: 0.78rem; }
+    .sc-faq-chevron { width: 16px; height: 16px; }
+    .sc-footer { font-size: 0.72rem; padding: 20px 14px; }
+    .sc-footer-logo { font-size: 0.9rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ NAV ═══ -->
+<nav class="sc-nav" id="scNav">
+    <a href="#" class="sc-nav-brand">
+        <img src="https://images.tilto.co/production/2026/02/bfb592d3_Tilto_SmartContact_Horizontal_transparent_1.webp" alt="Tilto Smart Contact" style="height: 80px; width: auto;">
+    </a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="sc-hero">
+    <div class="sc-hero-inner">
+
+        <!-- CENTER — Text + form -->
+        <div class="sc-hero-form sc-fade-up" id="sc-form">
+
+            <!-- Badge réassurance -->
+            <div class="sc-reassurance-badge">
+                <div class="sc-reassurance-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Déjà <span class="sc-reassurance-num">+150 entretiens décrochés</span> grâce à Tilto</span>
+            </div>
+
+            <h1>Contactez les entreprises<br>qui recrutent <span>avant tout le monde</span></h1>
+
+            <p class="sc-subtitle">
+                Plusieurs signaux de recrutement sont détectés — prenez contact avec le manager direct dans les 2 semaines — décrochez un entretien sans passer par le filtre RH
+            </p>
+
+            <div class="sc-stat-proof">
+                Une approche ciblée obtient <span class="sc-stat-proof-num">x3 plus de réponses</span> qu'une candidature classique
+            </div>
+
+            <form id="scBuyForm" action="{{ url_for('tokens.smart_contact_confirm', product_id='pack_smart_contact_fr') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- Honeypot anti-bot -->
+                <input type="text" name="website" style="display:none;" tabindex="-1" autocomplete="off">
+                <div class="sc-email-wrap">
+                    <div class="sc-email-field">
+                        <svg class="sc-email-icon" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><polyline points="2 4 12 13 22 4"/></svg>
+                        <input type="email" id="scEmail" name="email" placeholder="votre@email.com" required autocomplete="email">
+                    </div>
+                    <button type="submit" class="sc-email-btn">
+                        <span class="sc-email-btn-text">Contacter mes entreprises →</span>
+                        <span class="sc-email-btn-loader" style="display:none;">
+                            <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="3" fill="none" stroke-dasharray="30 70" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".7s" repeatCount="indefinite"/></circle></svg>
+                        </span>
+                    </button>
+                </div>
+                <div id="scEmailError" class="sc-email-error" style="display:none;">
+                    <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5"/></svg>
+                    <span></span>
+                </div>
+            </form>
+        </div>
+
+        <!-- BELOW — Video full width -->
+        <div class="sc-hero-visual sc-fade-up sc-d2">
+            <div class="sc-video-frame">
+                <div class="sc-video-wrapper" id="scVideoWrapper">
+                    <video
+                        id="scHeroVideo"
+                        class="sc-hero-video"
+                        src="https://images.tilto.co/videos/production/2026/03/8a5162ff_demo_smart_contact.webm"
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+                    <div class="sc-video-overlay" id="scVideoOverlay">
+                        <div class="sc-video-play-circle">
+                            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                        </div>
+                        <span class="sc-video-play-label">Voir la démo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div class="sc-lightbox" id="scLightbox">
+    <div class="sc-lightbox-inner">
+        <video id="scLightboxVideo" class="sc-lightbox-video" src="https://images.tilto.co/videos/production/2026/03/8a5162ff_demo_smart_contact.webm" controls playsinline></video>
+        <button class="sc-lightbox-close" id="scLightboxClose" aria-label="Fermer">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+</div>
+
+
+<!-- ═══ FAQ ═══ -->
+<section class="sc-faq-section" id="sc-faq">
+    <div class="sc-faq-inner">
+        <div class="sc-section-label sc-fade-up">FAQ</div>
+        <h2 class="sc-section-title sc-fade-up">Foire aux questions</h2>
+
+        <div class="sc-faq-list">
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Qu'est-ce que Tilto Smart Contact ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Tilto Smart Contact est une nouvelle méthode de recherche d'emploi. Au lieu de vous limiter aux annonces, l'outil identifie les entreprises susceptibles de recruter prochainement grâce à l'analyse de signaux récents (expansion, nouveaux projets, recrutements connexes, levées de fonds…).<br><br>
+                    Nous sélectionnons les bonnes entreprises, les bons interlocuteurs à contacter (souvent votre futur manager) et préparons des messages personnalisés pour engager la conversation au bon moment.<br><br>
+                    L'objectif : créer une relation avant même que l'offre soit publiée et obtenir plus de réponses qu'avec les candidatures classiques.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Approche Smart Contact vs Candidature classique</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Une candidature classique consiste à répondre à une offre d’emploi publiée (sur LinkedIn, Indeed, etc.) en envoyant son CV et parfois une lettre de motivation.
+                    Ce processus met souvent les candidats en concurrence avec des dizaines, voire des centaines d’autres profils, et passe généralement par plusieurs filtres (ATS, RH) avant d’atteindre le manager concerné.
+                    Avec Smart Contact, l’approche est différente : vous identifiez les entreprises pertinentes et prenez directement contact avec le bon interlocuteur au bon moment, sans passer par la concurrence des candidatures classiques.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Combien de contacts sont fournis ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Vous recevez 10 prises de contact ciblées. Pour chaque entreprise, nous identifions le bon type de profil à approcher (souvent votre futur manager) et préparons un message personnalisé prêt à envoyer.<br><br>
+                    L'objectif n'est pas le volume, mais la précision : 10 contacts stratégiques valent souvent plus que des dizaines de candidatures envoyées au hasard.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Est-ce automatisé ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Non. Tilto utilise l'IA pour analyser les entreprises et détecter les signaux de recrutement, mais les prises de contact restent humaines. Les messages sont personnalisés pour chaque entreprise et vous les envoyez vous-même.<br><br>
+                    Pas de spam. Pas d'envoi massif. Une approche ciblée et stratégique.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>À qui s'adresse ce service ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Tilto Smart Contact s'adresse aux personnes qui cherchent un emploi et veulent sortir des candidatures classiques.
+                    <ul>
+                        <li>Jeunes diplômés</li>
+                        <li>Profils en reconversion</li>
+                        <li>Cadres et professionnels expérimentés</li>
+                    </ul>
+                    Si vous avez l'impression que les annonces sont saturées et que votre CV ne suffit plus à vous démarquer, cette méthode est faite pour vous. Tous secteurs en France.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Combien coûte le service ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Le service est à 29,90&nbsp;€ par pack. Chaque pack contient 10 prises de contact ciblées avec messages personnalisés pour vous aider à engager des conversations stratégiques avec des entreprises pertinentes.<br><br>
+                    Pas d'abonnement. Paiement unique par pack.
+                </div></div>
+            </div>
+
+            <div class="sc-faq-item sc-fade-up">
+                <div class="sc-faq-question">
+                    <span>Y a-t-il une garantie de résultat ?</span>
+                    <svg class="sc-faq-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sc-faq-answer"><div class="sc-faq-answer-inner">
+                    Nous ne garantissons pas un emploi ou un nombre précis d'entretiens. En revanche, nous garantissons :
+                    <ul>
+                        <li>10 prises de contact ciblées</li>
+                        <li>Une analyse basée sur des signaux récents de recrutement</li>
+                        <li>Des messages personnalisés prêts à envoyer</li>
+                        <li>Une méthode qui génère en moyenne 3x plus de réponses que les candidatures classiques</li>
+                    </ul>
+                    Votre implication (personnalisation, envoi, relance) reste essentielle pour maximiser les résultats.
+                </div></div>
+            </div>
+
+        </div>
+
+        <div class="sc-faq-cta sc-fade-up">
+            <a href="#sc-form" class="sc-btn-primary">Contacter mes entreprises →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="sc-footer">
+    <p class="sc-footer-logo">
+        <img src="https://images.tilto.co/production/2026/02/bfb592d3_Tilto_SmartContact_Horizontal_transparent_1.webp" alt="Tilto Smart Contact" style="height: 80px; width: auto;">
+    </p>
+    <p style="margin-bottom:6px;">Accédez au marché caché de l'emploi grâce à la prospection intelligente.</p>
+    <p>© 2026 Tilto — <a href="{{ url_for('terms_of_service') }}">Conditions Générales</a> · <a href="{{ url_for('privacy_policy') }}">Politique de confidentialité</a> · <a href="{{ url_for('legal') }}">Mentions légales</a></p>
+    <p style="font-size:.65rem;color:#A8A29E;margin-top:4px">Logos par <a href="https://logo.dev" target="_blank" rel="noopener" style="color:var(--pri);text-decoration:none;font-weight:600">Logo.dev</a></p>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function() {
+    'use strict';
+
+    // Nav scroll effect
+    var nav = document.getElementById('scNav');
+    window.addEventListener('scroll', function() {
+        nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Scroll animations
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (e.isIntersecting) e.target.classList.add('sc-visible');
+        });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.sc-fade-up').forEach(function(el) { obs.observe(el); });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#sc-"]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+            var href = a.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                var t = document.querySelector(href);
+                if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // FAQ accordion
+    document.querySelectorAll('.sc-faq-question').forEach(function(q) {
+        q.addEventListener('click', function() {
+            var item = q.closest('.sc-faq-item');
+            var wasOpen = item.classList.contains('sc-open');
+            document.querySelectorAll('.sc-faq-item').forEach(function(i) { i.classList.remove('sc-open'); });
+            if (!wasOpen) item.classList.add('sc-open');
+        });
+    });
+
+    // Hero video — click opens lightbox
+    var heroVideo = document.getElementById('scHeroVideo');
+    var videoOverlay = document.getElementById('scVideoOverlay');
+    var videoWrapper = document.getElementById('scVideoWrapper');
+    var lightbox = document.getElementById('scLightbox');
+    var lightboxVideo = document.getElementById('scLightboxVideo');
+    var lightboxClose = document.getElementById('scLightboxClose');
+
+    function openLightbox() {
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    lightboxVideo.play();
+    // Track video play
+    if (typeof gtag === 'function') {
+        gtag('event', 'video_play', {
+            'event_category': 'smart_contact',
+            'event_label': 'demo_smart_contact',
+            'value': 1
+        });
+    }
+}
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+        lightboxVideo.pause();
+        lightboxVideo.currentTime = 0;
+    }
+
+    if (videoWrapper) {
+        videoWrapper.addEventListener('click', openLightbox);
+    }
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+    if (lightbox) {
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox) closeLightbox();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    }
+
+
+    var buyForm = document.getElementById('scBuyForm');
+    if (buyForm) {
+        var emailInput = buyForm.querySelector('#scEmail');
+        var emailWrap = buyForm.querySelector('.sc-email-wrap');
+        var errorBox = document.getElementById('scEmailError');
+        var btnText = buyForm.querySelector('.sc-email-btn-text');
+        var btnLoader = buyForm.querySelector('.sc-email-btn-loader');
+        var btn = buyForm.querySelector('.sc-email-btn');
+
+        // Clear error on typing
+        emailInput.addEventListener('input', function() {
+            emailWrap.classList.remove('error');
+            errorBox.style.display = 'none';
+        });
+
+        buyForm.addEventListener('submit', function(e) {
+            var val = emailInput.value.trim();
+            var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!val) {
+                e.preventDefault();
+                showEmailError('Merci de renseigner votre adresse email.');
+                return;
+            }
+            if (!re.test(val)) {
+                e.preventDefault();
+                showEmailError('Cette adresse email ne semble pas valide.');
+                return;
+            }
+
+            // Valid — show loader, let form submit natively (POST to server)
+            btn.classList.add('loading');
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'flex';
+            emailWrap.classList.remove('error');
+            emailWrap.classList.add('success');
+
+            // Track event
+            // Track event — Google Analytics
+            if (typeof gtag === 'function') {
+                gtag('event', 'smart_contact_buy_click', {
+                    'event_category': 'smart_contact',
+                    'event_label': 'email_submitted',
+                    'value': 1
+                });
+            }
+            // Track event — Facebook Pixel
+            if (typeof fbq === 'function') {
+                fbq('track', 'Lead', {
+                    content_name: 'Smart Contact Pack',
+                    content_category: 'smart_contact'
+                });
+            }
+        });
+
+        function showEmailError(msg) {
+            errorBox.querySelector('span').textContent = msg;
+            errorBox.style.display = 'flex';
+            emailWrap.classList.add('error');
+            emailInput.focus();
+        }
+
+        // Réinitialise le bouton si l'utilisateur revient en arrière (bfcache)
+        window.addEventListener('pageshow', function(e) {
+            btn.classList.remove('loading');
+            btnText.style.display = '';
+            btnLoader.style.display = 'none';
+            emailWrap.classList.remove('success', 'error');
+        });
+    }
+})();
+</script>
+{% endblock %}

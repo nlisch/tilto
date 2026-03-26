@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light only">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Confirmation d'achat — Tilto Smart Contact</title>
+
+    <style type="text/css">
+        :root { color-scheme: light only; supported-color-schemes: light only; }
+
+        @media (prefers-color-scheme: dark) {
+            body, .body-wrapper, .email-container { background-color: #f5f5f5 !important; }
+            .email-card { background-color: #ffffff !important; }
+            h1, h2, h3, p, span, td, div { color: inherit !important; }
+        }
+        u + .body .body-wrapper { background-color: #f5f5f5 !important; }
+        body[data-outlook-cycle] .body-wrapper { background-color: #f5f5f5 !important; }
+    </style>
+
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td, p, a { font-family: Arial, sans-serif !important; }
+    </style>
+    <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+    <![endif]-->
+</head>
+
+<body class="body" style="margin: 0 !important; padding: 0 !important; background-color: #f5f5f5 !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+<div class="body-wrapper" style="background-color: #f5f5f5 !important; width: 100% !important; margin: 0; padding: 0;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-container" style="background-color: #f5f5f5 !important;">
+<tr>
+<td align="center" valign="top" style="background-color: #f5f5f5 !important; padding: 40px 20px;">
+
+<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" align="center"><tr><td><![endif]-->
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-card" style="max-width: 600px; margin: 0 auto; background-color: #ffffff !important; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+
+    <!-- ══════ HEADER ══════ -->
+    <tr>
+        <td style="background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%); background-color: #A11857; padding: 40px 30px 32px; text-align: center; border-radius: 16px 16px 0 0;">
+            <p style="margin: 0 0 6px 0; font-size: 14px; color: rgba(255,255,255,0.75) !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase;">Tilto Smart Contact</p>
+            <h1 style="color: #ffffff !important; margin: 0; font-size: 24px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.3;">
+                Merci pour votre achat ! 🎉
+            </h1>
+        </td>
+    </tr>
+
+    <!-- ══════ CONTENT ══════ -->
+    <tr>
+        <td style="padding: 36px 30px; background-color: #ffffff !important;">
+
+            <!-- Greeting -->
+            <p style="font-size: 18px; color: #333333 !important; margin: 0 0 20px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Bonjour {{ firstname or '' }},
+            </p>
+
+            <p style="line-height: 1.6; margin: 0 0 24px 0; font-size: 15px; color: #555555 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Votre commande <strong style="color: #333333 !important;">Smart Contact — 10 contacts</strong> a bien été confirmée.
+            </p>
+
+            <!-- ══════ RÉCAP COMMANDE ══════ -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 28px 0; border: 1px solid #eeeeee; border-radius: 12px; overflow: hidden;">
+                <tr>
+                    <td style="background-color: #fafafa !important; padding: 14px 20px; border-bottom: 1px solid #eeeeee;">
+                        <p style="margin: 0; font-size: 14px; font-weight: 700; color: #333333 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            📋 Récap de votre commande
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 16px 20px; background-color: #ffffff !important;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                                <td style="padding: 6px 0; font-size: 14px; color: #777777 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">N° de commande</td>
+                                <td align="right" style="padding: 6px 0; font-size: 14px; color: #333333 !important; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{{ order_number }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; font-size: 14px; color: #777777 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Produit</td>
+                                <td align="right" style="padding: 6px 0; font-size: 14px; color: #333333 !important; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Smart Contact — 10 contacts</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; font-size: 14px; color: #777777 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Prix</td>
+                                <td align="right" style="padding: 6px 0; font-size: 14px; color: #333333 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{{ original_amount }} €</td>
+                            </tr>
+                            {% if discount_code %}
+                            <tr>
+                                <td style="padding: 6px 0; font-size: 14px; color: #A11857 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                                    Réduction{% if discount_type == 'percentage' %} ({{ discount_value }}%){% endif %}
+                                </td>
+                                <td align="right" style="padding: 6px 0; font-size: 14px; color: #A11857 !important; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">-{{ discount_amount }} €</td>
+                            </tr>
+                            {% endif %}
+                            {% if vat_amount and vat_amount|float > 0 %}
+                            <tr>
+                                <td style="padding: 6px 0; font-size: 14px; color: #777777 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">TVA (20%)</td>
+                                <td align="right" style="padding: 6px 0; font-size: 14px; color: #333333 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{{ vat_amount }} €</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" style="padding: 6px 0; font-size: 12px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Franchise de TVA — Art. 293B du CGI</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td colspan="2" style="padding-top: 12px; border-top: 1px solid #eeeeee;">
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                        <tr>
+                                            <td style="font-size: 16px; font-weight: 700; color: #333333 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Total</td>
+                                            <td align="right" style="font-size: 16px; font-weight: 700; color: #A11857 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{{ total_amount }} €</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- ══════ PROCHAINE ÉTAPE ══════ -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 28px 0;">
+                <tr>
+                    <td style="background: linear-gradient(135deg, #EBD5E3 0%, #f3e8ff 100%); background-color: #EBD5E3; border-radius: 12px; padding: 24px;">
+                        <p style="margin: 0 0 14px 0; font-size: 16px; font-weight: 700; color: #A11857 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            🎯 Prochaine étape
+                        </p>
+                        <p style="margin: 0; font-size: 14px; color: #555555 !important; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            Indiquez votre numéro de téléphone pour que nous puissions vous appeler. Lors d'un échange rapide d'environ <strong style="color: #333333 !important;">10 minutes</strong>, nous définirons ensemble vos critères de recherche (poste visé, secteur, type d'entreprises…). Cela nous permettra de préparer vos <strong style="color: #333333 !important;">10 contacts stratégiques</strong> et les messages personnalisés.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- ══════ BOUTON CTA ══════ -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 32px 0;">
+                <tr>
+                    <td align="center">
+                        <!--[if mso]>
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ dashboard_phone_url }}" style="height:54px;v-text-anchor:middle;width:300px;" arcsize="22%" stroke="f" fillcolor="#A11857">
+                        <w:anchorlock/>
+                        <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;">📞 Ajouter mon numéro</center>
+                        </v:roundrect>
+                        <![endif]-->
+                        <!--[if !mso]><!-->
+                        <a href="{{ dashboard_phone_url }}" style="background-color: #A11857 !important; color: #ffffff !important; padding: 18px 44px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(161, 24, 87, 0.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            📞 Ajouter mon numéro
+                        </a>
+                        <!--<![endif]-->
+                    </td>
+                </tr>
+            </table>
+
+            <p style="text-align: center; margin: 0 0 28px 0; font-size: 13px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Ce lien est valable 48h. Après, vous pourrez vous reconnecter depuis tilto.ai.
+            </p>
+
+            <!-- ══════ BOX RECONNEXION ══════ -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 28px 0;">
+                <tr>
+                    <td style="background-color: #e8f5f9 !important; border-left: 4px solid #0288d1; padding: 18px; border-radius: 0 8px 8px 0;">
+                        <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #01579b !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            🔑 Pour vous reconnecter plus tard
+                        </p>
+                        <ol style="margin: 6px 0 0 0; padding-left: 20px; font-size: 13px; color: #01579b !important; line-height: 1.8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            <li style="color: #01579b !important;">Allez sur <strong>tilto.ai</strong></li>
+                            <li style="color: #01579b !important;">Entrez votre email : <strong>{{ email }}</strong></li>
+                            <li style="color: #01579b !important;">Cliquez sur <strong>"Recevoir un lien de connexion"</strong></li>
+                        </ol>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Signature -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 32px; border-top: 1px solid #eeeeee; padding-top: 20px;">
+                <tr>
+                    <td>
+                        <p style="font-style: italic; font-size: 14px; color: #777777 !important; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            À très vite,<br>
+                            Claire de Tilto Smart Contact 💜
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Fallback link -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 28px;">
+                <tr>
+                    <td style="background-color: #f8f9fa !important; border-radius: 8px; padding: 16px; text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 11px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Si le bouton ne fonctionne pas, copiez ce lien :</p>
+                        <p style="word-break: break-all; margin: 0; color: #A11857 !important; font-family: monospace; font-size: 10px;">{{ dashboard_phone_url }}</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- ══════ FOOTER ══════ -->
+    <tr>
+        <td style="background-color: #f8f9fa !important; padding: 20px 30px; text-align: center; border-radius: 0 0 16px 16px;">
+            <p style="margin: 0 0 8px 0; font-size: 12px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">© {{ now.year }} Tilto — Tous droits réservés</p>
+            <p style="margin: 0 0 8px 0; font-size: 11px; color: #bbbbbb !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Cet email a été envoyé à {{ email }}</p>
+            <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                <a href="https://tilto.ai" style="color: #A11857 !important; text-decoration: none; font-size: 12px; margin: 0 8px;">tilto.ai</a>
+                <span style="color: #dddddd;">|</span>
+                <a href="mailto:contact@tilto.ai" style="color: #A11857 !important; text-decoration: none; font-size: 12px; margin: 0 8px;">contact@tilto.ai</a>
+            </p>
+        </td>
+    </tr>
+
+</table>
+
+<!--[if mso]></td></tr></table><![endif]-->
+
+</td>
+</tr>
+</table>
+</div>
+
+</body>
+</html>

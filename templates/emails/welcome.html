@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--[if !mso]><!-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--<![endif]-->
+    
+    <!-- FORCER LE MODE CLAIR - Empêcher le dark mode automatique -->
+    <meta name="color-scheme" content="light only">
+    <meta name="supported-color-schemes" content="light only">
+    <meta name="x-apple-disable-message-reformatting">
+    
+    <title>Ton expérience Tilto t'attend</title>
+    
+    <style type="text/css">
+        /* Forcer le mode clair sur tous les clients */
+        :root {
+            color-scheme: light only;
+            supported-color-schemes: light only;
+        }
+        
+        /* Reset pour dark mode */
+        @media (prefers-color-scheme: dark) {
+            body, .body-wrapper, .email-container, .content-wrapper {
+                background-color: #f5f5f5 !important;
+            }
+            .email-card {
+                background-color: #ffffff !important;
+            }
+            h1, h2, h3, p, span, td, div {
+                color: inherit !important;
+            }
+            [data-ogsc] body,
+            [data-ogsc] .body-wrapper,
+            [data-ogsc] .email-container {
+                background-color: #f5f5f5 !important;
+            }
+            [data-ogsc] .email-card {
+                background-color: #ffffff !important;
+            }
+        }
+        
+        /* Gmail dark mode specifique */
+        u + .body .body-wrapper {
+            background-color: #f5f5f5 !important;
+        }
+        
+        /* Apple Mail */
+        body[data-outlook-cycle] .body-wrapper {
+            background-color: #f5f5f5 !important;
+        }
+    </style>
+    
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td, p, a {font-family: Arial, sans-serif !important;}
+    </style>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+</head>
+
+<!-- IMPORTANT: Ajouter classe "body" pour le hack Gmail -->
+<body class="body" style="margin: 0 !important; padding: 0 !important; background-color: #f5f5f5 !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+    
+    <!-- Wrapper principal avec fond forcé -->
+    <div class="body-wrapper" style="background-color: #f5f5f5 !important; width: 100% !important; margin: 0; padding: 0;">
+        
+        <!-- Table wrapper pour compatibilité -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-container" style="background-color: #f5f5f5 !important; margin: 0; padding: 0;">
+            <tr>
+                <td align="center" valign="top" style="background-color: #f5f5f5 !important; padding: 40px 20px;">
+                    
+                    <!-- Container carte email -->
+                    <!--[if mso]>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" align="center">
+                    <tr>
+                    <td>
+                    <![endif]-->
+                    
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-card" style="max-width: 600px; margin: 0 auto; background-color: #ffffff !important; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        
+                        <!-- Header avec gradient -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%); background-color: #A11857; padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
+                                <h1 style="color: #ffffff !important; margin: 0; font-size: 26px; font-weight: 700; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Tu as commencé ton expérience !</h1>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td class="content-wrapper" style="padding: 40px 30px; background-color: #ffffff !important;">
+                                <p style="font-size: 18px; color: #333333 !important; margin: 0 0 20px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hello {{ firstname }},</p>
+                                
+                                <p style="line-height: 1.6; margin: 16px 0; font-size: 16px; color: #555555 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                    Ton compte est créé et <strong style="color: #333333 !important;">tes réponses ont bien été enregistrées</strong> ! 🙌
+                                </p>
+                                
+                                
+                                <!-- Box principale -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #EBD5E3 0%, #f3e8ff 100%); background-color: #EBD5E3; border-radius: 12px; padding: 24px; text-align: center;">
+                                            <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #A11857 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                🎯 Prochaine étape
+                                            </p>
+                                            <p style="margin: 0; font-size: 15px; color: #555555 !important; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                <strong style="color: #333333 !important;">Tu recevras un mail sous 24h pour accéder à ton diagnostic</strong>.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Bouton CTA principal -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 40px 0;">
+                                    <tr>
+                                        <td align="center">
+                                            <!--[if mso]>
+                                            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ dashboard_url }}" style="height:54px;v-text-anchor:middle;width:280px;" arcsize="22%" stroke="f" fillcolor="#A11857">
+                                            <w:anchorlock/>
+                                            <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;">👉 Accéder à mon espace</center>
+                                            </v:roundrect>
+                                            <![endif]-->
+                                            <!--[if !mso]><!-->
+                                            <a href="{{ dashboard_url }}" style="background-color: #A11857 !important; color: #ffffff !important; padding: 18px 48px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 17px; display: inline-block; box-shadow: 0 4px 12px rgba(97, 5, 69, 0.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                👉 Accéder à mon espace
+                                            </a>
+                                            <!--<![endif]-->
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Box connexion -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                    <tr>
+                                        <td style="background-color: #e8f5f9 !important; border-left: 4px solid #0288d1; padding: 20px; border-radius: 0 8px 8px 0;">
+                                            <p style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600; color: #01579b !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                🔑 Comment te reconnecter ?
+                                            </p>
+                                            <ol style="margin: 8px 0 0 0; padding-left: 20px; font-size: 14px; color: #01579b !important; line-height: 1.8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                <li style="color: #01579b !important;">Va sur <strong>tilto.ai</strong></li>
+                                                <li style="color: #01579b !important;">Entre ton email : <strong>{{ email }}</strong></li>
+                                                <li style="color: #01579b !important;">Clique sur <strong>"Recevoir un lien de connexion"</strong></li>
+                                                <li style="color: #01579b !important;">Connecte-toi en 1 clic depuis ta boîte mail !</li>
+                                            </ol>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Info box -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 30px 0;">
+                                    <tr>
+                                        <td style="background-color: #fff9e6 !important; border: 1px solid #ffd700; padding: 16px; border-radius: 8px;">
+                                            <p style="margin: 0; font-size: 14px; color: #856404 !important; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                <strong style="color: #856404 !important;">💡 Bon à savoir :</strong><br>
+                                                • Pas besoin de mot de passe, on t'envoie un lien magique<br>
+                                                • Tes données sont 100% sécurisées et conformes RGPD
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <p style="line-height: 1.6; margin: 24px 0 8px 0; font-size: 13px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                    Si tu n'as pas créé de compte sur Tilto, tu peux ignorer cet email.
+                                </p>
+                                
+                                <!-- Signature -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 40px; border-top: 1px solid #eeeeee; padding-top: 20px;">
+                                    <tr>
+                                        <td>
+                                            <p style="font-style: italic; font-size: 14px; color: #777777 !important; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                                À très vite,<br>
+                                                L'équipe Tilto 💜
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Fallback link -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 30px;">
+                                    <tr>
+                                        <td style="background-color: #f8f9fa !important; border-radius: 8px; padding: 20px; text-align: center;">
+                                            <p style="margin: 0 0 10px 0; font-size: 12px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Si le bouton ne fonctionne pas, copie ce lien :</p>
+                                            <p style="word-break: break-all; margin: 0; color: #A11857 !important; font-family: monospace; font-size: 11px;">{{ dashboard_url }}</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #f8f9fa !important; padding: 20px 30px; text-align: center; border-radius: 0 0 16px 16px;">
+                                <p style="margin: 0 0 8px 0; font-size: 12px; color: #999999 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">© {{ now.year }} Tilto - Tous droits réservés</p>
+                                <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                                    <a href="https://tilto.ai" style="color: #A11857 !important; text-decoration: none; font-size: 12px; margin: 0 8px;">tilto.ai</a>
+                                    <span style="color: #dddddd;">|</span>
+                                    <a href="mailto:contact@tilto.ai" style="color: #A11857 !important; text-decoration: none; font-size: 12px; margin: 0 8px;">contact@tilto.ai</a>
+                                </p>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                    
+                    <!--[if mso]>
+                    </td>
+                    </tr>
+                    </table>
+                    <![endif]-->
+                    
+                </td>
+            </tr>
+        </table>
+        
+    </div>
+    
+</body>
+</html>

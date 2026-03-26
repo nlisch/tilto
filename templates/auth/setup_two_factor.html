@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Configuration de l\'authentification à deux facteurs') }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>{{ _('Configuration de l\'authentification à deux facteurs') }}</h2>
+    
+    <div class="info-box alert alert-info">
+        <p><strong>{{ _('Cette étape est obligatoire pour les administrateurs.') }}</strong></p>
+        <ol class="steps-list">
+            <li>{{ _('Téléchargez une application d\'authentification comme Google Authenticator, Authy ou Microsoft Authenticator sur votre téléphone.') }}</li>
+            <li>{{ _('Scannez le QR code ci-dessous avec cette application.') }}</li>
+            <li>{{ _('Entrez le code à 6 chiffres généré par l\'application dans le champ ci-dessous.') }}</li>
+        </ol>
+        <p class="important">{{ _('IMPORTANT: Vous devez compléter cette configuration pour accéder au tableau de bord.') }}</p>
+    </div>
+    
+    <div class="two_factor-setup">
+        <div class="qrcode-container">
+            <!-- Affichage du QR code avec une indication claire -->
+            <p class="text-center instruction-text">{{ _('Scannez ce QR code avec votre application d\'authentification') }}</p>
+            {% if qr_code %}
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code 2FA" class="qrcode-image">
+            {% else %}
+                <img src="{{ url_for('auth.get_qrcode') }}" alt="QR Code 2FA" class="qrcode-image">
+            {% endif %}
+        </div>
+        
+        <!-- Afficher le secret en texte pour saisie manuelle -->
+        <div class="secret-key">
+            <p>{{ _('Si vous ne pouvez pas scanner le QR code, saisissez cette clé secrète dans votre application:') }}</p>
+            <div class="secret-box">{{ secret }}</div>
+        </div>
+        
+        <!-- Formulaire de validation avec instructions claires -->
+        <form method="POST" action="{{ url_for('auth.verify_setup') }}" id="verify-2fa-form">
+            <!-- Ajoutez cette ligne pour inclure le CSRF token -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group">
+                <label for="token">{{ _('Entrez le code à 6 chiffres affiché dans votre application:') }}</label>
+                <input type="text" id="token" name="token" required class="form-control" 
+                       pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="off"
+                       placeholder="123456">
+                <small class="form-text text-muted">{{ _('Le code change toutes les 30 secondes.') }}</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-block">
+                    {{ _('Vérifier et activer l\'authentification à deux facteurs') }}
+                </button>
+                
+                <div class="reset-link">
+                    <a href="{{ url_for('auth.reset_2fa') }}" class="text-danger">
+                        {{ _('Problème avec la configuration? Réinitialiser') }}
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Styles améliorés pour la page de configuration 2FA */
+.qrcode-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 220px;
+    height: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.qrcode-container {
+    text-align: center;
+    margin: 25px 0;
+}
+
+.instruction-text {
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.secret-box {
+    font-family: monospace;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 10px 0;
+    word-break: break-all;
+    font-size: 1.2em;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.important {
+    color: #d9534f;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.steps-list {
+    margin: 15px 0 15px 20px;
+}
+
+.steps-list li {
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-top: 20px;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.secret-key {
+    margin: 20px 0;
+    background-color: #f7f7f7;
+    padding: 15px;
+    border-radius: 4px;
+    border-left: 3px solid #007bff;
+}
+
+.reset-link {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.alert-info {
+    background-color: #e8f4fd;
+    border-color: #b8daff;
+    color: #004085;
+}
+</style>
+
+<script>
+// Script pour améliorer l'expérience utilisateur
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner les éléments du formulaire
+    const form = document.getElementById('verify-2fa-form');
+    const tokenInput = document.getElementById('token');
+    
+    if (form && tokenInput) {
+        // Forcer l'entrée numérique
+        tokenInput.addEventListener('input', function(e) {
+            // Remplacer tous les caractères non numériques
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limiter à 6 chiffres
+            if (this.value.length > 6) {
+                this.value = this.value.slice(0, 6);
+            }
+        });
+        
+        // Validation à la soumission
+        form.addEventListener('submit', function(e) {
+            if (tokenInput.value.length !== 6) {
+                e.preventDefault();
+                alert("{{ _('Veuillez saisir un code à 6 chiffres.') }}");
+                tokenInput.focus();
+            }
+        });
+        
+        // Focus automatique sur l'input
+        tokenInput.focus();
+    }
+});
+</script>
+{% endblock %}

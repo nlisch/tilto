@@ -1,0 +1,545 @@
+{% extends "quiz_analysis/static_analysis/analysis_base_V1.html" %}
+
+{% block title %}{{ firstname|capitalize }}: Premières pistes qui font tilt{% endblock %}
+
+{% block content %}
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <div class="cover-content">
+            <div class="cover-badge">✨ Ta Story Pro</div>
+            <h1 class="cover-name">{{ firstname|capitalize }}</h1>
+            <div class="cover-subtitle">
+                <span style="opacity: 0.7; font-size: 0.9em;">"</span>
+                {{ analysis.cover_quote }}
+                <span style="opacity: 0.7; font-size: 0.9em;">"</span>
+            </div>
+            <div class="cover-meta">
+                <span>📅 Novembre 2025</span>
+            </div>
+        </div>
+        <div class="cover-pattern"></div>
+        <div class="cover-logo">TILTO</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content-analysis">
+
+        <!-- HERO -->
+        <section class="hero_start section visible" id="hero_start">
+            <p class="hero_start-subtitle">"Tes mots, nos idées pour la suite..."</p>
+            <div class="hero_start-intro">
+                {{ analysis.hero_intro|safe }}
+            </div>
+            <span style="font-style: italic; opacity: 0.9;" class="finale-signature">— Claire de Tilto 💜</span>
+            <div class="info-block-premium">
+                <p class="info-block-title">
+                    <span class="emoji-enhanced-primary">💡</span>
+                    <strong>Cette story fait environ 15 minutes de lecture.</strong>
+                </p>
+                <p class="info-block-text">
+                    Prends-la au fil de l'eau. Saute aux sections qui te parlent.<br>
+                    Reviens-y demain. Partage-la.<br> C'est ta feuille de route. 
+                    <span class="emoji-enhanced-secondary">🗺️</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- CITATION -->
+        <section class="section" id="section-citation">
+            <!-- Forme violette premium HP style -->
+            <svg class="shape-violet-premium" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8B1A6B;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#A11857;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path d="M 35,0 L 100,0 L 100,100 L 0,100 L 15,75 L 28,50 L 20,25 L 35,0 Z" 
+                      fill="url(#purpleGradient)"/>
+            </svg>
+
+            <div class="content-wrapper-citation">
+                <!-- Header -->
+                <h2 class="section-title">Ce que tu nous as dit</h2>
+                
+                <!-- Quote -->
+                <div class="quote-card">
+                    <div class="quote-icon">"</div>
+                    <p class="quote-text">
+                        {{ analysis.main_user_quote }}
+                    </p>
+                </div>
+                
+                <!-- Glass Card Premium -->
+                <div class="insight-glass-card">
+                    <!-- Forme violette derrière -->
+                    <svg class="insight-shape-violet" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="insightPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#A11857;stop-opacity:0.01" />
+                                <stop offset="100%" style="stop-color:#8b1a6b;stop-opacity:0.02" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 30,0 L 100,0 L 100,100 L 0,100 L 20,60 L 30,0 Z" 
+                              fill="url(#insightPurple)"/>
+                    </svg>
+
+                    <!-- Contenu -->
+                    <div class="insight-content">
+                        <div class="insight-icon">💡</div>
+                        <p class="insight-text">
+                            {{ analysis.citation_insight|safe }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRANSFORMATIONS -->
+        <section class="section" id="section-transformations">
+            <!-- Forme orange premium (côté gauche) -->
+            <svg class="shape-orange-premium" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F6AA28;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path d="M 0,0 L 45,0 C 55,15 50,30 45,45 C 40,60 25,70 10,85 L 0,100 Z" 
+                      fill="url(#orangeGradient)"/>
+            </svg>
+
+            <div class="content-wrapper-transform">
+                <!-- Header -->
+                <h2 class="section-title">Ce qui te pèse → Ce dont tu as besoin</h2>
+                <p class="section-subtitle">{{ [analysis.transformations_count, 4]|min }} transformations que tu cherches</p>
+
+                <div class="transformations-tabs-container">
+                    <!-- Tabs Navigation -->
+                    <div class="tabs-nav">
+                        {% for i in range([analysis.transformations_count, 4]|min) %}
+                        <button class="tab-btn {% if loop.first %}active{% endif %}" data-tab="{{ loop.index0 }}">{{ loop.index }}</button>
+                        {% endfor %}
+                    </div>
+                
+                    <!-- Tabs Content -->
+                    <div class="tabs-content-wrapper">
+                        {% for transformation in analysis.transformations[:4] %}
+                        <!-- Tab {{ loop.index }} -->
+                        <div class="tab-content {% if loop.first %}active{% endif %}" data-content="{{ loop.index0 }}">
+                            <div class="transform-negative">
+                                <div class="transform-label">Ce qui te pèse</div>
+                                <div class="transform-text">"{{ transformation.negative }}"</div>
+                            </div>
+                            <div class="transformation-arrow">→</div>
+                            <div class="transform-positive">
+                                <div class="transform-label">Ce dont tu as besoin</div>
+                                <div class="transform-text">"{{ transformation.positive }}"</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Glass Card Premium ORANGE (apparaît après avoir vu tous les onglets) -->
+                        <div class="insight-glass-card-orange" id="transformationsRecap">
+                            <!-- Forme orange asymétrique derrière -->
+                            <svg class="insight-shape-orange" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="insightOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:0.04" />
+                                        <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.12" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 30,0 L 100,0 L 100,100 L 0,100 L 20,60 L 30,0 Z" 
+                                      fill="url(#insightOrange)"/>
+                            </svg>
+
+                            <!-- Contenu -->
+                            <div class="insight-content-orange">
+                                <div class="insight-icon-orange">🎯</div>
+                                <p class="insight-text-orange">
+                                    {{ analysis.transformations_recap|safe }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TES ATOUTS -->
+        <section class="section" id="section-atouts">
+            <!-- Forme verte principale - Triangle organique haut droit -->
+            <svg class="shape-green-premium" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#A11857;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#A11857;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path d="M 30,0 L 100,0 L 100,80 Q 90,70 70,60 Q 50,50 35,35 Q 25,20 30,0 Z" 
+                      fill="url(#greenGradient)"/>
+            </svg>
+
+            <div class="content-wrapper-atouts">
+                <!-- Header -->
+                <h2 class="section-title">Tes {{ analysis.atouts_count }} atouts majeurs</h2>
+                <p class="section-subtitle">Ce que tu as déjà et qui fait la différence</p>
+
+                <div class="atouts-grid">
+                    {% for atout in analysis.atouts %}
+                    <!-- ATOUT {{ loop.index }} -->
+                    <div class="atout-card">
+                        <span class="atout-icon">{{ atout.icon }}</span>
+                        <h3 class="atout-title">{{ atout.title }}</h3>
+                        <p class="atout-description">{{ atout.description }}</p>
+                        <div class="atout-details">
+                            {% for detail in atout.details %}
+                            <div class="atout-detail-item">
+                                <span class="atout-detail-icon">✓</span>
+                                <span>{{ detail }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="atout-pitch-toggle" data-atout="{{ loop.index }}">
+                            <span>💼 En entretien</span>
+                            <span class="pitch-arrow">▼</span>
+                        </div>
+                        <div class="atout-pitch">
+                            <div class="atout-pitch-inner">
+                                <div class="pitch-formula">
+                                    <div class="formula-label">🎯 La formule</div>
+                                    <div class="formula-text">{{ atout.pitch_formula }}</div>
+                                </div>
+                                
+                                <div class="pitch-example">
+                                    <div class="example-label">✅ Dis</div>
+                                    <p class="example-text">
+                                        {{ atout.pitch_example }}
+                                    </p>
+                                </div>
+                                
+                                <div class="pitch-avoid">
+                                    <span class="avoid-icon">⚠️</span>
+                                    <span class="avoid-text"><strong>Évite :</strong> {{ atout.pitch_avoid }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Glass Card Premium -->
+                <div class="insight-glass-card-green">
+                    <!-- Forme verte derrière -->
+                    <svg class="insight-shape-green" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="insightGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#A11857;stop-opacity:0.04" />
+                                <stop offset="100%" style="stop-color:#A11857;stop-opacity:0.12" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M 30,0 L 100,0 L 100,100 L 0,100 L 20,60 L 30,0 Z" 
+                              fill="url(#insightGreen)"/>
+                    </svg>
+
+                    <!-- Contenu -->
+                    <div class="insight-content-green">
+                        <div class="insight-icon-green">💪</div>
+                        <p class="insight-text-green">
+                            {{ analysis.atouts_recap|safe }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- opportunités pro -->
+        <section class="section" id="section-options">
+            <!-- Forme bleue - Rectangle arrondi incliné (haut gauche) -->
+            <svg class="shape-blue-premium" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F6AA28;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect x="0" y="0" width="100" height="100" rx="15" fill="url(#blueGradient)"/>
+            </svg>
+
+            <div class="content-wrapper-options">
+                <!-- Header -->
+                <h2 class="section-title">3 opportunités pro qui te ressemblent</h2>
+                <p class="section-subtitle">Chacune ouvre une façon différente d'avancer</p>
+
+                <div class="carrefour-visual">
+                    <div class="carrefour-container-visual">
+                        <!-- Bulle centrale (sans texte) -->
+                        <div class="center-node">
+                            <div class="center-node-inner"></div>
+                        </div>
+
+                        <!-- Canvas SVG pour les chemins -->
+                        <svg class="paths-canvas" viewBox="0 0 500 240" preserveAspectRatio="xMidYMid meet">
+                            <defs>
+                                <!-- Flou gaussien léger -->
+                                <filter id="blur">
+                                    <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" />
+                                </filter>
+                            </defs>
+
+                            <!-- Chemin vers Voie 1 (gauche) -->
+                            <path class="organic-path path-1" 
+                                  d="M 250 70 C 200 100, 150 150, 125 190" 
+                                  filter="url(#blur)"/>
+
+                            <!-- Chemin vers Voie 2 (centre) -->
+                            <path class="organic-path path-2" 
+                                  d="M 250 70 C 255 100, 245 150, 250 190" 
+                                  filter="url(#blur)"/>
+
+                            <!-- Chemin vers Voie 3 (droite) -->
+                            <path class="organic-path path-3" 
+                                  d="M 250 70 C 300 100, 350 150, 375 190" 
+                                  filter="url(#blur)"/>
+                        </svg>
+
+                        <!-- 3 destinations -->
+                        <div class="voies-destinations">
+                            {% for voie in analysis.voies %}
+                            <div class="voie-destination" data-voie="{{ loop.index }}">
+                                <div class="voie-destination-card {{ voie.color_class }}">
+                                    <div class="voie-destination-icon">{{ voie.icon }}</div>
+                                    <div class="voie-destination-label">{{ voie.label }}</div>
+                                    <div class="voie-destination-story">{{ voie.story }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <p class="intro-reassurance" style="margin: 2rem 0; text-align: center; font-size: 1rem; color: var(--text); font-weight: 600;">
+                    Sélectionne l'option pro que tu souhaites découvrir ☝️
+                </p>
+            </div>
+        </section>
+
+        <!-- VOIES DÉTAILLÉES -->
+        {% for voie in analysis.voies %}
+        <section class="section voie-detail-section" id="voieDetail{{ loop.index }}" style="display: none;">
+            <div class="voie-detail-header {{ voie.color_class }}">
+                <button class="voie-close-btn">×</button>
+                <div class="voie-progress">
+                    {% for i in range(3) %}
+                    <div class="progress-dot {% if i == loop.index0 %}active{% endif %}"></div>
+                    {% endfor %}
+                </div>
+                <button class="voie-next-btn" data-voie="{{ loop.index }}" data-is-last="{{ 'true' if loop.last else 'false' }}">
+                    {% if loop.last %}Retour aux options{% else %}Découvrir une autre voie{% endif %}
+                </button>
+            </div>
+
+            <div class="voie-detail-content {{ voie.color_class }}">
+                <!-- 1. Portrait -->
+                <div class="bloc">
+                    <div class="bloc-portrait">
+                        <span class="portrait-badge {{ voie.color_class }}"><span class="portrait-icon">{{ voie.icon }}</span>{{ voie.badge_text }}</span>
+                        <h3 class="portrait-title">{{ voie.title }}</h3>
+                        <p class="portrait-subtitle">{{ voie.subtitle }}</p>
+                    </div>
+                </div>
+
+                <!-- 3. Projection -->
+                <div class="bloc">
+                    <h3 class="bloc-section-title"><span class="emoji">🧭</span> Ce que tu feras concrètement</h3>
+                    <div class="projection-container">
+                        <p class="projection-text">{{ voie.projection|safe }}</p>
+                    </div>
+                </div>
+
+                <!-- 4. Avantage unique -->
+                <div class="bloc">
+                    <h3 class="bloc-section-title"><span class="emoji">💎</span> Ton avantage unique</h3>
+                    <div class="avantage-glass-card">
+                        <p class="avantage-text">{{ voie.avantage_unique|safe }}</p>
+                    </div>
+                </div>
+
+            <!-- 5. Premiers moves -->
+            <div class="bloc">
+                <h3 class="bloc-section-title"><span class="emoji">🚀</span> Tes premiers moves</h3>
+                <div class="moves-grid">
+                    {% for move in voie.premiers_moves %}
+                    <div class="move-card">
+                        <div class="move-label">{{ move.label }}</div>
+                        {% for item in move['items'] %}  <!-- ✅ CORRIGÉ -->
+                        <div class="move-item">{{ item }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+                <!-- 6. Insight -->
+                <div class="bloc">
+                    <h3 class="bloc-section-title"><span class="emoji">📊</span> L'insight marché</h3>
+                    <div class="insight-container">
+                        {% if voie.insight_icon %}<span class="insight-icon">{{ voie.insight_icon }}</span>{% endif %}
+                        <p class="insight-text">{{ voie.insight|safe }}</p>
+                    </div>
+                </div>
+
+                <!-- 7. En résumé -->
+                <div class="bloc">
+                    <div class="potentiel-container-v2">
+                        <div class="potentiel-header-v2">En résumé</div>
+                        
+                        <div class="potentiel-reality">
+                            {{ voie.resume_reality|safe }}
+                        </div>
+                        
+                        <div class="balance-stack">
+                            <div class="balance-section avantages">
+                                <div class="balance-header">✅ Les avantages</div>
+                                {% for avantage in voie.avantages %}
+                                <div class="balance-point">{{ avantage }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="balance-section defis">
+                                <div class="balance-header">⚠️ Les défis</div>
+                                {% for defi in voie.defis %}
+                                <div class="balance-point">{{ defi }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="potentiel-pratique-vertical">
+                            <div class="pratique-item-vertical">
+                                <span class="pratique-emoji">💶</span>
+                                <div>
+                                    <div class="pratique-label">Salaire</div>
+                                    <div class="pratique-value">{{ voie.salaire }}</div>
+                                </div>
+                            </div>
+                            <div class="pratique-item-vertical">
+                                <span class="pratique-emoji">🎓</span>
+                                <div>
+                                    <div class="pratique-label">Temps pour être crédible</div>
+                                    <div class="pratique-value">{{ voie.temps_credible }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Conseil -->
+                <div class="bloc">
+                    <div class="conseil-container">
+                        <div class="conseil-header">
+                            <span class="conseil-emoji">💪</span>
+                            <h4 class="conseil-title">Ton conseil express</h4>
+                        </div>
+                        <p class="conseil-text">{{ voie.conseil|safe }}</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endfor %}
+
+        <!-- FINALE -->
+        <section class="section section-finale">
+            <div class="finale-container">
+                
+                <h2 class="finale-title">Et maintenant ?</h2>
+                
+                <div class="finale-text-block">
+                    <p class="finale-text">
+                        <em>"{{ analysis.finale_user_quote }}"</em>
+                    </p>
+                    <p class="finale-text">
+                        Tu as maintenant 3 pistes solides pour y arriver. 🎯
+                    </p>
+
+                    <p class="finale-text finale-cta">
+                        Envoie cette analyse à 1-2 personnes qui te connaissent bien.
+                    </p>
+                    <p class="finale-text">
+                        Leur regard extérieur va débloquer des trucs que tu ne vois pas {{ analysis.finale_gender_pronoun }}.
+                    </p>
+                </div>
+
+                <!-- CALL TO ACTION BUTTONS -->
+                <div class="share-buttons-finale">
+                    
+                    <button class="share-btn-finale" id="finalShareWhatsappBtn">
+                        <span class="share-icon-finale">💬</span>
+                        <div class="share-text-finale">
+                            <div class="share-label">Partager sur WhatsApp</div>
+                            <div class="share-sub">Envoie à un proche</div>
+                        </div>
+                    </button>
+                    
+                    <button class="share-btn-finale" id="finalShareEmailBtn">
+                        <span class="share-icon-finale">📧</span>
+                        <div class="share-text-finale">
+                            <div class="share-label">Envoyer par email</div>
+                            <div class="share-sub">Pour avoir un avis extérieur</div>
+                        </div>
+                    </button>
+
+                    <button class="share-btn-finale" id="finalExportPdfBtn">
+                        <span class="share-icon-finale">📄</span>
+                        <div class="share-text-finale">
+                            <div class="share-label">Télécharger en PDF</div>
+                            <div class="share-sub">Garde une trace</div>
+                        </div>
+                    </button>
+                    
+                </div>
+
+                <!-- CLOSING SIGNATURE -->
+                <div class="finale-closing">
+                    <p class="finale-signature">
+                        Tu as tout pour y arriver.
+                    </p>
+                    <p class="finale-author">
+                        — Claire de Tilto 💜
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <div class="sticky-cta" id="stickyCta"></div>
+
+    <div class="modal" id="modalExport">
+        <div class="modal-content">
+            <span class="modal-close" data-modal="modalExport">×</span>
+            <h2 style="color: #A11857; margin-bottom: 20px;">💾 Récupère ton analyse</h2>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <button class="share-btn" id="exportPdfBtn" style="width: 100%;">
+                    <span class="share-icon">📄</span>
+                    <div><div style="font-weight: 700;">PDF</div></div>
+                </button>
+                <button class="share-btn" id="shareWhatsappBtn" style="width: 100%;">
+                    <span class="share-icon">💬</span>
+                    <div><div style="font-weight: 700;">WhatsApp</div></div>
+                </button>
+                <button class="share-btn" id="shareEmailBtn" style="width: 100%;">
+                    <span class="share-icon">📧</span>
+                    <div><div style="font-weight: 700;">Email</div></div>
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

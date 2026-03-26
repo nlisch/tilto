@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Lien expiré - Tilto{% endblock %}
+{% block body_class %}expired-page{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+
+:root {
+    --tilto-primary: #A11857;
+    --tilto-text: #333333;
+    --tilto-text-light: #666666;
+    --tilto-border: #e5e7eb;
+    --tilto-bg: #f9fafb;
+    --tilto-white: #ffffff;
+    --tilto-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.expired-container {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--tilto-bg) 0%, var(--tilto-white) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.expired-card {
+    background: var(--tilto-white);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--tilto-shadow);
+    text-align: center;
+    border: 1px solid var(--tilto-border);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.expired-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: block;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.expired-title {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--tilto-text);
+    margin: 0 0 1rem;
+}
+
+.expired-message {
+    font-size: clamp(0.9375rem, 2vw, 1rem);
+    color: var(--tilto-text-light);
+    line-height: 1.6;
+    margin: 0 0 2rem;
+}
+
+.expired-message strong {
+    color: var(--tilto-text);
+}
+
+.btn-primary {
+    background: #A11857;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(97, 5, 69, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(97, 5, 69, 0.35);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+    .expired-card {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .expired-icon {
+        font-size: 3.5rem;
+    }
+    
+    .btn-primary {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9375rem;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="expired-container">
+    <div class="expired-card">
+        <span class="expired-icon">⏰</span>
+        
+        <h1 class="expired-title">Ce lien a expiré</h1>
+        
+        <p class="expired-message">
+            {% if firstname %}
+            Demande à <strong>{{ firstname }}</strong> de t'envoyer un nouveau lien depuis son espace Tilto.
+            {% else %}
+            Demande à la personne qui t'a partagé son analyse de t'envoyer un nouveau lien.
+            {% endif %}
+        </p>
+        
+        <a href="{{ url_for('auth.home') }}" class="btn-primary">
+            Découvrir Tilto →
+        </a>
+    </div>
+</div>
+{% endblock %}

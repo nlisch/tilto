@@ -1,0 +1,44 @@
+# robots.txt pour phase de pré-lancement
+User-agent: *
+
+# Permettre l'indexation des pages de présentation
+Allow: /
+Allow: /about
+Allow: /early
+Allow: /static/
+
+# Permettre les pages légales (importantes pour confiance)
+Allow: /politique-de-confidentialite
+Allow: /cookie-policy
+Allow: /mentions-legales
+
+# Bloquer les pages fonctionnelles pas encore prêtes
+Disallow: /dashboard/
+Disallow: /quiz/
+Disallow: /tokens/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /stripe-webhook
+Disallow: /setup_two_factor
+Disallow: /two_factor
+Disallow: /verify_setup
+Disallow: /reset_2fa
+Disallow: /test-*
+Disallow: /health
+Disallow: /set-language/
+Disallow: /analysis/
+
+# Bloquer les paramètres sensibles
+Disallow: /*?*
+Disallow: /*session*
+Disallow: /*token*
+Disallow: /*csrf*
+
+# Permettre le sitemap
+Allow: /sitemap.xml
+
+# Sitemap
+Sitemap: https://tilto.co/sitemap.xml
+
+# Délai d'exploration (optionnel, pour éviter la surcharge)
+Crawl-delay: 1

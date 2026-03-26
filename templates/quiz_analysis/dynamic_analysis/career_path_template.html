@@ -1,0 +1,298 @@
+{% extends "quiz_analysis/static_analysis/analysis_base.html" %}
+
+{% block title %}{{ firstname|capitalize }}: Premières pistes qui font tilt{% endblock %}
+
+{% block content %}
+<div class="analysis-container">
+    <div class="analysis-header">
+        <div class="analysis-header-content">
+            <div class="analysis-header-icon">
+                <span>⚡️</span>
+            </div>
+            <div class="analysis-header-title">
+                <h1>Premières pistes qui font tilt</h1>
+                <div class="subtitle">Des options claires pour faire bouger les choses</div>
+            </div>
+        </div>
+    </div>
+    
+    <nav class="main-navigation">
+        <div class="nav-container">
+            <div class="nav-steps">
+                <div class="nav-step active" id="nav-welcome" data-section="welcome">
+                    <div class="nav-step-number">0</div>
+                    <span>Welcome</span>
+                </div>
+                <div class="nav-separator"></div>
+                <div class="nav-step" id="nav-section1" data-section="section1">
+                    <div class="nav-step-number">1</div>
+                    <span>Ton point de départ</span>
+                </div>
+                <div class="nav-separator"></div>
+                <div class="nav-step" id="nav-section2" data-section="section2">
+                    <div class="nav-step-number">2</div>
+                    <span>Tes recos métiers</span>
+                </div>
+                <div class="nav-separator"></div>
+                <div class="nav-step" id="nav-section4" data-section="section4">
+                    <div class="nav-step-number">3</div>
+                    <span>Actions immédiates</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="section active" id="welcome">
+            <div class="welcome-screen">
+                <h2 class="welcome-title">Tes mots, nos idées pour la suite...</h2>
+                <p class="welcome-subtitle">{{ analysis.welcome.content|safe }}</p>
+                <button class="start-button">C'est parti 🚀</button>
+            </div>
+        </div>
+
+        <div class="section" id="section1">
+            <div class="module-container">
+                <div class="module">
+                    <div class="module-header">
+                        <div class="module-icon">
+                            <span>👋</span>
+                        </div>
+                        <div>
+                            <div class="module-title">Ton point de départ</div>
+                        </div>
+                    </div>
+                    <div class="module-content">
+                        <div class="citation">
+                            <p>{{ analysis.starting_point.user_quote }}</p>
+                        </div>
+                        
+                        <div class="transformation-carousel">
+                            <div class="carousel-header">
+                                <h4>Ce qui te frustre → Ce dont tu as besoin</h4>
+                            </div>
+                            
+                            <div class="transformation-swiper">
+                                <div class="swiper">
+                                    <div class="swiper-wrapper">
+                                        {% for transformation in analysis.starting_point.transformations %}
+                                        <div class="swiper-slide">
+                                            <div class="transformation-card">
+                                                <div class="before-quote">
+                                                    <span class="quote-label">Tu fuis</span>
+                                                    <p>{{ transformation.before_text }}</p>
+                                                </div>
+                                                <div class="transformation-arrow">→</div>
+                                                <div class="after-quote">
+                                                    <span class="quote-label">Tu veux</span>
+                                                    <p>{{ transformation.after_text }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="swiper-button-prev"></div>
+                                    <div class="swiper-button-next"></div>
+                                    <div class="swiper-pagination"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="key-insight">
+                            <div class="transformation-insight">
+                                <div class="insight-badge">CE QUI EST CLAIR</div>
+                                <p><strong>{{ analysis.starting_point.key_insight }}</strong></p>
+                            </div>
+
+                            <div class="carousel-header">
+                                <h3>Tes atouts majeurs (tu les sous-estimes sûrement)</h3>
+                                <div class="constraint-cards">
+                                    {% for strength in analysis.starting_point.strengths %}
+                                    <div class="constraint-item">
+                                        <strong>{{ strength.title }}:</strong> {{ strength.description }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="section2">
+            <div class="module-container">
+                <div class="module">
+                    <div class="module-header">
+                        <div class="module-icon">
+                            <span>💡</span>
+                        </div>
+                        <div>
+                            <div class="module-title">{{ analysis.strategies.title }}</div>
+                        </div>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-subtitle">{{ analysis.strategies.subtitle }}</p>
+                        
+                        <div class="transformation-insight" style="background-color: #e8f5e9; border-color: #4caf50;">
+                            <div class="insight-badge" style="background-color: #4caf50;">✅ HONNÊTETÉ</div>
+                            <p><strong>{{ analysis.strategies.honesty_message }}</strong></p>
+                        </div>
+
+                        <h3 style="margin: 30px 0 20px 0; text-align: center;">Tes 3 stratégies à comparer</h3>
+
+                        <div class="strategies-swiper-container">
+                            <div class="swiper">
+                                <div class="swiper-wrapper">
+                                    {% for strategy in analysis.strategies['items'] %}
+                                    <div class="swiper-slide">
+                                        <div class="strategy-card {% if strategy.access_type == 'premium' %}locked-card{% endif %}" data-access="{{ strategy.access_type }}">
+                                            <div class="strategy-badge step-{{ loop.index }}">
+                                                <span class="badge-number">{{ strategy.badge_text }}</span>
+                                            </div>
+                                            <h3 class="strategy-title">{{ strategy.title }}</h3>
+                                            <p class="strategy-subtitle">{{ strategy.subtitle }}</p>
+                                            
+                                            <div class="strategy-preview">
+                                                {% for item in strategy.preview_items %}
+                                                <div class="preview-item {{ item.type }}">
+                                                    <span class="preview-icon">{{ item.icon }}</span>
+                                                    <span>{{ item.text }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                    
+                                            <div class="strategy-meta">
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Durée</span>
+                                                    <span class="meta-value">{{ strategy.duration }}</span>
+                                                </div>
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Salaire</span>
+                                                    <span class="meta-value">{{ strategy.salary }}</span>
+                                                </div>
+                                                <div class="meta-item">
+                                                    <span class="meta-label">Réalisme</span>
+                                                    <span class="meta-value">{{ strategy.realism }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if strategy.access_type == 'free' %}
+                                            <div class="strategy-details">
+                                                {{ strategy.detail_content|safe }}
+                                            </div>
+                                            
+                                            <button class="strategy-cta strategy-cta-free" data-action="toggle-details">
+                                                <span class="cta-text">Voir plus</span>
+                                                <span class="cta-arrow">→</span>
+                                            </button>
+                                            {% else %}
+                                            <div class="strategy-details">
+                                                <p>Contenu premium disponible après déverrouillage...</p>
+                                            </div>
+
+                                            <div class="card-lock-overlay">
+                                                <div class="lock-icon">🔒</div>
+                                                <p><strong>Stratégie premium</strong></p>
+                                            </div>
+
+                                            <button class="strategy-cta upgrade-btn" data-source="{{ strategy.unlock_source }}">
+                                                <span class="cta-text">💳 Je débloque pour 29€</span>
+                                                <span class="cta-arrow">→</span>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="swiper-pagination"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="section4">
+            <div class="module-container">
+                <div class="module">
+                    <div class="module-header">
+                        <div class="module-icon">
+                            <span>🚀</span>
+                        </div>
+                        <div>
+                            <div class="module-title">Je me lance</div>
+                        </div>
+                    </div>
+                    <div class="module-content">
+                        <p class="module-subtitle">{{ analysis.actions.subtitle }}</p>
+                        
+                        <div class="dimension-highlight highlight-who">
+                            <div class="dimension-title who-title">
+                                <span>💪</span> Tes forces uniques
+                            </div>
+                            <ul>
+                                {% for strength in analysis.actions['strengths_recap'] %}
+                                <li><strong>{{ strength.title }}:</strong> {{ strength.description }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <h3 style="margin: 30px 0 20px 0; text-align: center;">3 actions pour te lancer</h3>
+
+                        <div class="actions-swiper-container">
+                            <div class="swiper">
+                                <div class="swiper-wrapper">
+                                    {% for action in analysis.actions['items'] %}
+                                    <div class="swiper-slide">
+                                        <div class="action-card {% if action.access_type == 'premium' %}locked-action{% endif %}" data-access="{{ action.access_type }}">
+                                            <div class="strategy-badge step-{{ loop.index }}">
+                                                <span class="badge-number">{{ action.badge_text }}</span>
+                                            </div>
+                                            <div class="action-card-icon">
+                                                <span>{{ action.icon }}</span>
+                                            </div>
+                                            <h3 class="action-card-title">{{ action.title }}</h3>
+                                            <p class="action-card-subtitle">{{ action.subtitle }}</p>
+                                            
+                                            <div class="action-card-preview">
+                                                <p>{{ action.preview_text }}</p>
+                                            </div>
+                                            
+                                            {% if action.access_type == 'free' %}
+                                            <div class="action-card-details">
+                                                {{ action.detail_content|safe }}
+                                            </div>
+                                            
+                                            <button class="action-card-cta" data-action="toggle-action-details">
+                                                <span class="cta-text">Voir le détail</span>
+                                                <span class="cta-arrow">→</span>
+                                            </button>
+                                            {% else %}
+                                            <div class="action-card-details">
+                                                <p>Contenu premium disponible après déverrouillage...</p>
+                                            </div>
+                                            
+                                            <div class="action-lock-overlay">
+                                                <div class="lock-icon">🔒</div>
+                                                <p><strong>Action premium</strong></p>
+                                            </div>
+                                            
+                                            <button class="action-card-cta upgrade-btn" data-source="{{ action.unlock_source }}">
+                                                💳 Je débloque pour 29€
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="swiper-pagination"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

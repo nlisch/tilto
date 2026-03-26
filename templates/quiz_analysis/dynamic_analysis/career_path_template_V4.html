@@ -1,0 +1,1210 @@
+{% extends "quiz_analysis/static_analysis/analysis_base_V4.html" %}
+
+{% block content %}
+<div class="v4-container">
+    <header class="v4-header">
+        <div class="v4-header-content">
+            <div class="v4-header-title">
+                <h1 id="headerTitle">Cher{{ analysis.genre_e }} {{ firstname|capitalize }}, voici ce que j'ai compris</h1>
+            </div>
+        </div>
+        
+        <nav class="v4-main-navigation">
+            <div class="v4-nav-container">
+                <div class="v4-nav-steps">
+                    <div class="v4-nav-step active" id="nav-welcome" data-section="welcome" data-short="Diagnostic">
+                        <div class="v4-nav-step-number">1</div>
+                        <span>Ton diagnostic</span>
+                    </div>
+                    <div class="v4-nav-separator"></div>
+                    <div class="v4-nav-step" id="nav-section1" data-section="section1" data-short="Pistes">
+                        <div class="v4-nav-step-number">2</div>
+                        <span>Tes pistes métiers</span>
+                    </div>
+                    <div class="v4-nav-separator"></div>
+                    <div class="v4-nav-step" id="nav-section4" data-section="section4" data-short="Suite">
+                        <div class="v4-nav-step-number">3</div>
+                        <span>La suite possible avec Tilto</span>
+                    </div>
+                    <div class="v4-nav-separator"></div>
+                    <div class="v4-nav-step" id="nav-section5" data-section="section5" data-short="Réserver">
+                        <div class="v4-nav-step-number">4</div>
+                        <span>Réserver mon appel gratuit</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="v4-main-content">
+
+        <!-- ===== WELCOME SCREEN ===== -->
+        <div class="v4-section active" id="welcome">
+            <div class="v4-welcome-screen">
+
+                <div class="v4-welcome-video-placeholder">
+                    <span>▶</span>
+                    <p>Vidéo intro</p>
+                </div>
+
+                <h2 class="v4-welcome-title">Tes mots, nos idées pour la suite</h2>
+
+                <div class="v4-welcome-quote">
+                    <p>« {{ analysis.welcome.quote_verbatim|safe }} »</p>
+                    <span class="v4-welcome-quote-signature">— Extrait de ton questionnaire</span>
+                </div>
+
+                <div class="v4-comprends-block">
+                    <div class="v4-comprends-label">Ce que je comprends</div>
+                    <p class="v4-comprends-text">{{ analysis.welcome.comprends_text|safe }}</p>
+                </div>
+
+                <div class="v4-comprends-block" style="background:var(--v4-cream); margin-top:16px;">
+                    <div class="v4-comprends-label">Un point important à comprendre</div>
+                    <p class="v4-comprends-text" style="font-size:0.95rem;">{{ analysis.welcome.point_important|safe }}</p>
+                </div>
+
+                <h3 class="v4-welcome-section-title">Est-ce que j'ai vu juste ?</h3>
+                <div class="v4-welcome-options v4-welcome-options--3cols">
+                    <label class="v4-welcome-option">
+                        <input type="radio" name="feedback-choice" value="exact">
+                        <span>Oui, c'est exactement ça</span>
+                    </label>
+                    <label class="v4-welcome-option">
+                        <input type="radio" name="feedback-choice" value="nuance">
+                        <span>J'aimerais nuancer</span>
+                    </label>
+                    <label class="v4-welcome-option">
+                        <input type="radio" name="feedback-choice" value="not-really">
+                        <span>Pas vraiment</span>
+                    </label>
+                </div>
+                <textarea id="nuance-textarea" class="v4-welcome-feedback" placeholder="Dis-moi en quelques mots ce que tu aimerais préciser…" rows="3" style="display:none; margin-top:8px;"></textarea>
+
+                <button class="v4-start-button">Continuer</button>
+            </div>
+        </div>
+
+        <!-- ===== SECTION 1: PISTES MÉTIERS ===== -->
+        <div class="v4-section" id="section1">
+            <div class="v4-module-container">
+                <div class="v4-module">
+
+                    <!-- ===== Header section pistes ===== -->
+                    <div class="v4-module-header">
+                        <div class="v4-module-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+                        <div><div class="v4-module-title">Tes pistes métiers</div></div>
+                    </div>
+
+                    <!-- ===== PISTE 1 (toujours visible) ===== -->
+                    <div class="v4-module-header_piste">
+                        <div class="v4-piste-icon">
+                            <span class="emoji">{{ analysis.pistes[0].icon }}</span>
+                            <span class="piste-num">Piste 1</span>
+                        </div>
+                        <div class="v4-piste-info">
+                            <div class="v4-piste-option-label">{{ analysis.pistes[0].option_title }}</div>
+                            <div class="v4-piste-job">{{ analysis.pistes[0].job_title }}</div>
+                        </div>
+                    </div>
+                    <div class="v4-module-content">
+
+                        <h3 class="first">En quelques mots</h3>
+                        <p>{{ analysis.pistes[0].quelques_mots }}</p>
+
+                        <h3>Pourquoi cette piste est pour toi</h3>
+                        <p>{{ analysis.pistes[0].pourquoi|safe }}</p>
+
+                        <h3>Ce qui marche avec toi</h3>
+                        <div class="v4-stat-tags">
+                            {% for tag in analysis.pistes[0].tags %}<div class="v4-stat-tag">{{ tag }}</div>{% endfor %}
+                        </div>
+
+                        <div class="v4-stat-cards">
+                            <div class="v4-stat-card">
+                                <div class="v4-stat-card-value">{{ analysis.pistes[0].formation_duree }}</div>
+                                <div class="v4-stat-card-label">Formation</div>
+                            </div>
+                            <div class="v4-stat-card">
+                                <div class="v4-stat-card-value">{{ analysis.pistes[0].salaire }}</div>
+                                <div class="v4-stat-card-label">net · Salaire</div>
+                            </div>
+                            <div class="v4-stat-card">
+                                <div class="v4-stat-card-value">{{ analysis.pistes[0].stat_marche }}</div>
+                            </div>
+                        </div>
+
+                        <div class="v4-transformation-insight">
+                            <div class="v4-insight-badge">LE SAVAIS-TU ?</div>
+                            <p><strong>{{ analysis.pistes[0].savais_tu|safe }}</strong></p>
+                        </div>
+
+                        <div class="v4-section2-feedback">
+                            <p class="v4-section2-feedback-label">Donne ton avis pour découvrir la piste suivante</p>
+                            <div class="v4-welcome-options">
+                                <label class="v4-welcome-option">
+                                    <input type="radio" name="section2-feedback" value="interesse">
+                                    <span>Ça m'intéresse</span>
+                                </label>
+                                <label class="v4-welcome-option">
+                                    <input type="radio" name="section2-feedback" value="pas-pour-moi">
+                                    <span>Pas pour moi</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- ===== PISTE 2 ===== -->
+                        <div id="piste2" class="piste-block" style="display:none;">
+                            <hr style="border:none; border-top:2px solid var(--v4-rose-pale); margin:28px 0;">
+                            <div class="v4-module-header_piste" style="padding:0; margin-bottom:16px;">
+                                <div class="v4-piste-icon">
+                                    <span class="emoji">{{ analysis.pistes[1].icon }}</span>
+                                    <span class="piste-num">Piste 2</span>
+                                </div>
+                                <div class="v4-piste-info">
+                                    <div class="v4-piste-option-label">{{ analysis.pistes[1].option_title }}</div>
+                                    <div class="v4-piste-job">{{ analysis.pistes[1].job_title }}</div>
+                                </div>
+                            </div>
+
+                            <div class="v4-stat-tags">
+                                {% for tag in analysis.pistes[1].tags %}<span class="v4-stat-tag">{{ tag }}</span>{% endfor %}
+                            </div>
+
+                            <h4 style="font-family:'Libre Baskerville', serif; margin:16px 0 8px;">En quelques mots</h4>
+                            <p>{{ analysis.pistes[1].quelques_mots }}</p>
+
+                            <h4 style="font-family:'Libre Baskerville', serif; margin:16px 0 8px;">Pourquoi cette piste est pour toi</h4>
+                            <p>{{ analysis.pistes[1].pourquoi|safe }}</p>
+
+                            <div class="v4-stat-cards">
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[1].formation_duree }}</div>
+                                    <div class="v4-stat-card-label">Formation</div>
+                                </div>
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[1].salaire }}</div>
+                                    <div class="v4-stat-card-label">Salaire</div>
+                                </div>
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[1].stat_marche }}</div>
+                                </div>
+                            </div>
+
+                            <div class="key-insight" style="margin-top:16px;">
+                                <div class="v4-transformation-insight">
+                                    <div class="v4-insight-badge">LE SAVAIS-TU ?</div>
+                                    <p>{{ analysis.pistes[1].savais_tu|safe }}</p>
+                                </div>
+                            </div>
+
+                            <div class="v4-section2-feedback">
+                                <p class="v4-section2-feedback-label">Donne ton avis pour découvrir la piste suivante</p>
+                                <div class="v4-welcome-options">
+                                    <label class="v4-welcome-option">
+                                        <input type="radio" name="piste2-feedback" value="interesse">
+                                        <span>Ça m'intéresse</span>
+                                    </label>
+                                    <label class="v4-welcome-option">
+                                        <input type="radio" name="piste2-feedback" value="pas-pour-moi">
+                                        <span>Pas pour moi</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== PISTE 3 ===== -->
+                        <div id="piste3" class="piste-block" style="display:none;">
+                            <hr style="border:none; border-top:2px solid var(--v4-rose-pale); margin:28px 0;">
+                            <div class="v4-module-header_piste" style="padding:0; margin-bottom:16px;">
+                                <div class="v4-piste-icon">
+                                    <span class="emoji">{{ analysis.pistes[2].icon }}</span>
+                                    <span class="piste-num">Piste 3</span>
+                                </div>
+                                <div class="v4-piste-info">
+                                    <div class="v4-piste-option-label">{{ analysis.pistes[2].option_title }}</div>
+                                    <div class="v4-piste-job">{{ analysis.pistes[2].job_title }}</div>
+                                </div>
+                            </div>
+
+                            <div class="v4-stat-tags">
+                                {% for tag in analysis.pistes[2].tags %}<span class="v4-stat-tag">{{ tag }}</span>{% endfor %}
+                            </div>
+
+                            <h4 style="font-family:'Libre Baskerville', serif; margin:16px 0 8px;">En quelques mots</h4>
+                            <p>{{ analysis.pistes[2].quelques_mots }}</p>
+
+                            <h4 style="font-family:'Libre Baskerville', serif; margin:16px 0 8px;">Pourquoi cette piste est pour toi</h4>
+                            <p>{{ analysis.pistes[2].pourquoi|safe }}</p>
+
+                            <div class="v4-stat-cards">
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[2].formation_duree }}</div>
+                                    <div class="v4-stat-card-label">Formation</div>
+                                </div>
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[2].salaire }}</div>
+                                    <div class="v4-stat-card-label">Salaire</div>
+                                </div>
+                                <div class="v4-stat-card">
+                                    <div class="v4-stat-card-value">{{ analysis.pistes[2].stat_marche }}</div>
+                                </div>
+                            </div>
+
+                            <div class="key-insight" style="margin-top:16px;">
+                                <div class="v4-transformation-insight">
+                                    <div class="v4-insight-badge">LE SAVAIS-TU ?</div>
+                                    <p>{{ analysis.pistes[2].savais_tu|safe }}</p>
+                                </div>
+                            </div>
+
+                            <div class="v4-section2-feedback">
+                                <p class="v4-section2-feedback-label">Donne ton avis pour découvrir la suite</p>
+                                <div class="v4-welcome-options">
+                                    <label class="v4-welcome-option">
+                                        <input type="radio" name="piste3-feedback" value="interesse">
+                                        <span>Ça m'intéresse</span>
+                                    </label>
+                                    <label class="v4-welcome-option">
+                                        <input type="radio" name="piste3-feedback" value="pas-pour-moi">
+                                        <span>Pas pour moi</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton continuer verrouillé -->
+                        <div id="pistes-continue-block" style="margin-top:28px; text-align:center;">
+                            <p id="pistes-continue-hint" style="font-size:0.88rem; color:var(--v4-text-muted); margin-bottom:12px;">Donne ton avis sur les 3 pistes pour continuer</p>
+                            <button id="pistes-continue-btn" class="v4-start-button" disabled style="opacity:0.4; cursor:not-allowed;">Découvrir la suite avec Tilto →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION 4: LA SUITE AVEC TILTO ===== -->
+        <div class="v4-section" id="section4">
+            <div class="v4-module-container">
+                <div class="v4-module">
+                    <div class="v4-module-header">
+                        <div class="v4-module-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                        <div><div class="v4-module-title">La suite possible avec Tilto</div></div>
+                    </div>
+                    <div class="v4-module-content">
+
+                        <!-- Bloc résultat dynamique — labels en JS, textes LLM -->
+                        <div id="result-block" class="v4-comprends-block" style="width:calc(100% + 0px); margin-left:0; margin-right:0; border-radius:14px; background:var(--v4-cream);">
+                            <div class="v4-comprends-label" id="result-label">Plusieurs pistes te parlent</div>
+                            <p id="result-text" style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.65; max-width:100%; margin:0; text-align:center;">{{ analysis.section4.result_multiple_text|safe }}</p>
+                        </div>
+
+                        <!-- ===== VARIANT DEFAULT (0, 2 ou 3 pistes) → Pack Clarté ===== -->
+                        <div id="variant-default">
+                            <div style="margin-top:28px;">
+                                <p style="font-size:0.95rem; color:var(--v4-text); line-height:1.75;">{{ analysis.section4.variant_default.conseil_para1|safe }}</p>
+                                <p style="font-size:0.95rem; color:var(--v4-text); line-height:1.75; margin-top:14px;">{{ analysis.section4.variant_default.conseil_para2|safe }}</p>
+                                <p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.75; font-style:italic; margin-top:14px;">{{ analysis.section4.variant_default.conseil_metaphore|safe }}</p>
+                            </div>
+
+                            <!-- Recommendation : firstname(BDD) + nom pack(dur) + suite(LLM) -->
+                            <div class="v4-comprends-block" style="width:calc(100% + 0px); margin-left:0; margin-right:0; border-radius:14px; margin-top:28px;">
+                                <p class="v4-comprends-text" style="font-size:1.05rem; max-width:100%;">{{ firstname|capitalize }}, je te conseille l'accompagnement Tilto <strong>Pack Clarté</strong> {{ analysis.section4.variant_default.recommendation_suite|safe }}</p>
+                                <p style="font-family:'Caveat', cursive; font-size:1.3rem; color:var(--v4-primary); text-align:right; margin-top:12px;">Claire — Tilto</p>
+                            </div>
+
+                            <!-- Pack Clarté — STATIQUE (BDD à terme) -->
+                            <div style="margin-top:28px;">
+                                <div class="v4-pricing-card" style="border:2px solid var(--v4-primary); max-width:100%;">
+                                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--v4-primary); font-weight:700; margin-bottom:12px;">✦ Être accompagné{{ analysis.genre_e }} avec Tilto</div>
+                                    <div class="v4-coach-banner">
+                                        <img src="https://images.tilto.co/production/2026/02/42d86f91_anne-gobled-28-768x1152.webp" alt="Anne, coach Tilto" class="v4-coach-banner-photo">
+                                        <div>
+                                            <div class="v4-coach-banner-name">Anne</div>
+                                            <div class="v4-coach-banner-role">Coach en transition professionnelle partenaire Tilto</div>
+                                            <div class="v4-coach-banner-stats">
+                                                <span class="v4-coach-banner-stat">✓ Certifiée EMCC</span>
+                                                <span class="v4-coach-banner-stat">+500 coachings</span>
+                                                <span class="v4-coach-banner-stat">Depuis 2019</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="v4-pricing-card-name">Pack Clarté Tilto</div>
+                                    <div class="v4-pricing-card-coach" style="margin-bottom:4px;">Pour clarifier ta prochaine étape professionnelle</div>
+                                    <ul class="v4-pricing-card-includes" style="margin-top:16px;">
+                                        <li>Accompagnement individuel avec Anne</li>
+                                        <li>Clarification de tes priorités, besoins et critères non négociables</li>
+                                        <li>Outils pour comparer les pistes objectivement avant de t'engager</li>
+                                        <li>Carnet de route Tilto personnalisé</li>
+                                        <li>Méthode combinant accompagnement humain + outil IA</li>
+                                        <li>Ressources, entreprises et contacts pertinents pour avancer</li>
+                                    </ul>
+                                    <div class="v4-pricing-card-duration">Durée : 3 à 6 mois</div>
+                                    <button class="v4-pricing-card-btn" data-booking="clarte" style="margin-top:12px;">Ça m'intéresse</button>
+                                    <div class="v4-pricing-accordion">
+                                        <button class="v4-pricing-accordion-toggle" data-accordion="next">⬇️ Voir le détail de ton accompagnement <span class="arrow">▼</span></button>
+                                        <div class="v4-pricing-accordion-content">
+                                            <h4>À qui s'adresse cet accompagnement ?</h4>
+                                            <p>À toutes les personnes en poste ou entre deux postes qui ressentent du flou ou des hésitations sur la suite, même si certaines pistes émergent déjà, et qui ont besoin de valider une direction avant de s'engager dans une recherche d'emploi ou une reconversion.</p>
+                                            <h4>En quoi notre méthode est différente d'un bilan de compétences classique ?</h4>
+                                            <p>Le parcours combine accompagnement humain et outils Tilto. L'accompagnement avec Anne permet de clarifier ta direction, et Tilto transforme ensuite cette réflexion en actions concrètes grâce à un carnet de route personnalisé.</p>
+                                            <p>Concrètement, Tilto t'aide à aller plus vite en :</p>
+                                            <ul>
+                                                <li>identifiant les entreprises locales pertinentes</li>
+                                                <li>trouvant les bons interlocuteurs à contacter</li>
+                                                <li>suggérant les réseaux et communautés utiles en priorité</li>
+                                                <li>facilitant les mises en relation avec des professionnels du secteur</li>
+                                                <li>proposant des messages prêts à adapter pour tes premiers échanges</li>
+                                            </ul>
+                                            <h4>Qui va t'accompagner ?</h4>
+                                            <p>Anne, coach partenaire Tilto certifiée (EMCC) – Neuro-coach (PNL, EFT, Coaching alchimique), +500 accompagnements réalisés depuis 2019.</p>
+                                            <h4>Comment se déroule l'accompagnement ?</h4>
+                                            <p>Des séances régulières (rythme défini ensemble). Un travail entre les séances à partir de ton carnet de route. Chaque séance permet de faire le point, ajuster la direction et définir la prochaine étape concrète.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="text-align:center; margin:28px 0 16px;"><span style="font-family:'Libre Baskerville',serif; font-size:1.1rem; color:var(--v4-text-muted);">— ou —</span></div>
+
+                            <!-- Avancer seul(e) + plan d'action STATIQUE -->
+                            <div style="margin-top:0; padding:20px; border:1px solid var(--v4-border); border-radius:14px; background:var(--v4-white);">
+                                <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--v4-text-muted); font-weight:700; margin-bottom:10px;">Avancer seul{{ analysis.genre_e }}</div>
+                                <p style="font-size:0.85rem; color:var(--v4-text-muted); font-style:italic; margin-bottom:12px;">Possible, mais demande du temps, de l'énergie et beaucoup de constance.</p>
+                                <button class="v4-pricing-accordion-toggle" data-accordion-target="plan-action-1">📋 Voir ton plan d'action <span class="arrow">▼</span></button>
+                                <div id="plan-action-1" class="v4-pricing-accordion-content">
+                                    <div class="v4-carnet-section">
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 1 — Comprendre le terrain</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Cartographier les structures et comprendre l'écosystème</li>
+                                                <li>Échanger avec 2 à 3 professionnels pour valider le quotidien réel du poste</li>
+                                                <li>Identifier tes compétences transférables et tes atouts</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 2 — Acquisition de compétences</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Identifier les éventuels ajustements ou formations utiles (et les financements possibles)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 3 — Adapter ton positionnement</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Clarifier ton rôle cible</li>
+                                                <li>Adapter ton CV, ton pitch et ton profil LinkedIn</li>
+                                                <li>Mettre en valeur tes réalisations pour crédibiliser ta transition</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 4 — Activer la recherche</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Identifier les structures cibles</li>
+                                                <li>Trouver les bons interlocuteurs (le réseau est un vrai accélérateur)</li>
+                                                <li>Structurer candidatures et relances</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pack Career Boost en secondaire — STATIQUE -->
+                            <div style="margin-top:24px; padding:16px 20px; background:var(--v4-cream); border-radius:12px;">
+                                <p style="font-size:0.92rem; color:var(--v4-text-medium); line-height:1.65; margin:0;">Si ton projet est clair et que tu souhaites surtout être accompagné{{ analysis.genre_e }} pour structurer ta recherche d'emploi et décrocher un poste plus rapidement, il existe aussi le <strong>Pack Career Boost.</strong></p>
+                                <button class="v4-pricing-accordion-toggle" data-accordion-target="career-boost-detail-default" style="margin-top:10px;">👉 Voir le Pack Career Boost <span class="arrow">▼</span></button>
+                                <div id="career-boost-detail-default" class="v4-pricing-accordion-content">
+                                    <div class="v4-pricing-card" style="margin-top:12px; max-width:100%;">
+                                        <div class="v4-pricing-card-name">Pack Career Boost Tilto</div>
+                                        <div class="v4-pricing-card-coach" style="margin-bottom:4px;">Pour structurer ta recherche d'emploi et décrocher un poste</div>
+                                        <div class="v4-pricing-card-coach">Avec Catherine — coach spécialiste recrutement</div>
+                                        <ul class="v4-pricing-card-includes" style="margin-top:16px;">
+                                            <li>Accompagnement individuel avec une experte du recrutement</li>
+                                            <li>Adaptation de ton CV et de ton discours au secteur visé</li>
+                                            <li>Préparation aux entretiens et travail sur ton positionnement</li>
+                                            <li>Carnet de route Tilto orienté recherche d'emploi</li>
+                                            <li>Entreprises locales, interlocuteurs et contacts pertinents identifiés pour toi</li>
+                                        </ul>
+                                        <div class="v4-pricing-card-duration">Durée : 2 à 6 mois</div>
+                                        <button class="v4-pricing-card-btn" data-booking="boost">Ça m'intéresse</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ===== VARIANT UNE SEULE PISTE → Pack Career Boost ===== -->
+                        <div id="variant-one-piste" style="display:none;">
+                            <div style="margin-top:28px;">
+                                <p style="font-size:0.95rem; color:var(--v4-text); line-height:1.75;">{{ analysis.section4.variant_one.conseil_para1|safe }}</p>
+                                <p style="font-size:0.95rem; color:var(--v4-text); line-height:1.75; margin-top:14px;">{{ analysis.section4.variant_one.conseil_para2|safe }}</p>
+                                <p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.75; font-style:italic; margin-top:14px;">{{ analysis.section4.variant_one.conseil_metaphore|safe }}</p>
+                            </div>
+
+                            <!-- Recommendation : firstname(BDD) + nom pack(dur) + suite(LLM) -->
+                            <div class="v4-comprends-block" style="width:calc(100% + 0px); margin-left:0; margin-right:0; border-radius:14px; margin-top:28px;">
+                                <p class="v4-comprends-text" style="font-size:1.05rem; max-width:100%;">{{ firstname|capitalize }}, je te conseille le <strong>Pack Career Boost Tilto</strong> {{ analysis.section4.variant_one.recommendation_suite|safe }}</p>
+                                <p style="font-family:'Caveat', cursive; font-size:1.3rem; color:var(--v4-primary); text-align:right; margin-top:12px;">Claire — Tilto</p>
+                            </div>
+
+                            <!-- Pack Career Boost en principal — STATIQUE -->
+                            <div style="margin-top:28px;">
+                                <div class="v4-pricing-card" style="border:2px solid var(--v4-primary); max-width:100%;">
+                                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--v4-primary); font-weight:700; margin-bottom:8px;">✦ Être accompagné{{ analysis.genre_e }} avec Tilto</div>
+                                    <div class="v4-pricing-card-name">Pack Career Boost Tilto</div>
+                                    <div class="v4-pricing-card-coach" style="margin-bottom:4px;">Pour structurer ta recherche d'emploi et décrocher un poste</div>
+                                    <div class="v4-pricing-card-coach">Avec Catherine — coach spécialiste recrutement</div>
+                                    <ul class="v4-pricing-card-includes" style="margin-top:16px;">
+                                        <li>Accompagnement individuel avec une experte du recrutement</li>
+                                        <li>Adaptation de ton CV et de ton discours au secteur visé</li>
+                                        <li>Préparation aux entretiens et travail sur ton positionnement</li>
+                                        <li>Carnet de route Tilto orienté recherche d'emploi</li>
+                                        <li>Entreprises locales, interlocuteurs et contacts pertinents identifiés pour toi</li>
+                                    </ul>
+                                    <div class="v4-pricing-card-duration">Durée : 2 à 6 mois</div>
+                                    <button class="v4-pricing-card-btn" data-booking="boost" style="margin-top:12px;">Ça m'intéresse</button>
+                                    <div class="v4-pricing-accordion">
+                                        <button class="v4-pricing-accordion-toggle" data-accordion="next">⬇️ Voir le détail de ton accompagnement <span class="arrow">▼</span></button>
+                                        <div class="v4-pricing-accordion-content">
+                                            <h4>À qui s'adresse cet accompagnement ?</h4>
+                                            <p>À toutes les personnes dont la direction est claire mais qui ont besoin de structurer leur recherche d'emploi pour décrocher le bon poste, en adaptant leur candidature aux codes d'un nouveau secteur.</p>
+                                            <h4>En quoi notre méthode est différente d'un coaching classique ?</h4>
+                                            <p>Le parcours combine accompagnement humain et outils Tilto. Catherine t'aide à structurer ta recherche, et Tilto accélère le processus grâce à un carnet de route personnalisé.</p>
+                                            <h4>Qui va t'accompagner ?</h4>
+                                            <p>Catherine, coach spécialiste recrutement. Son rôle est de t'aider à adapter ton positionnement, ton CV et ton discours pour rendre ta candidature évidente aux yeux des recruteurs.</p>
+                                            <h4>Comment se déroule l'accompagnement ?</h4>
+                                            <p>Des séances régulières (rythme défini ensemble). Un travail entre les séances à partir de ton carnet de route. L'objectif est de décrocher des entretiens et de les réussir, pas seulement d'envoyer des CV.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="text-align:center; margin:28px 0 16px;"><span style="font-family:'Libre Baskerville',serif; font-size:1.1rem; color:var(--v4-text-muted);">— ou —</span></div>
+
+                            <!-- Avancer seul(e) — même plan d'action STATIQUE -->
+                            <div style="margin-top:0; padding:20px; border:1px solid var(--v4-border); border-radius:14px; background:var(--v4-white);">
+                                <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--v4-text-muted); font-weight:700; margin-bottom:10px;">Avancer seul{{ analysis.genre_e }}</div>
+                                <p style="font-size:0.85rem; color:var(--v4-text-muted); font-style:italic; margin-bottom:12px;">Possible, mais demande du temps, de l'énergie et beaucoup de constance.</p>
+                                <button class="v4-pricing-accordion-toggle" data-accordion-target="plan-action-2">📋 Voir ton plan d'action <span class="arrow">▼</span></button>
+                                <div id="plan-action-2" class="v4-pricing-accordion-content">
+                                    <div class="v4-carnet-section">
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 1 — Comprendre le terrain</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Cartographier les structures et comprendre l'écosystème</li>
+                                                <li>Échanger avec 2 à 3 professionnels pour valider le quotidien réel du poste</li>
+                                                <li>Identifier tes compétences transférables et tes atouts</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 2 — Acquisition de compétences</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Identifier les éventuels ajustements ou formations utiles (et les financements possibles)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 3 — Adapter ton positionnement</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Clarifier ton rôle cible</li>
+                                                <li>Adapter ton CV, ton pitch et ton profil LinkedIn</li>
+                                                <li>Mettre en valeur tes réalisations pour crédibiliser ta transition</li>
+                                            </ul>
+                                        </div>
+                                        <div class="v4-carnet-item">
+                                            <div class="v4-carnet-item-title">Phase 4 — Activer la recherche</div>
+                                            <ul class="v4-carnet-item-list">
+                                                <li>Identifier les structures cibles</li>
+                                                <li>Trouver les bons interlocuteurs (le réseau est un vrai accélérateur)</li>
+                                                <li>Structurer candidatures et relances</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pack Clarté en secondaire — STATIQUE -->
+                            <div style="margin-top:24px; padding:16px 20px; background:var(--v4-cream); border-radius:12px;">
+                                <p style="font-size:0.92rem; color:var(--v4-text-medium); line-height:1.65; margin:0;">Si ta direction n'est pas encore tout à fait claire et que tu veux d'abord valider ta voie avant de te lancer dans une recherche, il existe aussi le <strong>Pack Clarté Tilto.</strong></p>
+                                <button class="v4-pricing-accordion-toggle" data-accordion-target="pack-clarte-detail-alt" style="margin-top:10px;">👉 Voir le Pack Clarté <span class="arrow">▼</span></button>
+                                <div id="pack-clarte-detail-alt" class="v4-pricing-accordion-content">
+                                    <div class="v4-pricing-card" style="margin-top:12px; max-width:100%;">
+                                        <div class="v4-coach-banner">
+                                            <img src="https://images.tilto.co/production/2026/02/42d86f91_anne-gobled-28-768x1152.webp" alt="Anne, coach Tilto" class="v4-coach-banner-photo" style="width:80px; height:80px;">
+                                            <div>
+                                                <div class="v4-coach-banner-name">Anne</div>
+                                                <div class="v4-coach-banner-role">Coach en transition professionnelle partenaire Tilto</div>
+                                                <div class="v4-coach-banner-stats">
+                                                    <span class="v4-coach-banner-stat">✓ Certifiée EMCC</span>
+                                                    <span class="v4-coach-banner-stat">+500 coachings</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="v4-pricing-card-name">Pack Clarté Tilto</div>
+                                        <div class="v4-pricing-card-for">👉 Pour toi si tu veux encore valider ta direction avant de t'engager.</div>
+                                        <div class="v4-pricing-card-duration">Durée : 3 à 6 mois</div>
+                                        <ul class="v4-pricing-card-includes">
+                                            <li>Accompagnement individuel avec Anne</li>
+                                            <li>Clarification de tes priorités et critères non négociables</li>
+                                            <li>Carnet de route Tilto personnalisé</li>
+                                            <li>Méthode combinant accompagnement humain + outil IA</li>
+                                        </ul>
+                                        <button class="v4-pricing-card-btn" data-booking="clarte">Ça m'intéresse</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SECTION 5: RÉSERVER — 100% STATIQUE ===== -->
+        <div class="v4-section" id="section5">
+            <div class="v4-module-container">
+                <div class="v4-module">
+                    <div class="v4-module-header">
+                        <div class="v4-module-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+                        <div><div class="v4-module-title">Réserver mon appel gratuit de 30 min</div></div>
+                    </div>
+                    <div class="v4-module-content">
+
+                        <p style="font-size:1rem; color:var(--v4-text); line-height:1.75;">Claire te contactera pour te présenter l'accompagnement et programmer la <strong>séance découverte offerte avec Anne.</strong></p>
+                        <p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.7;">L'essai sera une rencontre en visio 100 % flexible, selon tes disponibilités, et <strong>sans aucun engagement.</strong></p>
+
+                        <div class="v4-booking-form-block" style="margin-top:24px;">
+                            <div class="v4-booking-row">
+                                <div class="v4-booking-field v4-float-field">
+                                    <input type="text" id="book-prenom" placeholder=" " value="{{ firstname|default('', true) }}">
+                                    <label for="book-prenom">Prénom</label>
+                                    <span class="v4-field-icon">👤</span>
+                                </div>
+                                <div class="v4-booking-field v4-float-field">
+                                    <input type="text" id="book-nom" placeholder=" " value="{{ access_info.lastname|default('', true) if access_info is defined else '' }}">
+                                    <label for="book-nom">Nom</label>
+                                    <span class="v4-field-icon">👤</span>
+                                </div>
+                            </div>
+                            <div class="v4-booking-row">
+                                <div class="v4-booking-field v4-float-field">
+                                    <input type="email" id="book-email" placeholder=" " value="{{ access_info.email|default('') }}">
+                                    <label for="book-email">Email</label>
+                                    <span class="v4-field-icon">✉️</span>
+                                </div>
+                                <div class="v4-booking-field v4-float-field">
+                                    <input type="tel" id="book-tel" placeholder=" ">
+                                    <label for="book-tel">Téléphone</label>
+                                    <span class="v4-field-icon">📱</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="text-align:center; margin-top:24px;">
+                            <button class="v4-pricing-card-btn" data-action="show-confirmation" style="max-width:400px; font-size:1rem; padding:16px 24px;">Confirmer ma demande</button>
+                        </div>
+
+                        <p style="font-family:'Caveat', cursive; font-size:1.3rem; color:var(--v4-primary); text-align:left; margin-top:20px;">À très bientôt,<br>Claire — Tilto</p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== MODAL CONFIRMATION — STATIQUE + firstname BDD ===== -->
+<div id="modalConfirmation" class="v4-modal" style="justify-content:center; align-items:center; padding:20px;">
+    <div class="v4-modal-content" style="max-width:480px; padding:40px 32px; text-align:center;">
+        <span class="v4-modal-close" data-action="close-modal">✕</span>
+        <div style="font-size:2.5rem; margin-bottom:16px;">🎉</div>
+        <h3 style="font-family:'Libre Baskerville', serif; font-size:1.2rem; color:var(--v4-text); margin-bottom:12px;text-align:center;">Demande envoyée !</h3>
+        <p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.7;">Merci {{ firstname|capitalize }} ! Tu vas recevoir un <strong>email de confirmation</strong>. Claire te contactera très vite pour programmer ton appel.</p>
+        <p style="font-size:0.92rem; color:var(--v4-text-muted); margin-top:12px;">Pense à vérifier tes spams si tu ne le vois pas dans les prochaines minutes.</p>
+        <button class="v4-pricing-card-btn" data-action="close-confirmation" style="margin-top:20px; max-width:200px; margin-left:auto; margin-right:auto;">Fermer</button>
+    </div>
+</div>
+
+<!-- ===== MODAL SOLO — STATIQUE + firstname BDD ===== -->
+<div id="modalSolo" class="v4-modal" style="justify-content:center; align-items:center; padding:20px;">
+    <div class="v4-modal-content" style="max-width:480px; padding:40px 32px; text-align:center;">
+        <span class="v4-modal-close" data-action="close-modal">✕</span>
+        <div style="font-size:2.5rem; margin-bottom:16px;">💪</div>
+        <h3 style="font-family:'Libre Baskerville', serif; font-size:1.15rem; color:#2D2B3A; margin-bottom:16px;">Merci pour ton retour {{ firstname|capitalize }}</h3>
+        <p style="font-size:0.95rem; color:#555; line-height:1.7; margin-bottom:14px;">Tu peux maintenant avancer avec les éléments et les pistes identifiées dans ce livrable. Prends le temps d'explorer le terrain, d'échanger avec des professionnels et de confronter tes idées à la réalité des métiers.</p>
+        <p style="font-size:0.95rem; color:#555; line-height:1.7; margin-bottom:20px;">Si tu ressens le besoin de structurer la suite à un moment donné, Tilto reste accessible.</p>
+        <p style="font-family:'Caveat', cursive; font-size:1.3rem; color:#A11857;">Bonne continuation,<br>— Claire, Tilto</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script nonce="{{ g.nonce }}">
+var firstname = '{{ firstname|capitalize }}';
+var genreE = '{{ analysis.genre_e }}';
+var isAdminView = {{ 'true' if is_admin_view is defined and is_admin_view else 'false' }};
+
+var trackingContext = {
+    user_id: {{ user_id }},
+    quiz_id: '{{ quiz_id }}',
+    result_id: '{{ analysis.result_id|default("") }}',
+    source_page: 'analysis_v4'
+};
+
+function trackInteraction(interactionType, pisteNumber, payload) {
+    if (isAdminView) return;
+    fetch('/analysis/track-interaction', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            ...trackingContext,
+            interaction_type: interactionType,
+            piste_number: pisteNumber,
+            payload: payload
+        })
+    }).catch(function(err) { console.warn('Tracking error:', err); });
+}
+
+/* Textes de résultat LLM — injectés au rendu serveur */
+var resultTexts = {
+    multiple: {{ analysis.section4.result_multiple_text|tojson }},
+    one: {{ analysis.section4.result_one_text|tojson }},
+    zero: {{ analysis.section4.result_zero_text|tojson }}
+};
+
+/* Titres header — construits avec firstname BDD */
+var headerTitles = {
+    'welcome': 'Cher' + genreE + ' ' + firstname + ', voici ce que j\'ai compris',
+    'section1': 'Tes pistes métiers',
+    'section4': 'La suite possible avec Tilto',
+    'section5': 'Ton accompagnement Tilto'
+};
+
+var pisteChoices = {};
+
+/* ===== NAVIGATION ===== */
+var sectionsList = ['welcome', 'section1', 'section4', 'section5'];
+var currentSectionIndex = 0;
+var maxSectionReached = 0;
+
+function updateActiveSection() {
+    if (currentSectionIndex > maxSectionReached) {
+        maxSectionReached = currentSectionIndex;
+    }
+
+    document.querySelectorAll('.v4-section').forEach(function(s) { s.classList.remove('active'); });
+    var active = document.getElementById(sectionsList[currentSectionIndex]);
+    if (active) active.classList.add('active');
+
+    var headerH1 = document.getElementById('headerTitle');
+    if (headerH1) headerH1.textContent = headerTitles[sectionsList[currentSectionIndex]] || '';
+
+    document.querySelectorAll('.v4-nav-step').forEach(function(step, i) {
+        step.classList.remove('active', 'completed');
+        if (i === currentSectionIndex) step.classList.add('active');
+        else if (i <= maxSectionReached) step.classList.add('completed');
+    });
+    document.querySelectorAll('.v4-nav-separator').forEach(function(sep, i) {
+        sep.classList.remove('completed');
+        if (i < maxSectionReached) sep.classList.add('completed');
+    });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    document.querySelector('.v4-container').scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+}
+
+function navigateToSection(sectionId) {
+    var idx = sectionsList.indexOf(sectionId);
+    if (idx !== -1) {
+        currentSectionIndex = idx;
+        updateActiveSection();
+        if (idx > maxSectionReached - 1) {
+            trackInteraction('section_view', null, {
+                section: sectionId,
+                section_index: idx
+            });
+        }
+    }
+}
+
+function revealPiste(id) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.style.display = 'block';
+        setTimeout(function() {
+            var headerHeight = document.querySelector('.v4-header').offsetHeight + 20;
+            var elTop = el.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+            window.scrollTo({ top: elTop, behavior: 'smooth' });
+        }, 100);
+    }
+}
+
+/* ===== CALCUL RÉSULTAT — labels statiques, textes LLM ===== */
+function computePisteResult() {
+    var count = 0;
+    if (pisteChoices[1] === 'interesse') count++;
+    if (pisteChoices[2] === 'interesse') count++;
+    if (pisteChoices[3] === 'interesse') count++;
+
+    var label = document.getElementById('result-label');
+    var text = document.getElementById('result-text');
+
+    if (count === 1) {
+        label.textContent = 'Une piste te parle';
+        text.innerHTML = resultTexts.one;
+        document.getElementById('variant-default').style.display = 'none';
+        document.getElementById('variant-one-piste').style.display = 'block';
+    } else if (count === 0) {
+        label.textContent = 'Aucune piste ne résonne pour l\'instant';
+        text.innerHTML = resultTexts.zero;
+        document.getElementById('variant-default').style.display = 'block';
+        document.getElementById('variant-one-piste').style.display = 'none';
+    } else {
+        label.textContent = 'Plusieurs pistes te parlent';
+        text.innerHTML = resultTexts.multiple;
+        document.getElementById('variant-default').style.display = 'block';
+        document.getElementById('variant-one-piste').style.display = 'none';
+    }
+}
+
+function lockFeedback(radioName, selectedValue) {
+    var container = document.querySelector('input[name="' + radioName + '"]').closest('.v4-welcome-options');
+    if (!container) return;
+    
+    var feedbackBlock = container.closest('.v4-section2-feedback');
+    if (feedbackBlock) {
+        var label = feedbackBlock.querySelector('.v4-section2-feedback-label');
+        if (label) label.style.display = 'none';
+        feedbackBlock.style.background = 'transparent';
+        feedbackBlock.style.padding = '12px 0';
+    }
+
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+
+    container.querySelectorAll('.v4-welcome-option').forEach(function(opt) {
+        var radio = opt.querySelector('input');
+        if (radio && radio.value === selectedValue) {
+            opt.classList.add('v4-option-locked');
+            var isRetained = selectedValue === 'interesse';
+            var cls = isRetained ? 'v4-locked-badge--retained' : 'v4-locked-badge--dismissed';
+            var icon = isRetained ? '✓' : '✕';
+            var text = isRetained ? 'Piste retenue' : 'Piste écartée';
+            opt.innerHTML = '<span class="v4-locked-badge ' + cls + '"><span class="v4-locked-icon">' + icon + '</span>' + text + '</span>';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+}
+
+/* ===== EVENT LISTENERS ===== */
+document.addEventListener('DOMContentLoaded', function() {
+
+    document.querySelectorAll('.v4-nav-step').forEach(function(step) {
+        step.addEventListener('click', function() {
+            var idx = Array.prototype.indexOf.call(document.querySelectorAll('.v4-nav-step'), this);
+            if (idx > maxSectionReached) return;
+            var id = this.getAttribute('data-section');
+            if (id) navigateToSection(id);
+        });
+    });
+
+// Bouton désactivé par défaut (sauf si feedback déjà donné)
+var startBtn = document.querySelector('.v4-start-button');
+    var feedbackAlreadyGiven = document.querySelector('input[name="feedback-choice"]:checked') || !document.querySelector('.v4-welcome-options--3cols') || document.querySelector('.v4-welcome-options--3cols').style.display === 'none';
+    if (startBtn && !feedbackAlreadyGiven) {
+        startBtn.disabled = true;
+        startBtn.style.opacity = '0.4';
+        startBtn.style.cursor = 'not-allowed';
+        startBtn.textContent = 'Dis-moi d\'abord si j\'ai vu juste ☝️';
+    }
+
+    // Activer le bouton quand un choix est fait
+// Activer le bouton quand un choix est fait (sauf nuance sans texte)
+function updateStartButton() {
+        var selected = document.querySelector('input[name="feedback-choice"]:checked');
+        if (!selected) return;
+        var ready = true;
+        if (selected.value === 'nuance') {
+            var ta = document.getElementById('nuance-textarea');
+            ready = ta && ta.value.trim().length > 0;
+        }
+        if (startBtn) {
+            startBtn.disabled = !ready;
+            startBtn.style.opacity = ready ? '1' : '0.4';
+            startBtn.style.cursor = ready ? 'pointer' : 'not-allowed';
+            startBtn.textContent = ready ? 'Continuer →' : 'Dis-moi d\'abord si j\'ai vu juste ☝️';
+            if (ready) {
+                startBtn.style.transition = 'all 0.3s ease';
+                startBtn.style.transform = 'scale(1.05)';
+                setTimeout(function() { startBtn.style.transform = 'scale(1)'; }, 300);
+            }
+        }
+    }
+
+    document.querySelectorAll('input[name="feedback-choice"]').forEach(function(r) {
+        r.addEventListener('change', updateStartButton);
+    });
+
+    document.getElementById('nuance-textarea').addEventListener('input', updateStartButton);
+
+    if (startBtn) startBtn.addEventListener('click', function() {
+        var selected = document.querySelector('input[name="feedback-choice"]:checked');
+        if (!selected) return;
+        if (selected) {
+            var comment = '';
+            if (selected.value === 'nuance') {
+                comment = document.getElementById('nuance-textarea').value || '';
+            }
+            trackInteraction('accuracy_feedback', null, {
+                rating: selected.value,
+                comment: comment
+            });
+
+            // Afficher le merci une seule fois
+            var feedbackSection = document.querySelector('.v4-welcome-section-title');
+            var optionsBlock = document.querySelector('.v4-welcome-options--3cols');
+            var ta = document.getElementById('nuance-textarea');
+            if (feedbackSection) feedbackSection.style.display = 'none';
+            if (optionsBlock) optionsBlock.style.display = 'none';
+            if (ta) ta.style.display = 'none';
+            var merciLabels = {
+                'exact': '🙌 Super, on est sur la même longueur d\'onde !',
+                'nuance': '📝 Bien noté, merci pour la précision !',
+                'not-really': '🙏 Merci pour ton honnêteté, c\'est précieux pour nous.'
+            };
+            var merci = document.createElement('div');
+            merci.style.cssText = 'text-align:center; padding:20px 24px; color:var(--v4-text); font-size:0.95rem; font-weight:600; background:var(--v4-cream); border-radius:12px; border-left:4px solid var(--v4-primary); margin:12px 0;';
+            merci.textContent = merciLabels[selected.value] || 'Merci !';
+            if (optionsBlock && optionsBlock.parentElement) {
+                optionsBlock.parentElement.insertBefore(merci, optionsBlock);
+            }
+        }
+        navigateToSection('section1');
+    });
+
+    document.querySelectorAll('input[name="feedback-choice"]').forEach(function(r) {
+        r.addEventListener('change', function() {
+            var ta = document.getElementById('nuance-textarea');
+            ta.style.display = (this.value === 'nuance') ? 'block' : 'none';
+            if (this.value === 'nuance') ta.focus();
+        });
+    });
+
+    document.querySelectorAll('input[name="section2-feedback"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+        pisteChoices[1] = this.value;
+        trackInteraction('piste_feedback', 1, { interested: this.value === 'interesse' });
+        lockFeedback('section2-feedback', this.value);
+        revealPiste('piste2');
+        });
+    });
+    document.querySelectorAll('input[name="piste2-feedback"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+        pisteChoices[2] = this.value;
+        trackInteraction('piste_feedback', 2, { interested: this.value === 'interesse' });
+        lockFeedback('piste2-feedback', this.value);
+        revealPiste('piste3');
+    });
+});
+document.querySelectorAll('input[name="piste3-feedback"]').forEach(function(r) {
+        r.addEventListener('change', function() {
+            pisteChoices[3] = this.value;
+            trackInteraction('piste_feedback', 3, { interested: this.value === 'interesse' });
+            lockFeedback('piste3-feedback', this.value);
+            computePisteResult();
+            setTimeout(function() { navigateToSection('section4'); }, 600);
+        });
+    });
+
+    function updatePistesContinueButton() {
+        var f1 = document.querySelector('input[name="section2-feedback"]:checked');
+        var f2 = document.querySelector('input[name="piste2-feedback"]:checked');
+        var f3 = document.querySelector('input[name="piste3-feedback"]:checked');
+        var count = (f1 ? 1 : 0) + (f2 ? 1 : 0) + (f3 ? 1 : 0);
+        var btn = document.getElementById('pistes-continue-btn');
+        var hint = document.getElementById('pistes-continue-hint');
+
+        if (count === 3) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            hint.textContent = 'Tes 3 avis sont enregistrés !';
+            hint.style.color = 'var(--v4-primary)';
+        } else {
+            var remaining = 3 - count;
+            hint.textContent = 'Encore ' + remaining + ' avis à donner pour continuer';
+        }
+    }
+
+    document.getElementById('pistes-continue-btn').addEventListener('click', function() {
+        if (!this.disabled) {
+            navigateToSection('section4');
+        }
+    });
+    document.querySelectorAll('[data-booking]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var packType = this.getAttribute('data-booking');
+        window._selectedPack = packType;
+        trackInteraction('pack_interest', null, {
+            action: 'pack_click',
+            product_id: packType,
+            source_button: this.closest('#variant-one-piste') ? 'variant_one' : 'variant_default'
+        });
+        navigateToSection('section5');
+        });
+    });
+
+    document.querySelectorAll('[data-accordion="next"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('open');
+            this.nextElementSibling.classList.toggle('open');
+        });
+    });
+    document.querySelectorAll('[data-accordion-target]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('open');
+            var target = document.getElementById(this.getAttribute('data-accordion-target'));
+            if (target) target.classList.toggle('open');
+        });
+    });
+
+    document.querySelectorAll('[data-accordion-target^="plan-action"]').forEach(function(btn) {
+    var tracked = false;
+    btn.addEventListener('click', function() {
+        if (!tracked) {
+            trackInteraction('pack_interest', null, {
+                action: 'solo_click',
+                source_button: 'plan_action'
+            });
+            tracked = true;
+        }
+    });
+});
+
+document.querySelectorAll('[data-accordion-target^="career-boost"], [data-accordion-target^="pack-clarte"]').forEach(function(btn) {
+    var tracked = false;
+    btn.addEventListener('click', function() {
+        if (!tracked) {
+            trackInteraction('pack_interest', null, {
+                action: 'secondary_pack_click',
+                product_id: this.getAttribute('data-accordion-target'),
+                source_button: 'secondary'
+            });
+            tracked = true;
+        }
+    });
+});
+
+var confirmBtn = document.querySelector('[data-action="show-confirmation"]');
+if (confirmBtn) {
+    confirmBtn.addEventListener('click', function() {
+        var fields = document.querySelectorAll('.v4-booking-form-block input');
+var formData = {};
+var errors = [];
+
+var fieldRules = {
+    'prénom': {
+        empty: 'Merci de renseigner ton prénom',
+    },
+    'nom': {
+        empty: 'Merci de renseigner ton nom',
+    },
+    'email': {
+        empty: 'Merci de renseigner ton email',
+        pattern: { regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: 'Cet email ne semble pas valide' }
+    },
+    'téléphone': {
+        empty: 'Merci de renseigner ton numéro',
+        pattern: { regex: /^[\d\s\+\-\.]{8,}$/, msg: 'Ce numéro ne semble pas valide' }
+    }
+};
+
+// Reset erreurs
+document.querySelectorAll('.v4-booking-field').forEach(function(f) {
+    f.classList.remove('v4-field-error');
+    var msg = f.querySelector('.v4-field-error-msg');
+    if (msg) msg.remove();
+});
+
+fields.forEach(function(input) {
+    var field = input.closest('.v4-booking-field');
+    var label = field.querySelector('label').textContent.trim();
+    var key = label.toLowerCase();
+    formData[key] = input.value.trim();
+    var rules = fieldRules[key];
+
+    if (!formData[key]) {
+        errors.push({ field: field, msg: rules ? rules.empty : 'Ce champ est requis' });
+    } else if (rules && rules.pattern && !rules.pattern.regex.test(formData[key])) {
+        errors.push({ field: field, msg: rules.pattern.msg });
+    }
+});
+
+if (errors.length > 0) {
+    errors.forEach(function(err) {
+        err.field.classList.add('v4-field-error');
+        var msgEl = document.createElement('span');
+        msgEl.className = 'v4-field-error-msg';
+        msgEl.textContent = err.msg;
+        err.field.appendChild(msgEl);
+    });
+    errors[0].field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+}
+        
+        trackInteraction('booking_request', null, {
+            firstname: formData['prénom'] || '',
+            lastname: formData['nom'] || '',
+            email: formData['email'] || '',
+            phone: formData['téléphone'] || '',
+            pack: window._selectedPack || ''
+        });
+        
+// Masquer le bouton de l'autre pack
+document.querySelectorAll('[data-booking]').forEach(function(btn) {
+            if (btn.getAttribute('data-booking') !== window._selectedPack) {
+                btn.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('modalConfirmation').style.display = 'flex';
+
+// Remplacer le formulaire par la confirmation inline
+var section5Content = document.querySelector('#section5 .v4-module-content');
+if (section5Content) {
+    section5Content.innerHTML = '<div style="text-align:center; padding:40px 20px;">' +
+        '<div style="font-size:2.5rem; margin-bottom:16px;">🎉</div>' +
+        '<h3 style="font-family:\'Libre Baskerville\', serif; font-size:1.2rem; color:var(--v4-text); margin-bottom:12px; border:none; padding:0;text-align:center;">Demande envoyée !</h3>' +
+        '<p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.7;">Merci ' + firstname + ' ! Tu vas recevoir un <strong>email de confirmation</strong>. Claire te contactera très vite pour programmer ton appel.</p>' +
+        '<p style="font-size:0.92rem; color:var(--v4-text-muted); margin-top:12px;">Pense à vérifier tes spams si tu ne le vois pas dans les prochaines minutes.</p>' +
+        '</div>';
+}
+});
+}
+
+    document.querySelectorAll('[data-action="close-modal"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var modal = this.closest('.v4-modal');
+            if (modal) modal.style.display = 'none';
+        });
+    });
+    var closeConfirm = document.querySelector('[data-action="close-confirmation"]');
+    if (closeConfirm) {
+        closeConfirm.addEventListener('click', function() {
+            document.getElementById('modalConfirmation').style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', function(e) {
+        if (e.target.id === 'modalConfirmation' || e.target.id === 'modalSolo') {
+            e.target.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            if (currentSectionIndex < sectionsList.length - 1) { currentSectionIndex++; updateActiveSection(); }
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            if (currentSectionIndex > 0) { currentSectionIndex--; updateActiveSection(); }
+        }
+    });
+
+// Récupérer la progression et les interactions depuis la DB
+fetch('/analysis/get-progress?' + new URLSearchParams({
+        user_id: trackingContext.user_id,
+        quiz_id: trackingContext.quiz_id
+    })).then(function(r) { return r.json(); })
+    .then(function(data) {
+        // Restaurer la progression
+        if (data.max_section_index !== undefined && data.max_section_index > 0) {
+            maxSectionReached = data.max_section_index;
+            currentSectionIndex = data.max_section_index;
+        }
+
+        // Restaurer les interactions précédentes
+        if (data.interactions && data.interactions.length > 0) {
+            data.interactions.forEach(function(interaction) {
+
+                // Restaurer accuracy feedback  
+                if (interaction.type === 'accuracy_feedback') {
+                    var feedbackSection = document.querySelector('.v4-welcome-section-title');
+                    var optionsBlock = document.querySelector('.v4-welcome-options--3cols');
+                    var ta = document.getElementById('nuance-textarea');
+                    if (feedbackSection) feedbackSection.style.display = 'none';
+                    if (optionsBlock) optionsBlock.style.display = 'none';
+                    if (ta) ta.style.display = 'none';
+                }
+
+                // Restaurer piste feedbacks
+                if (interaction.type === 'piste_feedback') {
+                var pNum = interaction.piste_number;
+                var val = interaction.payload.interested ? 'interesse' : 'pas-pour-moi';
+                var name = pNum === 1 ? 'section2-feedback' : 'piste' + pNum + '-feedback';
+                var radio = document.querySelector('input[name="' + name + '"][value="' + val + '"]');
+                if (radio) radio.checked = true;
+                pisteChoices[pNum] = val;
+                lockFeedback(name, val);
+
+                    // Révéler les pistes suivantes
+                    if (pNum === 1) revealPiste('piste2');
+                    if (pNum === 2) revealPiste('piste3');
+                    if (pNum === 3) computePisteResult();
+                }
+
+                // Restaurer booking — afficher directement la confirmation
+                // Restaurer booking — remplacer le formulaire par la confirmation inline
+                if (interaction.type === 'booking_request') {
+                    var bookedPack = interaction.payload.pack || '';
+                    
+                    // Remplacer section5 par confirmation inline
+                    var section5Content = document.querySelector('#section5 .v4-module-content');
+                    if (section5Content) {
+                        section5Content.innerHTML = '<div style="text-align:center; padding:40px 20px;">' +
+                            '<div style="font-size:2.5rem; margin-bottom:16px;">🎉</div>' +
+                            '<h3 style="font-family:\'Libre Baskerville\', serif; font-size:1.2rem; color:var(--v4-text); margin-bottom:12px; border:none; padding:0;text-align:center;">Demande envoyée !</h3>' +
+                            '<p style="font-size:0.95rem; color:var(--v4-text-medium); line-height:1.7;">Merci ' + firstname + ' ! Tu vas recevoir un <strong>email de confirmation</strong>. Claire te contactera très vite pour programmer ton appel.</p>' +
+                            '<p style="font-size:0.92rem; color:var(--v4-text-muted); margin-top:12px;">Pense à vérifier tes spams si tu ne le vois pas dans les prochaines minutes.</p>' +
+                            '</div>';
+                    }
+                    
+                    // Marquer uniquement le bouton du pack demandé
+                        document.querySelectorAll('[data-booking]').forEach(function(btn) {
+                        if (btn.getAttribute('data-booking') === bookedPack) {
+                            btn.textContent = '✓ Demande envoyée';
+                            btn.style.background = '#059669';
+                            btn.style.cursor = 'default';
+                            btn.disabled = true;
+                            btn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); };
+                        } else {
+                            btn.style.display = 'none';
+                        }
+                    });
+                }
+            });
+
+            // Mettre à jour le bouton continuer
+            if (typeof updatePistesContinueButton === 'function') {
+                updatePistesContinueButton();
+            }
+        }
+
+        // Tracker la section vue au chargement
+        trackInteraction('section_view', null, {
+            section: sectionsList[currentSectionIndex],
+            section_index: currentSectionIndex,
+            referrer: document.referrer || ''
+        });
+        updateActiveSection();
+    }).catch(function() {
+        trackInteraction('section_view', null, {
+            section: 'welcome',
+            section_index: 0,
+            referrer: document.referrer || ''
+        });
+        updateActiveSection();
+    });
+
+});
+</script>
+{% endblock %}

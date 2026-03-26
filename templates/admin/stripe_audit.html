@@ -1,0 +1,210 @@
+<!-- templates/admin/stripe_audit.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Audit Stripe</h1>
+
+    <!-- Filtre de date -->
+    <div class="mb-8 bg-white p-4 rounded shadow">
+        <form class="flex gap-4 items-end" method="GET">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+                <input type="date" name="start_date" value="{{ request.args.get('start_date') }}"
+                       class="border rounded px-3 py-2">
+            </div>
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Filtrer
+            </button>
+            <a href="{{ url_for('tokens.stripe_audit') }}" 
+               class="text-gray-600 px-4 py-2 rounded border hover:bg-gray-50">
+                Réinitialiser
+            </a>
+        </form>
+    </div>
+
+    {% if missing_count + orphan_count == 0 %}
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
+            {{ report }}
+        </div>
+    {% else %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+            Anomalies détectées : {{ missing_count + orphan_count }}
+        </div>
+
+        <!-- Section des événements manquants -->
+        {% if missing_events %}
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-red-600">
+                ❌ Événements manquants ({{ missing_events|length }})
+            </h2>
+            <div class="grid gap-4">
+                {% for event in missing_events %}
+                <div class="bg-white p-4 rounded shadow">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="font-semibold">ID Événement:</p>
+                            <p class="text-sm font-mono">{{ event.stripe_event_id }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Session ID:</p>
+                            <p class="text-sm font-mono">{{ event.stripe_session_id }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Email:</p>
+                            <p class="text-sm">{{ event.customer_email }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Montant:</p>
+                            <p class="text-sm">{{ "%.2f"|format(event.amount/100) }} EUR</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Date:</p>
+                            <p class="text-sm">{{ event.created_at }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Order Number:</p>
+                            <p class="text-sm">{{ event.metadata.order_number }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <button data-event-id="{{ event.stripe_event_id }}"
+                                class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+                            Réparer
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Section des événements orphelins -->
+        {% if orphan_events %}
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-yellow-600">
+                ⚠️ Événements sans commande ({{ orphan_events|length }})
+            </h2>
+            <div class="grid gap-4">
+                {% for event in orphan_events %}
+                <div class="bg-white p-4 rounded shadow">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="font-semibold">ID Événement:</p>
+                            <p class="text-sm font-mono">{{ event.stripe_event_id }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Session ID:</p>
+                            <p class="text-sm font-mono">{{ event.stripe_session_id }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Email:</p>
+                            <p class="text-sm">{{ event.customer_email }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Montant:</p>
+                            <p class="text-sm">{{ "%.2f"|format(event.amount/100) }} EUR</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Date création:</p>
+                            <p class="text-sm">{{ event.created_at }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Date traitement:</p>
+                            <p class="text-sm">{{ event.processed_at }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Statut:</p>
+                            <p class="text-sm">{{ event.db_status }}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Order Number:</p>
+                            <p class="text-sm">{{ event.metadata.order_number }}</p>
+                        </div>
+                    </div>
+                    {% if event.error %}
+                    <div class="mt-2 p-2 bg-red-50 rounded">
+                        <p class="font-semibold">Erreur:</p>
+                        <p class="text-sm text-red-600">{{ event.error }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    {% endif %}
+
+    <!-- Actions et Légende -->
+    <div class="grid grid-cols-2 gap-8 mt-8">
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Actions</h2>
+            <ul class="list-disc pl-5 space-y-2">
+                <li>
+                    <a href="https://dashboard.stripe.com/events" target="_blank" 
+                       class="text-blue-600 hover:underline">
+                        Ouvrir le dashboard Stripe
+                    </a>
+                </li>
+                <li>Pour réparer un événement manquant, utilisez le bouton "Réparer"</li>
+                <li>Vérifiez les logs pour plus de détails sur les erreurs</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Légende</h2>
+            <ul class="space-y-2">
+                <li>
+                    <span class="text-red-500">❌</span> 
+                    <strong>Événement manquant</strong> : Existe dans Stripe mais pas dans notre base
+                </li>
+                <li>
+                    <span class="text-yellow-500">⚠️</span> 
+                    <strong>Événement orphelin</strong> : Enregistré mais sans commande associée
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script nonce="{{ g.nonce }}">
+function fixEvent(eventId) {
+    if (!confirm('Voulez-vous vraiment réparer cet événement ?')) return;
+    
+    fetch('{{ url_for("tokens.fix_stripe_audit") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ event_id: eventId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Événement réparé avec succès');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la réparation: ' + error);
+    });
+}
+
+// Ajouter les écouteurs d'événements avec le nonce
+document.addEventListener('DOMContentLoaded', function() {
+    const fixButtons = document.querySelectorAll('.fix-event-btn');
+    fixButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const eventId = this.getAttribute('data-event-id');
+            fixEvent(eventId);
+        });
+    });
+});
+
+</script>
+{% endblock %}

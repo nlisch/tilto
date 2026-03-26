@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tilto — Tu tournes en rond depuis trop longtemps.</title>
+<meta name="description" content="En 1h30 de coaching + 48h, on te donne 3 pistes concrètes validées par la donnée marché. 200€. 10x moins cher qu'un bilan de compétences.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --rose:    #A11857;
+  --rose-dk: #7a1142;
+  --rose-lt: #FDF2F8;
+  --rose-bd: #EBD5E3;
+  --cream:   #FAF7F2;
+  --yellow:  #f7b100;
+  --yellow-dk: #e0a000;
+  --ink:     #1A1A1A;
+  --mid:     #4A4A4A;
+  --muted:   #777;
+  --white:   #ffffff;
+  --green-bg: #EAF3DE;
+  --green-tx: #3B6D11;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+.nav {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(250,247,242,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--rose-bd);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700; font-size: 1.15rem;
+  color: var(--rose); letter-spacing: .05em;
+}
+.nav-cta {
+  background: var(--yellow); color: #590925;
+  padding: 9px 20px; border-radius: 10px;
+  font-weight: 700; font-size: 0.88rem;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background .2s, transform .2s;
+  display: inline-flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+.nav-cta:hover { background: var(--yellow-dk); transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 60px 24px 48px;
+  max-width: 680px; margin: 0 auto;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--rose-lt); border: 1px solid var(--rose-bd);
+  border-radius: 50px; padding: 6px 16px;
+  font-size: 0.78rem; font-weight: 700; color: var(--rose);
+  margin: 0 auto 28px; letter-spacing: .03em;
+  animation: fadeUp .6s ease both;
+}
+.hero-eyebrow::before {
+  content: ''; width: 7px; height: 7px;
+  background: var(--rose); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.5)} }
+
+.hero-h1 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 700; line-height: 1.12;
+  color: var(--ink); margin-bottom: 10px;
+  animation: fadeUp .6s .1s ease both;
+}
+.hero-h1 em { font-style: normal; color: var(--rose); }
+
+.hero-sub-hand {
+  font-family: 'Caveat', cursive;
+  font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  font-weight: 600; color: var(--muted);
+  margin-bottom: 32px;
+  animation: fadeUp .6s .2s ease both;
+}
+
+/* Situations bloc */
+.situations {
+  background: var(--white);
+  border: 1.5px solid var(--rose-bd);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+  text-align: left;
+  animation: fadeUp .6s .3s ease both;
+}
+.situations-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--rose); margin-bottom: 14px;
+}
+.situation-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rose-bd);
+  font-size: 0.92rem; color: var(--mid); line-height: 1.5;
+}
+.situation-item:last-child { border-bottom: none; padding-bottom: 0; }
+.situation-check {
+  width: 22px; height: 22px; flex-shrink: 0;
+  background: var(--rose-lt); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: var(--rose); margin-top: 1px;
+}
+
+/* CTA bloc */
+.cta-bloc {
+  animation: fadeUp .6s .4s ease both;
+}
+
+.price-strip {
+  background: var(--rose);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 20px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.price-left { text-align: left; }
+.price-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  color: rgba(255,255,255,0.8); margin-bottom: 4px;
+}
+.price-amount {
+  display: flex; align-items: baseline; gap: 8px;
+}
+.price-main {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.7rem; font-weight: 700; color: white;
+}
+.price-old {
+  font-size: 0.88rem; color: rgba(255,255,255,0.45);
+  text-decoration: line-through;
+}
+.price-badge {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px; padding: 4px 10px;
+  font-size: 0.75rem; font-weight: 700; color: white;
+  white-space: nowrap;
+}
+
+.promo-strip {
+  background: var(--green-bg);
+  padding: 8px 20px;
+  display: flex; align-items: center; gap: 7px;
+}
+.promo-strip svg { flex-shrink: 0; }
+.promo-strip span {
+  font-size: 0.78rem; font-weight: 700; color: var(--green-tx);
+}
+
+.includes {
+  background: var(--white);
+  border: 1.5px solid var(--rose-bd);
+  border-top: none;
+  padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.include-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.9rem; color: var(--mid); line-height: 1.4;
+}
+.include-item::before {
+  content: '→'; color: var(--rose); font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+
+.main-cta {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; background: var(--yellow); color: #590925;
+  border: none; border-radius: 0 0 16px 16px;
+  padding: 18px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 1.05rem;
+  cursor: pointer; text-decoration: none;
+  transition: background .2s, transform .2s;
+}
+.main-cta:hover { background: var(--yellow-dk); transform: translateY(-1px); }
+
+.cta-footnote {
+  font-size: 0.78rem; color: var(--muted);
+  margin-top: 10px; line-height: 1.6; text-align: center;
+}
+.cta-footnote strong { color: var(--rose); font-size: 0.88rem; }
+
+/* ── SOCIAL PROOF ── */
+.social-proof {
+  display: flex; align-items: center; gap: 14px;
+  justify-content: center; flex-wrap: wrap;
+  margin-bottom: 24px;
+  animation: fadeUp .6s .25s ease both;
+}
+.sp-avatars { display: flex; }
+.sp-avatars img {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--cream); object-fit: cover;
+  margin-left: -8px;
+}
+.sp-avatars img:first-child { margin-left: 0; }
+.sp-more {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--cream);
+  background: var(--rose-lt); margin-left: -8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; font-weight: 700; color: var(--mid);
+}
+.sp-text { font-size: 0.82rem; color: var(--mid); }
+.sp-text strong { color: var(--ink); }
+.sp-stars { color: #FFB400; font-size: 0.78rem; }
+
+/* ── RUPTURE ── */
+.rupture {
+  background: var(--ink);
+  padding: 64px 24px;
+  text-align: center;
+}
+.rupture-inner { max-width: 560px; margin: 0 auto; }
+.rupture h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: white; font-weight: 700;
+  line-height: 1.25; margin-bottom: 20px;
+}
+.rupture h2 em { font-style: italic; color: rgba(255,255,255,0.55); }
+.rupture p {
+  font-size: 1rem; color: rgba(255,255,255,0.65);
+  line-height: 1.75; margin-bottom: 0;
+}
+.rupture-hand {
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem; color: var(--yellow);
+  margin-top: 16px; display: block;
+}
+
+/* ── COMMENT ÇA MARCHE ── */
+.how {
+  padding: 72px 24px;
+  max-width: 640px; margin: 0 auto;
+}
+.section-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2.5px;
+  color: var(--rose); margin-bottom: 12px; text-align: center;
+}
+.section-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  color: var(--ink); font-weight: 700;
+  line-height: 1.3; text-align: center;
+  margin-bottom: 40px;
+}
+
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: flex; gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--rose-bd);
+  position: relative;
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--rose); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.95rem; font-weight: 700; color: white;
+}
+.step-body {}
+.step-title {
+  font-weight: 700; font-size: 1rem;
+  color: var(--ink); margin-bottom: 6px; line-height: 1.3;
+}
+.step-desc {
+  font-size: 0.9rem; color: var(--mid); line-height: 1.65;
+}
+.step-tag {
+  display: inline-block; margin-top: 8px;
+  background: var(--rose-lt); border: 1px solid var(--rose-bd);
+  color: var(--rose); font-size: 0.72rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px;
+}
+
+/* ── VERBATIMS ── */
+.verbatims {
+  background: var(--white);
+  padding: 72px 24px;
+  border-top: 1px solid var(--rose-bd);
+  border-bottom: 1px solid var(--rose-bd);
+}
+.verbatims-inner { max-width: 640px; margin: 0 auto; }
+
+.verbatim-card {
+  background: #1a1a2e;
+  border-radius: 16px; padding: 24px;
+  margin-bottom: 12px;
+}
+.verbatim-card:last-of-type { margin-bottom: 0; }
+.verbatim-header {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 12px;
+}
+.verbatim-header img {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+}
+.verbatim-name {
+  font-weight: 700; font-size: 0.85rem; color: white;
+}
+.verbatim-stars { color: #FFB400; font-size: 0.75rem; margin-top: 1px; }
+.verbatim-text {
+  font-size: 0.9rem; color: rgba(255,255,255,0.8);
+  line-height: 1.75;
+}
+
+/* ── COMPARAISON ── */
+.compare {
+  padding: 72px 24px;
+  max-width: 640px; margin: 0 auto;
+}
+.compare-table {
+  width: 100%; border-collapse: collapse;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.compare-table th {
+  padding: 14px 16px; text-align: left;
+  font-size: 0.82rem; font-weight: 700;
+  font-family: 'Libre Baskerville', serif;
+}
+.compare-table th:first-child { background: var(--cream); color: var(--muted); }
+.compare-table th:nth-child(2) { background: var(--rose-lt); color: var(--rose); }
+.compare-table th:nth-child(3) { background: #f5f5f5; color: var(--muted); }
+.compare-table td {
+  padding: 12px 16px;
+  font-size: 0.85rem; color: var(--mid);
+  border-bottom: 1px solid var(--rose-bd);
+  line-height: 1.4;
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table td:nth-child(2) { background: var(--rose-lt); font-weight: 600; color: var(--rose); }
+.compare-table td:nth-child(3) { background: #fafafa; }
+.compare-table td:first-child { font-weight: 600; color: var(--ink); background: var(--cream); }
+
+/* ── À PROPOS ── */
+.about {
+  background: var(--ink);
+  padding: 64px 24px;
+}
+.about-inner {
+  max-width: 580px; margin: 0 auto; text-align: center;
+}
+.about-label {
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2.5px;
+  color: rgba(255,255,255,0.4); margin-bottom: 16px;
+}
+.about h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  color: white; font-weight: 700; line-height: 1.3;
+  margin-bottom: 20px;
+}
+.about p {
+  font-size: 0.95rem; color: rgba(255,255,255,0.65);
+  line-height: 1.75; margin-bottom: 14px;
+}
+.about-tag {
+  background: rgba(161,24,87,0.25);
+  color: #e87aaa; padding: 2px 8px;
+  border-radius: 5px; font-weight: 500;
+}
+.about-img {
+  width: 120px; height: 120px; border-radius: 50%;
+  object-fit: cover; margin: 0 auto 24px; display: block;
+  border: 3px solid rgba(255,255,255,0.15);
+}
+
+/* ── BOTTOM CTA ── */
+.bottom-cta {
+  padding: 72px 24px;
+  max-width: 560px; margin: 0 auto;
+  text-align: center;
+}
+.bottom-cta h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  color: var(--ink); font-weight: 700;
+  line-height: 1.2; margin-bottom: 14px;
+}
+.bottom-cta h2 em { font-style: normal; color: var(--rose); }
+.bottom-cta p {
+  font-size: 0.95rem; color: var(--muted);
+  line-height: 1.7; margin-bottom: 32px;
+}
+.bottom-cta-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; background: var(--yellow); color: #590925;
+  border: none; border-radius: 14px; padding: 18px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 1.05rem;
+  cursor: pointer; text-decoration: none;
+  transition: background .2s, transform .2s;
+  margin-bottom: 10px;
+}
+.bottom-cta-btn:hover { background: var(--yellow-dk); transform: translateY(-1px); }
+.bottom-footnote {
+  font-size: 0.78rem; color: var(--muted); line-height: 1.6;
+}
+.bottom-footnote strong { color: var(--rose); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--cream);
+  border-top: 1px solid var(--rose-bd);
+  padding: 32px 24px;
+  text-align: center;
+  font-size: 0.75rem; color: var(--muted);
+}
+footer a { color: var(--mid); text-decoration: none; }
+footer a:hover { color: var(--rose); }
+.footer-logo {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700; font-size: 1rem;
+  color: var(--rose); display: block; margin-bottom: 8px;
+}
+
+/* ── STICKY MOBILE ── */
+.sticky-mobile {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 998;
+  background: rgba(250,247,242,0.97);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--rose-bd);
+  padding: 12px 20px 16px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+.sticky-mobile-btn {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; background: var(--yellow); color: #590925;
+  border: none; border-radius: 12px; padding: 15px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; text-decoration: none;
+}
+.sticky-note {
+  font-size: 0.72rem; color: var(--muted);
+  text-align: center; margin-top: 5px; line-height: 1.4;
+}
+.sticky-note strong { color: var(--rose); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { opacity: 0; transition: opacity .65s ease, transform .65s ease; transform: translateY(18px); }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+.d1 { transition-delay: .1s; }
+.d2 { transition-delay: .2s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .nav { padding: 0 16px; }
+  .nav-cta { display: none; }
+  .sticky-mobile { display: block; }
+  body { padding-bottom: 90px; }
+  .hero { padding: 40px 20px 40px; }
+  .how, .compare { padding: 52px 20px; }
+  .verbatims { padding: 52px 20px; }
+  .bottom-cta { padding: 52px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">Tilto</div>
+  <a href="/buy/bilan_carriere_express_fr" class="nav-cta">Je commence →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+
+  <div class="hero-eyebrow">Coaching carrière express</div>
+
+  <h1 class="hero-h1">
+    Tu sais que tu veux changer.<br>
+    Mais tu tournes en rond<br>
+    <em>depuis trop longtemps.</em>
+  </h1>
+
+  <p class="hero-sub-hand">On t'aide à voir clair — en 48h.</p>
+
+  <!-- Social proof -->
+  <div class="social-proof">
+    <div class="sp-avatars">
+      <img src="https://images.tilto.co/production/2026/03/36273ed0_camille.webp" alt="Camille">
+      <img src="https://images.tilto.co/production/2026/03/a4c02578_cecile.webp" alt="Cécile">
+      <img src="https://images.tilto.co/production/2026/03/93ce4725_mathieu.webp" alt="Mathieu">
+      <img src="https://images.tilto.co/production/2026/03/8f68da52_karine.webp" alt="Karine">
+      <div class="sp-more">+100</div>
+    </div>
+    <div>
+      <div class="sp-stars">★★★★★</div>
+      <div class="sp-text"><strong>+100 personnes</strong> accompagnées</div>
+    </div>
+  </div>
+
+  <!-- Situations -->
+  <div class="situations">
+    <div class="situations-label">Ça te parle ?</div>
+    <div class="situation-item">
+      <div class="situation-check">✓</div>
+      Tu regardes des fiches métiers depuis des mois, mais tu ne passes jamais à l'acte.
+    </div>
+    <div class="situation-item">
+      <div class="situation-check">✓</div>
+      Tu sens que ton boulot actuel ne fait plus sens — mais tu ne sais pas vers quoi aller.
+    </div>
+    <div class="situation-item">
+      <div class="situation-check">✓</div>
+      Tu as peur de te tromper de voie et de tout recommencer dans 2 ans.
+    </div>
+    <div class="situation-item">
+      <div class="situation-check">✓</div>
+      Un bilan de compétences classique te semble trop long, trop cher, trop flou.
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-bloc">
+    <div class="price-strip">
+      <div class="price-left">
+        <div class="price-name">Coaching carrière Express</div>
+        <div class="price-amount">
+          <span class="price-main">200 €</span>
+          <span class="price-old">250 €</span>
+        </div>
+      </div>
+      <div class="price-badge">offre spéciale</div>
+    </div>
+    <div class="promo-strip">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>50 € offerts · places limitées</span>
+    </div>
+    <div class="includes">
+      <div class="include-item">Entretien guidé avec Claire ou Nicolas (1h30)</div>
+      <div class="include-item">Ton livrable stratégique personnalisé (20+ pages)</div>
+      <div class="include-item">3 pistes validées par la donnée marché</div>
+    </div>
+    <a href="/buy/bilan_carriere_express_fr" class="main-cta">
+      Je commence mon bilan →
+    </a>
+  </div>
+
+  <p class="cta-footnote">
+    Livré en 48h · Tu planifies l'entretien quand tu veux<br>
+    <strong>💳 200€ ou 3×67€ sans frais</strong>
+  </p>
+
+</section>
+
+<!-- RUPTURE -->
+<div class="rupture">
+  <div class="rupture-inner fade-up">
+    <h2>Chercher seul, c'est passer des mois à tourner en rond.<br><em>Avec Tilto, tu gagnes en moyenne 6 mois.</em></h2>
+    <p>Pas de questionnaire standardisé. Pas de réponse générique. Claire ou Nicolas t'écoute, comprend ta situation, et croise ça avec les données réelles de ton marché.</p>
+    <span class="rupture-hand">Le résultat : 3 pistes concrètes, réalistes, faites pour toi.</span>
+  </div>
+</div>
+
+<!-- COMMENT ÇA MARCHE -->
+<section class="how">
+  <div class="section-label fade-up">Comment ça marche</div>
+  <h2 class="section-title fade-up">Simple. Rapide. Concret.</h2>
+
+  <div class="steps">
+    <div class="step fade-up">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Tu achètes et tu planifies ton entretien</div>
+        <div class="step-desc">Immédiatement après le paiement, tu nous laisses ton numéro. On te rappelle pour planifier l'entretien selon tes disponibilités. Rien à préparer.</div>
+        <span class="step-tag">⏱ 2 minutes</span>
+      </div>
+    </div>
+    <div class="step fade-up d1">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Ton entretien avec Claire ou Nicolas</div>
+        <div class="step-desc">1h30 par téléphone ou visio. On explore ta situation, tes contraintes réelles, ce qui te motive, ce qui ne fait plus sens. Tu parles, on écoute et on note tout.</div>
+        <span class="step-tag">🎙 1h30</span>
+      </div>
+    </div>
+    <div class="step fade-up d2">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Tu reçois ton livrable stratégique en 48h</div>
+        <div class="step-desc">20+ pages construites sur ce que tu nous as dit. Tes 3 meilleures pistes métier, validées par la donnée marché de ton bassin d'emploi. Avec les salaires, les formations disponibles, et un plan d'action concret dès cette semaine.</div>
+        <span class="step-tag">📄 20+ pages · 48h</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VERBATIMS -->
+<section class="verbatims">
+  <div class="verbatims-inner">
+    <div class="section-label fade-up" style="text-align:center;margin-bottom:12px;">Avis clients</div>
+    <h2 class="section-title fade-up" style="margin-bottom:28px;">Ce qu'ils en disent</h2>
+
+    <div class="verbatim-card fade-up">
+      <div class="verbatim-header">
+        <img src="https://images.tilto.co/production/2026/03/a4c02578_cecile.webp" alt="Cécile">
+        <div>
+          <div class="verbatim-name">Cécile</div>
+          <div class="verbatim-stars">★★★★★</div>
+        </div>
+      </div>
+      <p class="verbatim-text">J'étais dans le flou par rapport à ma recherche d'emploi, ne trouvant pas dans mon secteur. Tilto m'a permis de découvrir des possibilités que je n'avais jusque là jamais envisagées.</p>
+    </div>
+
+    <div class="verbatim-card fade-up d1">
+      <div class="verbatim-header">
+        <img src="https://images.tilto.co/production/2026/03/36273ed0_camille.webp" alt="Camille">
+        <div>
+          <div class="verbatim-name">Camille</div>
+          <div class="verbatim-stars">★★★★★</div>
+        </div>
+      </div>
+      <p class="verbatim-text">C'est reboostant après plusieurs mois de recherches. Ça permet de se sentir valorisée et utile — de voir que ses compétences ont vraiment de la valeur ailleurs.</p>
+    </div>
+
+    <div class="verbatim-card fade-up d2">
+      <div class="verbatim-header">
+        <img src="https://images.tilto.co/production/2026/03/26761512_josselin.webp" alt="Josselin">
+        <div>
+          <div class="verbatim-name">Josselin</div>
+          <div class="verbatim-stars">★★★★★</div>
+        </div>
+      </div>
+      <p class="verbatim-text">Les pistes proposées sont en cohérence avec mon projet professionnel et mes centres d'intérêt. Je recommande sans hésiter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARAISON -->
+<section class="compare">
+  <div class="section-label fade-up" style="text-align:center;margin-bottom:12px;">Pourquoi Tilto</div>
+  <h2 class="section-title fade-up">10x moins cher.<br>10x plus rapide.</h2>
+
+  <div class="fade-up">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Tilto</th>
+          <th>Bilan classique</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Prix</td>
+          <td>200 €</td>
+          <td>2 000–5 000 €</td>
+        </tr>
+        <tr>
+          <td>Durée</td>
+          <td>48h</td>
+          <td>3 mois</td>
+        </tr>
+        <tr>
+          <td>Pistes personnalisées</td>
+          <td>3 pistes data marché</td>
+          <td>Questionnaires standardisés</td>
+        </tr>
+        <tr>
+          <td>Entretien humain</td>
+          <td>1h30 avec Claire ou Nicolas</td>
+          <td>Plusieurs séances étalées</td>
+        </tr>
+        <tr>
+          <td>Financement CPF</td>
+          <td>Non — mais 200€ cash</td>
+          <td>Oui — mais 3 mois perdus</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- À PROPOS -->
+<section class="about">
+  <div class="about-inner fade-up">
+    <div class="about-label">Qui sommes-nous</div>
+    <img src="https://images.tilto.co/production/2026/02/3aabce9b_french_tech_night_tilto_nantes_2025.webp" alt="Claire et Nicolas — Tilto" class="about-img">
+    <h2>Tilto est né d'un besoin qu'on a vécu nous-mêmes.</h2>
+    <p>Claire et Nicolas ont tous deux connu ce flou professionnel où, malgré les <span class="about-tag">jobs "cool sur le papier"</span>, quelque chose sonnait faux.</p>
+    <p>Faute d'outil simple, humain et rapide pour explorer des options réalistes, ils ont décidé de le créer ensemble.</p>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="bottom-cta">
+  <h2 class="fade-up">Arrête de tourner en rond.<br><em>Passe à l'acte aujourd'hui.</em></h2>
+  <p class="fade-up d1">En 48h, tu sais exactement quelles pistes explorer — et pourquoi elles sont faites pour toi.</p>
+  <a href="/buy/bilan_carriere_express_fr" class="bottom-cta-btn fade-up d2">
+    Je commence mon bilan →
+  </a>
+  <p class="bottom-footnote fade-up">
+    Livré en 48h · Tu planifies l'entretien quand tu veux<br>
+    <strong>💳 200€ ou 3×67€ sans frais</strong>
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Tilto</span>
+  <p style="margin-bottom:6px;">Clarifiez votre prochaine étape professionnelle en 48h.</p>
+  <p>© 2026 Tilto · <a href="/terms">CGV</a> · <a href="/privacy">Confidentialité</a> · <a href="/legal">Mentions légales</a></p>
+</footer>
+
+<!-- STICKY MOBILE -->
+<div class="sticky-mobile">
+  <a href="/buy/bilan_carriere_express_fr" class="sticky-mobile-btn">Je commence mon bilan →</a>
+  <p class="sticky-note">Livré en 48h · <strong>💳 200€ ou 3×67€ sans frais</strong></p>
+</div>
+
+<script nonce="{{ g.nonce }}">
+// Fade up on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// Sticky nav shadow
+window.addEventListener('scroll', () => {
+  document.querySelector('.nav').style.boxShadow =
+    scrollY > 30 ? '0 4px 20px rgba(0,0,0,0.07)' : 'none';
+}, { passive: true });
+</script>
+
+</body>
+</html>

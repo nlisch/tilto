@@ -1,0 +1,144 @@
+{
+  "cover_quote": "Je cherche un environnement technique complexe, une équipe dynamique, et des résultats concrets",
+  "cover_date": "DÉCEMBRE 2025",
+  
+  "intro_text_bloc1": "Après 15 ans chez Schlumberger et une expertise technique solide en chimie et géosciences, tu as prouvé ta capacité à gérer des projets complexes.",
+  "intro_text_bloc2": "J'ai identifié trois voies stratégiques qui capitalisent sur ton expérience et répondent à ton besoin de te \"creuser la tête\" sur des problèmes techniques, tout en travaillant dans une équipe dynamique pour des résultats tangibles.",
+  
+  "section1_quote_verbatim": "J'aimerais bien être dans un <span class=\"hl-jaune\">environnement technique complexe</span> parce que j'aime bien les cas où il faut se creuser la tête. J'ai envie d'être dans une équipe dynamique qui travaille pour des solutions pour le client, pas pour le profit d'actionnaire. Je veux voir des <span class=\"hl-jaune\">résultats concrets</span> pour l'utilisateur qui améliorent la vie de quelqu'un.",
+  "section1_tilto_comprend": "Tu cherches un environnement qui valorise ton <strong>cerveau analytique</strong>, ta <strong>ténacité</strong> et ton besoin de <strong>résultats concrets avec impact social/environnemental</strong>. Ton profil (ingénieure chimiste + gestion projets OGEC + vision analytique) est RARE et RECHERCHÉ.",
+  
+  "transformations_count": 4,
+  "transformations": [
+    {
+      "before": "Grand groupe avec décisions dictées d'en haut, trop politique",
+      "after": "Équipe réduite dynamique, impact visible rapidement"
+    },
+    {
+      "before": "Projets à très long terme avec peu d'impact de mon travail",
+      "after": "Résultats concrets tangibles pour l'utilisateur final"
+    },
+    {
+      "before": "Administration des ventes, travail sans technique complexe",
+      "after": "Environnement technique complexe où se creuser la tête"
+    },
+    {
+      "before": "Industrie manufacturière, multinationale, énergie fossile",
+      "after": "Transition énergétique, respect de l'environnement"
+    }
+  ],
+  "section2_tilto_comprend": "Tu ne veux PAS changer de métier pour fuir. Tu veux un environnement qui valorise ton <strong>cerveau analytique</strong>, ta <strong>ténacité</strong> et ton besoin de <strong>résultats concrets avec impact social/environnemental</strong>.",
+  
+  "options": [
+    {
+      "number": 1,
+      "icon": "🍃",
+      "title": "L'option Technique Complexe",
+      "tags": ["Calculs", "Équipe", "Impact concret"]
+    },
+    {
+      "number": 2,
+      "icon": "⚡",
+      "title": "L'option Formation Rapide",
+      "tags": ["1 mois", "Chimie valorisée", "Flexibilité"]
+    },
+    {
+      "number": 3,
+      "icon": "🛡️",
+      "title": "L'option Sans Formation",
+      "tags": ["Immédiat", "Utilisateur", "Multi-acteurs"]
+    }
+  ],
+  
+  "finale_gender_pronoun": "seule",
+  
+  "voies": [
+    {
+      "number": 1,
+      "color_class": "option-1",
+      "icon": "🍃",
+      "hero_title": "Ingénieure Conseil Rénovation & Maîtrise d'Œuvre Fluides",
+      "quelques_mots": "Tu conçois les installations techniques (chauffage, ventilation, électricité) pour projets construction/rénovation. Tu fais des calculs thermiques, dimensionnements, simulations, et tu travailles en équipe avec architectes, ingénieurs structure, économistes.",
+      "avantage_unique": "Ton expérience OGEC (gestion technique 20 bâtiments, audits, CVC, rénovations) = quasi exactement ce métier. + Tu as la formation ingénieure que d'autres n'ont pas. Ta rigueur + ton sens du concret = profil rare sur ce marché.",
+      "dire_quote": "« Mon parcours d'ingénieur chimiste m'a donné une compréhension approfondie des transferts thermiques et des flux d'énergie. Ma formation scientifique me permet de dialoguer efficacement avec les bureaux d'études. »",
+      "warning_text": "En entretien montre le <strong>\"pont\"</strong> entre tes expertises et le métier visé.",
+      "warning_evite": "\"Je ne viens pas du bâtiment\"",
+      "formations": [
+        "Formation logiciels métier (Perrenoud, Pleiades, ClimaWin)",
+        "Réglementation RE2020/RT existant"
+      ],
+      "cibles_employeurs": [
+        "Pouget Consultants Nantes (ton modèle idéal !)",
+        "NRGYS, ARCHIMEDE, BEC, Ingebat"
+      ],
+      "savais_tu": "Le nombre d'offres en rénovation énergétique a <strong>bondi de +48% en 2024</strong>. Le marché est excellent avec 25+ offres actives région Nantes.",
+      "resume_avantages": [
+        "Technique ULTRA-complexe : calculs, dimensionnements quotidiens",
+        "Équipe dynamique : archi, ingénieurs, dessinateurs",
+        "Résultats concrets : bâtiments performants"
+      ],
+      "resume_defis": "Formation 3-4 mois recommandée (logiciels métier)",
+      "resume_salaire": "35-55K€ brut/an (2275-3575€ net)",
+      "resume_duree": "3-4 mois",
+      "dernier_conseil": "Contacte <strong>Vincent Braire chez Pouget Consultants Nantes</strong> — tu as déjà travaillé avec eux à l'OGEC !"
+    },
+    {
+      "number": 2,
+      "color_class": "option-2",
+      "icon": "⚡",
+      "hero_title": "Consultante Bilan Carbone / Décarbonation",
+      "quelques_mots": "Tu mesures l'empreinte carbone d'entreprises/collectivités (Scopes 1-2-3) et tu élabores des stratégies de décarbonation. Missions : collecte données, calculs GES, analyse postes émissions, plans d'action réduction.",
+      "avantage_unique": "Ta <strong>chimie + connaissance process industriels Schlumberger</strong> = compréhension facteurs émissions, valorisation déchets, analyse cycle de vie. C'est un ÉNORME avantage que peu de consultants BC ont.",
+      "dire_quote": "« Mes 15 ans chez Schlumberger m'ont donné une expertise rare sur les process industriels et les facteurs d'émissions. Je comprends techniquement ce que peu de consultants BC maîtrisent. »",
+      "warning_text": "Mets en avant ta <strong>compréhension technique des process</strong>.",
+      "warning_evite": "\"Je découvre le sujet\"",
+      "formations": [
+        "Formation ABC Bilan Carbone Niveau 1 (7h, 1150€)",
+        "Niveau 2 optionnel pour devenir prestataire"
+      ],
+      "cibles_employeurs": [
+        "Noocarb, Balyo Conseil (Nantes)",
+        "EVEA (SCOP 140 pers, bureau Nantes)"
+      ],
+      "savais_tu": "Marché explosif : la <strong>CSRD oblige les entreprises</strong> à publier leur bilan carbone dès 2025-2026. Demande en forte hausse !",
+      "resume_avantages": [
+        "Formation ULTRA-RAPIDE : 1 mois",
+        "Expertise Schlumberger = atout GOLD",
+        "Marché explosif : CSRD 2025-2026"
+      ],
+      "resume_defis": "Moins \"équipe dynamique\" si freelance",
+      "resume_salaire": "30-55K€ brut/an (1950-3575€ net)",
+      "resume_duree": "1 mois",
+      "dernier_conseil": "Inscris-toi à la formation <strong>ABC Bilan Carbone</strong> en parallèle de tes candidatures BET — double compétence rare !"
+    },
+    {
+      "number": 3,
+      "color_class": "option-3",
+      "icon": "🛡️",
+      "hero_title": "Ingénieure AMO (Assistance Maîtrise d'Ouvrage) Bâtiment",
+      "quelques_mots": "Tu représentes le maître d'ouvrage pour piloter un projet construction/rénovation : définir besoins, rédiger cahiers des charges, sélectionner architecte/BET, valider études, contrôler chantier, défendre intérêts client.",
+      "avantage_unique": "Ton <strong>expérience OGEC = quasi ce métier</strong> (définition programmes, suivi MOE, coordination prestataires, réceptions). Tu as déjà fait de l'AMO \"de facto\" pendant 3 ans. AUCUNE formation nécessaire.",
+      "dire_quote": "« À l'OGEC, j'ai piloté la gestion technique de 20 bâtiments : définition des besoins, coordination des prestataires, suivi des travaux, réceptions. C'est exactement le rôle d'un AMO. »",
+      "warning_text": "Valorise ton <strong>expérience OGEC comme AMO de fait</strong>.",
+      "warning_evite": "\"Je n'ai jamais fait d'AMO\"",
+      "formations": [
+        "AUCUNE nécessaire (expérience OGEC suffit)",
+        "Optionnel : marchés publics si collectivités"
+      ],
+      "cibles_employeurs": [
+        "Cabinets AMO indépendants",
+        "Nantes Métropole Habitat, Habitat 44"
+      ],
+      "savais_tu": "Les <strong>bailleurs sociaux et collectivités</strong> recrutent régulièrement des profils AMO. Marché stable avec moins de concurrence.",
+      "resume_avantages": [
+        "ZÉRO formation nécessaire",
+        "Tu défends intérêts occupants/usagers",
+        "Profils ULTRA-variés : archi, BET, élus"
+      ],
+      "resume_defis": "Moins équipe interne, plus administratif",
+      "resume_salaire": "32-52K€ brut/an (2080-3380€ net)",
+      "resume_duree": "0 mois (immédiat)",
+      "dernier_conseil": "Postule chez <strong>Nantes Métropole Habitat</strong> et <strong>Habitat 44</strong> — ils recrutent régulièrement des profils AMO."
+    }
+  ]
+}

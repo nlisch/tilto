@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Paiement sécurisé - Haloa{% endblock %}
+
+{% block content %}
+<div style="background: #A11857;">
+    <div style="padding-top:3rem;padding-bottom:3rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+        </div>
+        
+        <div id="checkout-wrapper" style="min-height: 400px;">
+            <div id="loading" style="text-align: center; padding: 60px 0; color: #A11857;">
+                <div style="border: 3px solid #f3f3f3; border-top: 3px solid #A11857; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                <p>Chargement du paiement sécurisé...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style nonce="{{ g.nonce }}">
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script src="https://js.stripe.com/v3/" nonce="{{ g.nonce }}"></script>
+<script nonce="{{ g.nonce }}">
+    const stripe = Stripe('{{ stripe_public_key }}');
+    
+    initialize();
+    
+    async function initialize() {
+        try {
+            const fetchClientSecret = async () => {
+                return '{{ client_secret }}';
+            };
+            
+            const checkout = await stripe.initEmbeddedCheckout({
+                fetchClientSecret,
+            });
+            
+            const wrapper = document.getElementById('checkout-wrapper');
+            wrapper.innerHTML = '';
+            
+            const checkoutDiv = document.createElement('div');
+            checkoutDiv.id = 'checkout';
+            wrapper.appendChild(checkoutDiv);
+            
+            checkout.mount('#checkout');
+            
+        } catch (error) {
+            console.error('Erreur:', error);
+            const wrapper = document.getElementById('checkout-wrapper');
+            wrapper.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #df1b41;">
+                    <p style="font-size: 18px; margin-bottom: 10px;">❌ Erreur de chargement</p>
+                    <p style="color: #666; margin-bottom: 20px;">Impossible de charger le formulaire de paiement.</p>
+                    <a href="{{ url_for('tokens.shop') }}" style="color: #A11857; text-decoration: underline;">
+                        Retour à la boutique
+                    </a>
+                </div>
+            `;
+        }
+    }
+</script>
+{% endblock %}

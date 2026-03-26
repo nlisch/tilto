@@ -1,0 +1,7 @@
+quiz_id,quiz_type,description,short_description,image_url,quiz_category,questions_count,is_active
+personal_profiling,profiling_general,Personal skills assessment quiz,Discover your personal profile,,personality_assessment,39,TRUE
+professional_profiling,profiling_professional,Professional skills assessment quiz,Discover your professional profile,,career_assessment,8,TRUE
+pack_clarte,profiling_clarity,Pour clarifier votre avenir professionnel,Une vraie conversation pour scanner ta vie pro,,clarity_assessment,40,TRUE
+pack_orientation,profiling_clarity,Pour clarifier votre avenir professionnel,Une vraie conversation pour scanner ta vie pro,,clarity_assessment,40,TRUE
+smart_contact,smart_contact,Service de prospection intelligente - 10 contacts stratégiques,10 smart contacts avec messages personnalisés,,smart_contact,0,TRUE
+bilan_carriere_express,profiling_clarity,Bilan carrière express — entretien 45 min + feuille de route 20 pages avec 3 meilleurs choix pro,Clarifiez votre prochaine étape professionnelle en 48h,,career_coaching,0,TRUE

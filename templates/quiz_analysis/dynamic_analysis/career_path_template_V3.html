@@ -1,0 +1,1034 @@
+{% extends "quiz_analysis/static_analysis/analysis_base_V3.html" %}
+
+{% block content %}
+<div class="analysis-container">
+
+    <main class="main">
+        <!-- Header visible uniquement à l'impression -->
+        <div class="print-header">
+            <div class="print-header-left">
+                <div class="print-header-title">🎯 Mes 3 pistes professionnelles</div>
+                <p class="print-header-subtitle">Analyse personnalisée pour {{ firstname|capitalize }} • {{ now.strftime('%d/%m/%Y') if now else '' }}</p>
+            </div>
+            <div class="print-header-logo">
+                <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" alt="Tilto">
+                <div>
+                    <div class="print-header-logo-text">Tilto</div>
+                    <div class="print-header-logo-url">www.tilto.co</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ===== HERO SECTION ===== -->
+        <div class="hero-section">
+            <h1 class="hero-title">{{ firstname|capitalize }}, voici les <span>3 pistes pros</span> qui te ressemblent</h1>
+            <p class="hero-subtitle">Chacune répond à ce que tu nous as dit</p>
+        </div>
+        
+        <!-- ===== BANDEAU STATUT ===== -->
+        <div class="request-status-banner" id="requestStatusBanner">
+            <div class="status-content status-has-choice" id="statusHasChoice" style="display: none;">
+                <div class="status-icon">✅</div>
+                <div class="status-info">
+                    <div class="status-label">C'est noté !</div>
+                    <div class="status-detail" id="statusDetail"></div>
+                </div>
+                <button class="status-btn modify" id="statusModifyBtn">Modifier</button>
+            </div>
+            <div class="status-content status-no-choice" id="statusNoChoice">
+                <div class="status-icon">🎯</div>
+                <div class="status-info">
+                    <div class="status-label">Prêt à avancer ?</div>
+                    <div class="status-detail">Une piste te fait <strong>Tilt</strong> ? Tilto t'accompagne — réponds en bas de la fiche.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ===== PISTES GRID ===== -->
+        <div class="pistes-grid">
+            {% for option in analysis.options %}
+            <div class="piste-card option-{{ option.number }} {% if option.is_locked %}locked-server{% else %}unlocked{% endif %}" data-piste="{{ option.number }}">
+                <div class="piste-header">
+                    <div class="piste-icon">{{ option.icon }}</div>
+                    <div class="piste-label">Piste {{ option.number }}</div>
+                    <div class="piste-title">{{ option.title }}</div>
+                </div>
+                <div class="piste-tags">
+                    {% if option.is_locked %}
+                    {% for tag in option.tags %}
+                    <span class="piste-tag locked-tag">🔒 {{ tag }}</span>
+                    {% endfor %}
+                    {% else %}
+                    {% for tag in option.tags %}
+                    <span class="piste-tag">✓ {{ tag }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="piste-why">
+                    <div class="piste-why-label">🎯 Pourquoi ça te correspond</div>
+                    {% if option.is_locked %}
+                    <div class="piste-why-text locked-content">{{ option.why_match|safe }}</div>
+                    {% else %}
+                    <div class="piste-why-text">{{ option.why_match|safe }}</div>
+                    {% endif %}
+                </div>
+                <div class="piste-cta-area">
+                    {% if option.is_locked %}
+                    <button class="piste-cta can-unlock" data-piste="{{ option.number }}">🔓 Utiliser mon crédit offert</button>
+                    {% else %}
+                    <button class="piste-cta unlocked" data-piste="{{ option.number }}">📖 Voir la fiche</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+<!-- ===== BOUTON IMPRESSION ===== -->
+<div class="print-section" id="printSection">
+    <button class="btn-print enabled" id="btnPrint">
+        📄 Imprimer mes 3 pistes
+    </button>
+    <p class="print-hint" id="printHint">
+        ✨ Emporte tes 3 pistes partout avec toi
+    </p>
+</div>
+
+<!-- ===== DETAIL PANELS ===== -->
+{% for voie in analysis.voies %}
+        {% if not voie.is_locked %}
+        <div class="detail-panel" id="detailPanel{{ voie.number }}">
+            <!-- Header simplifié (juste retour, pas de CTA) -->
+            <div class="detail-header">
+                <button class="detail-back">← Mes pistes</button>
+                <span class="detail-header-badge piste-{{ voie.number }}">Piste {{ voie.number }}</span>
+            </div>
+            
+            <div class="detail-content">
+                <div class="detail-hero piste-bg-{{ voie.number }}">
+                    <div class="detail-hero-icon">{{ analysis.options[voie.number - 1].icon }}</div>
+                    <div class="detail-hero-badge piste-{{ voie.number }}">Piste {{ voie.number }}</div>
+                    <h2 class="detail-hero-title">{{ analysis.options[voie.number - 1].title }}</h2>
+                    <p class="detail-hero-subtitle">{{ voie.hero_title }}</p>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="detail-box-title">📝 En quelques mots</div>
+                    <div class="detail-box-text">{{ voie.quelques_mots }}</div>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="detail-box-title">⭐ Ton avantage</div>
+                    <div class="detail-box-text">{{ voie.avantage_unique|safe }}</div>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="detail-box-title">⚠️ Attention — Comment te positionner</div>
+                    <div class="detail-box-text">{{ voie.warning_text|safe }}</div>
+                    <div class="advice-grid">
+                        <div class="advice-box do">
+                            <div class="advice-label">✅ DIS PLUTÔT</div>
+                            <p>{{ voie.dire_quote }}</p>
+                        </div>
+                        <div class="advice-box dont">
+                            <div class="advice-label">❌ ÉVITE</div>
+                            <p>{{ voie.warning_evite }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="detail-box-title">🎤 Ton pitch (à personnaliser)</div>
+                    <div class="pitch-box">"{{ voie.dire_quote }}"</div>
+                </div>
+                
+                <div class="detail-box">
+                    <div class="detail-box-title">🎓 Formations recommandées</div>
+                    <ul class="detail-list">
+                        {% for formation in voie.formations %}
+                        <li>{{ formation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="detail-box">
+                    <div class="detail-box-title">🏢 Qui recrute dans ta région</div>
+                    <ul class="detail-list">
+                        {% for cible in voie.cibles_employeurs %}
+                        <li>{{ cible }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="conseil-box">
+                        <div class="conseil-title">💡 Mon conseil</div>
+                        <div class="conseil-text">{{ voie.dernier_conseil|safe }}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-box full">
+                    <div class="detail-box-title">📊 Le savais-tu ?</div>
+                    <div class="savais-tu-box">
+                        <div class="savais-tu-icon">💡</div>
+                        <div class="savais-tu-content">
+                            <div class="savais-tu-text">{{ voie.savais_tu|safe }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-box full resume-section">
+                    <div class="resume-title">✨ En résumé</div>
+                    <div class="resume-grid">
+                        <div class="resume-card">
+                            <div class="resume-card-icon">✅</div>
+                            <div class="resume-card-label">Les + pour toi</div>
+                            <ul class="resume-card-list">
+                                {% for avantage in voie.resume_avantages %}
+                                <li>{{ avantage }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="resume-card">
+                            <div class="resume-card-icon">⏱️</div>
+                            <div class="resume-card-label">Durée formation</div>
+                            <div class="resume-card-value">{{ voie.resume_duree }}</div>
+                            <div class="resume-card-defi">
+                                <div class="resume-card-defi-label">⚠️ Défi</div>
+                                <div class="resume-card-defi-text">{{ voie.resume_defis }}</div>
+                            </div>
+                        </div>
+                        <div class="resume-card">
+                            <div class="resume-card-icon">💰</div>
+                            <div class="resume-card-label">Salaire</div>
+                            <div class="resume-card-value">{{ voie.resume_salaire }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== NOUVEAU BLOC ACTION (en bas de la fiche) ===== -->
+                <div class="action-block" data-piste="{{ voie.number }}" data-piste-title="{{ analysis.options[voie.number - 1].title }}" data-piste-metier="{{ voie.hero_title }}">
+                    
+                    <!-- État initial : Question binaire -->
+                    <div class="action-state action-state-question" id="actionQuestion{{ voie.number }}">
+                        <div class="action-question">
+                            <div class="action-question-emoji">🚀</div>
+                            <div class="action-question-text">Cette piste t'intéresse ?</div>
+                        </div>
+                        <div class="binary-choice">
+                            <button class="binary-btn positive" data-piste="{{ voie.number }}" data-action="yes">
+                                <span class="btn-emoji">👍</span>
+                                <span class="btn-text">Oui !</span>
+                            </button>
+                            <button class="binary-btn negative" data-piste="{{ voie.number }}" data-action="no">
+                                <span class="btn-emoji">🤷</span>
+                                <span class="btn-text">Pas trop</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- État 2 : Choix des options -->
+                    <div class="action-state action-state-options" id="actionOptions{{ voie.number }}" style="display: none;">
+                        <div class="action-options-title">Super ! <span>Tu veux faire quoi ?</span></div>
+                        <div class="action-options">
+                            <div class="action-option" data-piste="{{ voie.number }}" data-interest="recruiter_connection">
+                                <div class="option-icon">🤝</div>
+                                <div class="option-text">J'aimerais être mis en relation avec un recruteur</div>
+                                <div class="option-arrow">→</div>
+                            </div>
+                            <div class="action-option" data-piste="{{ voie.number }}" data-interest="coach_session">
+                                <div class="option-icon">🧭</div>
+                                <div class="option-text">J'aimerais faire le point avec un coach Tilto avant de m'engager</div>
+                                <div class="option-arrow">→</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- État 3 : Confirmation -->
+                    <div class="action-state action-state-confirmed" id="actionConfirmed{{ voie.number }}" style="display: none;">
+                        <div class="confirmation-icon">✅</div>
+                        <div class="confirmation-title">C'est noté !</div>
+                        <div class="confirmation-text">On te recontacte très vite.</div>
+                        <div class="confirmation-choice" id="confirmationChoice{{ voie.number }}"></div>
+                        <button class="confirmation-modify" data-piste="{{ voie.number }}">Modifier mon choix</button>
+                    </div>
+
+                    <!-- État 4 : Déjà un choix sur une AUTRE piste -->
+                    <!-- État 4 : Déjà un choix sur une AUTRE piste -->
+                    <div class="action-state action-state-replace" id="actionReplace{{ voie.number }}" style="display: none;">
+                        <div class="replace-icon">⚠️</div>
+                        <div class="replace-title">Tu as déjà fait un choix</div>
+                        <div class="replace-text" id="replaceText{{ voie.number }}"></div>
+                        <div class="replace-buttons">
+                            <button class="replace-btn confirm" data-piste="{{ voie.number }}">Oui, remplacer</button>
+                            <button class="replace-btn cancel" data-piste="{{ voie.number }}">Annuler</button>
+                        </div>
+                    </div>
+
+                    <!-- État 5 : Pas trop -->
+                    <div class="action-state action-state-declined" id="actionDeclined{{ voie.number }}" style="display: none;">
+                        <div class="declined-icon">👋</div>
+                        <div class="declined-title">Pas de souci !</div>
+                        <div class="declined-text">Explore tes autres pistes, tu trouveras celle qui te correspond.</div>
+                        <button class="declined-retry" data-piste="{{ voie.number }}">Finalement, ça m'intéresse</button>
+                    </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+    </main>
+
+    <!-- ===== VERSION PRINT DES FICHES ===== -->
+    <div class="print-pistes-wrapper">
+        {% for voie in analysis.voies %}
+        {% if not voie.is_locked %}
+        <div class="print-piste-page">
+            <div class="print-page-1">
+                <div class="print-page-header">
+                    <div class="print-page-header-left">
+                        <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" alt="Tilto">
+                        <span>Tilto</span>
+                    </div>
+                    <div class="print-page-header-right">www.tilto.co</div>
+                </div>
+                <div class="print-piste-header piste-{{ voie.number }}">
+                    <span class="print-piste-icon">{{ analysis.options[voie.number - 1].icon }}</span>
+                    <span class="print-piste-badge">Piste {{ voie.number }}</span>
+                    <h2>{{ analysis.options[voie.number - 1].title }}</h2>
+                    <p>{{ voie.hero_title }}</p>
+                </div>
+                <div class="print-piste-section">
+                    <h3>📝 En quelques mots</h3>
+                    <p>{{ voie.quelques_mots }}</p>
+                </div>
+                <div class="print-piste-section">
+                    <h3>⭐ Ton avantage unique</h3>
+                    <p>{{ voie.avantage_unique|safe }}</p>
+                </div>
+                <div class="print-piste-section">
+                    <h3>⚠️ Comment te positionner</h3>
+                    <p>{{ voie.warning_text|safe }}</p>
+                    <div class="print-advice-grid">
+                        <div class="print-advice do"><strong>✅ Dis plutôt</strong>{{ voie.dire_quote }}</div>
+                        <div class="print-advice dont"><strong>❌ Évite</strong>{{ voie.warning_evite }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="print-page-break"></div>
+            <div class="print-page-2">
+                <div class="print-page-header">
+                    <div class="print-page-header-left">
+                        <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" alt="Tilto">
+                        <span>Tilto</span>
+                    </div>
+                    <div class="print-page-header-right">www.tilto.co</div>
+                </div>
+                <div class="print-page-2-header piste-{{ voie.number }}">
+                    <span class="print-page-2-header-icon">{{ analysis.options[voie.number - 1].icon }}</span>
+                    <span class="print-page-2-header-text">{{ analysis.options[voie.number - 1].title }}</span>
+                    <span class="print-page-2-header-badge">Piste {{ voie.number }} - suite</span>
+                </div>
+                <div class="print-two-columns">
+                    <div class="print-piste-section">
+                        <h3>🎓 Formations recommandées</h3>
+                        <ul>{% for formation in voie.formations %}<li>{{ formation }}</li>{% endfor %}</ul>
+                    </div>
+                    <div class="print-piste-section">
+                        <h3>🏢 Qui recrute</h3>
+                        <ul>{% for cible in voie.cibles_employeurs %}<li>{{ cible }}</li>{% endfor %}</ul>
+                    </div>
+                </div>
+                <div class="print-piste-section conseil">
+                    <h3>💡 Mon conseil</h3>
+                    <p>{{ voie.dernier_conseil|safe }}</p>
+                </div>
+                <div class="print-piste-section">
+                    <h3>📊 Le savais-tu ?</h3>
+                    <p>{{ voie.savais_tu|safe }}</p>
+                </div>
+                <div class="print-resume-grid">
+                    <div class="print-resume-card"><strong>✅ Avantages</strong><ul>{% for avantage in voie.resume_avantages %}<li>{{ avantage }}</li>{% endfor %}</ul></div>
+                    <div class="print-resume-card"><strong>⏱️ Durée</strong><p>{{ voie.resume_duree }}</p><strong>⚠️ Défi</strong><p>{{ voie.resume_defis }}</p></div>
+                    <div class="print-resume-card"><strong>💰 Salaire</strong><p>{{ voie.resume_salaire }}</p></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- ===== OVERLAYS & TOASTS ===== -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-icon" id="successIcon">🎉</div>
+        <div class="success-text" id="successText">Piste débloquée !</div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="buyModal">
+    <div class="modal">
+        <div class="modal-icon">🎯</div>
+        <div class="modal-title">Compare tes 3 options</div>
+        <div class="modal-subtitle">Fais le bon choix pour ta prochaine étape</div>
+        <div class="pricing-box">
+            <div class="pricing-credits">Pack Premium</div>
+            <div class="pricing-desc">2 crédits pour débloquer tes 2 autres pistes</div>
+            <div class="pricing-price">9,90€</div>
+        </div>
+        <a href="/buy/tilto_analysis" class="modal-cta">🎟️ Acheter des crédits</a>
+        <button class="modal-skip" id="modalSkip">Plus tard</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="onboardingModal">
+    <div class="modal">
+        <div class="modal-icon">🎁</div>
+        <div class="modal-title">Tilto t'offre 1 crédit !</div>
+        <div class="modal-subtitle">Clique sur la piste qui t'attire le plus pour la découvrir gratuitement.</div>
+        <button class="modal-cta" id="onboardingClose">C'est parti !</button>
+    </div>
+</div>
+
+<style>
+/* ===== NOUVEAU BLOC ACTION ===== */
+.action-block {
+    background: linear-gradient(135deg, #fdf2f8 0%, white 100%);
+    border-top: 3px solid #A11857;
+    padding: 2rem 1.5rem;
+    margin-top: 2rem;
+    border-radius: 0 0 16px 16px;
+}
+
+.action-state { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.action-question { text-align: center; margin-bottom: 1.25rem; }
+.action-question-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.action-question-text { font-size: 1.25rem; font-weight: 800; color: #1a1a2e; }
+
+.binary-choice { display: flex; gap: 1rem; max-width: 400px; margin: 0 auto; }
+.binary-btn { flex: 1; padding: 1.25rem 1rem; border-radius: 16px; border: 3px solid #e5e7eb; background: white; cursor: pointer; transition: all 0.2s; text-align: center; font-family: inherit; }
+.binary-btn:active { transform: scale(0.98); }
+.binary-btn .btn-emoji { font-size: 2.25rem; display: block; margin-bottom: 0.5rem; }
+.binary-btn .btn-text { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+.binary-btn.positive:hover { border-color: #10b981; background: #d1fae5; }
+.binary-btn.negative:hover { border-color: #9ca3af; background: #f3f4f6; }
+
+.action-options-title { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 1.25rem; text-align: center; }
+.action-options-title span { color: #A11857; }
+.action-options { display: flex; flex-direction: column; gap: 0.75rem; max-width: 550px; margin: 0 auto; }
+
+.action-option { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: white; border: 3px solid #e5e7eb; border-radius: 16px; cursor: pointer; transition: all 0.2s; }
+.action-option:hover { border-color: #A11857; transform: translateX(4px); }
+.action-option:active { transform: scale(0.98); }
+.action-option .option-icon { font-size: 1.75rem; flex-shrink: 0; }
+.action-option .option-text { flex: 1; font-size: 0.95rem; font-weight: 600; color: #1a1a2e; line-height: 1.4; }
+.action-option .option-arrow { color: #d1d5db; font-size: 1.5rem; transition: all 0.2s; flex-shrink: 0; }
+.action-option:hover .option-arrow { color: #A11857; transform: translateX(4px); }
+.action-option.selected { border-color: #A11857; background: #fdf2f8; }
+
+.action-state-confirmed { text-align: center; padding: 1rem 0; }
+.confirmation-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.confirmation-title { font-size: 1.25rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
+.confirmation-text { font-size: 0.95rem; color: #6b7280; margin-bottom: 1rem; }
+.confirmation-choice { background: #d1fae5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.85rem; color: #065f46; margin-bottom: 1rem; display: inline-block; }
+.confirmation-modify { background: transparent; border: none; color: #A11857; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; font-family: inherit; }
+
+.action-state-replace { text-align: center; padding: 1rem 0; }
+.replace-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.replace-title { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem; }
+.replace-text { font-size: 0.9rem; color: #6b7280; margin-bottom: 1.25rem; line-height: 1.5; }
+.replace-buttons { display: flex; gap: 0.75rem; justify-content: center; }
+.replace-btn { padding: 0.75rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
+.replace-btn.confirm { background: #A11857; color: white; }
+.replace-btn.confirm:hover { background: #8b1249; }
+.replace-btn.cancel { background: #f3f4f6; color: #6b7280; border: 2px solid #e5e7eb; }
+
+.dashboard-reminder { background: linear-gradient(135deg, #fdf2f8 0%, white 100%); border: 2px solid #fce7f3; border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; margin-top: 2rem; }
+.dashboard-reminder .reminder-icon { font-size: 2rem; }
+.dashboard-reminder .reminder-content { flex: 1; }
+.dashboard-reminder .reminder-title { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.15rem; }
+.dashboard-reminder .reminder-subtitle { font-size: 0.8rem; color: #6b7280; }
+.dashboard-reminder .reminder-cta { background: #A11857; color: white; border: none; padding: 0.7rem 1.25rem; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+.detail-header-badge { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 0.4rem 0.9rem; border-radius: 12px; }
+.detail-header-badge.piste-1 { background: #610540; color: white; }
+.detail-header-badge.piste-2 { background: #F19631; color: white; }
+.detail-header-badge.piste-3 { background: #26BB8E; color: white; }
+
+/* ===== STYLES EXISTANTS ===== */
+.piste-tag.locked-tag { background: #f3f4f6; color: #9ca3af; border: 1px dashed #d1d5db; filter: blur(3px); user-select: none; }
+.locked-content { filter: blur(4px); user-select: none; pointer-events: none; }
+.piste-card.locked-server { position: relative; }
+.piste-card.locked-server:hover { border-color: #A11857 !important; }
+.piste-cta.locked { background: linear-gradient(135deg, #FFB800 0%, #FF9500 100%) !important; color: #1a1a2e !important; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.5); font-weight: 700; border: none !important; animation: pulse-gold 2s ease-in-out infinite; }
+@keyframes pulse-gold { 0%, 100% { box-shadow: 0 4px 15px rgba(255, 149, 0, 0.5); } 50% { box-shadow: 0 4px 25px rgba(255, 149, 0, 0.8); } }
+.detail-hero { border-radius: 16px; margin-bottom: 1.5rem; }
+.detail-hero.piste-bg-1 { background: linear-gradient(135deg, #F3E8F0 0%, #f9f1f6 100%); }
+.detail-hero.piste-bg-2 { background: linear-gradient(135deg, #FEF3E2 0%, #fffaf0 100%); }
+.detail-hero.piste-bg-3 { background: linear-gradient(135deg, #E8F8F3 0%, #f0fdf9 100%); }
+
+#buyModal .modal { padding: 2.5rem 2rem; max-width: 400px; }
+#buyModal .modal-icon { font-size: 4rem; margin-bottom: 1rem; }
+#buyModal .modal-title { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem; }
+#buyModal .modal-subtitle { font-size: 1rem; color: #6b7280; margin-bottom: 1.5rem; }
+#buyModal .pricing-box { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border: 2px solid #f9a8d4; border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; }
+#buyModal .pricing-credits { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+#buyModal .pricing-credits::before { content: '🎟️'; }
+#buyModal .pricing-desc { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.75rem; }
+#buyModal .pricing-price { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #A11857 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+#buyModal .modal-cta { display: block; width: 100%; padding: 1rem 1.5rem; background: linear-gradient(135deg, #A11857 0%, #8b1249 100%); border: none; border-radius: 14px; color: white; font-size: 1.1rem; font-weight: 700; text-decoration: none; cursor: pointer; text-align: center; }
+#buyModal .modal-skip { display: block; width: 100%; margin-top: 1rem; padding: 0.75rem; background: transparent; border: none; color: #9ca3af; font-size: 0.95rem; cursor: pointer; }
+
+#onboardingModal .modal { max-width: 360px; padding: 2rem 1.5rem; }
+#onboardingModal .modal-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+#onboardingModal .modal-title { font-size: 1.3rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem; }
+#onboardingModal .modal-subtitle { font-size: 0.95rem; color: #6b7280; margin-bottom: 1.5rem; line-height: 1.5; }
+#onboardingModal .modal-cta { width: 100%; padding: 0.9rem 1.5rem; background: linear-gradient(135deg, #A11857 0%, #8b1249 100%); border: none; border-radius: 12px; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; }
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .binary-choice { flex-direction: row; gap: 0.75rem; }
+    .binary-btn { padding: 1rem 0.75rem; }
+    .binary-btn .btn-emoji { font-size: 1.75rem; }
+    .binary-btn .btn-text { font-size: 0.9rem; }
+    .action-option { padding: 1rem; }
+    .action-option .option-text { font-size: 0.85rem; }
+    .dashboard-reminder { flex-direction: column; text-align: center; }
+    .replace-buttons { flex-direction: column; }
+    .replace-btn { width: 100%; }
+}
+
+.action-state-declined { text-align: center; padding: 1rem 0; }
+.declined-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.declined-title { font-size: 1.25rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.25rem; }
+.declined-text { font-size: 0.95rem; color: #6b7280; margin-bottom: 1rem; }
+.declined-retry { background: transparent; border: none; color: #A11857; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; font-family: inherit; }
+
+.request-status-banner {
+    background: linear-gradient(135deg, #fdf2f8 0%, white 100%);
+    border: 2px solid #A11857;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(161, 24, 87, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-icon { 
+    font-size: 2.25rem; 
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.status-info { flex: 1; min-width: 0; }
+.status-label { 
+    font-size: 0.7rem; 
+    font-weight: 800; 
+    color: #A11857; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+    margin-bottom: 0.15rem; 
+}
+.status-detail { 
+    font-size: 0.95rem; 
+    font-weight: 600; 
+    color: #1a1a2e; 
+    line-height: 1.4;
+}
+
+.status-btn {
+    padding: 0.7rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.status-btn.cta { 
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%); 
+    color: white; 
+    box-shadow: 0 3px 10px rgba(161, 24, 87, 0.25);
+}
+.status-btn.cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(161, 24, 87, 0.35);
+}
+
+.status-btn.modify { 
+    background: #f9fafb; 
+    color: #6b7280; 
+    border: 1px solid #e5e7eb; 
+}
+.status-btn.modify:hover {
+    background: #f3f4f6;
+    color: #1a1a2e;
+}
+
+.status-has-choice .status-label {
+    color: #059669;
+}
+
+@media (max-width: 600px) {
+    .request-status-banner {
+        padding: 0.85rem 1rem;
+    }
+    .status-content {
+        flex-wrap: wrap;
+    }
+    .status-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    .status-info {
+        flex: 1 1 calc(100% - 3.5rem);
+    }
+    .status-label {
+        font-size: 0.65rem;
+    }
+    .status-detail {
+        font-size: 0.85rem;
+    }
+    .status-btn {
+        width: 100%;
+        margin-top: 0.75rem;
+        padding: 0.8rem;
+    }
+}
+
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script nonce="{{ g.nonce }}">
+console.log('🔴 TEMPLATE V3 - Action Block JS');
+
+var analysisUserId = '{{ user_id|default("", true) }}';
+var quizId = '{{ quiz_id|default("pack_clarte", true) }}';
+var userTokens = [];
+var unlockedPistes = [];
+var isUnlocking = false;
+var currentDetail = 0;
+var currentInterest = null;
+var pendingChoice = null;
+var isReplacing = false;
+
+function initUnlockedPistesFromDOM() {
+    document.querySelectorAll('.piste-card.unlocked').forEach(function(card) {
+        var num = parseInt(card.dataset.piste);
+        if (!isNaN(num) && unlockedPistes.indexOf(num) === -1) unlockedPistes.push(num);
+    });
+}
+
+function loadTokens() {
+    fetch('/my-tokens').then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) { userTokens = data.tokens; updatePistesDisplay(); }
+        document.querySelectorAll('.piste-cta').forEach(function(btn) { btn.classList.add('loaded'); });
+    }).catch(function() { 
+        document.querySelectorAll('.piste-cta').forEach(function(btn) { btn.classList.add('loaded'); });
+    });
+}
+
+function loadCurrentInterest() {
+    if (!analysisUserId) return;
+    fetch('/help-requests/piste-interest/current?user_id=' + analysisUserId + '&quiz_id=' + quizId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success && data.has_interest) {
+                currentInterest = data.current_choice;
+                updateAllActionBlocks();
+            }
+            updateStatusBanner(); // ← AJOUTER ICI
+        }).catch(function() { 
+            updateStatusBanner(); // ← AJOUTER ICI AUSSI
+        });
+}
+
+function updateAllActionBlocks() {
+    if (!currentInterest) return;
+    unlockedPistes.forEach(function(pisteNum) {
+        if (pisteNum === currentInterest.piste_number) {
+            showConfirmedState(pisteNum, currentInterest.interest_type);
+        } else {
+            showQuestionState(pisteNum);
+        }
+    });
+}
+
+function hideAllStates(pisteNum) {
+    ['actionQuestion', 'actionOptions', 'actionConfirmed', 'actionReplace', 'actionDeclined'].forEach(function(prefix) {
+        var el = document.getElementById(prefix + pisteNum);
+        if (el) el.style.display = 'none';
+    });
+}
+
+function showQuestionState(pisteNum) {
+    hideAllStates(pisteNum);
+    var el = document.getElementById('actionQuestion' + pisteNum);
+    if (el) el.style.display = 'block';
+}
+
+function showOptionsState(pisteNum) {
+    hideAllStates(pisteNum);
+    // Reset la sélection visuelle des options
+    document.querySelectorAll('.action-block[data-piste="' + pisteNum + '"] .action-option').forEach(function(opt) {
+        opt.classList.remove('selected');
+    });
+    var el = document.getElementById('actionOptions' + pisteNum);
+    if (el) {
+        el.style.display = 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function showConfirmedState(pisteNum, interestType) {
+    hideAllStates(pisteNum);
+    var el = document.getElementById('actionConfirmed' + pisteNum);
+    var choiceEl = document.getElementById('confirmationChoice' + pisteNum);
+    if (el) {
+        el.style.display = 'block';
+        var labels = { 'recruiter_connection': '🤝 Mise en relation recruteur', 'coach_session': '🧭 Échange avec un coach' };
+        if (choiceEl) choiceEl.textContent = labels[interestType] || interestType;
+    }
+}
+
+function showReplaceState(pisteNum) {
+    hideAllStates(pisteNum);
+    var el = document.getElementById('actionReplace' + pisteNum);
+    var textEl = document.getElementById('replaceText' + pisteNum);
+    if (el && currentInterest) {
+        el.style.display = 'block';
+        var labels = { 'recruiter_connection': 'mise en relation recruteur', 'coach_session': 'échange coach' };
+        if (textEl) textEl.innerHTML = 'Tu as déjà demandé une <strong>' + labels[currentInterest.interest_type] + '</strong> sur la <strong>Piste ' + currentInterest.piste_number + '</strong>.<br>Veux-tu remplacer par cette nouvelle demande ?';
+    }
+}
+
+function showDeclinedState(pisteNum) {
+    hideAllStates(pisteNum);
+    var el = document.getElementById('actionDeclined' + pisteNum);
+    if (el) el.style.display = 'block';
+}
+// ===== HANDLERS PRINCIPAUX =====
+
+function handleYesClick(pisteNum) {
+    trackPisteInteraction(pisteNum, 'piste_interest_yes');
+    
+    // Si un choix existe sur une AUTRE piste → demander confirmation de remplacement
+    if (currentInterest && currentInterest.piste_number !== pisteNum) {
+        pendingChoice = { piste_number: pisteNum, interest_type: null };
+        showReplaceState(pisteNum);
+    } else {
+        // Pas de choix existant OU choix sur la même piste → montrer options
+        showOptionsState(pisteNum);
+    }
+}
+
+function handleNoClick(pisteNum) {
+    trackPisteInteraction(pisteNum, 'piste_interest_no');
+    
+    var actionBlock = document.querySelector('.action-block[data-piste="' + pisteNum + '"]');
+    var pisteTitle = actionBlock ? actionBlock.dataset.pisteTitle : '';
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    
+    fetch('/help-requests/piste-interest/decline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ 
+            user_id: analysisUserId ? parseInt(analysisUserId) : null, 
+            quiz_id: quizId, 
+            piste_number: pisteNum, 
+            piste_title: pisteTitle 
+        })
+    }).catch(function() {});
+    
+    showDeclinedState(pisteNum);
+}
+
+function selectInterestOption(pisteNum, interestType, element) {
+    element.classList.add('selected');
+    
+    // Soumettre directement (on est déjà passé par la validation dans handleYesClick ou confirmReplace)
+    submitInterest(pisteNum, interestType);
+}
+
+function confirmReplace(pisteNum) {
+    // User a confirmé qu'il veut remplacer → montrer les options
+    isReplacing = true;
+    showOptionsState(pisteNum);
+}
+
+function cancelReplace(pisteNum) {
+    // User annule → retour à la question
+    pendingChoice = null;
+    isReplacing = false;
+    showQuestionState(pisteNum);
+}
+
+function modifyChoice(pisteNum) {
+    // User veut modifier son choix sur la même piste → montrer les options
+    isReplacing = true;
+    showOptionsState(pisteNum);
+}
+
+function submitInterest(pisteNum, interestType) {
+    var actionBlock = document.querySelector('.action-block[data-piste="' + pisteNum + '"]');
+    var pisteTitle = actionBlock ? actionBlock.dataset.pisteTitle : '';
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    
+    fetch('/help-requests/piste-interest/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify({ 
+            user_id: analysisUserId ? parseInt(analysisUserId) : null, 
+            quiz_id: quizId, 
+            piste_number: pisteNum, 
+            piste_title: pisteTitle, 
+            interest_type: interestType 
+        })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) {
+            // Mettre à jour l'état
+            var oldPisteNumber = currentInterest ? currentInterest.piste_number : null;
+            currentInterest = data.current_choice;
+            pendingChoice = null;
+            isReplacing = false;
+            
+            // Afficher confirmation sur cette piste
+            showConfirmedState(pisteNum, interestType);
+            updateStatusBanner(); // ← AJOUTER ICI
+            
+            // Si on a remplacé un choix sur une autre piste → remettre cette piste en état question
+            if (oldPisteNumber && oldPisteNumber !== pisteNum) {
+                showQuestionState(oldPisteNumber);
+            }
+            
+            showToast(data.message);
+            trackPisteInteraction(pisteNum, 'piste_interest_submitted');
+            updateDashboardReminder();
+        } else { 
+            showToast('❌ ' + (data.error || 'Erreur')); 
+        }
+    }).catch(function() { 
+        showToast('❌ Erreur de connexion'); 
+    });
+}
+
+function updateDashboardReminder() {
+    var el = document.getElementById('dashboardReminder');
+    if (el) el.style.display = (unlockedPistes.length > 0 && !currentInterest) ? 'flex' : 'none';
+}
+
+function scrollToFirstUnlockedPiste() { 
+    if (unlockedPistes.length > 0) openDetail(unlockedPistes[0]); 
+}
+
+function updatePistesDisplay() {
+    document.querySelectorAll('.piste-card').forEach(function(card) {
+        var num = parseInt(card.dataset.piste);
+        var cta = card.querySelector('.piste-cta');
+        var isUnlocked = unlockedPistes.indexOf(num) !== -1;
+        if (isUnlocked) {
+            card.classList.add('unlocked'); card.classList.remove('locked-server');
+            if (cta) { cta.className = 'piste-cta unlocked loaded'; cta.innerHTML = '📖 Voir la fiche'; }
+        } else if (userTokens.length > 0) {
+            if (cta) { cta.className = 'piste-cta can-unlock loaded'; cta.innerHTML = userTokens.length === 1 && userTokens[0].token_type === 'free' ? '🎁 Utiliser mon crédit offert' : '🔓 Utiliser 1 crédit'; }
+        } else {
+            if (cta) { cta.className = 'piste-cta locked loaded'; cta.innerHTML = '🔓 Révéler cette piste'; }
+        }
+    });
+}
+
+function unlockPiste(num) {
+    if (isUnlocking) return;
+    if (unlockedPistes.indexOf(num) !== -1) { openDetail(num); return; }
+    if (userTokens.length === 0) { showBuyModal(); return; }
+    isUnlocking = true;
+    var token = userTokens[0];
+    var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    fetch('/use-for-piste', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }, body: JSON.stringify({ token_code: token.token_code, piste_number: num, quiz_id: quizId, user_id: analysisUserId || null }) })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { if (data.success) { showSuccess('🎉', 'Piste débloquée !'); setTimeout(function() { window.location.reload(); }, 1200); } else { showToast('❌ ' + (data.error || 'Erreur')); isUnlocking = false; } })
+        .catch(function() { showToast('❌ Erreur de connexion'); isUnlocking = false; });
+}
+
+function openDetail(num) {
+    trackPisteInteraction(num, 'piste_view');
+    if (unlockedPistes.indexOf(num) === -1) { showToast('🔒 Piste non débloquée'); return; }
+    if (currentDetail > 0) { var prev = document.getElementById('detailPanel' + currentDetail); if (prev) prev.classList.remove('active'); }
+    var panel = document.getElementById('detailPanel' + num);
+    if (panel) { panel.classList.add('active'); panel.scrollTop = 0; currentDetail = num; document.body.style.overflow = 'hidden'; }
+}
+
+function closeDetail() {
+    if (currentDetail > 0) {
+        var panel = document.getElementById('detailPanel' + currentDetail);
+        if (panel) panel.classList.remove('active');
+        currentDetail = 0; document.body.style.overflow = '';
+        // Reset les flags au cas où
+        pendingChoice = null;
+        isReplacing = false;
+        updateDashboardReminder();
+    }
+}
+// ===== GESTION BANDEAU STATUT =====
+
+function updateStatusBanner() {
+    var banner = document.getElementById('requestStatusBanner');
+    var hasChoice = document.getElementById('statusHasChoice');
+    var noChoice = document.getElementById('statusNoChoice');
+    var detail = document.getElementById('statusDetail');
+    
+    if (!banner) return;
+    
+    if (currentInterest) {
+        var pisteMetier = '';
+var actionBlock = document.querySelector('.action-block[data-piste="' + currentInterest.piste_number + '"]');
+if (actionBlock) {
+    pisteMetier = actionBlock.dataset.pisteMetier;
+}
+
+var texts = {
+    'recruiter_connection': 'On te recontacte pour une mise en relation recruteur → ' + pisteMetier,
+    'coach_session': 'On te recontacte pour un échange coach → ' + pisteMetier
+};
+
+detail.textContent = texts[currentInterest.interest_type];
+        hasChoice.style.display = 'flex';
+        noChoice.style.display = 'none';
+    } else {
+        hasChoice.style.display = 'none';
+        noChoice.style.display = 'flex';
+    }
+}
+
+// ===== EVENT LISTENERS BANDEAU =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ... (ton code existant) ...
+    
+    // Bouton "Choisir ma piste"
+    var statusChooseBtn = document.getElementById('statusChooseBtn');
+    if (statusChooseBtn) {
+        statusChooseBtn.addEventListener('click', function() {
+            if (unlockedPistes.length > 0) {
+                openDetail(unlockedPistes[0]);
+            }
+        });
+    }
+    
+    // Bouton "Modifier"
+    var statusModifyBtn = document.getElementById('statusModifyBtn');
+    if (statusModifyBtn) {
+        statusModifyBtn.addEventListener('click', function() {
+            if (currentInterest) {
+                openDetail(currentInterest.piste_number);
+            }
+        });
+    }
+    
+});
+
+function showBuyModal() { document.getElementById('buyModal').classList.add('active'); }
+function hideBuyModal() { document.getElementById('buyModal').classList.remove('active'); }
+function showToast(msg) { var el = document.getElementById('toast'); if (el) { el.textContent = msg; el.classList.add('active'); setTimeout(function() { el.classList.remove('active'); }, 3000); } }
+function showSuccess(icon, text) { var i = document.getElementById('successIcon'); var t = document.getElementById('successText'); var o = document.getElementById('successOverlay'); if (i) i.textContent = icon; if (t) t.textContent = text; if (o) o.classList.add('active'); }
+function trackPisteInteraction(pisteNumber, interactionType) { fetch('/track-activity', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' }, body: JSON.stringify({ event_type: interactionType, page_path: window.location.pathname, extra_data: { piste_number: pisteNumber, quiz_id: quizId } }) }).catch(function() {}); }
+function handlePrint() { trackPisteInteraction(0, 'piste_print'); if (unlockedPistes.length >= 3) window.print(); else showBuyModal(); }
+
+document.addEventListener('DOMContentLoaded', function() {
+    initUnlockedPistesFromDOM();
+    loadTokens();
+    loadCurrentInterest();
+    
+    setTimeout(function() { if (userTokens.length > 0 && unlockedPistes.length === 0) document.getElementById('onboardingModal').classList.add('active'); }, 800);
+    
+    document.querySelectorAll('.piste-cta').forEach(function(btn) { btn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); unlockPiste(parseInt(btn.dataset.piste)); }); });
+    document.querySelectorAll('.piste-card').forEach(function(card) { card.addEventListener('click', function(e) { if (!e.target.classList.contains('piste-cta') && !e.target.closest('.piste-cta')) { var num = parseInt(card.dataset.piste); if (unlockedPistes.indexOf(num) !== -1) openDetail(num); } }); });
+    document.querySelectorAll('.detail-back').forEach(function(btn) { btn.addEventListener('click', closeDetail); });
+    
+    // === ACTION BLOCK LISTENERS ===
+    document.querySelectorAll('.binary-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pisteNum = parseInt(btn.dataset.piste);
+            var action = btn.dataset.action;
+            if (action === 'yes') {
+                handleYesClick(pisteNum);
+            } else if (action === 'no') {
+                handleNoClick(pisteNum);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.declined-retry').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pisteNum = parseInt(btn.dataset.piste);
+            showQuestionState(pisteNum);
+        });
+    });
+
+    document.querySelectorAll('.action-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+            var pisteNum = parseInt(option.dataset.piste);
+            var interestType = option.dataset.interest;
+            selectInterestOption(pisteNum, interestType, option);
+        });
+    });
+    
+    document.querySelectorAll('.confirmation-modify').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pisteNum = parseInt(btn.dataset.piste);
+            modifyChoice(pisteNum);
+        });
+    });
+    
+    document.querySelectorAll('.replace-btn.confirm').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pisteNum = parseInt(btn.dataset.piste);
+            confirmReplace(pisteNum);
+        });
+    });
+    
+    document.querySelectorAll('.replace-btn.cancel').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var pisteNum = parseInt(btn.dataset.piste);
+            cancelReplace(pisteNum);
+        });
+    });
+    
+    var reminderCta = document.getElementById('reminderCta');
+    if (reminderCta) {
+        reminderCta.addEventListener('click', scrollToFirstUnlockedPiste);
+    }
+    
+    var btnPrint = document.getElementById('btnPrint'); if (btnPrint) btnPrint.addEventListener('click', handlePrint);
+    var modalSkip = document.getElementById('modalSkip'); if (modalSkip) modalSkip.addEventListener('click', hideBuyModal);
+    var buyModal = document.getElementById('buyModal'); if (buyModal) buyModal.addEventListener('click', function(e) { if (e.target === this) hideBuyModal(); }); 
+    var onboardingClose = document.getElementById('onboardingClose'); if (onboardingClose) onboardingClose.addEventListener('click', function() { document.getElementById('onboardingModal').classList.remove('active'); });
+    
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { if (document.getElementById('buyModal').classList.contains('active')) hideBuyModal(); else if (currentDetail > 0) closeDetail(); } });
+});
+</script>
+{% endblock %}

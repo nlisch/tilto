@@ -1,0 +1,721 @@
+<!-- Template: reschedule_booking.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprogrammer mon rendez-vous - tilto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #4a5568;
+            font-size: 16px;
+        }
+        
+        .current-booking {
+            background: #f7fafc;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .current-booking h3 {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .booking-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-icon {
+            font-size: 18px;
+        }
+        
+        .info-text {
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .form-section {
+            margin-bottom: 32px;
+        }
+        
+        .form-section h3 {
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            color: #2d3748;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input, .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .time-slot {
+            display: none;
+        }
+        
+        .time-slot-label {
+            display: block;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .time-slot-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .time-slot:checked + .time-slot-label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .warning-box {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .warning-box h4 {
+            color: #c53030;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .warning-box p {
+            color: #742a2a;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Reprogrammer mon rendez-vous</h1>
+            <p>Choisissez un nouveau créneau pour votre consultation</p>
+        </div>
+        
+        <div class="current-booking">
+            <h3>📅 Rendez-vous actuel</h3>
+            <div class="booking-info">
+                <div class="info-item">
+                    <span class="info-icon">📅</span>
+                    <span class="info-text">{{ current_booking.formatted_date }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">⏱️</span>
+                    <span class="info-text">{{ current_booking.formatted_duration }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-icon">🎯</span>
+                    <span class="info-text">{{ product_status.product_name }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="warning-box">
+            <h4>⚠️ Conditions de reprogrammation</h4>
+            <p>Vous pouvez reprogrammer votre rendez-vous jusqu'à 48h avant la date prévue. 
+               Les créneaux disponibles sont du lundi au vendredi de 9h à 18h.</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('dashboard.reschedule_user_booking', product_id=product_id) }}">
+            <div class="form-section">
+                <h3>🗓️ Nouvelle date et heure</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="new_date">Date souhaitée</label>
+                        <input type="date" 
+                               id="new_date" 
+                               name="new_date" 
+                               required 
+                               min="{{ (current_booking.booking_date + timedelta(days=2)).strftime('%Y-%m-%d') }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Créneau horaire</label>
+                        <div class="time-slots">
+                            {% for hour in range(9, 18) %}
+                            <input type="radio" 
+                                   id="time_{{ hour }}" 
+                                   name="new_time" 
+                                   value="{{ '%02d:00'|format(hour) }}" 
+                                   class="time-slot"
+                                   required>
+                            <label for="time_{{ hour }}" class="time-slot-label">
+                                {{ '%02d:00'|format(hour) }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reason">Raison de la reprogrammation (optionnel)</label>
+                    <textarea id="reason" 
+                              name="reason" 
+                              rows="3" 
+                              placeholder="Expliquez pourquoi vous souhaitez reprogrammer..."></textarea>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <a href="{{ url_for('dashboard.product_dashboard', product_id=product_id) }}" 
+                   class="btn btn-secondary">
+                    ← Annuler
+                </a>
+                
+                <button type="submit" class="btn btn-primary">
+                    ✅ Confirmer la reprogrammation
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Désactiver les weekends dans le sélecteur de date
+        document.getElementById('new_date').addEventListener('input', function(e) {
+            const selectedDate = new Date(e.target.value);
+            const dayOfWeek = selectedDate.getDay();
+            
+            // Si weekend sélectionné (0 = dimanche, 6 = samedi)
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                alert('⚠️ Veuillez choisir un jour de semaine (lundi à vendredi)');
+                e.target.value = '';
+            }
+        });
+        
+        // Animation des créneaux horaires
+        document.querySelectorAll('.time-slot-label').forEach(label => {
+            label.addEventListener('click', function() {
+                document.querySelectorAll('.time-slot-label').forEach(l => {
+                    l.style.transform = 'scale(1)';
+                });
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
+
+<!-- Template: booking_details.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de mon rendez-vous - tilto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Styles similaires au template précédent mais adaptés pour les détails */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .booking-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .booking-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+        
+        .booking-main-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .info-block {
+            text-align: center;
+        }
+        
+        .info-block .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .info-block .label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+        
+        .info-block .value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .countdown {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .countdown .time-until {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .action-card {
+            background: #f7fafc;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .action-card .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .action-card h3 {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .action-card p {
+            color: #4a5568;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #fed7d7;
+            color: #c53030;
+            border: 2px solid #feb2b2;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+            color: white;
+        }
+        
+        .preparation-section {
+            background: #f0fff4;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 32px 0;
+        }
+        
+        .preparation-section h3 {
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checklist {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 8px 0;
+            color: #2d5016;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .warning-badge {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Mon rendez-vous</h1>
+            <p>Gérez votre consultation {{ product_status.product_name }}</p>
+        </div>
+        
+        {% if booking_info %}
+        <div class="booking-card">
+            <div class="booking-main-info">
+                <div class="info-block">
+                    <span class="icon">📅</span>
+                    <div class="label">Date</div>
+                    <div class="value">{{ booking_info.formatted_date }}</div>
+                </div>
+                
+                <div class="info-block">
+                    <span class="icon">⏱️</span>
+                    <div class="label">Durée</div>
+                    <div class="value">{{ booking_info.formatted_duration }}</div>
+                </div>
+                
+                {% if booking_info.zoom_link %}
+                <div class="info-block">
+                    <span class="icon">🔗</span>
+                    <div class="label">Lien Zoom</div>
+                    <div class="value">
+                        <a href="{{ booking_info.zoom_link }}" 
+                           target="_blank" 
+                           style="color: white; text-decoration: underline;">
+                            Rejoindre
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="countdown">
+                <div class="time-until">{{ booking_info.time_until_booking }}</div>
+                <div>avant votre rendez-vous</div>
+            </div>
+        </div>
+        
+        <div class="actions-grid">
+            <div class="action-card">
+                <span class="icon">📅</span>
+                <h3>Ajouter au calendrier</h3>
+                <p>Exportez votre rendez-vous vers Google Calendar, Outlook ou Apple Calendar</p>
+                <a href="{{ booking_info.calendar_link }}" 
+                   target="_blank" 
+                   class="btn btn-outline">
+                    📥 Exporter
+                </a>
+            </div>
+            
+            <div class="action-card {% if not booking_info.can_reschedule %}disabled{% endif %}">
+                <span class="icon">🔄</span>
+                <h3>Reprogrammer</h3>
+                <p>Choisissez un nouveau créneau pour votre consultation</p>
+                {% if booking_info.can_reschedule %}
+                <a href="{{ url_for('dashboard.reschedule_user_booking', product_id=product_id) }}" 
+                   class="btn btn-outline">
+                    🔄 Reprogrammer
+                </a>
+                {% else %}
+                <div class="warning-badge">Trop tard pour reprogrammer</div>
+                {% endif %}
+            </div>
+            
+            <div class="action-card {% if not booking_info.can_cancel %}disabled{% endif %}">
+                <span class="icon">❌</span>
+                <h3>Annuler</h3>
+                <p>Annulez votre rendez-vous et reprogrammez plus tard</p>
+                {% if booking_info.can_cancel %}
+                <button onclick="showCancelModal()" class="btn btn-danger">
+                    ❌ Annuler le RDV
+                </button>
+                {% else %}
+                <div class="warning-badge">Trop tard pour annuler</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="preparation-section">
+            <h3>✅ Préparez votre rendez-vous</h3>
+            <ul class="checklist">
+                {% for item in booking_info.preparation_checklist %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="{{ url_for('dashboard.product_dashboard', product_id=product_id) }}" 
+               class="btn btn-outline">
+                ← Retour au dashboard
+            </a>
+        </div>
+        
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <span style="font-size: 64px; margin-bottom: 20px; display: block;">📅</span>
+            <h2 style="color: #2d3748; margin-bottom: 16px;">Aucun rendez-vous programmé</h2>
+            <p style="color: #4a5568; margin-bottom: 32px;">
+                Planifiez votre consultation pour commencer votre parcours.
+            </p>
+            <a href="{{ url_for('dashboard.product_dashboard', product_id=product_id) }}" 
+               class="btn btn-outline">
+                📅 Planifier un rendez-vous
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Modal d'annulation -->
+    <div id="cancelModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%;">
+            <h3 style="color: #2d3748; font-size: 24px; font-weight: 600; margin-bottom: 16px; text-align: center;">
+                ❌ Confirmer l'annulation
+            </h3>
+            <p style="color: #4a5568; margin-bottom: 24px; text-align: center;">
+                Êtes-vous sûr de vouloir annuler votre rendez-vous ? Cette action est irréversible.
+            </p>
+            
+            <form method="POST" action="{{ url_for('dashboard.cancel_user_booking', product_id=product_id) }}">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #2d3748; font-weight: 500; margin-bottom: 8px;">
+                        Raison de l'annulation (optionnel)
+                    </label>
+                    <textarea name="reason" 
+                              rows="3" 
+                              style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; resize: vertical;"
+                              placeholder="Expliquez pourquoi vous annulez..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" 
+                            onclick="hideCancelModal()" 
+                            style="padding: 12px 24px; background: #f7fafc; color: #4a5568; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                        Garder mon RDV
+                    </button>
+                    <button type="submit" 
+                            style="padding: 12px 24px; background: #c53030; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Confirmer l'annulation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function showCancelModal() {
+            document.getElementById('cancelModal').style.display = 'block';
+        }
+        
+        function hideCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+        
+        // Fermer le modal en cliquant à l'extérieur
+        document.getElementById('cancelModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideCancelModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1256 @@
+{% extends "base.html" %}
+
+{% block title %}{{ username|capitalize }}: {{ _('ton check-up personnalisé') }}{% endblock %}
+
+{% block content %}
+<!-- Écran de chargement -->
+<div id="loadingScreen" class="loading-screen" data-skip-loading="{{ skip_loading|default(false)|tojson }}">
+    <div class="loading-content">
+        <div class="progress-ring">
+            <svg class="progress-circle" width="120" height="120">
+                <circle class="circle-bg" cx="60" cy="60" r="54"/>
+                <circle class="circle-progress" cx="60" cy="60" r="54"/>
+            </svg>
+            <div class="progress-text">0%</div>
+        </div>
+        <h2 class="loading-title">Calcul de ton niveau d'épanouissement au travail actuel</h2>
+        <div class="loading-steps">
+            <div class="loading-step">
+                <span class="step-icon">✓</span>
+                <span class="step-text">Analyse des signaux d'alerte</span>
+            </div>
+            <div class="loading-step">
+                <span class="step-icon">✓</span>
+                <span class="step-text">Ton potentiel de croissance pro</span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Contenu principal -->
+<main class="container" id="mainContainer" >
+    <div class="header">
+        <meta name="request-id" content="{{ request_id }}">
+        <meta name="quiz-id" content="{{ quiz_id }}"> 
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <h1>{{ username|capitalize }} : {{ _('ton check-up personnalisé') }}</h1>
+    </div>
+
+    <div class="block" id="initialBlock">
+        <div class="level-info">
+            <div class="level-header">
+                <h1 class="level-title">
+                    {{ analysis.blocks[0].content.levelInfo.header.conseil }}
+                    <span class="level-emoji">{{ analysis.blocks[0].content.levelInfo.header.emoji }}</span>
+                </h1>
+            </div>
+
+            <div class="progress-graph">
+                <h3 class="progress-graph-title">
+                    {{ analysis.blocks[0].content.levelInfo.progressGraph.title }}
+
+                    <div class="highlight"><strong>{{ analysis.blocks[0]['content']['levelInfo']['progressGraph']['values'][0] }}</strong></div>
+                </h3>
+
+                <div style="max-width: 100%; overflow: hidden;">
+                    <svg viewBox="0 0 400 300">
+                        <g class="progress-grid" stroke="#E5E7EB" stroke-width="1">
+                            <line x1="0" y1="50" x2="400" y2="50" />
+                            <line x1="0" y1="100" x2="400" y2="100" />
+                            <line x1="0" y1="150" x2="400" y2="150" />
+                            <line x1="0" y1="200" x2="400" y2="200" />
+                            <line x1="0" y1="250" x2="400" y2="250" />
+                        </g>
+
+                        <path class="progress-path" 
+                              d="M 50,200 Q 150,180 200,150 T 350,80" 
+                              fill="none" 
+                              stroke="#4C0336" 
+                              stroke-width="3"
+                              stroke-linecap="round"/>
+                              
+                        <circle class="progress-dot" 
+                                cx="50" cy="200" r="8" 
+                                fill="#4285f4" 
+                                style="animation-delay: 1.5s"/>
+                        <circle class="progress-dot" 
+                                cx="350" cy="80" r="8" 
+                                fill="#FFB400" 
+                                style="animation-delay: 2s"/>
+                        
+                        <line class="progress-label" 
+                              x1="50" y1="200" x2="50" y2="270" 
+                              stroke="#4285f4" 
+                              stroke-width="2" 
+                              stroke-dasharray="4,4"/>
+                        <line class="progress-label" 
+                              x1="350" y1="80" x2="350" y2="270" 
+                              stroke="#FFB400" 
+                              stroke-width="2" 
+                              stroke-dasharray="4,4"
+                              style="animation-delay: 2.5s"/>
+                            
+                        <text class="progress-label" 
+                              x="30" y="290" 
+                              fill="#0E2023" 
+                              font-size="14" 
+                              style="animation-delay: 2.5s">
+                            {{ analysis.blocks[0]['content']['levelInfo']['progressGraph']['currentLabel'] }}
+                        </text>
+                        <text class="progress-label" 
+                              x="320" y="290" 
+                              fill="#0E2023" 
+                              font-size="14" 
+                              text-anchor="middle"
+                              style="animation-delay: 2.5s">
+                            {{ analysis.blocks[0]['content']['levelInfo']['progressGraph']['targetLabel'] }}
+                        </text>
+
+                        <g class="progress-label" 
+                           transform="translate(350,50)"
+                           style="animation-delay: 3s">
+                            <rect x="-40" y="-25" 
+                                  width="80" height="40" 
+                                  rx="20" 
+                                  fill="#FFB400"/>
+                            <text x="0" y="5" 
+                                  text-anchor="middle" 
+                                  fill="white" 
+                                  font-size="14" 
+                                  font-weight="bold">
+                                {{ analysis.blocks[0]['content']['levelInfo']['progressGraph']['values'][0] }}
+                            </text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="gauge-modernized">                 
+                <h3 class="gauge-title">{{ analysis.blocks[0].content.levelInfo.gaugeModernized.title }}</h3>                 
+                <div class="gauge-track">                     
+                    {% for segment in analysis.blocks[0].content.levelInfo.gaugeModernized.segments %}                     
+                    <div class="gauge-segment{% if segment.active %} active{% endif %}"                          
+                         style="background-color: {{ segment.color }};"                          
+                         data-tooltip="{% if loop.index == 1 %}TOP OK : Situation optimale
+                         {% elif loop.index == 2 %}OK + : Quelques ajustements possibles
+                         {% elif loop.index == 3 %}RDV PRO : Première alerte
+                         {% elif loop.index == 4 %}STOP GO : Besoin urgent de changement
+                         {% else %}SOS PRO : Changement critique{% endif %}">                         
+                        <span>{{ segment.label }}</span>                     
+                    </div>                     
+                    {% endfor %}                 
+                </div>             
+             </div>
+
+            <div class="level-description">
+                <div class="level-description-main">
+                    {{ analysis.blocks[0].content.levelInfo.description.main }}
+                </div>
+                
+                <div class="did-you-know">
+                    <div class="did-you-know-title">
+                        <span>{{ analysis.blocks[0].content.levelInfo.description.did_you_know.emoji }}</span>
+                        {{ analysis.blocks[0].content.levelInfo.description.did_you_know.title }}
+                    </div>
+                    <div class="did-you-know-content">
+                        {{ analysis.blocks[0].content.levelInfo.description.did_you_know.content | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <span class="warning-trigger" onclick="toggleWarning()">
+                    <span class="info-icon">i</span>
+                    {{ analysis.blocks[0].content.levelInfo.description.warning.title_level }}
+                </span>
+                <div class="warning-content">
+                    {{ analysis.blocks[0].content.levelInfo.description.warning.content_level }}
+                </div>
+            </div>
+        </div>
+
+        <h4 class="subtitle">{{ analysis.blocks[0].content.subtitle }}</h4>
+        <ul class="results-list">
+            {% for item in analysis.blocks[0].content.resultsList %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="action-buttons">
+            <a href="javascript:void(0)" class="action-button primary-button" onclick="showDetails()">
+                {{ _('Voir mon analyse complète') }}
+            </a>
+            <a href="javascript:void(0)" class="action-button secondary-button" onclick="showRisks()">
+                {{ _('Mes recommandations') }}
+            </a>
+        </div>
+    </div>
+
+    <div id="detailsBlock" class="block">
+        <h2 class="block-title">{{ analysis.blocks[1].content.title }}</h2>
+        
+        {% for section in analysis.blocks[1].content.sections %}
+        <div class="details-section">
+            <h3 class="details-title">{{ section.title }}</h3>
+            <ul class="results-list">
+                {% if section.items_state is defined %}
+                    {% for item in section.items_state %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                {% endif %}
+                {% if section.items_interlocutors is defined %}
+                    {% for item in section.items_interlocutors %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                {% endif %}
+                {% if section.items_actions is defined %}
+                    {% for item in section.items_actions %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </div>
+        {% endfor %}
+
+        <div class="warning">
+            <strong>{{ _('Important:') }}</strong> 
+            {{ _('Cet outil est à but informatif, il se base sur tes réponses et peut faire des erreurs. Si tu penses avoir une urgence liée à ton « bien-être au travail », tu peux envisager de vérifier les informations importantes avec un spécialiste recommandé.') }}
+        </div>
+
+        <button class="cta-button" onclick="showRisks()">
+            {{ _('Comment bien gérer mon changement pro ?') }}
+        </button>
+    </div>
+
+    <div id="recommendationBlock" class="block">
+        <h2 class="block-title">{{ analysis.blocks[2].content.title_summary }}</h2>
+        <div class="details-section">
+            <p>{{ analysis.blocks[2].content.description_summary }}</p>
+            
+            <div class="warning">
+                <span class="warning-trigger" onclick="toggleRecommendationWarning()">
+                    <span class="info-icon">i</span>
+                    {{ analysis.blocks[2].content.warning.title_reco }}
+                </span>
+                <div class="warning-content">
+                    {{ analysis.blocks[2].content.warning.content_reco }}
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="nav-button back-button" onclick="goToInitialBlock()">
+                    {{ _('Revenir en arrière') }}
+                </button>
+                {% if next_step %}
+                <button class="nav-button next-button" onclick="generateNextAnalysis('{{ next_step }}')">
+                    {{ _('Passer à l\'étape suivante') }}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+</main>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ======================
+   1. Variables globales
+   ====================== */
+   :root {
+    --primary: #0E2023;
+    --secondary: #4C0336;
+    --accent: #E0F4F4;
+    --background: #F3F4F6;
+    --text: #0E2023;
+    --text-light: #4A6572;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition-standard: all 0.3s ease;
+}
+    
+    /* ======================
+       3. États globaux
+       ====================== */
+       main.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    visibility: visible;
+    transition: opacity 0.5s ease;
+}
+
+main.container.show {
+    opacity: 1;
+}
+
+    .hidden {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+    }
+    
+    .visible {
+        display: block;
+    }
+    
+    #detailsBlock {
+        display: none;
+        position: relative;
+        z-index: 1;
+    }
+    
+    #detailsBlock.visible {
+        display: block;
+    }
+    
+    /* Gestion de l'affichage du bloc de recommandations */
+    #recommendationBlock {
+        display: none;
+    }
+    
+    #recommendationBlock.active {
+        display: block;
+    }
+    
+    /* ======================
+       4. Ecran de chargement
+       ====================== */
+    .loading-percentage {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    /* Par défaut, on ne l'affiche pas */
+    display: none;
+}
+
+.loading-screen.show {
+    display: flex;
+    opacity: 1;
+}
+
+.loading-screen.hide {
+    display: none;
+    opacity: 0;
+}
+    .loading-content {
+        text-align: center;
+        padding: 2rem;
+        max-width: 500px;
+    }
+    
+    .loading-title {
+        color: var(--text);
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+    
+    .loading-steps {
+        text-align: left;
+    }
+    
+    .loading-step {
+        display: flex;
+        align-items: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.8s ease-out;
+        margin-bottom: 1rem;
+    }
+    
+    .loading-step.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .loading-step:nth-child(2) {
+        animation-delay: 0.3s;
+    }
+    
+    .progress-ring {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+    }
+    
+    .progress-circle {
+        transform: rotate(-90deg);
+    }
+    
+    .circle-bg {
+        fill: none;
+        stroke: #E5E7EB;
+        stroke-width: 8;
+    }
+    
+    .circle-progress {
+        fill: none;
+        stroke: #FFB400;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.5s ease-out;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--secondary);
+    }
+    
+    .step-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: var(--secondary);
+        color: white;
+        border-radius: 50%;
+        margin-right: 1rem;
+        font-size: 14px;
+    }
+    .step-text {
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+    
+    
+    /* ======================
+       5. Container et Layout
+       ====================== */
+    
+    .header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .header h1 {
+        color: var(--text);
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+    
+    /* ======================
+       6. Blocs et Cartes
+       ====================== */
+    .block {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--accent);
+    }
+    
+    .block-title {
+        color: var(--text);
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .level-info {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        animation: scale-up 0.6s ease-out;
+    }
+    
+    /* ======================
+       7. Progress Graph Components
+       ====================== */
+    .progress-graph {
+        background: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .progress-graph svg {
+        height: 200px;
+        width: 100%;
+    }
+    
+    .progress-graph-title {
+        font-size: 1.2rem;
+        color: var(--text);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .progress-path {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawLine 2s ease forwards;
+    }
+    
+    .progress-dot {
+        opacity: 0;
+        transform: scale(0);
+        animation: popDot 0.5s ease forwards;
+    }
+    
+    .progress-label {
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .progress-grid {
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* ======================
+       8. Level Components
+       ====================== */
+    .level-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        animation: slide-up 0.8s ease-out;
+    }
+    
+    .level-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--secondary);
+        margin: 0;
+        position: relative;
+    }
+    
+    .level-emoji {
+        font-size: 3rem;
+        animation: bounce 1s infinite;
+    }
+    
+    .level-description {
+        border-left: 4px solid #FFB400;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        background: none;
+    }
+    
+    .level-description-main {
+        font-size: 1.125rem;
+        color: var(--text);
+        font-weight: 500;
+        line-height: 1.6;
+        margin-bottom: 1.25rem;
+    }
+    
+    .level-details {
+        background: var(--accent);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .current-level {
+        text-align: center;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+    
+    /* ======================
+       9. Gauge et graphiques
+       ====================== */
+    .gauge-modernized {
+        background: linear-gradient(145deg, #ffffff, #f0f0f0);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: 2.5rem 0;
+        box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+    }
+    
+    .gauge-title {
+        font-size: 1.4rem;
+        color: #2D3748;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .gauge-track {
+        display: flex;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gauge-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .gauge-segment:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+    
+    .gauge-segment:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+    
+    .gauge-container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .gauge-track {
+        display: flex;
+        height: 35px;
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .gauge-segment {
+        flex: 1;
+        opacity: 0.6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        cursor: help;
+        position: relative;
+        transition: var(--transition-standard);
+    }
+    /* ======================
+       10. Le savais-tu
+       ====================== */
+    .did-you-know {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .did-you-know-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-light);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+    
+    .did-you-know-content {
+                font-size: 1.2rem;
+                line-height: 1.5;
+                color: #2D3748;
+            }
+    
+    .did-you-know-content strong, .highlight strong {
+        color: #FFA726;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+    
+    /* ======================
+       11. Navigation Components
+       ====================== */
+
+    .back-button {
+        background: transparent;
+        border: 2px solid var(--secondary);
+        color: var(--secondary);
+    }
+    
+    .next-button {
+        background: var(--secondary);
+        color: white;
+        border: none;
+    }
+    
+    .back-button:hover, .next-button:hover {
+        transform: translateY(-2px);
+    }
+    
+    .back-button:hover {
+        background: rgba(76, 3, 54, 0.1);
+    }
+    
+    .next-button:hover {
+        background: #3a0228;
+    }
+    
+    
+    /* ======================
+       12. Action Components
+       ====================== */
+    
+    
+    .action-button {
+        background: transparent;
+        color: var(--secondary);
+        border: 1.5px solid var(--secondary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition-standard);
+        text-decoration: none;
+    }
+    
+    .action-button:hover {
+        background: rgba(76, 3, 54, 0.05);
+        transform: translateY(-1px);
+    }
+    
+    .cta-button {
+        background: var(--secondary);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        max-width: 350px;
+        display: block;
+        margin: 1.5rem auto;
+        transition: var(--transition-standard);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        animation: slide-up 1.4s ease-out;
+    }
+    
+    
+    .primary-button {
+        background: var(--secondary);
+        color: white;
+    }
+    
+    .secondary-button {
+        background: transparent;
+        border: 2px solid var(--secondary);
+        color: var(--secondary);
+    }
+    
+    
+    .primary-button:hover {
+        background: #3a0228;
+        transform: translateY(-2px);
+    }
+    
+    .secondary-button:hover {
+        background: rgba(76, 3, 54, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    /* ======================
+       13. Warning Components
+       ====================== */
+    .warning-trigger {
+        cursor: pointer;
+        color: var(--primary);
+        font-weight: bold;
+        text-decoration: underline;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .warning-content {
+        display: none;
+        margin-top: 0.5rem;
+    }
+    
+    .warning-content.visible {
+        display: block;
+    }
+    
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        background-color: #4285f4;
+        color: white;
+        border-radius: 50%;
+        font-size: 14px;
+        font-style: normal;
+        line-height: 1;
+    }
+    
+    /* ======================
+       14. List Components
+       ====================== */
+    .results-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .results-list li {
+        display: flex;
+        align-items: center;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+    }
+    
+    .results-list li:before {
+        content: "•";
+        color: var(--secondary);
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        line-height: 0;
+    }
+    
+    /* ======================
+       15. Details Components
+       ====================== */
+    .details-section {
+        border-left: 4px solid var(--secondary);
+        padding-left: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .details-title {
+        color: var(--primary);
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+        font-weight: 600;
+        padding-left: 0.5rem;
+        border-left: 3px solid var(--secondary);
+    }
+    
+    /* ======================
+       16. Animations
+       ====================== */
+    @keyframes draw {
+        0% { stroke-dashoffset: 600; }
+        40% { stroke-dashoffset: 0; }
+        85% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: 600; }
+    }
+    
+    @keyframes drawLine {
+        to { stroke-dashoffset: 0; }
+    }
+    
+    @keyframes popDot {
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+    
+    @keyframes fadeInOut {
+        0% { opacity: 0; }
+        40% { opacity: 0.6; }
+        85% { opacity: 0.6; }
+        100% { opacity: 0; }
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes confetti {
+        0% { 
+            transform: translateY(-10px) rotate(0deg);
+            opacity: 1;
+        }
+        100% { 
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+    
+    /* ======================
+       17. Media Queries
+       ====================== */
+    @media (max-width: 599px) {
+        .gauge-track {
+            flex-direction: column;
+            height: auto;
+        }
+    
+        .gauge-segment {
+            height: 50px;
+        }
+    }
+    
+    
+    /* ======================
+       18. Tooltips et Messages
+       ====================== */
+    .tooltip {
+        position: fixed;
+        background-color: #DCE7F0;
+        color: var(--primary);
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: none;
+        z-index: 1000;
+        white-space: nowrap;
+        box-shadow: var(--card-shadow);
+        font-weight: 500;
+    }
+    
+    .warning {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        color: var(--text);
+        font-style: italic;
+    }
+    
+    /* ======================
+       19. Sketch and Drawing
+       ====================== */
+    .sketch-lines {
+        animation: fadeInOut 3s ease-in-out infinite;
+    }
+    
+    /* Version originale avec stroke-dasharray: 100 */
+    .draw-animation {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: draw 2s ease-out forwards infinite;
+    }
+    
+    /* Version pour les éléments spécifiques nécessitant stroke-dasharray: 600 */
+    .draw-animation-large {
+        stroke-dasharray: 600;
+        stroke-dashoffset: 600;
+        animation: draw 3s ease-out forwards infinite;
+    }
+    
+    /* ======================
+       20. Confetti
+       ====================== */
+    .confetti {
+        position: fixed;    
+        width: 10px;
+        height: 10px;
+        background-color: var(--primary);
+        animation: confetti 3s ease-out forwards;
+        z-index: 9999;     
+        top: -10px;        
+    }
+    
+    /* ======================
+       21. Animations
+       ====================== */
+    @keyframes scale-up {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes slide-up {
+        0% { transform: translateY(20px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes confetti {
+        0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+        100% { transform: translateY(1000px) rotateZ(720deg); opacity: 0; }
+    }
+    
+    
+    
+        </style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+
+ // Fonction pour les confettis
+function createConfetti() {
+    const colors = ['#FFB400', '#4C0336', '#E0F4F4', '#0E2023'];
+    for(let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDelay = Math.random() * 3 + 's';
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
+function toggleRecommendationWarning() {
+    const content = document.querySelector('#recommendationBlock .warning-content');
+    content.classList.toggle('visible');
+}
+
+function toggleWarning() {
+    const content = document.querySelector('.warning-content');
+    content.classList.toggle('visible');
+}
+
+function showDetails(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    const detailsBlock = document.getElementById('detailsBlock');
+    detailsBlock.classList.add('visible');
+    detailsBlock.style.display = 'block';
+}
+
+function showRisks(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    document.getElementById('initialBlock').style.display = 'none';
+    document.getElementById('detailsBlock').style.display = 'none';
+    document.getElementById('recommendationBlock').classList.add('active');
+}
+
+function goToInitialBlock() {
+    document.getElementById('initialBlock').style.display = 'block';
+    document.getElementById('detailsBlock').classList.remove('active');
+    document.getElementById('recommendationBlock').classList.remove('active');
+}
+
+async function generateNextAnalysis(stepId) {
+    console.log('Début generateNextAnalysis:', { stepId });
+    if (!stepId) {
+        console.error('Step ID is required');
+        return;
+    }
+
+    const container = document.querySelector('.container');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const quizId = document.querySelector('meta[name="quiz-id"]').content;
+    const requestId = document.querySelector('meta[name="request-id"]').content;
+
+    // Récupérer le result_id actuel depuis l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentResultId = urlParams.get('result_id');
+    const currentTokenId = urlParams.get('token_id');
+
+    try {
+        // D'abord, vérifier si l'analyse existe déjà pour ce result_id et step_id
+        const checkViewUrl = `/analysis/view/${quizId}?result_id=${currentResultId}&step_id=${stepId}&skip_loading=true`;
+        
+        const checkResponse = await fetch(checkViewUrl, {
+            method: 'HEAD'
+        });
+
+        if (checkResponse.ok) {
+            // Si l'analyse existe déjà, rediriger directement vers la vue avec skip_loading=true
+            window.location.href = checkViewUrl;
+            return;
+        }
+
+        // Si l'analyse n'existe pas, la générer
+        const response = await fetch(`/analysis/generate/${stepId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Request-ID': requestId
+            },
+            body: JSON.stringify({ 
+                quiz_id: quizId,
+                result_id: currentResultId,
+                token_id: currentTokenId,
+                force_new: true
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            // Rediriger vers la vue avec skip_loading=false pour la première génération
+            const viewUrl = `/analysis/view/${quizId}?result_id=${currentResultId}&step_id=${stepId}&skip_loading=false`;
+            window.location.href = viewUrl;
+        } else {
+            throw new Error('Erreur lors de la génération');
+        }
+    } catch (error) {
+        console.error('Error in generateNextAnalysis:', error);
+        alert('Une erreur est survenue lors de la génération de l\'analyse');
+    }
+}
+
+// Gestion des tooltips
+function setupTooltips() {
+    const tooltip = document.getElementById('tooltip');
+    const segments = document.querySelectorAll('.gauge-segment');
+
+    segments.forEach(segment => {
+        segment.addEventListener('mouseenter', (e) => {
+            const tooltipText = segment.getAttribute('data-tooltip');
+            if (tooltipText) {
+                tooltip.textContent = tooltipText;
+                const rect = segment.getBoundingClientRect();
+                tooltip.style.top = `${rect.top - 40}px`;
+                tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+                tooltip.style.display = 'block';
+            }
+        });
+
+        segment.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
+    });
+}
+
+function setupRippleEffect() {
+    document.querySelectorAll('.action-button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+}
+
+
+// Animation du chargement
+function setupLoading() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const mainContainer = document.getElementById('mainContainer');
+    const progressCircle = document.querySelector('.circle-progress');
+    const progressText = document.querySelector('.progress-text');
+    const skipLoading = (loadingScreen.dataset.skipLoading === 'true');
+    
+    // Si skip_loading est true
+    if (skipLoading) {
+        loadingScreen.classList.add('hide');
+        mainContainer.classList.add('show');
+        return;
+    }
+    
+    // Sinon, on affiche l'écran de chargement
+    loadingScreen.classList.remove('hide');
+    loadingScreen.classList.add('show');
+
+    // Configuration du cercle de progression...
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+    progressCircle.style.strokeDasharray = circumference;
+    progressCircle.style.strokeDashoffset = circumference;
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 0.5;
+        const offset = circumference - (progress / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        progressText.textContent = `${Math.round(progress)}%`;
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                loadingScreen.classList.remove('show');
+                loadingScreen.classList.add('hide');
+                mainContainer.classList.add('show');
+                createConfetti();
+            }, 500);
+        }
+    }, 70);
+}
+
+// Assurer la bonne initialisation au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    // Lancer les initialisations
+    setupLoading();
+    setupTooltips();
+    setupRippleEffect();
+});
+
+
+
+</script>
+{% endblock %}

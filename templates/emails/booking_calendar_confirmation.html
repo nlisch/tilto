@@ -1,0 +1,88 @@
+<!-- Email de confirmation YouCanBookMe personnalisé -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Votre rendez-vous tilto est confirmé</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    
+    <!-- Header avec logo tilto -->
+    <div style="text-align: center; padding: 20px 0; border-bottom: 2px solid #7D0057;">
+        <h1 style="color: #7D0057; font-size: 2rem; margin: 0;">tilto</h1>
+        <p style="color: #666; margin: 5px 0 0 0;">Votre nouvelle voie professionnelle</p>
+    </div>
+    
+    <!-- Contenu principal -->
+    <div style="padding: 30px 0;">
+        <h2 style="color: #5F0443; margin-bottom: 20px;">🎉 Votre rendez-vous est confirmé !</h2>
+        
+        <p>Bonjour <strong>{{attendee_name}}</strong>,</p>
+        
+        <p>Merci pour votre confiance ! Nous avons hâte de vous accompagner dans cette belle aventure de clarification professionnelle.</p>
+        
+        <!-- Détails du rendez-vous -->
+        <div style="background: #FAF4F8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #7D0057;">
+            <h3 style="color: #5F0443; margin-top: 0;">📅 Détails de votre échange</h3>
+            <p><strong>Date :</strong> {{booking_date}}</p>
+            <p><strong>Heure :</strong> {{booking_time}}</p>
+            <p><strong>Durée :</strong> 1 heure</p>
+            <p><strong>Expert :</strong> Claire ou Nicolas</p>
+            <p><strong>Format :</strong> Visioconférence Zoom</p>
+        </div>
+        
+        <!-- Lien de connexion -->
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{zoom_link}}" style="display: inline-block; background-color: #7D0057; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">Rejoindre la réunion Zoom</a>
+        </div>
+        
+        <!-- Préparation -->
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #5F0443; margin-top: 0;">💭 Comment se préparer ?</h3>
+            <p><strong>Rien à préparer, juste à être vous !</strong></p>
+            <p>Si vous le souhaitez, vous pouvez réfléchir à ces questions :</p>
+            <ul style="padding-left: 20px;">
+                <li>Qu'est-ce qui me pèse aujourd'hui dans mon travail ?</li>
+                <li>De quoi ai-je envie mais je n'ose pas encore parler ?</li>
+                <li>Qu'est-ce que je n'arrive pas à formuler clairement ?</li>
+            </ul>
+        </div>
+        
+        <!-- Prochaines étapes -->
+        <div style="margin: 30px 0;">
+            <h3 style="color: #5F0443;">🗺️ La suite de votre parcours</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px;">
+                <div style="flex: 1; min-width: 200px; padding: 15px; background: white; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">✅</div>
+                    <strong>Étape 1 :</strong> Échange programmé
+                </div>
+                <div style="flex: 1; min-width: 200px; padding: 15px; background: #FAF4F8; border: 1px solid #7D0057; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">🔍</div>
+                    <strong>Étape 2 :</strong> Analyse IA + humaine (J+1 à J+3)
+                </div>
+                <div style="flex: 1; min-width: 200px; padding: 15px; background: white; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">🎯</div>
+                    <strong>Étape 3 :</strong> Votre feuille de route (J+3)
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div style="text-align: center; margin: 30px 0; padding: 20px; background: #FAF4F8; border-radius: 8px;">
+            <p style="margin-bottom: 15px;"><strong>Accédez à votre espace personnel :</strong></p>
+            <a href="{{dashboard_url}}" style="display: inline-block; background-color: white; color: #7D0057; padding: 10px 20px; text-decoration: none; border-radius: 6px; border: 2px solid #7D0057; font-weight: 600; margin: 0 10px;">Mon dashboard tilto</a>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div style="border-top: 1px solid #e0e0e0; padding: 20px 0; text-align: center; color: #666; font-size: 0.9rem;">
+        <p>Questions ? Nous sommes là : <a href="mailto:contact@tilto.ai" style="color: #7D0057;">contact@tilto.ai</a></p>
+        <p style="margin-top: 10px;">
+            <a href="{{cancel_link}}" style="color: #999; text-decoration: none;">Annuler ou reporter ce rendez-vous</a>
+        </p>
+        <div style="margin-top: 20px;">
+            <p>&copy; 2025 tilto. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

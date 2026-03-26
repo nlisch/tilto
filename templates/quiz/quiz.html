@@ -1,0 +1,395 @@
+<!-- templates/quiz.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Quiz de Personnalité') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.tilto-congrats {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 48rem;
+    margin: 2.5rem auto;
+}
+
+.tilto-congrats-icon {
+    width: 4rem;
+    height: 4rem;
+    color: #4C0336;
+    margin: 0 auto;
+}
+
+.tilto-congrats-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4C0336;
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tilto-main-btn {
+    display: block;
+    width: 100%;
+    max-width: 28rem;
+    margin: 2rem auto;
+    padding: 1.25rem 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    color: white;
+    background: #4C0336;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tilto-main-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 3, 54, 0.2);
+}
+
+.tilto-info-box {
+    background-color: #FFF8E1;
+    border: 1px solid #FFE082;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.tilto-info-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #FFA000;
+    flex-shrink: 0;
+}
+
+.tilto-info-text {
+    color: #614715;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.tilto-answers-section {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.tilto-answers-title {
+    font-size: 1.25rem;
+    color: #1F2937;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.tilto-answer-item {
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+.tilto-answer-header {
+    background: white;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tilto-answer-header:hover {
+    background: #F9FAFB;
+}
+
+.tilto-answer-content {
+    border-top: 1px solid #E5E7EB;
+    padding: 1rem 1.5rem;
+}
+
+.tilto-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; /* Caché par défaut */
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+}
+
+.tilto-modal-content {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 32rem;
+    width: 90%;
+    margin: 1rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.tilto-modal-title {
+    color: #1F2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.tilto-modal-text {
+    color: #4B5563;
+    margin-bottom: 2rem;
+}
+
+.tilto-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.tilto-btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #E5E7EB;
+    background: white;
+    color: #4B5563;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tilto-btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: #4C0336;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tilto-token-status {
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.tilto-token-status.status-valid {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.tilto-token-status.status-invalid {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.tilto-token-status {
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+</style>
+{% endblock %}
+
+{% block body_class %}flex-layout quiz-page{% endblock %}
+
+{% block content %}
+    <div id="quizPage">
+        {% if current_user.is_authenticated %}
+            <!-- Contenu du quiz (invisible par défaut) -->
+            <div id="quizContent" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto mt-10" style="display: none;">
+                <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">{{ _('Dévoile ta personnalité secrète !') }} 🎭✨</h1>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress"></div>
+                </div>
+                <form id="quizForm">
+                    <!-- Les questions seront générées dynamiquement ici -->
+                </form>
+                <div class="choices-error" style="display: none;"></div>
+                <div class="error-message" style="display: none;"></div>
+            </div>
+            <div id="congratulations" class="tilto-congrats" style="display: none;">
+                <!-- En-tête avec félicitations -->
+                <div class="text-center">
+                    <svg class="tilto-congrats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 15l-2 5l9-13h-4l2-6l-9 13h4z"/>
+                    </svg>
+                    <h2 class="tilto-congrats-title">{{ _('Félicitations !') }}</h2>
+                </div>
+            
+                <!-- Bouton principal -->
+                <button 
+                    id="startAnalysisBtn"
+                    class="tilto-main-btn">
+                    {{ _('Obtenir mon analyse personnalisée') }}
+                </button>
+            
+                <!-- Bloc d'information -->
+                <div class="tilto-info-box">
+                    <svg class="tilto-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12" y2="8"/>
+                    </svg>
+                    <p class="tilto-info-text">
+                        {{ _('Un conseil : relis bien tes réponses car elles rendront ton analyse unique et la plus pertinente possible !') }}
+                    </p>
+                </div>
+            
+                <!-- Liste des réponses -->
+                <div class="tilto-answers-section">
+                    <h3 class="tilto-answers-title">{{ _('Vos réponses') }}</h3>
+                    <div id="answersAccordion" class="space-y-3">
+                        <!-- Les réponses seront injectées ici dynamiquement -->
+                    </div>
+                </div>
+            
+                <!-- Modal de confirmation -->
+                <div id="confirmationModal" class="tilto-modal" style="display: none;">
+                    <div class="tilto-modal-content" id="modalContent">
+                        <h3 class="tilto-modal-title">{{ _('Lancer l\'analyse ?') }}</h3>
+                                
+                        <!-- Message sur le statut du token -->
+                        <div id="tokenStatusMessage" class="tilto-modal-text tilto-token-status">
+                            <!-- Le message sur le token sera inséré ici dynamiquement -->
+                        </div>
+                        
+                        <!-- Message d'avertissement -->
+                        <p id="modalWarningText" class="tilto-modal-text">
+                            {{ _('Une fois générée, votre analyse personnalisée ne pourra pas être recréée. Assurez-vous d\'avoir bien vérifié vos réponses.') }}
+                        </p>
+                
+                        <!-- Conteneur des boutons -->
+                        <div id="modalButtons" class="tilto-modal-buttons">
+                            <button id="backToAnswersBtn" class="tilto-btn-secondary">
+                                {{ _('Revenir aux réponses') }}
+                            </button>
+                            <button id="confirmAnalysisBtn" class="tilto-btn-primary">
+                                {{ _('Lancer l\'analyse') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Résultat du quiz (invisible par défaut) -->
+            <div id="result" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto mt-10" style="display: none;">
+                <input type="hidden" id="currentQuizId" value="{{ quiz_id }}" />
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">{{ _('Votre Résultat') }}</h2>
+                <div id="loadingIndicator" class="text-center">
+                    <p>{{ _('Analyse en cours...') }}</p>
+                    <div class="spinner mx-auto mt-4"></div>
+                </div>
+                <div id="analysisResult" style="display: none;"></div>
+                <div id="resultButtons" class="flex justify-center space-x-4 mt-6" style="display: none;">
+                    <button id="backToHomeBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">{{ _('Recommencer le quiz') }}</button>
+                    {% if last_completed_quiz %}
+                    <button 
+                    id="viewAnalysisBtn"
+                    data-url="{{ url_for('quiz_analysis.view_analysis', quiz_id=quiz_id) }}"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                    {{ _('Voir ma dernière analyse') }}
+                  </button>
+                    {% else %}
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 opacity-50 cursor-not-allowed" disabled>{{ _('Voir ma page d\'analyse profiling') }}</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <!-- Message si l'utilisateur n'est pas connecté -->
+            <div class="login-prompt bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto mt-10">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">{{ _('Connectez-vous pour accéder au quiz') }}</h2>
+                <p class="text-center text-gray-700 mb-6">{{ _('Vous devez être connecté pour participer au quiz de personnalité.') }}</p>
+                <div class="flex justify-center mb-4">
+                    <a href="{{ url_for('auth.login') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-full transition duration-300">{{ _('Se connecter') }}</a>
+                </div>
+                <p class="text-center text-gray-700">{{ _('Pas encore de compte ?') }} <a href="{{ url_for('auth.signup') }}" class="text-indigo-600 hover:text-indigo-800">{{ _('S\'inscrire') }}</a></p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.is_authenticated %}
+<script nonce="{{ g.nonce }}" >
+    const csrfToken = "{{ csrf_token() }}";
+    {% if last_completed_quiz %}
+        const lastCompletedQuizId = "{{ last_completed_quiz[0] }}";
+    {% else %}
+        const lastCompletedQuizId = null;
+    {% endif %}
+
+    function backToHome() {
+    // Récupérer l'URL de base sans les paramètres
+    const baseUrl = window.location.pathname;
+    // Rediriger vers la page d'accueil du quiz
+    window.location.href = baseUrl + '?quiz_id=' + getQuizId();
+}
+
+// Initialiser les éléments de l'interface modale
+document.addEventListener('DOMContentLoaded', function() {
+    const backToAnswersBtn = document.getElementById('backToAnswersBtn');
+    const confirmAnalysisBtn = document.getElementById('confirmAnalysisBtn');
+    const modal = document.getElementById('confirmationModal');
+    const startAnalysisBtn = document.getElementById('startAnalysisBtn');
+
+    // Attacher l'événement au bouton principal
+    if (startAnalysisBtn) {
+        startAnalysisBtn.addEventListener('click', startAnalysis);
+    }
+
+    // Configuration des événements de la modale
+    if (backToAnswersBtn) {
+        backToAnswersBtn.addEventListener('click', function() {
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    if (confirmAnalysisBtn) {
+        confirmAnalysisBtn.addEventListener('click', function() {
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            confirmAnalysis();
+        });
+    }
+
+    const modalContent = document.getElementById('modalContent');
+    if (modalContent) {
+        modalContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    const backToHomeBtn = document.getElementById('backToHomeBtn');
+    if (backToHomeBtn) {
+        backToHomeBtn.addEventListener('click', backToHome);
+    }
+
+    // Permettre la fermeture en cliquant en dehors de la modale
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+    <script nonce="{{ g.nonce }}" src="{{ versioned_url('static', filename='js/quiz-script.js') }}" defer></script>
+<script nonce="{{ g.nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+{% endif %}
+{% endblock %}

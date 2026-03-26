@@ -1,0 +1,874 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto — Livrable de Clara{% endblock %}
+{% block meta_description %}Analyse complète de ta situation professionnelle.{% endblock %}
+{% block body_class %}livrable-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.livrable-page .header-parallax,
+.livrable-page .mobile-nav,
+.livrable-page .secondary-navbar,
+.livrable-page > footer,
+.livrable-page .flash-messages,
+.livrable-page .cookie-banner { display: none !important; }
+.chat-widget { display: none !important; }
+.livrable-page main { padding: 0; max-width: none; }
+
+:root {
+  --primary: #A11857;
+  --text: #1A1A1A;
+  --text-light: #999;
+  --text-medium: #4A4A4A;
+  --cream: #FAF7F2;
+  --rose-pale: #EBD5E3;
+  --rose-light: #FDF2F8;
+  --border: #EBD5E3;
+  --white: #FFFFFF;
+  --shadow: 0 25px 80px rgba(0,0,0,0.3);
+  --t: all 0.3s ease;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Open Sans',-apple-system,sans-serif;}
+
+body.livrable-page {
+  background: var(--primary);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 24px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lv-container {
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--cream);
+  padding: 14px 28px 0;
+  border-bottom: 2px solid var(--primary);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.header-logo {
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; flex-shrink: 0;
+}
+
+.logo-icon {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(70%) saturate(3500%) hue-rotate(320deg) brightness(85%) contrast(100%);
+  margin-bottom: 2px;
+}
+
+.logo-text {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700; font-size: 1rem;
+  color: var(--primary);
+}
+
+.header-center { flex: 1; text-align: center; }
+
+h1 {
+  font-family: 'Caveat', cursive;
+  font-size: 1.25rem; font-weight: 600;
+  color: var(--primary); margin: 0;
+}
+
+.print-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--primary); color: white;
+  border: none; border-radius: 8px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; transition: var(--t);
+  box-shadow: 0 2px 8px rgba(161,24,87,0.25);
+}
+.print-btn:hover { transform: translateY(-1px); }
+.print-btn svg { flex-shrink: 0; }
+
+/* ── STEP NAV ── */
+.v4-main-navigation {
+  padding: 10px 0;
+  overflow-x: auto;
+}
+
+.v4-nav-steps {
+  display: flex; align-items: center;
+  gap: 4px; width: 100%;
+  justify-content: space-between;
+}
+
+.v4-nav-step {
+  display: flex; align-items: center;
+  cursor: pointer;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--text-light);
+  background: var(--white);
+  border: 2px solid var(--rose-pale);
+  white-space: nowrap; flex: 1;
+  transition: var(--t);
+  max-width: calc(16.66% - 4px);
+}
+
+.v4-nav-step-number {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--rose-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700;
+  margin-right: 5px;
+  border: 2px solid var(--rose-pale);
+  flex-shrink: 0; color: var(--text-light);
+  transition: var(--t);
+}
+
+.v4-nav-separator {
+  width: 10px; height: 2px;
+  background: var(--rose-pale);
+  border-radius: 1px; flex-shrink: 0;
+}
+
+.v4-nav-step.active {
+  background: var(--rose-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 700;
+}
+
+.v4-nav-step.active .v4-nav-step-number,
+.v4-nav-step.completed .v4-nav-step-number {
+  background: var(--primary); color: white; border-color: var(--primary);
+}
+
+.v4-nav-step.completed { border-color: var(--primary); color: var(--text-medium); }
+.v4-nav-separator.completed { background: var(--primary); }
+
+.v4-nav-step.locked-nav { opacity: 0.5; cursor: default; }
+
+/* ── CONTENT ── */
+.lv-main-content { background: var(--white); }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.module-container {
+  padding: 24px 36px 36px;
+  max-width: 100%; width: 100%;
+}
+
+.module { margin-bottom: 32px; }
+
+.module-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.module-icon {
+  width: 40px; height: 40px;
+  background: var(--rose-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.module-icon svg {
+  width: 20px; height: 20px;
+  stroke: var(--primary); stroke-width: 2;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.module-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text);
+}
+
+.module-content { padding: 20px 0 0; }
+
+h3 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.98rem; font-weight: 700;
+  color: var(--text);
+  margin: 24px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+h3.first { margin-top: 0; }
+
+p { margin-bottom: 14px; font-size: 0.92rem; color: var(--text-medium); line-height: 1.7; }
+ul { margin-bottom: 14px; padding-left: 20px; }
+li { margin-bottom: 8px; font-size: 0.92rem; color: var(--text-medium); line-height: 1.6; }
+
+.dim-highlight {
+  margin: 20px 0; padding: 24px;
+  border-radius: 16px;
+  background: var(--rose-light);
+  border-left: 4px solid var(--primary);
+}
+
+.dim-title {
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700; font-size: 0.95rem;
+  color: var(--primary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.citation {
+  background: var(--cream);
+  padding: 28px 28px 28px 44px;
+  border-radius: 20px;
+  margin: 20px 0;
+  position: relative;
+  font-style: italic;
+}
+.citation::before {
+  content: '«';
+  position: absolute; left: 16px; top: 6px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 3.5rem; opacity: 0.12;
+  color: var(--primary); font-style: normal; line-height: 1;
+}
+.citation p {
+  margin: 0;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.95rem; line-height: 1.9;
+  color: var(--text-medium);
+}
+
+.comparison-table {
+  width: 100%; border-collapse: collapse;
+  margin: 20px 0; border-radius: 14px;
+  overflow: hidden; font-size: 0.85rem;
+}
+.comparison-table th {
+  background: var(--primary); color: white;
+  padding: 12px 14px; text-align: left;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.85rem; font-weight: 700;
+}
+.comparison-table td {
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  color: var(--text-medium); line-height: 1.5;
+}
+.comparison-table tr:nth-child(even) td { background: var(--cream); }
+
+.coachable-moment {
+  background: var(--cream);
+  border: 1px solid var(--rose-pale);
+  border-radius: 16px;
+  padding: 22px 22px 22px 52px;
+  margin: 20px 0; position: relative;
+}
+.coachable-moment::before {
+  content: '';
+  position: absolute; left: -14px; top: 14px;
+  width: 34px; height: 34px;
+  background: var(--rose-light);
+  border: 1px solid var(--rose-pale);
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A11857' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='9' y1='18' x2='15' y2='18'/%3E%3Cline x1='10' y1='22' x2='14' y2='22'/%3E%3Cpath d='M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14'/%3E%3C/svg%3E");
+  background-size: 16px; background-repeat: no-repeat; background-position: center;
+}
+
+/* ── WELCOME ── */
+.welcome-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 60px 36px;
+  min-height: 70vh;
+}
+
+.welcome-icon {
+  width: 88px; height: 88px;
+  background: var(--rose-light); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 28px;
+}
+
+.welcome-icon svg {
+  width: 38px; height: 38px;
+  stroke: var(--primary); stroke-width: 1.8;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.welcome-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.6rem; font-weight: 700;
+  color: var(--text); margin-bottom: 14px;
+  line-height: 1.35;
+}
+
+.welcome-sub {
+  font-size: 0.95rem; color: var(--text-medium);
+  max-width: 520px; line-height: 1.75;
+  margin-bottom: 6px;
+}
+
+.welcome-note {
+  font-size: 0.8rem; color: var(--text-light);
+  margin-bottom: 32px; max-width: 400px;
+  line-height: 1.6;
+}
+
+.coach-sig {
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem; color: var(--primary);
+  margin-bottom: 36px;
+}
+
+.btn-primary {
+  padding: 15px 40px;
+  background: var(--primary); color: white;
+  border: none; border-radius: 14px;
+  font-weight: 700; font-size: 1rem;
+  cursor: pointer; transition: var(--t);
+  box-shadow: 0 4px 18px rgba(161,24,87,0.35);
+  text-decoration: none; display: inline-block;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(161,24,87,0.45);
+  color: white;
+}
+
+.btn-next {
+  display: block;
+  margin: 8px auto 36px;
+  padding: 13px 36px;
+  background: var(--primary); color: white;
+  border: none; border-radius: 12px;
+  font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; transition: var(--t);
+  box-shadow: 0 4px 15px rgba(161,24,87,0.3);
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(161,24,87,0.4); }
+
+/* ═══════════════════════════════
+   BROKEN WINDOW
+═══════════════════════════════ */
+
+/* Zone qui contient contenu + overlay */
+.bw-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Le contenu se lit normalement puis se floute */
+.bw-content {
+  /* fade out progressif sur les 40% du bas */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 45%,
+    rgba(0,0,0,0.6) 60%,
+    rgba(0,0,0,0) 80%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 45%,
+    rgba(0,0,0,0.6) 60%,
+    rgba(0,0,0,0) 80%
+  );
+  /* + flou sur le bas */
+  filter: blur(0px);
+  transition: filter 0.3s ease;
+}
+
+/* Pseudo-flou par superposition d'un backdrop */
+.bw-fog {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 65%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,255,255,0.5) 20%,
+    rgba(255,255,255,0.88) 50%,
+    rgba(255,255,255,0.98) 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* CTA overlay, centré dans le bas */
+.bw-cta-block {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px 48px;
+}
+
+.bw-cta-headline {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.bw-cta-sub {
+  font-size: 0.88rem; color: var(--text-medium);
+  text-align: center; max-width: 340px;
+  line-height: 1.65; margin-bottom: 24px;
+}
+
+.bw-btn {
+  padding: 16px 44px;
+  background: #f7b100 !important; color: #590925 !important;
+  border: none; border-radius: 14px;
+  font-weight: 700; font-size: 1.05rem;
+  cursor: pointer; transition: var(--t);
+  box-shadow: 0 6px 24px rgba(247,177,0,0.45);
+  text-decoration: none; display: inline-block;
+  letter-spacing: 0.01em;
+  width: 100%; max-width: 380px; text-align: center;
+}
+.bw-btn:hover {
+  background: #e0a000 !important; color: #590925 !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(247,177,0,0.55);
+}
+
+.bw-disclaimer {
+  margin-top: 10px;
+  font-size: 0.76rem; color: var(--text-light);
+  text-align: center;
+}
+
+/* Sections locked dans la nav */
+.v4-nav-step.locked-nav {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── FOOTER ── */
+.lv-footer {
+  background: var(--cream);
+  padding: 16px 28px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem; color: var(--text-light);
+}
+
+/* ── TOAST ── */
+#demo-toast {
+  display: none;
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  background: #1A1A1A; color: white;
+  padding: 13px 22px; border-radius: 12px;
+  font-size: 0.87rem; font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  body.livrable-page { padding: 0; }
+  .lv-container { border-radius: 0; box-shadow: none; }
+  .module-container { padding: 16px 20px 28px; }
+  header { padding: 12px 16px 0; }
+  .v4-nav-step { padding: 6px 7px; font-size: 0.7rem; }
+  .v4-nav-step span { display: none; }
+  .v4-nav-step::after { content: attr(data-short); font-size: 0.7rem; }
+}
+
+@media (max-width: 480px) {
+  .v4-nav-steps { gap: 2px; }
+  .v4-nav-step { padding: 5px 5px; font-size: 0; border-width: 1.5px; }
+  .v4-nav-step::after { content: attr(data-short); font-size: 0.58rem; }
+  .v4-nav-step-number { width: 16px; height: 16px; font-size: 0.55rem; margin-right: 2px; }
+  .v4-nav-separator { width: 3px; }
+  .logo-text { display: none; }
+  h1 { font-size: 1.05rem; }
+  .bw-cta-headline { font-size: 1.05rem; }
+  .bw-btn { padding: 14px 32px; font-size: 0.95rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lv-container">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header>
+    <div class="header-content">
+      <a href="https://tilto.co/" target="_blank" rel="noopener" class="header-logo">
+        <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" alt="Tilto" class="logo-icon" width="27" height="27">
+        <span class="logo-text">Tilto</span>
+      </a>
+      <div class="header-center">
+        <h1 id="headerTitle">Premières pistes de réflexion</h1>
+      </div>
+      <button class="print-btn" id="btnPrint">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        <span>Imprimer</span>
+      </button>
+    </div>
+
+    <nav class="v4-main-navigation">
+      <div class="v4-nav-steps">
+        <div class="v4-nav-step active" data-section="welcome" data-short="↩">
+          <div class="v4-nav-step-number">1</div>
+          <span>Accueil</span>
+        </div>
+        <div class="v4-nav-separator"></div>
+        <div class="v4-nav-step" data-section="section1" data-short="Départ">
+          <div class="v4-nav-step-number">2</div>
+          <span>Ton point de départ</span>
+        </div>
+        <div class="v4-nav-separator"></div>
+        <div class="v4-nav-step" data-section="section2" data-short="Analyse">
+          <div class="v4-nav-step-number">3</div>
+          <span>Ton analyse</span>
+        </div>
+        <div class="v4-nav-separator"></div>
+        <div class="v4-nav-step locked-nav" data-short="Pistes">
+          <div class="v4-nav-step-number">4</div>
+          <span>Tes pistes</span>
+        </div>
+        <div class="v4-nav-separator"></div>
+        <div class="v4-nav-step locked-nav" data-short="Plan">
+          <div class="v4-nav-step-number">5</div>
+          <span>Ton plan d'action</span>
+        </div>
+        <div class="v4-nav-separator"></div>
+        <div class="v4-nav-step locked-nav" data-short="Toi">
+          <div class="v4-nav-step-number">6</div>
+          <span>Un mot pour toi</span>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="lv-main-content">
+
+    <!-- ══════════ WELCOME ══════════ -->
+    <div class="section active" id="welcome">
+      <div class="welcome-screen">
+        <div class="welcome-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        </div>
+        <h2 class="welcome-title">Un résumé de ta situation professionnelle</h2>
+        <p class="welcome-sub">Clara, voici la synthèse de notre entretien — les principaux points de notre échange et des pistes concrètes pour la suite.</p>
+        <p class="welcome-note">Ceci est un exemple de livrable. Le tien sera construit autour de <strong>ton parcours</strong> et <strong>tes ambitions</strong>.</p>
+        <p class="coach-sig">Claire</p>
+        <a href="#" class="btn-primary" id="btnCommencer">Voir l'exemple →</a>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 1 — visible en entier ══════════ -->
+    <div class="section" id="section1">
+      <div class="module-container">
+        <div class="module">
+          <div class="module-header">
+            <div class="module-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="module-title">Quelques mots pour commencer…</div>
+          </div>
+          <div class="module-content">
+            <p>Clara,</p>
+            <p>Suite à notre entretien, j'ai pris le temps de synthétiser nos échanges pour te proposer une analyse claire de ta situation et des pistes d'évolution concrètes.</p>
+
+            <div class="dim-highlight">
+              <div class="dim-title"><span>🔍</span> Ton point de départ</div>
+              <p><strong>Ta situation professionnelle au moment de notre échange</strong></p>
+              <ul>
+                <li>6 ans dans la communication et le marketing digital, dont 3 ans en agence et 3 ans en interne pour une marque de grande consommation</li>
+                <li>Un sentiment de vide croissant : produire des contenus pour vendre des produits ne fait plus sens pour toi</li>
+                <li>Un déclic lors d'un atelier bénévole d'aide aux devoirs : une énergie retrouvée, une satisfaction immédiate que tu n'avais plus ressentie au travail depuis longtemps</li>
+                <li>L'envie d'un impact direct et visible sur des personnes — pas d'un impact mesuré en taux de conversion</li>
+                <li>La peur de perdre ton niveau de vie et la stabilité d'un secteur que tu maîtrises</li>
+              </ul>
+
+              <div class="citation">
+                <p>J'ai passé 6 ans à convaincre des gens d'acheter des choses dont ils n'avaient pas besoin. Je veux maintenant faire quelque chose qui aide vraiment.</p>
+              </div>
+
+              <table class="comparison-table">
+                <tr>
+                  <th style="width:50%">Ce qui ne fait plus sens</th>
+                  <th style="width:50%">Ce que tu recherches</th>
+                </tr>
+                <tr><td>"Produire du contenu pour vendre"</td><td>"Un impact direct et visible sur des personnes"</td></tr>
+                <tr><td>"Répondre à des briefs sans conviction"</td><td>"Un travail où je crois vraiment à ce que je fais"</td></tr>
+                <tr><td>"Mesurer le succès en taux de clic"</td><td>"Voir concrètement que j'ai aidé quelqu'un"</td></tr>
+                <tr><td>"Être loin des gens, derrière des écrans"</td><td>"Du contact humain, de la relation, du terrain"</td></tr>
+                <tr><td>"Travailler dans un secteur très stressant"</td><td>"Une structure à taille humaine avec des valeurs"</td></tr>
+              </table>
+
+              <p><strong>Ce contraste révèle une rupture de sens — pas un burn-out. Tu ne fuis pas ton travail par épuisement : tu cherches quelque chose de plus grand. C'est une position de force.</strong></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; padding: 4px 0 40px;">
+        <button class="btn-next" id="btnToSection2">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 2 — commence normalement, puis BROKEN WINDOW ══════════ -->
+    <div class="section" id="section2">
+
+      <!-- Partie lisible normalement -->
+      <div class="module-container">
+        <div class="module">
+          <div class="module-header">
+            <div class="module-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="module-title">Comprendre ta situation</div>
+          </div>
+          <div class="module-content">
+            <h3 class="first">Le Contexte</h3>
+            <p>Tu traverses une <strong>"reconversion par conviction"</strong> — pas par défaut ou par épuisement, mais parce que tu as eu un aperçu de ce que tu veux vraiment et que ça a tout changé.</p>
+            <ul>
+              <li>Après 6 ans dans un secteur que tu maîtrises techniquement, tu as perdu la motivation intrinsèque</li>
+              <li>L'atelier bénévole a fonctionné comme un révélateur : tu as retrouvé l'engagement, l'attention aux autres, la satisfaction immédiate</li>
+              <li>Tu arrives avec un vrai bagage que tu ne vois pas encore comme un atout</li>
+            </ul>
+            <div class="citation">
+              <p>Ce moment où j'expliquais un problème de maths et où j'ai vu dans ses yeux que ça avait cliqué — c'est cette sensation-là que je veux retrouver tous les jours.</p>
+            </div>
+
+            <div class="coachable-moment">
+              <p>Tout au long de notre échange, tu as minimisé tes compétences. <em>"Je ne connais rien au social, je ne suis pas légitime."</em> C'est le principal obstacle à lever. Savoir simplifier un message, animer une réunion, comprendre les besoins d'une audience — ces compétences sont rares dans le secteur social. Les structures y cherchent désespérément des profils capables de communiquer efficacement. Tu arrives avec exactement ça.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BROKEN WINDOW — le mur arrive ici, au milieu des pistes ══ -->
+      <div class="bw-wrapper">
+
+        <!-- Contenu flouté (aperçu des pistes métiers) -->
+        <div class="bw-content">
+          <div class="module-container">
+            <div class="module">
+              <div class="module-header">
+                <div class="module-icon">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div class="module-title">Tes pistes métiers — 4 voies identifiées pour ton profil</div>
+              </div>
+              <div class="module-content">
+                <p>Suite à notre échange, j'ai identifié quatre voies qui s'appuient sur ce que tu as déjà — sans te demander de tout recommencer — tout en te donnant l'impact humain que tu recherches.</p>
+
+                <!-- Boutons voies (décoratifs, non cliquables dans la démo) -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 20px;">
+                  <div style="padding:9px 16px;background:var(--primary);color:white;border-radius:10px;font-size:0.82rem;font-weight:700;">🧭 CIP / Insertion</div>
+                  <div style="padding:9px 16px;background:var(--white);border:2px solid var(--rose-pale);color:var(--primary);border-radius:10px;font-size:0.82rem;font-weight:700;">📚 Formatrice FLE</div>
+                  <div style="padding:9px 16px;background:var(--white);border:2px solid var(--rose-pale);color:var(--primary);border-radius:10px;font-size:0.82rem;font-weight:700;">🤝 Chargée de projet</div>
+                  <div style="padding:9px 16px;background:var(--white);border:2px solid var(--rose-pale);color:var(--primary);border-radius:10px;font-size:0.82rem;font-weight:700;">💻 Médiatrice numérique</div>
+                </div>
+
+                <!-- Aperçu d'une piste — s'arrête au milieu -->
+                <div style="background:var(--rose-light);border-left:4px solid var(--primary);border-radius:14px;padding:22px;margin-bottom:16px;">
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                    <div style="width:48px;height:48px;background:white;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;">
+                      <span style="font-size:1.2rem;line-height:1;">🧭</span>
+                      <span style="font-size:0.5rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;">Piste 1</span>
+                    </div>
+                    <div>
+                      <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:3px;">L'option accompagnement direct</div>
+                      <div style="font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:var(--text);">CIP — Conseillère en Insertion Professionnelle</div>
+                    </div>
+                  </div>
+                  <p>Le métier d'accompagnement qui correspond le mieux à ce que tu as décrit. La CIP accompagne des personnes en recherche d'emploi ou en reconversion : analyse de situation, co-construction d'un projet professionnel, orientation vers des formations…</p>
+                  <p><strong>Alignement avec ton profil :</strong></p>
+                  <ul>
+                    <li><strong>Contact humain direct :</strong> Entretiens individuels, accompagnement dans la durée</li>
+                    <li><strong>Valorisation de ta communication :</strong> Animation d'ateliers collectifs, interface avec les employeurs</li>
+                    <li><strong>Compréhension du marché :</strong> Ton expérience en agence est un atout rare — tu comprends de l'intérieur ce que les employeurs cherchent</li>
+                  </ul>
+                  <p><strong>Employeurs concrets sur Lyon :</strong> Mission Locale de l'Agglomération Lyonnaise, Maisons de l'Emploi du Rhône, PLIE de Lyon/Villeurbanne…</p>
+                  <p style="margin-bottom:0;"><strong>Salaire attendu :</strong> ~1 700-2 000 € net débutant → <span style="color:var(--primary);font-weight:700;">2 200-2 600 € avec 3-5 ans</span></p>
+                </div>
+
+                <!-- Début du tableau comparatif — tronqué -->
+                <div style="background:var(--cream);border-radius:12px;padding:20px;margin-bottom:16px;">
+                  <p style="font-weight:700;color:var(--primary);font-family:'Libre Baskerville',serif;margin-bottom:12px;">📊 Tableau comparatif de tes 4 voies</p>
+                  <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                    <tr style="background:var(--primary);color:white;">
+                      <th style="padding:10px;text-align:left;border-radius:8px 0 0 0;">Critère</th>
+                      <th style="padding:10px;text-align:left;">CIP</th>
+                      <th style="padding:10px;text-align:left;">FLE</th>
+                      <th style="padding:10px;text-align:left;">Chargée projet</th>
+                      <th style="padding:10px;text-align:left;border-radius:0 8px 0 0;">Médiatrice num.</th>
+                    </tr>
+                    <tr>
+                      <td style="padding:9px 10px;border:1px solid var(--border);font-weight:700;color:var(--primary);">Contact humain</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">✅ Direct</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">✅ Ateliers</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">⚠️ Selon poste</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">✅ Direct</td>
+                    </tr>
+                    <tr style="background:var(--cream);">
+                      <td style="padding:9px 10px;border:1px solid var(--border);font-weight:700;color:var(--primary);">Salaire débutant</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">1 700-2 000 €</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">1 600-1 900 €</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">1 900-2 300 €</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">1 700-2 000 €</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:9px 10px;border:1px solid var(--border);font-weight:700;color:var(--primary);">Formation</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">8-12 mois</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">3 mois à 2 ans</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">Aucune</td>
+                      <td style="padding:9px 10px;border:1px solid var(--border);">3 mois financés</td>
+                    </tr>
+                  </table>
+                </div>
+
+                <!-- Plan d'action — début visible -->
+                <div style="background:var(--white);border:2px solid var(--rose-pale);border-radius:14px;padding:22px;">
+                  <p style="font-family:'Libre Baskerville',serif;font-weight:700;color:var(--text);margin-bottom:14px;">📋 Ton plan d'action — Phase 1 sur 4</p>
+                  <p style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:8px;">Phase de découverte (mois 1-2) · En parallèle de ton poste actuel</p>
+                  <ul>
+                    <li>Immersion d'observation en Mission Locale ou PLIE de Lyon</li>
+                    <li>Entretiens avec 2-3 CIP en poste sur LinkedIn</li>
+                    <li>Identifier les organismes de formation CIP sur Lyon…</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /bw-content -->
+
+        <!-- Brouillard -->
+        <div class="bw-fog"></div>
+
+        <!-- CTA — simple, chirurgical -->
+        <div class="bw-cta-block">
+          <p class="bw-cta-headline">La suite est pour toi — pas pour Clara.</p>
+          <p class="bw-cta-sub">Réserve un appel gratuit de 30 min.<br>On construit <strong>ton</strong> livrable ensemble.</p>
+          <a href="https://calendly.com/TON_LIEN_ICI" target="_blank" rel="noopener" class="bw-btn">
+            Réserver mon appel gratuit →
+          </a>
+          <p class="bw-disclaimer">Sans engagement · 30 min · Appel découverte</p>
+        </div>
+
+      </div>
+      <!-- /bw-wrapper -->
+
+    </div>
+    <!-- /section2 -->
+
+  </div><!-- /lv-main-content -->
+
+  <div class="lv-footer">
+    Tilto · Document confidentiel · Exemple de livrable
+  </div>
+
+</div><!-- /lv-container -->
+
+<div id="demo-toast">🔒 Impression disponible dans la version complète</div>
+
+<script nonce="{{ g.nonce }}">
+(function () {
+  var sections = ['welcome', 'section1', 'section2'];
+  var current = 0;
+  var maxReached = 0;
+
+  var titles = {
+    welcome:  'Premières pistes de réflexion',
+    section1: 'Ton point de départ',
+    section2: 'Ton analyse'
+  };
+
+  function show(idx) {
+    if (idx > maxReached) maxReached = idx;
+    current = idx;
+
+    document.querySelectorAll('.section').forEach(function (s) { s.classList.remove('active'); });
+    var el = document.getElementById(sections[idx]);
+    if (el) el.classList.add('active');
+
+    var h1 = document.getElementById('headerTitle');
+    if (h1) h1.textContent = titles[sections[idx]] || '';
+
+    // Nav
+    document.querySelectorAll('.v4-nav-step:not(.locked-nav)').forEach(function (step, i) {
+      step.classList.remove('active', 'completed');
+      if (i === idx) step.classList.add('active');
+      else if (i <= maxReached) step.classList.add('completed');
+    });
+    document.querySelectorAll('.v4-nav-separator').forEach(function (sep, i) {
+      sep.classList.remove('completed');
+      if (i < maxReached) sep.classList.add('completed');
+    });
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    var c = document.querySelector('.lv-container');
+    if (c) c.scrollTop = 0;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // Nav cliquable uniquement sur les étapes débloquées
+    document.querySelectorAll('.v4-nav-step:not(.locked-nav)').forEach(function (step, i) {
+      step.addEventListener('click', function () { show(i); });
+    });
+
+    var bc = document.getElementById('btnCommencer');
+    if (bc) bc.addEventListener('click', function (e) { e.preventDefault(); show(1); });
+
+    var b2 = document.getElementById('btnToSection2');
+    if (b2) b2.addEventListener('click', function () { show(2); });
+
+    var bp = document.getElementById('btnPrint');
+    if (bp) bp.addEventListener('click', function () {
+      var t = document.getElementById('demo-toast');
+      if (t) { t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 3000); }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { if (current < 2) show(current + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { if (current > 0) show(current - 1); }
+    });
+
+    show(0);
+  });
+})();
+</script>
+{% endblock %}

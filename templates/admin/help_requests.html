@@ -1,0 +1,1688 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Administration - Analyses & Accompagnement') }}{% endblock %}
+
+{% block content %}
+<div class="help-requests-page">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon">📊</span>
+            {{ _('Analyses & Accompagnement') }}
+        </h1>
+        <p class="page-subtitle" id="pageSubtitle">Suivi des analyses générées, pistes débloquées et demandes d'aide (Données à partir du 12/01/26)</p>
+    </div>
+    
+    <!-- ✅ TOGGLE MODE DÉBLOCAGES / ENGAGEMENT -->
+<div class="mode-toggle-container">
+    <div class="mode-toggle">
+        <button class="mode-toggle-btn active" data-mode="deblocages">
+            <i class="fas fa-unlock"></i>
+            <span>Déblocages</span>
+            <span class="mode-badge archive">Archive</span>
+        </button>
+        <button class="mode-toggle-btn" data-mode="engagement">
+            <i class="fas fa-eye"></i>
+            <span>Engagement</span>
+            <span class="mode-badge active-badge">Actif</span>
+        </button>
+    </div>
+</div>
+
+    <!-- ✅ FILTRE DEVICE -->
+    <div class="device-filter-bar">
+        <span class="filter-label"><i class="fas fa-filter"></i> Filtrer par device :</span>
+        <div class="device-filter-buttons">
+            <button class="device-filter-btn active" data-device="">
+                <i class="fas fa-globe"></i> Tous
+            </button>
+            <button class="device-filter-btn" data-device="mobile">
+                <i class="fas fa-mobile-alt"></i> Mobile
+            </button>
+            <button class="device-filter-btn" data-device="desktop">
+                <i class="fas fa-desktop"></i> Desktop
+            </button>
+        </div>
+        <span class="current-filter-badge" id="currentFilterBadge" style="display:none;"></span>
+    </div>
+    
+    <!-- ✅ FUNNEL VISUEL -->
+<!-- FUNNEL MODE DÉBLOCAGES -->
+<div class="funnel-container" id="funnelDeblocages">
+    <div class="funnel-step">
+        <div class="funnel-icon"><i class="fas fa-clipboard-check"></i></div>
+        <div class="funnel-value" id="funnelQuiz">-</div>
+        <div class="funnel-label">Quiz réalisés</div>
+    </div>
+    <div class="funnel-arrow">
+        <i class="fas fa-arrow-right"></i>
+        <span class="funnel-rate" id="funnelRateQuizAnalysis">-</span>
+    </div>
+    <div class="funnel-step">
+        <div class="funnel-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="funnel-value" id="funnelAnalysis">-</div>
+        <div class="funnel-label">Analyses générées</div>
+    </div>
+    <div class="funnel-arrow">
+        <i class="fas fa-arrow-right"></i>
+        <span class="funnel-rate" id="funnelRateAnalysisUnlock">-</span>
+    </div>
+    <div class="funnel-step">
+        <div class="funnel-icon"><i class="fas fa-unlock"></i></div>
+        <div class="funnel-value" id="funnelUnlocks">-</div>
+        <div class="funnel-label">Déblocages</div>
+    </div>
+    <div class="funnel-arrow">
+        <i class="fas fa-arrow-right"></i>
+        <span class="funnel-rate" id="funnelRateUnlockRequest">-</span>
+    </div>
+    <div class="funnel-step">
+        <div class="funnel-icon"><i class="fas fa-hand-paper"></i></div>
+        <div class="funnel-value" id="funnelRequests">-</div>
+        <div class="funnel-label">Demandes</div>
+    </div>
+</div>
+
+<!-- FUNNEL MODE ENGAGEMENT (2 branches) -->
+<div class="funnel-branched" id="funnelEngagement" style="display:none;">
+    <div class="funnel-branch-main">
+        <div class="funnel-step">
+            <div class="funnel-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="funnel-value" id="funnelEngAnalysis">-</div>
+            <div class="funnel-label">Analyses générées</div>
+        </div>
+        <div class="funnel-arrow">
+            <i class="fas fa-arrow-right"></i>
+            <span class="funnel-rate" id="funnelRateAnalysisView">-</span>
+        </div>
+        <div class="funnel-step highlight">
+            <div class="funnel-icon"><i class="fas fa-eye"></i></div>
+            <div class="funnel-value" id="funnelEngViews">-</div>
+            <div class="funnel-label">Users ont vu 1+ fiche</div>
+        </div>
+    </div>
+    
+    <div class="funnel-branches">
+        <div class="funnel-branch branch-top">
+            <div class="branch-connector">
+                <svg class="branch-line" viewBox="0 0 60 40">
+                    <path d="M0,40 Q30,40 60,10" stroke="var(--gray-300)" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="funnel-rate branch-rate" id="funnelRateViewPrint">-</span>
+            </div>
+            <div class="funnel-step branch-step print">
+                <div class="funnel-icon"><i class="fas fa-print"></i></div>
+                <div class="funnel-value" id="funnelEngPrints">-</div>
+                <div class="funnel-label">Ont imprimé</div>
+            </div>
+        </div>
+        
+        <div class="funnel-branch branch-bottom">
+            <div class="branch-connector">
+                <svg class="branch-line" viewBox="0 0 60 40">
+                    <path d="M0,0 Q30,0 60,30" stroke="var(--gray-300)" stroke-width="2" fill="none"/>
+                </svg>
+                <span class="funnel-rate branch-rate" id="funnelRateViewRequest">-</span>
+            </div>
+            <div class="funnel-step branch-step request">
+                <div class="funnel-icon"><i class="fas fa-hand-paper"></i></div>
+                <div class="funnel-value" id="funnelEngRequests">-</div>
+                <div class="funnel-label">Ont fait demande</div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<div class="section-title">
+    <span class="section-icon">🎯</span>
+    <span id="statsSectionTitle">Statistiques des Analyses</span>
+</div>
+
+<!-- STATS MODE DÉBLOCAGES -->
+<div id="statsDeblocages">
+    <div class="stats-grid stats-grid-3">
+        <div class="stat-card stat-red clickable-stat-modal" id="cardNoAnalysis" style="cursor:pointer;">
+            <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statQuizNoAnalysis">-</div>
+                <div class="stat-label">Quiz sans analyse</div>
+            </div>
+        </div>
+        <div class="stat-card stat-emerald clickable-stat-extra" data-filter="paid">
+            <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statUsersPaid">-</div>
+                <div class="stat-label">Users payants</div>
+            </div>
+        </div>
+        <div class="stat-card stat-amber clickable-stat-extra" data-filter="tokens_dispo">
+            <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statUsersTokensDispo">-</div>
+                <div class="stat-label">Users avec tokens dispo</div>
+            </div>
+        </div>
+    </div>
+    <div class="stats-grid stats-grid-5">
+        <div class="stat-card stat-violet clickable-stat active" data-filter="all">
+            <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statTotalAnalyses">-</div>
+                <div class="stat-label">Analyses générées</div>
+            </div>
+        </div>
+        <div class="stat-card stat-gray clickable-stat" data-filter="0">
+            <div class="stat-icon"><i class="fas fa-lock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statAnalyses0">-</div>
+                <div class="stat-label">0 piste débloquée</div>
+            </div>
+        </div>
+        <div class="stat-card stat-bronze clickable-stat" data-filter="1">
+            <div class="stat-icon"><i class="fas fa-unlock"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statAnalyses1">-</div>
+                <div class="stat-label">1 piste débloquée</div>
+            </div>
+        </div>
+        <div class="stat-card stat-silver clickable-stat" data-filter="2">
+            <div class="stat-icon"><i class="fas fa-unlock-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statAnalyses2">-</div>
+                <div class="stat-label">2 pistes débloquées</div>
+            </div>
+        </div>
+        <div class="stat-card stat-gold clickable-stat" data-filter="3">
+            <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statAnalyses3">-</div>
+                <div class="stat-label">3 pistes débloquées</div>
+            </div>
+        </div>
+    </div>
+    <div class="pistes-compact">
+        <div class="piste-compact-item piste-1"><span class="piste-compact-badge">P1</span><span class="piste-compact-number" id="statPiste1">-</span></div>
+        <div class="piste-compact-item piste-2"><span class="piste-compact-badge">P2</span><span class="piste-compact-number" id="statPiste2">-</span></div>
+        <div class="piste-compact-item piste-3"><span class="piste-compact-badge">P3</span><span class="piste-compact-number" id="statPiste3">-</span></div>
+        <div class="piste-compact-separator"></div>
+        <button class="export-btn" id="btnShowPistesList"><i class="fas fa-list"></i> Voir liste</button>
+    </div>
+</div>
+
+<!-- STATS MODE ENGAGEMENT -->
+<div id="statsEngagement" style="display:none;">
+    <div class="stats-grid stats-grid-3">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEngUsersViewed">-</div>
+                <div class="stat-label">Users ont vu 1+ fiche</div>
+            </div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fas fa-print"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEngUsersPrinted">-</div>
+                <div class="stat-label">Users ont imprimé</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEngRate">-<span style="font-size:1rem;">%</span></div>
+                <div class="stat-label">Taux d'engagement</div>
+            </div>
+        </div>
+    </div>
+    <div class="stats-grid stats-grid-5">
+        <div class="stat-card stat-violet clickable-stat-eng active" data-filter="all">
+            <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEngTotalAnalyses">-</div>
+                <div class="stat-label">Analyses générées</div>
+            </div>
+        </div>
+        <div class="stat-card stat-gray clickable-stat-eng" data-filter="0">
+            <div class="stat-icon"><i class="fas fa-eye-slash"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEng0Views">-</div>
+                <div class="stat-label">0 fiche vue</div>
+            </div>
+        </div>
+        <div class="stat-card stat-bronze clickable-stat-eng" data-filter="1">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEng1View">-</div>
+                <div class="stat-label">1 fiche vue</div>
+            </div>
+        </div>
+        <div class="stat-card stat-silver clickable-stat-eng" data-filter="2">
+            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEng2Views">-</div>
+                <div class="stat-label">2 fiches vues</div>
+            </div>
+        </div>
+        <div class="stat-card stat-gold clickable-stat-eng" data-filter="3">
+            <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+            <div class="stat-content">
+                <div class="stat-number" id="statEng3PlusViews">-</div>
+                <div class="stat-label">3+ fiches vues</div>
+            </div>
+        </div>
+    </div>
+    <div class="pistes-compact">
+        <div class="piste-compact-item piste-1"><span class="piste-compact-badge">P1</span><span class="piste-compact-number" id="statEngViewsP1">-</span><span class="piste-compact-label">users</span></div>
+        <div class="piste-compact-item piste-2"><span class="piste-compact-badge">P2</span><span class="piste-compact-number" id="statEngViewsP2">-</span><span class="piste-compact-label">users</span></div>
+        <div class="piste-compact-item piste-3"><span class="piste-compact-badge">P3</span><span class="piste-compact-number" id="statEngViewsP3">-</span><span class="piste-compact-label">users</span></div>
+    </div>
+</div>
+    
+    <!-- ✅ COMPARAISON DEVICE -->
+   <!-- DEVICE COMPARISON - MODE DÉBLOCAGES -->
+<div class="device-comparison" id="deviceDeblocages">
+    <div class="device-comparison-header">
+        <span class="section-icon">📱</span>
+        <span class="section-title-text">Mobile vs Desktop</span>
+        <span class="device-help-text">Ratio = demandes / déblocages</span>
+    </div>
+    <div class="device-cards">
+        <div class="device-card mobile">
+            <div class="device-card-icon"><i class="fas fa-mobile-alt"></i></div>
+            <div class="device-card-content">
+                <div class="device-card-title">Mobile</div>
+                <div class="device-stats-row">
+                    <div class="device-stat"><span class="device-stat-value" id="statMobileUnlocks">-</span><span class="device-stat-label">Déblocages</span></div>
+                    <div class="device-stat"><span class="device-stat-value" id="statMobileRequests">-</span><span class="device-stat-label">Demandes</span></div>
+                    <div class="device-stat ratio"><span class="device-stat-value" id="statMobileRatio">-</span><span class="device-stat-label">Ratio</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="device-card desktop">
+            <div class="device-card-icon"><i class="fas fa-desktop"></i></div>
+            <div class="device-card-content">
+                <div class="device-card-title">Desktop</div>
+                <div class="device-stats-row">
+                    <div class="device-stat"><span class="device-stat-value" id="statDesktopUnlocks">-</span><span class="device-stat-label">Déblocages</span></div>
+                    <div class="device-stat"><span class="device-stat-value" id="statDesktopRequests">-</span><span class="device-stat-label">Demandes</span></div>
+                    <div class="device-stat ratio"><span class="device-stat-value" id="statDesktopRatio">-</span><span class="device-stat-label">Ratio</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="device-comparison-footer">
+        <span class="device-unknown"><i class="fas fa-question-circle"></i> Non identifié: <span id="statUnknownUnlocks">-</span> déblocages / <span id="statUnknownRequests">-</span> demandes</span>
+    </div>
+</div>
+
+<!-- TABLEAU UTILISATEURS AVEC ANALYSE -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-header-left">
+            <span class="card-icon">👥</span>
+            <span class="card-title">Utilisateurs avec analyse</span>
+            <span class="badge" id="totalUsersAnalysis">-</span>
+            <span class="filter-indicator" id="filterIndicator" style="display:none;">
+                <i class="fas fa-filter"></i> <span id="filterIndicatorText"></span>
+                <button class="clear-filter-btn" id="clearFilterBtn">×</button>
+            </span>
+        </div>
+    </div>
+    <div class="card-body no-padding">
+        <div class="table-container">
+            <table class="table">
+                <thead id="analysisTableHead">
+                    <tr id="tableHeaderRow">
+                        <th>Utilisateur</th>
+                        <th>Région</th>
+                        <th>Date analyse</th>
+                        <th id="thColumn3">Pistes débloquées</th>
+                        <th id="thColumn4">Tokens dispo</th>
+                        <th>Accompagnement souhaité</th>
+                    </tr>
+                </thead>
+                <tbody id="analysisUsersTableBody">
+                    <tr><td colspan="5"><div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+        <div class="section-divider">
+            <span class="divider-line"></span>
+            <span class="divider-icon">⬇️</span>
+            <span class="divider-line"></span>
+        </div>
+
+        <div class="section-title">
+            <span class="section-icon">🎯</span>
+            <span>Demandes d'Accompagnement</span>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-orange"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-content"><div class="stat-number" id="statPending">-</div><div class="stat-label">En attente</div></div></div>
+            <div class="stat-card stat-blue"><div class="stat-icon"><i class="fas fa-phone"></i></div><div class="stat-content"><div class="stat-number" id="statContacted">-</div><div class="stat-label">Contactés</div></div></div>
+            <div class="stat-card stat-purple"><div class="stat-icon"><i class="fas fa-spinner"></i></div><div class="stat-content"><div class="stat-number" id="statInProgress">-</div><div class="stat-label">En cours</div></div></div>
+            <div class="stat-card stat-green"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-content"><div class="stat-number" id="statCompleted">-</div><div class="stat-label">Complétées</div></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left"><span class="card-icon">📊</span><span class="card-title">Répartition par type</span></div>
+                <button class="btn-icon" id="refreshStats"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="type-grid" id="typeStatsGrid"><div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="filterForm" class="filters-form">
+                    <div class="filter-group"><label>Statut</label><select id="filterStatus"><option value="">Tous</option><option value="pending">🟠 En attente</option><option value="contacted">🔵 Contacté</option><option value="in_progress">🟣 En cours</option><option value="completed">🟢 Complété</option><option value="cancelled">⚫ Annulé</option></select></div>
+                    <div class="filter-group"><label>Type</label><select id="filterType"><option value="">Tous</option><option value="recruiter_connection">🤝 Mise en relation</option><option value="analysis_refinement">🔍 Affiner analyse</option><option value="coach_session">🎓 Coaching</option><option value="interview_prep">🎤 Entretien</option><option value="cv_review">📄 CV</option><option value="training_info">📚 Formations</option><option value="other">❓ Autre</option></select></div>
+                    <div class="filter-group"><label>Priorité</label><select id="filterPriority"><option value="">Toutes</option><option value="urgent">🔴 Urgent</option><option value="high">🟠 Haute</option><option value="normal">🟢 Normale</option><option value="low">⚪ Basse</option></select></div>
+                    <div class="filter-actions"><button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filtrer</button><button type="button" class="btn btn-secondary" id="resetFilters"><i class="fas fa-redo"></i> Reset</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><div class="card-header-left"><span class="card-icon">📬</span><span class="card-title">Demandes</span><span class="badge" id="totalRequests">-</span></div></div>
+            <div class="card-body no-padding">
+                <div class="table-container">
+                    <table class="table">
+                        <thead><tr><th>ID</th><th>Utilisateur</th><th>Région</th><th>Type</th><th>Piste</th><th>Priorité</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="requestsTableBody"><tr><td colspan="9"><div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div></td></tr></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="paginationWrapper"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editRequestModal" class="hr-modal-overlay">
+    <div class="hr-modal">
+        <div class="hr-modal-header"><h2><i class="fas fa-edit"></i> Modifier la demande</h2><button class="hr-modal-close" id="closeEditModal">&times;</button></div>
+        <div class="hr-modal-body">
+            <input type="hidden" id="editRequestId">
+            <div class="hr-form-group"><label>Statut</label><select id="editStatus"><option value="pending">🟠 En attente</option><option value="contacted">🔵 Contacté</option><option value="in_progress">🟣 En cours</option><option value="completed">🟢 Complété</option><option value="cancelled">⚫ Annulé</option></select></div>
+            <div class="hr-form-group"><label>Priorité</label><select id="editPriority"><option value="low">⚪ Basse</option><option value="normal">🟢 Normale</option><option value="high">🟠 Haute</option><option value="urgent">🔴 Urgent</option></select></div>
+            <div class="hr-form-group"><label>Notes admin</label><textarea id="editAdminNotes" rows="4" placeholder="Notes internes..."></textarea></div>
+        </div>
+        <div class="hr-modal-footer"><button class="hr-btn hr-btn-secondary" id="cancelEditModal">Annuler</button><button class="hr-btn hr-btn-primary" id="saveEditModal"><i class="fas fa-save"></i> Enregistrer</button></div>
+    </div>
+</div>
+
+<div id="detailModal" class="hr-modal-overlay">
+    <div class="hr-modal hr-modal-lg">
+        <div class="hr-modal-header"><h2><i class="fas fa-eye"></i> Détail de la demande</h2><button class="hr-modal-close" id="closeDetailModal">&times;</button></div>
+        <div class="hr-modal-body" id="detailModalBody"></div>
+        <div class="hr-modal-footer"><button class="hr-btn hr-btn-secondary" id="closeDetailModalBtn">Fermer</button></div>
+    </div>
+</div>
+<!-- MODAL USERS SANS ANALYSE -->
+<div id="noAnalysisModal" class="hr-modal-overlay">
+    <div class="hr-modal hr-modal-lg">
+        <div class="hr-modal-header">
+            <h2><i class="fas fa-exclamation-circle"></i> Quiz sans analyse</h2>
+            <button class="hr-modal-close" id="closeNoAnalysisModal">&times;</button>
+        </div>
+        <div class="hr-modal-body">
+            <p style="margin-bottom:1rem;color:var(--gray-600);font-size:.9rem;">
+                <i class="fas fa-info-circle"></i> Utilisateurs ayant terminé le quiz mais n'ayant pas généré d'analyse
+            </p>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Quiz terminé le</th>
+                        </tr>
+                    </thead>
+                    <tbody id="noAnalysisTableBody">
+                        <tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="hr-modal-footer">
+            <button class="hr-btn hr-btn-secondary" id="closeNoAnalysisModalBtn">Fermer</button>
+        </div>
+    </div>
+</div>
+<!-- MODAL LISTE PISTES -->
+<div id="pistesListModal" class="hr-modal-overlay">
+    <div class="hr-modal hr-modal-lg">
+        <div class="hr-modal-header">
+            <h2><i class="fas fa-list"></i> Pistes débloquées</h2>
+            <button class="hr-modal-close" id="closePistesListModal">&times;</button>
+        </div>
+        <div class="hr-modal-body">
+            <textarea id="pistesListText" readonly style="width:100%;height:400px;font-family:monospace;font-size:.85rem;padding:1rem;border:1px solid var(--gray-200);border-radius:8px;resize:vertical;"></textarea>
+        </div>
+        <div class="hr-modal-footer">
+            <button class="hr-btn hr-btn-primary" id="copyPistesList"><i class="fas fa-copy"></i> Copier</button>
+            <button class="hr-btn hr-btn-secondary" id="closePistesListModalBtn">Fermer</button>
+        </div>
+    </div>
+</div>
+<style>
+.help-requests-page{--primary:#4C0336;--primary-light:#6b0548;--orange:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;--green:#10b981;--piste-1-bg:#F3E8F0;--piste-1-color:#610540;--piste-2-bg:#FEF3E2;--piste-2-color:#F19631;--piste-3-bg:#E8F8F3;--piste-3-color:#26BB8E;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-700:#374151;--gray-800:#1f2937;background:var(--gray-50);min-height:100vh;padding:2rem}
+.help-requests-page *{box-sizing:border-box}
+.container-fluid{max-width:1400px;margin:0 auto}
+.page-header{text-align:center;margin-bottom:2rem}
+.page-title{font-size:2rem;font-weight:700;color:#4C0336;margin:0 0 .5rem;display:flex;align-items:center;justify-content:center;gap:.75rem}
+.title-icon{font-size:2.5rem}
+.page-subtitle{color:#6b7280;margin:0;font-size:1rem}
+.section-title{display:flex;align-items:center;gap:.75rem;font-size:1.25rem;font-weight:700;color:var(--gray-800);margin-bottom:1.5rem;padding-left:.5rem}
+.section-icon{font-size:1.5rem}
+.section-divider{display:flex;align-items:center;gap:1rem;margin:3rem 0}
+.divider-line{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--gray-300),transparent)}
+.divider-icon{font-size:1.5rem;color:var(--gray-400)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem}
+.stats-grid-5{grid-template-columns:repeat(5,1fr)}
+.stats-grid-3{grid-template-columns:repeat(3,1fr)}
+.stat-card{background:#fff;border-radius:12px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.stat-card.clickable-stat,.stat-card.clickable-stat-extra{cursor:pointer;border:2px solid transparent}
+.stat-card.clickable-stat:hover,.stat-card.clickable-stat-extra:hover{border-color:var(--primary)}
+.stat-card.clickable-stat.active,.stat-card.clickable-stat-extra.active{border-color:var(--primary);box-shadow:0 0 0 3px rgba(76,3,54,.1)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.stat-card.stat-orange::before{background:#f59e0b}.stat-card.stat-blue::before{background:#3b82f6}.stat-card.stat-purple::before{background:#8b5cf6}.stat-card.stat-green::before{background:#10b981}.stat-card.stat-violet::before{background:#7c3aed}.stat-card.stat-gold::before{background:linear-gradient(90deg,#eab308,#fbbf24)}.stat-card.stat-silver::before{background:linear-gradient(90deg,#64748b,#94a3b8)}.stat-card.stat-bronze::before{background:linear-gradient(90deg,#b45309,#d97706)}.stat-card.stat-gray::before{background:#9ca3af}.stat-card.stat-red::before{background:#ef4444}.stat-card.stat-emerald::before{background:#10b981}.stat-card.stat-amber::before{background:#f59e0b}
+.stat-card .stat-icon{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem}
+.stat-orange .stat-icon{background:#fef3c7;color:#f59e0b}.stat-blue .stat-icon{background:#dbeafe;color:#3b82f6}.stat-purple .stat-icon{background:#ede9fe;color:#8b5cf6}.stat-green .stat-icon{background:#d1fae5;color:#10b981}.stat-violet .stat-icon{background:#ede9fe;color:#7c3aed}.stat-gold .stat-icon{background:#fef9c3;color:#ca8a04}.stat-silver .stat-icon{background:#f1f5f9;color:#64748b}.stat-bronze .stat-icon{background:#ffedd5;color:#c2410c}.stat-gray .stat-icon{background:#f3f4f6;color:#6b7280}.stat-red .stat-icon{background:#fef2f2;color:#ef4444}.stat-emerald .stat-icon{background:#d1fae5;color:#059669}.stat-amber .stat-icon{background:#fef3c7;color:#d97706}
+.stat-content{flex:1}
+.stat-number{font-size:2rem;font-weight:700;color:#111827;line-height:1}
+.stat-label{font-size:.875rem;color:#6b7280;margin-top:.25rem}
+.pistes-compact{display:flex;align-items:center;gap:1rem;background:#fff;padding:1rem 1.5rem;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:2rem}
+.piste-compact-item{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:8px}
+.piste-compact-item.piste-1{background:var(--piste-1-bg)}.piste-compact-item.piste-2{background:var(--piste-2-bg)}.piste-compact-item.piste-3{background:var(--piste-3-bg)}.piste-compact-item.tokens{background:var(--gray-100)}
+.piste-compact-badge{font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:4px}
+.piste-1 .piste-compact-badge{background:var(--piste-1-color);color:#fff}.piste-2 .piste-compact-badge{background:var(--piste-2-color);color:#fff}.piste-3 .piste-compact-badge{background:var(--piste-3-color);color:#fff}
+.piste-compact-number{font-size:1.25rem;font-weight:700}
+.piste-1 .piste-compact-number{color:var(--piste-1-color)}.piste-2 .piste-compact-number{color:var(--piste-2-color)}.piste-3 .piste-compact-number{color:var(--piste-3-color)}.tokens .piste-compact-number{color:var(--gray-700)}
+.piste-compact-icon{font-size:1rem}
+.piste-compact-separator{width:1px;height:30px;background:var(--gray-300);margin:0 .5rem}
+.filter-indicator{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.2);padding:.25rem .75rem;border-radius:20px;font-size:.8rem;margin-left:.5rem}
+.clear-filter-btn{background:rgba(255,255,255,.3);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1}
+.clear-filter-btn:hover{background:rgba(255,255,255,.5)}
+.piste-title-tag{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:500;margin:.15rem 0;width:fit-content}
+.piste-title-tag.piste-1{background:var(--piste-1-bg);color:var(--piste-1-color)}.piste-title-tag.piste-2{background:var(--piste-2-bg);color:var(--piste-2-color)}.piste-title-tag.piste-3{background:var(--piste-3-bg);color:var(--piste-3-color)}
+.piste-title-tag .piste-num{font-weight:700;font-size:.7rem;padding:.1rem .3rem;border-radius:3px;background:rgba(0,0,0,.1)}
+.piste-title-tag .piste-text{white-space:normal;word-break:break-word}
+.accompagnement-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .6rem;background:var(--gray-100);border-radius:6px;font-size:.75rem;color:var(--gray-700);margin:.15rem}
+.accompagnement-badge.pending{border-left:3px solid #f59e0b}.accompagnement-badge.contacted{border-left:3px solid #3b82f6}.accompagnement-badge.in_progress{border-left:3px solid #8b5cf6}.accompagnement-badge.completed{border-left:3px solid #10b981}
+.no-request{color:var(--gray-400);font-style:italic;font-size:.85rem}
+.tokens-dispo-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:50%;font-weight:700;font-size:.85rem}
+.tokens-dispo-badge.has-tokens{background:#d1fae5;color:#059669}
+.tokens-dispo-badge.no-tokens{background:#f3f4f6;color:#9ca3af}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:1.5rem;overflow:hidden}
+.card-header{background:linear-gradient(135deg,#4C0336 0%,#6b0548 100%);color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.card-header-left{display:flex;align-items:center;gap:.75rem}
+.card-icon{font-size:1.25rem}
+.card-title{font-weight:600;font-size:1rem}
+.card-header .badge{background:rgba(255,255,255,.2);padding:.25rem .75rem;border-radius:20px;font-size:.875rem}
+.btn-icon{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.btn-icon:hover{background:rgba(255,255,255,.3)}
+.card-body{padding:1.5rem}
+.card-body.no-padding{padding:0}
+.type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+.type-box{background:#f9fafb;border:2px solid #e5e7eb;border-radius:12px;padding:1rem;display:flex;align-items:center;gap:.75rem;transition:all .2s}
+.type-box:hover{border-color:#4C0336;transform:translateY(-2px)}
+.type-box-icon{font-size:1.5rem}
+.type-box-label{font-size:.75rem;color:#6b7280;text-transform:uppercase;font-weight:600}
+.type-box-number{font-size:1.5rem;font-weight:700;color:#111827}
+.filters-form{display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end}
+.filter-group{flex:1;min-width:150px}
+.filter-group label{display:block;font-size:.75rem;font-weight:600;color:#4b5563;text-transform:uppercase;margin-bottom:.5rem}
+.filter-group select{width:100%;padding:.625rem 1rem;border:2px solid #e5e7eb;border-radius:8px;font-size:.9rem;background:#fff;cursor:pointer;transition:border-color .2s}
+.filter-group select:focus{outline:none;border-color:#4C0336}
+.filter-actions{display:flex;gap:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1rem;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:#4C0336;color:#fff}
+.btn-primary:hover{background:#6b0548}
+.btn-secondary{background:#6b7280;color:#fff}
+.btn-secondary:hover{background:#4b5563}
+.btn-sm{padding:.375rem .625rem;font-size:.8rem}
+.btn-info{background:#3b82f6;color:#fff}
+.btn-warning{background:#f59e0b;color:#fff}
+.btn-success{background:#10b981;color:#fff}
+.table-container{overflow-x:auto}
+.table{width:100%;border-collapse:collapse}
+.table th{background:#f9fafb;padding:1rem 1.25rem;text-align:left;font-size:.75rem;font-weight:600;color:#4b5563;text-transform:uppercase;border-bottom:2px solid #e5e7eb}
+.table td{padding:1rem 1.25rem;border-bottom:1px solid #e5e7eb;vertical-align:middle}
+.table tbody tr:hover{background:#f9fafb}
+#analysisUsersTableBody tr{border-bottom:1px solid #e5e7eb}
+#analysisUsersTableBody tr:last-child{border-bottom:none}
+.user-cell{display:flex;align-items:center;gap:.75rem}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:#4C0336;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem}
+.user-info{display:flex;flex-direction:column}
+.user-name{font-weight:600;color:#111827}
+.user-email{font-size:.8rem;color:#6b7280;text-decoration:none}
+.user-email:hover{color:#4C0336}
+.badge-type{display:inline-flex;align-items:center;gap:.375rem;padding:.375rem .75rem;background:#f3f4f6;border-radius:6px;font-size:.8rem;font-weight:500;color:#374151}
+.badge-piste{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.badge-piste.piste-1{background:#F3E8F0;color:#610540}.badge-piste.piste-2{background:#FEF3E2;color:#F19631}.badge-piste.piste-3{background:#E8F8F3;color:#26BB8E}
+.badge-priority{display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .625rem;border-radius:6px;font-size:.75rem;font-weight:600}
+.badge-priority.urgent{background:#fef2f2;color:#dc2626}.badge-priority.high{background:#fff7ed;color:#ea580c}.badge-priority.normal{background:#f0fdf4;color:#16a34a}.badge-priority.low{background:#f3f4f6;color:#6b7280}
+.badge-status{display:inline-flex;align-items:center;gap:.25rem;padding:.375rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-status.pending{background:#fef3c7;color:#92400e}.badge-status.contacted{background:#dbeafe;color:#1e40af}.badge-status.in_progress{background:#ede9fe;color:#5b21b6}.badge-status.completed{background:#d1fae5;color:#065f46}.badge-status.cancelled{background:#e5e7eb;color:#4b5563}
+.actions-cell{display:flex;gap:.5rem}
+.loading-state{display:flex;align-items:center;justify-content:center;gap:.75rem;padding:3rem;color:#6b7280}
+.spinner{width:24px;height:24px;border:3px solid #e5e7eb;border-top-color:#4C0336;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:3rem;color:#9ca3af}
+.empty-state i{font-size:3rem;margin-bottom:1rem}
+.pagination{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:1.5rem;border-top:1px solid #e5e7eb}
+.pagination a,.pagination span{padding:.5rem .875rem;border:1px solid #e5e7eb;border-radius:6px;font-size:.875rem;color:#374151;text-decoration:none;transition:all .2s}
+.pagination a:hover{border-color:#4C0336;color:#4C0336}
+.pagination .active{background:#4C0336;border-color:#4C0336;color:#fff}
+.pagination .disabled{opacity:.5;pointer-events:none}
+.hr-modal-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.6);z-index:999999;align-items:center;justify-content:center}
+.hr-modal-overlay.active{display:flex!important}
+.hr-modal{background:#fff;border-radius:16px;width:90%;max-width:480px;max-height:90vh;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,.3);animation:hrModalIn .2s ease}
+.hr-modal.hr-modal-lg{max-width:700px}
+@keyframes hrModalIn{from{opacity:0;transform:scale(.95) translateY(-20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.hr-modal-header{background:#4C0336;color:#fff;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.hr-modal-header h2{margin:0;font-size:1.125rem;color:#fff;display:flex;align-items:center;gap:.5rem}
+.hr-modal-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .2s}
+.hr-modal-close:hover{background:rgba(255,255,255,.3)}
+.hr-modal-body{padding:1.5rem;overflow-y:auto;max-height:60vh}
+.hr-modal-footer{padding:1rem 1.5rem;background:#f9fafb;display:flex;justify-content:flex-end;gap:.75rem;border-top:1px solid #e5e7eb}
+.hr-form-group{margin-bottom:1.25rem}
+.hr-form-group label{display:block;font-weight:600;color:#374151;margin-bottom:.5rem;font-size:.9rem}
+.hr-form-group select,.hr-form-group textarea{width:100%;padding:.75rem 1rem;border:2px solid #e5e7eb;border-radius:8px;font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.hr-form-group select:focus,.hr-form-group textarea:focus{outline:none;border-color:#4C0336}
+.hr-form-group textarea{resize:vertical;min-height:100px}
+.hr-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.25rem;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.hr-btn-primary{background:#4C0336;color:#fff}
+.hr-btn-primary:hover{background:#6b0548}
+.hr-btn-secondary{background:#6b7280;color:#fff}
+.hr-btn-secondary:hover{background:#4b5563}
+.hr-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.hr-detail-item{background:#f9fafb;padding:1rem;border-radius:8px}
+.hr-detail-item.full{grid-column:1/-1}
+.hr-detail-label{font-size:.7rem;font-weight:600;color:#6b7280;text-transform:uppercase;margin-bottom:.25rem}
+.hr-detail-value{font-size:.95rem;color:#111827;font-weight:500}
+.hr-detail-value a{color:#4C0336;text-decoration:none}
+.hr-detail-value a:hover{text-decoration:underline}
+.hr-toast{position:fixed;bottom:2rem;right:2rem;background:#111827;color:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,.2);z-index:9999999;animation:hrToastIn .3s ease}
+@keyframes hrToastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1200px){.stats-grid-5{grid-template-columns:repeat(3,1fr)}.stats-grid-3{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.pistes-compact{flex-wrap:wrap}}
+@media(max-width:768px){.help-requests-page{padding:1rem}.stats-grid,.stats-grid-5,.stats-grid-3{grid-template-columns:1fr}.filters-form{flex-direction:column}.filter-group{width:100%}.hr-detail-grid{grid-template-columns:1fr}.table th,.table td{padding:.75rem}}
+/* ==================== DEVICE FILTER BAR ==================== */
+.device-filter-bar{display:flex;align-items:center;gap:1rem;background:#fff;padding:1rem 1.5rem;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:1.5rem;flex-wrap:wrap}
+.device-filter-bar .filter-label{font-size:.875rem;font-weight:600;color:var(--gray-600);display:flex;align-items:center;gap:.5rem}
+.device-filter-buttons{display:flex;gap:.5rem}
+.device-filter-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border:2px solid var(--gray-200);border-radius:8px;background:#fff;font-size:.875rem;font-weight:500;color:var(--gray-600);cursor:pointer;transition:all .2s}
+.device-filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.device-filter-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.current-filter-badge{margin-left:auto;background:var(--primary);color:#fff;padding:.35rem .75rem;border-radius:20px;font-size:.8rem;font-weight:600}
+
+/* ==================== FUNNEL ==================== */
+.funnel-container{display:flex;align-items:center;justify-content:center;gap:.5rem;background:#fff;padding:2rem;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:2rem;flex-wrap:wrap}
+.funnel-step{text-align:center;padding:1rem 1.5rem;background:var(--gray-50);border-radius:12px;min-width:120px;transition:all .2s}
+.funnel-step:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.funnel-icon{width:50px;height:50px;margin:0 auto .75rem;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.25rem}
+.funnel-value{font-size:2rem;font-weight:700;color:var(--gray-900);line-height:1}
+.funnel-label{font-size:.8rem;color:var(--gray-500);margin-top:.5rem;text-transform:uppercase;font-weight:600}
+.funnel-arrow{display:flex;flex-direction:column;align-items:center;color:var(--gray-400);padding:0 .5rem}
+.funnel-arrow i{font-size:1.25rem}
+.funnel-rate{font-size:.75rem;font-weight:700;color:var(--primary);margin-top:.25rem;background:rgba(76,3,54,.1);padding:.2rem .5rem;border-radius:4px}
+
+/* ==================== DEVICE COMPARISON ==================== */
+.device-comparison{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:1.5rem;margin-bottom:2rem}
+.device-comparison-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:2px solid var(--gray-100)}
+.section-title-text{font-size:1.1rem;font-weight:700;color:var(--gray-800)}
+.device-help-text{margin-left:auto;font-size:.75rem;color:var(--gray-500);font-style:italic}
+.device-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+.device-card{background:var(--gray-50);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1rem;border:2px solid var(--gray-200);transition:all .2s}
+.device-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.device-card.mobile{border-left:4px solid #3b82f6}
+.device-card.desktop{border-left:4px solid #8b5cf6}
+.device-card-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.device-card.mobile .device-card-icon{background:#dbeafe;color:#3b82f6}
+.device-card.desktop .device-card-icon{background:#ede9fe;color:#8b5cf6}
+.device-card-content{flex:1}
+.device-card-title{font-size:1rem;font-weight:700;color:var(--gray-800);margin-bottom:.75rem}
+.device-stats-row{display:flex;gap:1.5rem}
+.device-stat{text-align:center}
+.device-stat-value{display:block;font-size:1.5rem;font-weight:700;color:var(--gray-900);line-height:1}
+.device-stat-label{display:block;font-size:.7rem;color:var(--gray-500);text-transform:uppercase;margin-top:.25rem}
+.device-stat.ratio .device-stat-value{color:var(--primary)}
+.device-stat.ratio .device-stat-value::after{content:'%';font-size:.9rem;margin-left:1px}
+.device-comparison-footer{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gray-200);text-align:center}
+.device-unknown{font-size:.8rem;color:var(--gray-500)}
+.device-card.mobile.warning{border-color:#f59e0b;background:#fffbeb}
+.device-card.mobile.warning .device-stat.ratio .device-stat-value{color:#d97706}
+.export-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--primary);color:#fff;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;transition:all .2s}
+.export-btn:hover{background:var(--primary-light);transform:translateY(-1px)}
+@media(max-width:992px){.funnel-container{gap:1rem}.funnel-step{min-width:100px;padding:.75rem 1rem}.funnel-value{font-size:1.5rem}}
+@media(max-width:768px){.device-filter-bar{flex-direction:column;align-items:flex-start}.device-filter-buttons{width:100%}.device-filter-btn{flex:1;justify-content:center}.funnel-container{flex-direction:column}.funnel-arrow{transform:rotate(90deg);padding:.5rem 0}.device-cards{grid-template-columns:1fr}.device-stats-row{justify-content:space-around}}
+/* ==================== MODE TOGGLE ==================== */
+.mode-toggle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.mode-toggle {
+    display: inline-flex;
+    background: var(--gray-100);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.mode-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.mode-toggle-btn:hover {
+    color: var(--primary);
+}
+
+.mode-toggle-btn.active {
+    background: #fff;
+    color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.mode-badge {
+    font-size: .65rem;
+    padding: .2rem .5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.mode-badge.archive {
+    background: var(--gray-200);
+    color: var(--gray-600);
+}
+
+.mode-badge.active-badge {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* ==================== ENGAGEMENT VIEWS BADGES ==================== */
+.views-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.view-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .6rem;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.view-badge.piste-1 { background: var(--piste-1-bg); color: var(--piste-1-color); }
+.view-badge.piste-2 { background: var(--piste-2-bg); color: var(--piste-2-color); }
+.view-badge.piste-3 { background: var(--piste-3-bg); color: var(--piste-3-color); }
+
+.view-badge.zero {
+    background: var(--gray-100);
+    color: var(--gray-400);
+}
+
+.view-badge.high {
+    box-shadow: 0 0 0 2px currentColor;
+}
+
+.view-count {
+    font-weight: 700;
+}
+
+.print-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 1rem;
+}
+
+.print-badge.yes {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.print-badge.no {
+    background: var(--gray-100);
+    color: var(--gray-400);
+}
+
+.piste-compact-label {
+    font-size: .7rem;
+    color: var(--gray-500);
+    margin-left: .25rem;
+}
+
+/* Clickable stats engagement */
+.clickable-stat-eng {
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.clickable-stat-eng:hover {
+    border-color: var(--primary);
+}
+
+.clickable-stat-eng.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(76,3,54,.1);
+}
+
+/* ==================== FUNNEL BRANCHED (ENGAGEMENT) ==================== */
+.funnel-branched {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.funnel-branch-main {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.funnel-step.highlight {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+}
+
+.funnel-step.highlight .funnel-icon {
+    background: rgba(255,255,255,.2);
+    color: #fff;
+}
+
+.funnel-step.highlight .funnel-value {
+    color: #fff;
+}
+
+.funnel-step.highlight .funnel-label {
+    color: rgba(255,255,255,.9);
+}
+
+.funnel-branches {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-left: .5rem;
+}
+
+.funnel-branch {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.branch-connector {
+    position: relative;
+    width: 60px;
+    height: 40px;
+}
+
+.branch-line {
+    width: 100%;
+    height: 100%;
+}
+
+.branch-rate {
+    position: absolute;
+    right: 5px;
+    font-size: .7rem;
+    background: var(--primary);
+    color: #fff;
+    padding: .15rem .4rem;
+    border-radius: 4px;
+}
+
+.branch-top .branch-rate {
+    top: 0;
+}
+
+.branch-bottom .branch-rate {
+    bottom: 0;
+}
+
+.funnel-step.branch-step {
+    min-width: 110px;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: 10px;
+    border: 2px solid var(--gray-200);
+    transition: all .2s;
+}
+
+.funnel-step.branch-step:hover {
+    border-color: var(--primary);
+    transform: translateX(3px);
+}
+
+.funnel-step.branch-step .funnel-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto .5rem;
+    font-size: 1rem;
+}
+
+.funnel-step.branch-step .funnel-value {
+    font-size: 1.5rem;
+}
+
+.funnel-step.branch-step .funnel-label {
+    font-size: .7rem;
+}
+
+.funnel-step.branch-step.print {
+    border-left: 4px solid #8b5cf6;
+}
+
+.funnel-step.branch-step.print .funnel-icon {
+    background: #ede9fe;
+    color: #8b5cf6;
+}
+
+.funnel-step.branch-step.request {
+    border-left: 4px solid #f59e0b;
+}
+
+.funnel-step.branch-step.request .funnel-icon {
+    background: #fef3c7;
+    color: #f59e0b;
+}
+
+@media (max-width: 768px) {
+    .funnel-branched {
+        flex-direction: column;
+        padding: 1.5rem;
+    }
+    
+    .funnel-branch-main {
+        flex-direction: column;
+    }
+    
+    .funnel-branch-main .funnel-arrow {
+        transform: rotate(90deg);
+    }
+    
+    .funnel-branches {
+        flex-direction: row;
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    
+    .funnel-branch {
+        flex-direction: column;
+    }
+    
+    .branch-connector {
+        transform: rotate(90deg);
+        width: 40px;
+        height: 60px;
+    }
+}
+
+/* Nombre de vues dans le tag piste */
+.piste-title-tag .piste-views {
+    font-size: .65rem;
+    opacity: .7;
+    margin-left: .25rem;
+}
+
+/* Piste dans accompagnement */
+.accomp-piste {
+    font-size: .7rem;
+    font-weight: 700;
+    opacity: .8;
+    margin-left: .2rem;
+}
+
+/* Print badge amélioré */
+.print-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: .9rem;
+}
+
+.print-badge.yes {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.print-badge.no {
+    background: var(--gray-100);
+    color: var(--gray-400);
+}
+
+.current-interest-badge {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .5rem .75rem;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border-left: 3px solid var(--gray-300);
+}
+
+.current-interest-badge.pending { border-left-color: #f59e0b; background: #fffbeb; }
+.current-interest-badge.contacted { border-left-color: #3b82f6; background: #eff6ff; }
+.current-interest-badge.in_progress { border-left-color: #8b5cf6; background: #f5f3ff; }
+
+.current-interest-badge .interest-type {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.current-interest-badge .interest-piste {
+    font-size: .75rem;
+    color: var(--gray-500);
+}
+
+/* Badge piste déclinée */
+.declined-interest-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .6rem;
+    background: #fef2f2;
+    border-radius: 6px;
+    border-left: 3px solid #ef4444;
+    font-size: .75rem;
+    color: #991b1b;
+    margin: .15rem 0;
+}
+
+.declined-interest-badge .declined-icon {
+    font-size: .85rem;
+}
+
+.declined-interest-badge .declined-text {
+    font-weight: 500;
+}
+.badge-location {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .65rem;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 500;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-location i {
+    color: #0ea5e9;
+}
+
+.no-location {
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+    document.addEventListener('DOMContentLoaded', function() {
+        // ===== VARIABLES GLOBALES =====
+        let currentPage = 1, currentFilters = {}, currentAnalysisFilter = 'all', currentDeviceFilter = '';
+        let currentMode = 'deblocages'; // 'deblocages' ou 'engagement'
+        let analysisUsers = [], engagementUsers = [], usersNoAnalysis = [];
+        
+        const typeLabels = {'action_followup':{icon:'📋',label:'Suivi actions'},'recruiter_connection':{icon:'🤝',label:'Mise en relation'},'analysis_refinement':{icon:'🔍',label:'Affiner analyse'},'coach_session':{icon:'🎓',label:'Coaching'},'cv_review':{icon:'📄',label:'CV'},'interview_prep':{icon:'🎤',label:'Entretien'},'training_info':{icon:'📚',label:'Formations'},'networking_help':{icon:'🌐',label:'Networking'},'other':{icon:'❓',label:'Autre'}};
+        const statusLabels = {'pending':{icon:'🟠',label:'En attente'},'contacted':{icon:'🔵',label:'Contacté'},'in_progress':{icon:'🟣',label:'En cours'},'completed':{icon:'🟢',label:'Complété'},'cancelled':{icon:'⚫',label:'Annulé'}};
+        const priorityLabels = {'low':{icon:'⚪',label:'Basse'},'normal':{icon:'🟢',label:'Normale'},'high':{icon:'🟠',label:'Haute'},'urgent':{icon:'🔴',label:'Urgent'}};
+    
+        // ===== INITIALISATION =====
+        loadCurrentModeStats();
+        loadStats();
+        loadRequests();
+    
+        // ===== MODE TOGGLE =====
+        document.querySelectorAll('.mode-toggle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-toggle-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentMode = this.getAttribute('data-mode');
+                currentAnalysisFilter = 'all';
+                switchMode(currentMode);
+            });
+        });
+    
+        function switchMode(mode) {
+    if (mode === 'deblocages') {
+        // Légende mode Déblocages
+        document.getElementById('pageSubtitle').textContent = 'Suivi des analyses générées, pistes débloquées et demandes d\'aide (Données à partir du 12/01/26)';
+        
+        document.getElementById('funnelDeblocages').style.display = 'flex';
+        document.getElementById('funnelEngagement').style.display = 'none';
+        document.getElementById('statsDeblocages').style.display = 'block';
+        document.getElementById('statsEngagement').style.display = 'none';
+        document.getElementById('deviceDeblocages').style.display = 'block';
+        document.getElementById('thColumn3').textContent = 'Pistes débloquées';
+        document.getElementById('thColumn4').textContent = 'Tokens dispo';
+        loadAnalysisStats();
+    } else {
+        // Légende mode Engagement
+        document.getElementById('pageSubtitle').textContent = 'Suivi des vues de fiches, impressions et demandes d\'aide (Tracking actif depuis le 15/01/26)';
+        
+        document.getElementById('funnelDeblocages').style.display = 'none';
+        document.getElementById('funnelEngagement').style.display = 'flex';
+        document.getElementById('statsDeblocages').style.display = 'none';
+        document.getElementById('statsEngagement').style.display = 'block';
+        document.getElementById('deviceDeblocages').style.display = 'none';
+        document.getElementById('thColumn3').textContent = 'Vues fiches';
+        document.getElementById('thColumn4').textContent = 'Imprimé';
+        loadEngagementStats();
+    }
+}
+    
+        function loadCurrentModeStats() {
+            if (currentMode === 'deblocages') {
+                loadAnalysisStats();
+            } else {
+                loadEngagementStats();
+            }
+        }
+    
+        // ===== DEVICE FILTER =====
+        document.querySelectorAll('.device-filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.device-filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDeviceFilter = this.getAttribute('data-device');
+                const badge = document.getElementById('currentFilterBadge');
+                if (currentDeviceFilter) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = currentDeviceFilter === 'mobile' ? '📱 Mobile' : '🖥️ Desktop';
+                } else {
+                    badge.style.display = 'none';
+                }
+                loadCurrentModeStats();
+            });
+        });
+    
+        // ===== LOAD ENGAGEMENT STATS =====
+        async function loadEngagementStats() {
+            try {
+                const url = '/help-requests/admin/engagement-stats?period=all' + (currentDeviceFilter ? '&device=' + currentDeviceFilter : '');
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const s = data.stats;
+                    
+                    // Funnel
+                document.getElementById('funnelEngAnalysis').textContent = s.funnel.analyses_generated || 0;
+                document.getElementById('funnelEngViews').textContent = s.funnel.users_viewed || 0;
+                document.getElementById('funnelEngPrints').textContent = s.funnel.users_printed || 0;
+                document.getElementById('funnelEngRequests').textContent = s.funnel.users_with_request || 0;
+                document.getElementById('funnelRateAnalysisView').textContent = (s.funnel.analysis_to_view_rate || 0) + '%';
+                document.getElementById('funnelRateViewPrint').textContent = (s.funnel.view_to_print_rate || 0) + '%';
+                document.getElementById('funnelRateViewRequest').textContent = (s.funnel.view_to_request_rate || 0) + '%';
+                    
+                    // Stats principales
+                    document.getElementById('statEngUsersViewed').textContent = s.funnel.users_viewed || 0;
+                    document.getElementById('statEngUsersPrinted').textContent = s.users_printed || 0;
+                    document.getElementById('statEngRate').innerHTML = (s.engagement_rate || 0) + '<span style="font-size:1rem;">%</span>';
+                    
+                    // Stats cards
+                    document.getElementById('statEngTotalAnalyses').textContent = s.total_analyses || 0;
+                    document.getElementById('statEng0Views').textContent = s.users_0_views || 0;
+                    document.getElementById('statEng1View').textContent = s.users_1_view || 0;
+                    document.getElementById('statEng2Views').textContent = s.users_2_views || 0;
+                    document.getElementById('statEng3PlusViews').textContent = s.users_3plus_views || 0;
+                    
+                    // Pistes (users uniques)
+                    document.getElementById('statEngViewsP1').textContent = s.views_p1 || 0;
+                    document.getElementById('statEngViewsP2').textContent = s.views_p2 || 0;
+                    document.getElementById('statEngViewsP3').textContent = s.views_p3 || 0;
+                    
+                    
+                    engagementUsers = data.users || [];
+                    document.getElementById('totalUsersAnalysis').textContent = engagementUsers.length;
+                    renderEngagementUsers(engagementUsers);
+                }
+            } catch (e) {
+                console.error('Engagement stats error:', e);
+            }
+        }
+    
+        function renderEngagementUsers(users) {
+    const tbody = document.getElementById('analysisUsersTableBody');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-inbox"></i><p>Aucune donnée</p></div></td></tr>';
+        document.getElementById('totalUsersAnalysis').textContent = '0';
+        return;
+    }
+    
+    document.getElementById('totalUsersAnalysis').textContent = users.length;
+    
+    tbody.innerHTML = users.map(function(u) {
+        const date = u.analysis_date ? new Date(u.analysis_date).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '-';
+        
+        // Localisation
+        const locationHtml = u.user_location 
+            ? '<span class="badge-location"><i class="fas fa-map-marker-alt"></i> ' + u.user_location + '</span>'
+            : '<span class="no-location">-</span>';
+        
+        // Pistes vues avec titres
+        let pistesHtml = '<span class="no-request">Aucune fiche vue</span>';
+        if (u.viewed_pistes && u.viewed_pistes.length > 0) {
+            pistesHtml = u.viewed_pistes.map(function(p) {
+                return '<div class="piste-title-tag piste-' + p.number + '">' +
+                    '<span class="piste-num">P' + p.number + '</span>' +
+                    '<span class="piste-text">' + p.title + '</span>' +
+                    '<span class="piste-views">(' + p.views + ' vue' + (p.views > 1 ? 's' : '') + ')</span>' +
+                    '</div>';
+            }).join('');
+        }
+        
+        // Badge impression
+        const printHtml = u.has_printed 
+            ? '<span class="print-badge yes">✓</span>' 
+            : '<span class="print-badge no">✗</span>';
+        
+        // Accompagnement
+        let accompagnementHtml = '<span class="no-request">-</span>';
+        if (u.help_requests && u.help_requests.length > 0) {
+            accompagnementHtml = u.help_requests.map(function(h) {
+                const pisteNum = h.piste_number || '?';
+                const heroTitle = (u.piste_titles && u.piste_titles[pisteNum]) 
+                    ? u.piste_titles[pisteNum] 
+                    : (h.piste_title || 'Piste ' + pisteNum);
+                
+                if (h.initial_interest === 'no') {
+                    return '<div class="declined-interest-badge">' +
+                        '<span class="declined-icon">👎</span>' +
+                        '<span class="declined-text"><strong>P' + pisteNum + '</strong> ' + heroTitle + '</span>' +
+                        '</div>';
+                }
+                
+                const type = typeLabels[h.request_type] || {icon:'❓', label: h.request_type};
+                return '<div class="current-interest-badge ' + h.status + '">' +
+                    '<span class="interest-type">' + type.icon + ' ' + type.label + '</span>' +
+                    '<span class="interest-piste">→ <strong>P' + pisteNum + '</strong> ' + heroTitle + '</span>' +
+                    '</div>';
+            }).join('');
+        }
+        
+        return '<tr>' +
+            '<td><div class="user-cell"><div class="user-avatar">' + (u.firstname ? u.firstname[0].toUpperCase() : '?') + '</div><div class="user-info"><span class="user-name">' + (u.firstname || 'N/A') + ' ' + (u.lastname || '') + '</span><a href="mailto:' + u.email + '" class="user-email">' + u.email + '</a></div></div></td>' +
+            '<td>' + locationHtml + '</td>' +
+            '<td>' + date + '</td>' +
+            '<td><div style="display:flex;flex-direction:column;gap:0.25rem;">' + pistesHtml + '</div></td>' +
+            '<td>' + printHtml + '</td>' +
+            '<td><div style="display:flex;flex-wrap:wrap;gap:0.25rem;">' + accompagnementHtml + '</div></td>' +
+            '</tr>';
+    }).join('');
+}
+
+        // ===== CLICKABLE STATS ENGAGEMENT =====
+        document.querySelectorAll('.clickable-stat-eng').forEach(function(card) {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.clickable-stat-eng').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.getAttribute('data-filter');
+                filterEngagementUsers(filter);
+            });
+        });
+    
+        function filterEngagementUsers(filter) {
+    if (filter === 'all') {
+        renderEngagementUsers(engagementUsers);
+        return;
+    }
+    const filterCount = parseInt(filter);
+    if (filterCount === 3) {
+        renderEngagementUsers(engagementUsers.filter(u => u.fiches_vues >= 3));
+    } else {
+        renderEngagementUsers(engagementUsers.filter(u => u.fiches_vues === filterCount));
+    }
+}
+    
+        // ===== LOAD ANALYSIS STATS (DÉBLOCAGES - EXISTANT) =====
+        async function loadAnalysisStats() {
+            try {
+                const url = '/help-requests/admin/analysis-stats?period=all' + (currentDeviceFilter ? '&device=' + currentDeviceFilter : '');
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const s = data.stats;
+                    
+                    // Funnel
+                    if (s.funnel) {
+                        document.getElementById('funnelQuiz').textContent = s.funnel.quiz_completed || 0;
+                        document.getElementById('funnelAnalysis').textContent = s.funnel.analyses_generated || 0;
+                        document.getElementById('funnelUnlocks').textContent = s.funnel.unlocks || 0;
+                        document.getElementById('funnelRequests').textContent = s.funnel.requests || 0;
+                        document.getElementById('funnelRateQuizAnalysis').textContent = (s.funnel.quiz_to_analysis_rate || 0) + '%';
+                        document.getElementById('funnelRateAnalysisUnlock').textContent = (s.funnel.analysis_to_unlock_rate || 0) + '%';
+                        document.getElementById('funnelRateUnlockRequest').textContent = (s.funnel.unlock_to_request_rate || 0) + '%';
+                    }
+                    
+                    // Stats
+                    document.getElementById('statTotalAnalyses').textContent = s.total_analyses || 0;
+                    document.getElementById('statAnalyses0').textContent = s.analyses_0_piste || 0;
+                    document.getElementById('statAnalyses1').textContent = s.analyses_1_piste || 0;
+                    document.getElementById('statAnalyses2').textContent = s.analyses_2_pistes || 0;
+                    document.getElementById('statAnalyses3').textContent = s.analyses_3_pistes || 0;
+                    document.getElementById('statPiste1').textContent = s.piste_1_unlocks || 0;
+                    document.getElementById('statPiste2').textContent = s.piste_2_unlocks || 0;
+                    document.getElementById('statPiste3').textContent = s.piste_3_unlocks || 0;
+                    document.getElementById('statQuizNoAnalysis').textContent = s.quiz_no_analysis || 0;
+                    document.getElementById('statUsersPaid').textContent = s.users_paid || 0;
+                    document.getElementById('statUsersTokensDispo').textContent = s.users_tokens_dispo || 0;
+                    
+                    // Device stats
+                    if (s.device_stats) {
+                        const ds = s.device_stats;
+                        document.getElementById('statMobileUnlocks').textContent = ds.mobile?.unlocks || 0;
+                        document.getElementById('statMobileRequests').textContent = ds.mobile?.requests || 0;
+                        document.getElementById('statMobileRatio').textContent = ds.mobile?.ratio || 0;
+                        document.getElementById('statDesktopUnlocks').textContent = ds.desktop?.unlocks || 0;
+                        document.getElementById('statDesktopRequests').textContent = ds.desktop?.requests || 0;
+                        document.getElementById('statDesktopRatio').textContent = ds.desktop?.ratio || 0;
+                        document.getElementById('statUnknownUnlocks').textContent = ds.unknown?.unlocks || 0;
+                        document.getElementById('statUnknownRequests').textContent = ds.unknown?.requests || 0;
+                    }
+                    
+                    analysisUsers = data.users || [];
+                    usersNoAnalysis = data.users_no_analysis || [];
+                    document.getElementById('totalUsersAnalysis').textContent = analysisUsers.length;
+                    renderAnalysisUsers(analysisUsers);
+                }
+            } catch (e) {
+                console.error('Analysis stats error:', e);
+            }
+        }
+    
+        function renderAnalysisUsers(users) {
+    const tbody = document.getElementById('analysisUsersTableBody');
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-inbox"></i><p>Aucune analyse trouvée</p></div></td></tr>';
+        document.getElementById('totalUsersAnalysis').textContent = '0';
+        return;
+    }
+    
+    document.getElementById('totalUsersAnalysis').textContent = users.length;
+    
+    tbody.innerHTML = users.map(function(u) {
+        const date = u.analysis_date ? new Date(u.analysis_date).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'}) : '-';
+        
+        // Localisation
+        const locationHtml = u.user_location 
+            ? '<span class="badge-location"><i class="fas fa-map-marker-alt"></i> ' + u.user_location + '</span>'
+            : '<span class="no-location">-</span>';
+        
+        let pistesHtml = '<span class="no-request">Aucune piste débloquée</span>';
+        if (u.unlocked_pistes && u.unlocked_pistes.length > 0) {
+            pistesHtml = u.unlocked_pistes.map(function(p) {
+                return '<div class="piste-title-tag piste-' + p.number + '"><span class="piste-num">P' + p.number + '</span><span class="piste-text">' + (p.title || 'Piste ' + p.number) + '</span></div>';
+            }).join('');
+        }
+        
+        let accompagnementHtml = '<span class="no-request">-</span>';
+        if (u.help_requests && u.help_requests.length > 0) {
+            accompagnementHtml = u.help_requests.map(function(h) {
+                const type = typeLabels[h.request_type] || {icon:'❓', label:h.request_type};
+                return '<span class="accompagnement-badge ' + h.status + '">' + type.icon + ' ' + type.label + '</span>';
+            }).join('');
+        }
+        
+        const tokensDispo = u.tokens_available || 0;
+        const tokensClass = tokensDispo > 0 ? 'has-tokens' : 'no-tokens';
+        
+        return '<tr>' +
+            '<td><div class="user-cell"><div class="user-avatar">' + (u.firstname ? u.firstname[0].toUpperCase() : '?') + '</div><div class="user-info"><span class="user-name">' + (u.firstname || 'N/A') + ' ' + (u.lastname || '') + '</span><a href="mailto:' + u.email + '" class="user-email">' + u.email + '</a></div></div></td>' +
+            '<td>' + locationHtml + '</td>' +
+            '<td>' + date + '</td>' +
+            '<td><div style="display:flex;flex-direction:column;gap:0.25rem;">' + pistesHtml + '</div></td>' +
+            '<td><span class="tokens-dispo-badge ' + tokensClass + '">' + tokensDispo + '</span></td>' +
+            '<td><div style="display:flex;flex-wrap:wrap;gap:0.25rem;">' + accompagnementHtml + '</div></td>' +
+            '</tr>';
+    }).join('');
+}
+        // ===== CLICKABLE STATS DÉBLOCAGES =====
+        document.querySelectorAll('.clickable-stat').forEach(function(card) {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.clickable-stat').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.clickable-stat-extra').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                currentAnalysisFilter = this.getAttribute('data-filter');
+                filterAnalysisUsers(currentAnalysisFilter);
+            });
+        });
+    
+        document.querySelectorAll('.clickable-stat-extra').forEach(function(card) {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.clickable-stat').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.clickable-stat-extra').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                currentAnalysisFilter = this.getAttribute('data-filter');
+                filterAnalysisUsers(currentAnalysisFilter);
+            });
+        });
+    
+        function filterAnalysisUsers(filter) {
+            if (filter === 'all') { renderAnalysisUsers(analysisUsers); return; }
+            if (filter === 'paid') { renderAnalysisUsers(analysisUsers.filter(u => u.has_paid_token === true)); return; }
+            if (filter === 'tokens_dispo') { renderAnalysisUsers(analysisUsers.filter(u => (u.tokens_available || 0) > 0)); return; }
+            const filterCount = parseInt(filter);
+            renderAnalysisUsers(analysisUsers.filter(u => {
+                const count = u.pistes_count || 0;
+                if (filterCount === 3) return count >= 3;
+                return count === filterCount;
+            }));
+        }
+    
+        // ===== MODAL QUIZ SANS ANALYSE =====
+        document.getElementById('cardNoAnalysis').addEventListener('click', function() {
+            const modal = document.getElementById('noAnalysisModal');
+            const tbody = document.getElementById('noAnalysisTableBody');
+            if (usersNoAnalysis.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fas fa-check-circle" style="color:#10b981;"></i><p>Aucun utilisateur sans analyse 🎉</p></div></td></tr>';
+            } else {
+                tbody.innerHTML = usersNoAnalysis.map(function(u) {
+                    const date = u.quiz_completed_at ? new Date(u.quiz_completed_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';
+                    return '<tr><td><strong>#' + u.user_id + '</strong></td><td>' + (u.firstname || '') + ' ' + (u.lastname || '') + '</td><td><a href="mailto:' + u.email + '" style="color:var(--primary);">' + u.email + '</a></td><td>' + date + '</td></tr>';
+                }).join('');
+            }
+            modal.classList.add('active');
+        });
+        document.getElementById('closeNoAnalysisModal').addEventListener('click', function() { document.getElementById('noAnalysisModal').classList.remove('active'); });
+        document.getElementById('closeNoAnalysisModalBtn').addEventListener('click', function() { document.getElementById('noAnalysisModal').classList.remove('active'); });
+    
+        // ===== MODAL LISTE PISTES =====
+        document.getElementById('btnShowPistesList').addEventListener('click', async function() {
+    const modal = document.getElementById('pistesListModal');
+    const textarea = document.getElementById('pistesListText');
+    textarea.value = 'Chargement...';
+    modal.classList.add('active');
+    try {
+        const res = await fetch('/help-requests/admin/pistes-list');
+        const data = await res.json();
+        if (data.success) {
+            const lines = data.pistes.map(p => 
+                p.user_id + '\t' + p.piste_title + '\t' + (p.user_location || 'Non renseignée')
+            );
+            textarea.value = 'User ID\tPiste\tLocalisation\n' + lines.join('\n');
+        } else {
+            textarea.value = 'Erreur: ' + (data.error || 'Inconnue');
+        }
+    } catch(e) {
+        textarea.value = 'Erreur: ' + e.message;
+    }
+});
+        document.getElementById('closePistesListModal').addEventListener('click', function() { document.getElementById('pistesListModal').classList.remove('active'); });
+        document.getElementById('closePistesListModalBtn').addEventListener('click', function() { document.getElementById('pistesListModal').classList.remove('active'); });
+        document.getElementById('copyPistesList').addEventListener('click', function() {
+            const textarea = document.getElementById('pistesListText');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('✅ Copié !');
+        });
+    
+        // ===== RESTE DES FONCTIONS (stats, requests, modals) =====
+        document.getElementById('refreshStats').addEventListener('click', function() {
+            this.querySelector('i').classList.add('fa-spin');
+            loadStats().finally(() => { setTimeout(() => this.querySelector('i').classList.remove('fa-spin'), 500); });
+        });
+    
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            currentPage = 1;
+            currentFilters = { status: document.getElementById('filterStatus').value, type: document.getElementById('filterType').value, priority: document.getElementById('filterPriority').value };
+            loadRequests();
+        });
+    
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('filterForm').reset();
+            currentPage = 1;
+            currentFilters = {};
+            loadRequests();
+        });
+    
+        document.getElementById('closeEditModal').addEventListener('click', function() { document.getElementById('editRequestModal').classList.remove('active'); });
+        document.getElementById('cancelEditModal').addEventListener('click', function() { document.getElementById('editRequestModal').classList.remove('active'); });
+        document.getElementById('saveEditModal').addEventListener('click', saveRequest);
+        document.getElementById('closeDetailModal').addEventListener('click', function() { document.getElementById('detailModal').classList.remove('active'); });
+        document.getElementById('closeDetailModalBtn').addEventListener('click', function() { document.getElementById('detailModal').classList.remove('active'); });
+    
+        document.querySelectorAll('.hr-modal-overlay').forEach(function(overlay) {
+            overlay.addEventListener('click', function(e) { if (e.target === this) { this.classList.remove('active'); } });
+        });
+    
+        async function loadStats() {
+            try {
+                const res = await fetch('/help-requests/admin/stats');
+                const data = await res.json();
+                if (data.success) {
+                    const s = data.stats;
+                    document.getElementById('statPending').textContent = s.by_status.pending || 0;
+                    document.getElementById('statContacted').textContent = s.by_status.contacted || 0;
+                    document.getElementById('statInProgress').textContent = s.by_status.in_progress || 0;
+                    document.getElementById('statCompleted').textContent = s.by_status.completed || 0;
+                    const grid = document.getElementById('typeStatsGrid');
+                    if (s.by_type && s.by_type.length > 0) {
+                        grid.innerHTML = s.by_type.map(function(item) {
+                            const t = typeLabels[item.request_type] || {icon:'❓', label:item.request_type};
+                            return '<div class="type-box"><div class="type-box-icon">' + t.icon + '</div><div><div class="type-box-label">' + t.label + '</div><div class="type-box-number">' + item.count + '</div></div></div>';
+                        }).join('');
+                    } else {
+                        grid.innerHTML = '<div class="empty-state"><p>Aucune demande</p></div>';
+                    }
+                }
+            } catch (e) { console.error('Stats error:', e); }
+        }
+    
+        async function loadRequests() {
+            const tbody = document.getElementById('requestsTableBody');
+            tbody.innerHTML = '<tr><td colspan="8"><div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div></td></tr>';
+            try {
+                const params = new URLSearchParams({ page: currentPage, per_page: 20, ...currentFilters });
+                const res = await fetch('/help-requests/admin/list?' + params.toString());
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('totalRequests').textContent = data.pagination.total;
+                    if (data.requests.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-inbox"></i><p>Aucune demande</p></div></td></tr>';
+                    } else {
+                        tbody.innerHTML = data.requests.map(renderRow).join('');
+                        attachEvents();
+                    }
+                    renderPagination(data.pagination);
+                }
+            } catch (e) {
+                console.error('Load error:', e);
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erreur</p></div></td></tr>';
+            }
+        }
+    
+        function renderRow(r) {
+    const type = typeLabels[r.request_type] || {icon:'❓', label:r.request_type};
+    const status = statusLabels[r.status] || {icon:'❓', label:r.status};
+    const priority = priorityLabels[r.priority] || {icon:'⚪', label:r.priority};
+    const piste = r.piste_number ? '<span class="badge-piste piste-' + r.piste_number + '">' + r.piste_number + '</span>' : '-';
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'}) : '-';
+    const phone = r.phone_number ? '<a href="tel:' + r.phone_number + '" class="btn btn-sm btn-success" title="Appeler"><i class="fas fa-phone"></i></a>' : '';
+    const location = r.user_location ? '<span class="badge-location" title="' + r.user_location + '"><i class="fas fa-map-marker-alt"></i> ' + r.user_location + '</span>' : '<span class="no-location">-</span>';
+    
+    return '<tr data-id="' + r.id + '">' +
+        '<td><strong>#' + r.id + '</strong></td>' +
+        '<td><div class="user-cell"><div class="user-avatar">' + (r.firstname ? r.firstname[0].toUpperCase() : '?') + '</div><div class="user-info"><span class="user-name">' + (r.firstname || 'N/A') + ' ' + (r.lastname || '') + '</span><a href="mailto:' + r.email + '" class="user-email">' + r.email + '</a></div></div></td>' +
+        '<td>' + location + '</td>' +
+        '<td><span class="badge-type">' + type.icon + ' ' + type.label + '</span></td>' +
+        '<td>' + piste + '</td>' +
+        '<td><span class="badge-priority ' + r.priority + '">' + priority.icon + ' ' + priority.label + '</span></td>' +
+        '<td><span class="badge-status ' + r.status + '">' + status.icon + ' ' + status.label + '</span></td>' +
+        '<td>' + date + '</td>' +
+        '<td><div class="actions-cell"><button class="btn btn-sm btn-info btn-view" data-id="' + r.id + '" title="Voir"><i class="fas fa-eye"></i></button><button class="btn btn-sm btn-warning btn-edit" data-id="' + r.id + '" title="Modifier"><i class="fas fa-edit"></i></button>' + phone + '</div></td>' +
+        '</tr>';
+}
+    
+        function attachEvents() {
+            document.querySelectorAll('.btn-view').forEach(function(b) { b.addEventListener('click', function() { showDetail(this.getAttribute('data-id')); }); });
+            document.querySelectorAll('.btn-edit').forEach(function(b) { b.addEventListener('click', function() { showEdit(this.getAttribute('data-id')); }); });
+        }
+    
+        function renderPagination(p) {
+            const wrap = document.getElementById('paginationWrapper');
+            if (p.total_pages <= 1) { wrap.innerHTML = ''; return; }
+            let html = '<a href="#" class="' + (p.page <= 1 ? 'disabled' : '') + '" data-page="' + (p.page - 1) + '"><i class="fas fa-chevron-left"></i></a>';
+            for (let i = 1; i <= p.total_pages; i++) {
+                if (i === p.page) { html += '<span class="active">' + i + '</span>'; }
+                else if (i <= 2 || i > p.total_pages - 2 || Math.abs(i - p.page) <= 1) { html += '<a href="#" data-page="' + i + '">' + i + '</a>'; }
+                else if (i === 3 || i === p.total_pages - 2) { html += '<span>...</span>'; }
+            }
+            html += '<a href="#" class="' + (p.page >= p.total_pages ? 'disabled' : '') + '" data-page="' + (p.page + 1) + '"><i class="fas fa-chevron-right"></i></a>';
+            wrap.innerHTML = html;
+            wrap.querySelectorAll('a[data-page]').forEach(function(a) {
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!this.classList.contains('disabled')) { currentPage = parseInt(this.getAttribute('data-page')); loadRequests(); }
+                });
+            });
+        }
+    
+        async function showDetail(id) {
+    const modal = document.getElementById('detailModal'), body = document.getElementById('detailModalBody');
+    body.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>Chargement...</span></div>';
+    modal.classList.add('active');
+    try {
+        const res = await fetch('/help-requests/admin/list?page=1&per_page=100');
+        const data = await res.json();
+        const r = data.requests.find(function(x) { return x.id == id; });
+        if (r) {
+            const type = typeLabels[r.request_type] || {icon:'❓', label:r.request_type};
+            const status = statusLabels[r.status] || {icon:'❓', label:r.status};
+            const priority = priorityLabels[r.priority] || {icon:'⚪', label:r.priority};
+            body.innerHTML = '<div class="hr-detail-grid">' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Utilisateur</div><div class="hr-detail-value">' + (r.firstname || '') + ' ' + (r.lastname || '') + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Email</div><div class="hr-detail-value"><a href="mailto:' + r.email + '">' + r.email + '</a></div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Téléphone</div><div class="hr-detail-value">' + (r.phone_number || '-') + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Localisation</div><div class="hr-detail-value"><i class="fas fa-map-marker-alt" style="color:#0ea5e9;margin-right:5px;"></i>' + (r.user_location || 'Non renseignée') + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Type</div><div class="hr-detail-value">' + type.icon + ' ' + type.label + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Piste</div><div class="hr-detail-value">' + (r.piste_number || '-') + (r.piste_title ? ' - ' + r.piste_title : '') + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Priorité</div><div class="hr-detail-value">' + priority.icon + ' ' + priority.label + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Statut</div><div class="hr-detail-value">' + status.icon + ' ' + status.label + '</div></div>' +
+                '<div class="hr-detail-item"><div class="hr-detail-label">Date</div><div class="hr-detail-value">' + (r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '-') + '</div></div>' +
+                (r.request_details ? '<div class="hr-detail-item full"><div class="hr-detail-label">Détails</div><div class="hr-detail-value">' + r.request_details + '</div></div>' : '') +
+                (r.admin_notes ? '<div class="hr-detail-item full"><div class="hr-detail-label">Notes admin</div><div class="hr-detail-value">' + r.admin_notes + '</div></div>' : '') +
+                '</div>';
+        } else {
+            body.innerHTML = '<p>Demande introuvable</p>';
+        }
+    } catch (e) {
+        console.error('Detail error:', e);
+        body.innerHTML = '<p>Erreur de chargement</p>';
+    }
+}
+    
+        async function showEdit(id) {
+            const modal = document.getElementById('editRequestModal');
+            document.getElementById('editRequestId').value = id;
+            try {
+                const res = await fetch('/help-requests/admin/list?page=1&per_page=100');
+                const data = await res.json();
+                const r = data.requests.find(function(x) { return x.id == id; });
+                if (r) {
+                    document.getElementById('editStatus').value = r.status;
+                    document.getElementById('editPriority').value = r.priority;
+                    document.getElementById('editAdminNotes').value = r.admin_notes || '';
+                }
+            } catch (e) { console.error('Edit load error:', e); }
+            modal.classList.add('active');
+        }
+    
+        async function saveRequest() {
+            const id = document.getElementById('editRequestId').value;
+            const btn = document.getElementById('saveEditModal');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+            try {
+                const res = await fetch('/help-requests/admin/update/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ status: document.getElementById('editStatus').value, priority: document.getElementById('editPriority').value, admin_notes: document.getElementById('editAdminNotes').value })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Enregistré');
+                    document.getElementById('editRequestModal').classList.remove('active');
+                    loadRequests();
+                    loadStats();
+                } else {
+                    showToast('❌ ' + (data.error || 'Erreur'));
+                }
+            } catch (e) {
+                console.error('Save error:', e);
+                showToast('❌ Erreur');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
+            }
+        }
+    
+        function showToast(msg) {
+            const existing = document.querySelector('.hr-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'hr-toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 3000);
+        }
+    });
+    </script>
+
+{% endblock %}

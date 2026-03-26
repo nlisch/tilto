@@ -1,0 +1,238 @@
+{
+    "cover_quote": "Je cherche un métier avec du sens, de la stimulation intellectuelle et créative, en équipe",
+    
+    "hero_intro": "Après deux ans de recherche dans l'événementiel culturel et diverses expériences en intérim, tu as prouvé ta capacité d'adaptation et ta persévérance. Maintenant, tu cherches un environnement où ton côté minutieux, créatif et ton besoin de stimulation intellectuelle trouvent vraiment leur place.<br><br>J'ai identifié <strong>3 voies stratégiques</strong> qui capitalisent sur ton expérience en événementiel et répondent à ton besoin de sens, de créativité et de travail en équipe — tout en restant proche de chez toi.",
+    
+    "main_user_quote": "J'aimerais retrouver un sens, et me sentir à ma place. J'aimerais être stimulée intellectuellement et créativement. J'aimerais travailler en équipe, pouvoir nouer des liens avec mes collègues. Le côté organisation et recherche de solutions, d'idées, l'aspect créatif, c'est ce qui me plaît le plus.",
+    
+    "citation_insight": "Tu cherches un environnement qui valorise ta <strong>minutie</strong>, ta <strong>créativité</strong> et ton besoin de <strong>stimulation intellectuelle</strong> avec impact tangible.",
+    
+    "transformations_count": 5,
+    "transformations": [
+      {
+        "negative": "Je m'ennuie à l'usine, je n'ai qu'une tâche à effectuer",
+        "positive": "Être stimulée intellectuellement et créativement, missions variées"
+      },
+      {
+        "negative": "Horaires décalées (13h-20h), en décalage avec mon compagnon",
+        "positive": "Journée régulière de travail, passer des soirées avec mon compagnon"
+      },
+      {
+        "negative": "Pas de lien avec les collègues, je ne me sens pas à ma place",
+        "positive": "Travailler en équipe, pouvoir nouer des liens avec mes collègues"
+      },
+      {
+        "negative": "Craindre d'abimer mes affaires, pas pouvoir m'habiller comme je veux",
+        "positive": "Travailler dans un bureau lumineux où je ne me sens pas enfermée"
+      },
+      {
+        "negative": "Secteur événementiel culturel trop restreint, pas de missions qui me plaisent ailleurs",
+        "positive": "Rester en gestion de projet, travailler pour une structure qui a du sens"
+      }
+    ],
+    
+    "transformations_recap": "Tu veux retrouver du <strong>sens</strong>, travailler sur des <strong>projets créatifs et organisés</strong>, dans une structure où ton action <strong>compte vraiment</strong>.",
+    
+    "atouts_count": 4,
+    "atouts": [
+      {
+        "icon": "🎯",
+        "title": "Minutieuse et à l'écoute",
+        "description": "Qualité naturelle reconnue par ton entourage",
+        "details": [
+          "Essentiel pour coordination et gestion administrative",
+          "Atout clé pour contact familles/équipes"
+        ],
+        "pitch_formula": "\"Sur [PROJET], j'ai [ACTION MINUTIEUSE] qui a permis [RÉSULTAT]\"",
+        "pitch_example": "Au Printemps de Bourges, j'ai géré les dossiers partenaires et espaces VIP avec une grande rigueur. Ma minutie dans la coordination a permis d'éviter tout problème logistique pendant le festival. Cette capacité d'écoute et d'organisation, je veux l'appliquer à la coordination en crèche/habitat social/EHPAD.",
+        "pitch_avoid": "\"Je suis minutieuse\" (banal, sans preuve)"
+      },
+      {
+        "icon": "🎨",
+        "title": "Créative et curieuse",
+        "description": "Tricots, dessins, gâteaux — tu sais créer",
+        "details": [
+          "Idéal pour proposer animations originales",
+          "Différenciant dans secteurs médico-sociaux"
+        ],
+        "pitch_formula": "\"J'ai créé [PROJET CRÉATIF] qui a eu [IMPACT POSITIF]\"",
+        "pitch_example": "À la Ligue contre le cancer, j'ai participé à l'organisation d'une exposition d'art urbain pour sensibiliser un nouveau public. Ma créativité et ma curiosité me permettent de proposer des animations originales. Par exemple, en crèche/EHPAD, je pourrais organiser des ateliers créatifs intergénérationnels ou des expositions de créations des résidents/enfants.",
+        "pitch_avoid": "\"Je suis créative\" (trop vague, pas de preuve)"
+      },
+      {
+        "icon": "🤝",
+        "title": "Expérience coordination événementielle",
+        "description": "Printemps de Bourges + Ligue contre le cancer",
+        "details": [
+          "Gestion partenaires et espaces VIP",
+          "Crédibilité immédiate en coordination"
+        ],
+        "pitch_formula": "Montre le \"pont\" entre ton expérience événementielle et le métier visé",
+        "pitch_example": "Mon expérience au Printemps de Bourges m'a appris à coordonner plusieurs acteurs, gérer des plannings complexes et anticiper les problèmes logistiques. Ces compétences sont directement transférables à la coordination en crèche/habitat social/EHPAD : gérer les dossiers familles/locataires, coordonner les équipes, organiser des événements internes.",
+        "pitch_avoid": "\"Je viens de l'événementiel\" (met l'accent sur la différence)"
+      },
+      {
+        "icon": "👁️",
+        "title": "Bonne observatrice et exécutrice",
+        "description": "Tu apprends vite et reproduis fidèlement",
+        "details": [
+          "Capacité d'adaptation rapide",
+          "Essentiel pour comprendre besoins usagers"
+        ],
+        "pitch_formula": "\"J'ai appris [COMPÉTENCE] rapidement et l'ai appliquée avec succès\"",
+        "pitch_example": "Pendant mes diverses expériences en intérim, j'ai appris rapidement de nouveaux process dans des secteurs variés (métallurgie, menuiserie, chocolaterie, vente). Cette capacité d'observation et d'adaptation rapide me permet de comprendre vite les besoins des familles/locataires/résidents et de proposer des solutions adaptées.",
+        "pitch_avoid": "\"J'apprends vite\" (trop générique)"
+      }
+    ],
+    
+    "atouts_recap": "Ton profil (minutieuse + créative + expérience coordination + adaptable) est <strong>exactement</strong> ce que recherchent les structures en recherche de coordinatrices.",
+    
+    "voies": [
+      {
+        "color_class": "rose",
+        "icon": "👶",
+        "label": "L'option sens immédiat",
+        "story": "Tu coordonnes, tu crées, tu vois l'impact.",
+        "badge_text": "L'OPTION SENS IMMÉDIAT",
+        "title": "Coordinatrice Administrative en Crèche",
+        "subtitle": "Organisation · Animations · Équipe dynamique",
+        "projection": "Tu gères toute la partie organisation et événementiel (PAS de soins d'enfants) : inscriptions et dossiers familles, planification activités et sorties, coordination équipe éducative, organisation événements parents (fêtes, portes ouvertes, ateliers), interface avec CAF/mairies.",
+        "avantage_unique": "<strong>Ton expérience en coordination d'événements</strong> (Printemps de Bourges, Ligue contre le cancer) est EXACTEMENT ce qu'ils cherchent. Tu sais déjà organiser, coordonner des partenaires, gérer des plannings complexes.",
+        "premiers_moves": [
+          {
+            "label": "Formation",
+            "items": [
+              "CQP \"Coordinateur de vie scolaire/petite enfance\" (6 mois, IFOCAS Nantes)",
+              "OU entrée directe si Bac+3 avec formation interne 1-2 mois"
+            ]
+          },
+          {
+            "label": "Cibles employeurs",
+            "items": [
+              "Département 44, Crèches municipales (Nantes, Ancenis)",
+              "Réseaux associatifs (Crescendo, People & Baby)",
+              "Micro-crèches privées"
+            ]
+          }
+        ],
+        "insight_icon": "",
+        "insight": "Les crèches recrutent massivement en Loire-Atlantique. Recrutement actif partout en 44. Ton profil événementiel est un gros atout différenciant.",
+        "resume_reality": "Formation 6 mois recommandée pour asseoir ta crédibilité, mais entrée directe possible si Bac+3. Ambiance crèche à valider (bruit, énergie) avant de te lancer.",
+        "avantages": [
+          "Gestion de projet événementiel : fêtes crèche, ateliers parents, animations",
+          "Ton expérience Printemps de Bourges = GROS atout différenciant",
+          "Horaires parfaits : 8h30-17h + fermeture vacances scolaires",
+          "Secteur en tension massive : recrutement actif partout en 44",
+          "Travail en équipe dynamique avec profils variés"
+        ],
+        "defis": [
+          "Ambiance crèche avec bruit et énergie enfants permanente",
+          "Gestion administrative dense (dossiers CAF, réglementations)",
+          "Formation 6 mois recommandée (ou adaptation terrain 1-2 mois)"
+        ],
+        "salaire": "1900-2400€ net",
+        "temps_credible": "6 mois",
+        "conseil": "Visite 2-3 crèches pour observer une matinée et échanger avec une coordinatrice. Demande à assister à un événement parents pour voir le côté animation. Ça te donnera une vision claire du métier ET validera que l'ambiance te convient."
+      },
+      {
+        "color_class": "jaune",
+        "icon": "🏠",
+        "label": "L'option stabilité sociale",
+        "story": "Tu aides, tu gères, tu évolues.",
+        "badge_text": "L'OPTION STABILITÉ SOCIALE",
+        "title": "Gestionnaire Habitat Social / Conseillère Clientèle Bailleur",
+        "subtitle": "Accompagnement · Gestion · CDI stable",
+        "projection": "Tu gères l'attribution de logements, le suivi des dossiers locataires, la coordination des travaux, et l'accompagnement des familles. Tu combines organisation minutieuse + écoute + contact humain + sens social.",
+        "avantage_unique": "<strong>Les bailleurs cherchent des profils \"hors immobilier\"</strong> avec un vrai sens du service. Ton expérience en coordination de partenaires (Printemps de Bourges) est un atout MAJEUR.",
+        "premiers_moves": [
+          {
+            "label": "Formation",
+            "items": [
+              "Titre Pro \"Gestionnaire locatif\" (6-9 mois, GRETA Loire-Atlantique)",
+              "OU BTS Professions Immobilières en alternance (2 ans, rémunéré)",
+              "OU entrée directe si Bac+3 avec formation interne"
+            ]
+          },
+          {
+            "label": "Employeurs en recrutement",
+            "items": [
+              "Habitat 44 (Nantes, Ancenis)",
+              "La Nantaise d'Habitations, Nantes Métropole Habitat",
+              "Harmonie Habitat, ICF Habitat"
+            ]
+          }
+        ],
+        "insight_icon": "📈",
+        "insight": "Secteur qui recrute massivement. Formation accessible en reconversion. Bailleurs cherchent profils avec sens du service plutôt que purs immobiliers.",
+        "resume_reality": "Formation 6-9 mois nécessaire pour apprendre la réglementation HLM complexe. Tu devras gérer des situations difficiles (impayés, conflits), mais tu as une vraie mission sociale dans un cadre stable.",
+        "avantages": [
+          "Gestion de projet immobilier : attribution logements, coordination travaux",
+          "Ton écoute + minutie = compétences clés pour accompagnement locataires",
+          "CDI stables, horaires bureau (9h-17h), travail en équipe",
+          "Recrutement MASSIF en Loire-Atlantique",
+          "Évolutions rapides vers responsable d'agence"
+        ],
+        "defis": [
+          "Gestion situations difficiles (impayés, conflits locataires, précarité)",
+          "Réglementation HLM complexe à maîtriser (CAF, préfecture, normes)",
+          "Formation obligatoire 6-9 mois (ou 2 ans si BTS alternance)",
+          "Pression administrative et délais serrés (dossiers CAF, attributions)"
+        ],
+        "salaire": "1900-2400€ net",
+        "temps_credible": "6-9 mois",
+        "conseil": "Contacte 2-3 gestionnaires locatifs sur LinkedIn pour comprendre leur quotidien (ratio accompagnement social vs administratif). Vérifie ton solde CPF sur moncompteformation.gouv.fr. Demande à visiter une agence Habitat 44 pour voir l'ambiance d'équipe."
+      },
+      {
+        "color_class": "vert",
+        "icon": "🏥",
+        "label": "L'option créativité humaine",
+        "story": "Tu animes, tu apportes de la joie.",
+        "badge_text": "L'OPTION CRÉATIVITÉ HUMAINE",
+        "title": "Assistante Gestion Administrative EHPAD / Médico-Social",
+        "subtitle": "Animations · Créativité · Impact humain",
+        "projection": "Tu coordonnes la partie \"vie résidentielle\" : organisation d'événements pour résidents (fêtes, sorties, ateliers), coordination planning activités, gestion administrative des dossiers, interface familles/équipes. Ce n'est PAS du soin, c'est de l'organisation + coordination + événementiel interne.",
+        "avantage_unique": "<strong>Ton expérience Printemps de Bourges</strong> est un GROS atout pour créer des animations culturelles adaptées (petits concerts, expositions, ateliers créatifs). Tu apportes de la vie aux résidents !",
+        "premiers_moves": [
+          {
+            "label": "Formation",
+            "items": [
+              "Aucune obligatoire si Bac+3 → Formation interne 1-3 mois",
+              "OU Titre Pro \"Secrétaire assistant médico-social\" (6-8 mois, GRETA)"
+            ]
+          },
+          {
+            "label": "Employeurs en recrutement",
+            "items": [
+              "Groupe Emeis (Rezé, Nantes)",
+              "Groupe l'Automne (Saint-Nazaire)",
+              "EHPAD municipaux (Nantes, Ancenis, Orvault)",
+              "Département 44 (Résidences autonomie)"
+            ]
+          }
+        ],
+        "insight_icon": "📈",
+        "insight": "Secteur en tension massive. Les EHPAD cherchent des profils événementiels/animation pour dynamiser la vie des résidents. Formation courte ou entrée directe possible.",
+        "resume_reality": "Entrée rapide possible (1-3 mois formation interne). Charge émotionnelle à anticiper (fin de vie, maladie), mais impact humain fort et créativité au cœur du métier.",
+        "avantages": [
+          "Gestion de projet vie résidentielle : événements, animations culturelles",
+          "Ton expérience événementiel = atout MAJEUR pour animations résidents",
+          "Créativité au cœur du métier : concerts, expos, ateliers créatifs",
+          "Recrutement massif en Loire-Atlantique",
+          "Aucune formation obligatoire si Bac+3 (entrée immédiate possible)",
+          "Impact humain direct et gratifiant"
+        ],
+        "defis": [
+          "Contact avec personnes âgées et fin de vie (charge émotionnelle réelle)",
+          "Ambiance médicalisée calme (peut manquer de dynamisme pour certains)",
+          "Budget animations souvent limité (frustration créative possible)",
+          "Salaire plus bas que crèche ou habitat social (1900-2300€)"
+        ],
+        "salaire": "1900-2300€ net",
+        "temps_credible": "1-3 mois",
+        "conseil": "Appelle 3-4 EHPAD près de chez toi pour visiter et échanger avec une coordinatrice. CRUCIAL : demande à observer un atelier animation pour voir si l'ambiance te convient (rythme calme, contact personnes âgées). Prépare 2-3 idées d'animations culturelles inspirées de ton expérience événementiel pour montrer ton potentiel."
+      }
+    ],
+    
+    "finale_user_quote": "J'aimerais retrouver un sens, et me sentir à ma place. J'aimerais être stimulée intellectuellement et créativement. J'aimerais travailler en équipe, pouvoir nouer des liens avec mes collègues.",
+    "finale_gender_pronoun": "seule"
+  }

@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('tilto - Gestion des Leads') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Gestion des Leads</h2>
+    
+    <!-- Statistiques des leads -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 style="margin-bottom: 0;">Total des leads</h5>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center" style="color: var(--primary);">{{ total_leads }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 style="margin-bottom: 0;">Par statut</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for status in status_stats %}
+                        <li><span class="badge badge-primary">{{ status[0] or 'Non défini' }}</span>: {{ status[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 style="margin-bottom: 0;">Par intérêt</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for interest in interest_stats %}
+                        <li><span class="badge badge-primary">{{ interest[0] or 'Non défini' }}</span>: {{ interest[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 style="margin-bottom: 0;">Par étape</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for stage in onboarding_stats %}
+                        <li><span class="badge badge-primary">{{ stage[0] or 'Non défini' }}</span>: {{ stage[1] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions sur les leads -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 style="margin-bottom: 0;">Actions</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="{{ url_for('lead.export_leads') }}" class="btn btn-primary mb-2 w-100">
+                        <i class="fas fa-download me-2"></i> Exporter en CSV
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <button id="emailAllLeadsBtn" class="btn btn-secondary mb-2 w-100">
+                        <i class="fas fa-envelope me-2"></i> Envoyer un email à tous
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="searchLeads" placeholder="Rechercher...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 style="margin-bottom: 0;">Filtres</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('lead.manage_leads') }}" method="GET" class="row">
+                <div class="col-md-4">
+                    <label for="status_filter" class="form-label">Statut</label>
+                    <select name="status" id="status_filter" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>Nouveau</option>
+                        <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacté</option>
+                        <option value="qualified" {% if status_filter == 'qualified' %}selected{% endif %}>Qualifié</option>
+                        <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Converti</option>
+                        <option value="lost" {% if status_filter == 'lost' %}selected{% endif %}>Perdu</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="source_filter" class="form-label">Source</label>
+                    <select name="source" id="source_filter" class="form-control">
+                        <option value="">Toutes les sources</option>
+                        <option value="homepage" {% if source_filter == 'homepage' %}selected{% endif %}>Page d'accueil</option>
+                        <option value="social" {% if source_filter == 'social' %}selected{% endif %}>Réseaux sociaux</option>
+                        <option value="referral" {% if source_filter == 'referral' %}selected{% endif %}>Parrainage</option>
+                        <option value="other" {% if source_filter == 'other' %}selected{% endif %}>Autre</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrer</button>
+                    <a href="{{ url_for('lead.manage_leads') }}" class="btn btn-secondary">Réinitialiser</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Liste des leads -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 style="margin-bottom: 0;">Liste des Leads</h4>
+            <button id="reloadLeads" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-sync-alt me-1"></i> Actualiser
+            </button>
+        </div>
+        <div class="card-body">
+            {% if leads %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Intérêt</th>
+                            <th>Statut</th>
+                            <th>Source</th>
+                            <th>Date</th>
+                            <th>Étape</th>
+                            <th>Newsletter</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in leads %}
+                        <tr>
+                            <td>{{ lead[1] }}</td>
+                            <td>{{ lead[2] }}</td>
+                            <td>{{ lead[3] or 'Non spécifié' }}</td>
+                            <td>
+                                <span class="status-badge badge {{ lead[4]|status_badge_class }}">
+                                    {{ lead[4] or 'new' }}
+                                </span>
+                            </td>
+                            <td>{{ lead[5] or 'Non spécifié' }}</td>
+                            <td>{{ lead[6]|date }}</td>
+                            <td>
+                                <span class="stage-badge badge {% if lead[10] == 'invited' %}badge-info{% elif lead[10] == 'email_verified' %}badge-primary{% elif lead[10] == 'profile_created' %}badge-success{% else %}badge-secondary{% endif %}">
+                                    {{ lead[10] or 'Non démarré' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if lead[7] %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-primary edit-lead" 
+                                            data-lead-id="{{ lead[0] }}" 
+                                            data-lead-name="{{ lead[1] }}"
+                                            data-lead-email="{{ lead[2] }}"
+                                            data-lead-interest="{{ lead[3] }}"
+                                            data-lead-status="{{ lead[4] }}"
+                                            data-lead-notes="{{ lead[9] or '' }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success send-invite"
+                                            data-lead-id="{{ lead[0] }}"
+                                            data-lead-email="{{ lead[2] }}">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info email-lead" 
+                                            data-lead-id="{{ lead[0] }}"
+                                            data-lead-email="{{ lead[2] }}">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <nav aria-label="Pagination des leads" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ 'disabled' if page == 1 else '' }}">
+                        <a class="page-link" href="{{ url_for('lead.manage_leads', page=page-1, status=status_filter, source=source_filter) if page > 1 else '#' }}">Précédent</a>
+                    </li>
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {{ 'active' if p == page else '' }}">
+                        <a class="page-link" href="{{ url_for('lead.manage_leads', page=p, status=status_filter, source=source_filter) }}">{{ p }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
+                        <a class="page-link" href="{{ url_for('lead.manage_leads', page=page+1, status=status_filter, source=source_filter) if page < total_pages else '#' }}">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info">
+                Aucun lead disponible pour le moment.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'édition d'un lead -->
+<div class="modal fade" id="editLeadModal" tabindex="-1" aria-labelledby="editLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLeadModalLabel">Modifier le lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLeadForm">
+                    <input type="hidden" id="edit_lead_id">
+                    
+                    <div class="mb-3">
+                        <label for="edit_lead_name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="edit_lead_name" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_lead_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_lead_email" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_lead_interest" class="form-label">Intérêt</label>
+                        <input type="text" class="form-control" id="edit_lead_interest" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_lead_status" class="form-label">Statut</label>
+                        <select class="form-control" id="edit_lead_status">
+                            <option value="new">Nouveau</option>
+                            <option value="contacted">Contacté</option>
+                            <option value="qualified">Qualifié</option>
+                            <option value="converted">Converti</option>
+                            <option value="lost">Perdu</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_lead_notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="edit_lead_notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveLeadChanges">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'envoi d'email -->
+<div class="modal fade" id="emailLeadModal" tabindex="-1" aria-labelledby="emailLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailLeadModalLabel">Envoyer un email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailLeadForm">
+                    <input type="hidden" id="email_lead_id">
+                    
+                    <div class="mb-3">
+                        <label for="email_recipient" class="form-label">Destinataire</label>
+                        <input type="email" class="form-control" id="email_recipient" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_subject" class="form-label">Sujet</label>
+                        <input type="text" class="form-control" id="email_subject" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_template" class="form-label">Modèle</label>
+                        <select class="form-control" id="email_template">
+                            <option value="follow_up_1">Premier suivi</option>
+                            <option value="offer">Offre spéciale</option>
+                            <option value="newsletter">Newsletter</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email_content" class="form-label">Contenu</label>
+                        <textarea class="form-control" id="email_content" rows="6" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="sendEmail">Envoyer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation d'envoi d'invitation -->
+<div class="modal fade" id="inviteLeadModal" tabindex="-1" aria-labelledby="inviteLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inviteLeadModalLabel">Envoyer une invitation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir envoyer une invitation à <span id="invite_email_display" class="fw-bold"></span> ?</p>
+                <p class="text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Cette action enverra un email contenant un lien d'activation permettant au lead de créer son compte complet.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" id="confirmInvite">Envoyer l'invitation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Gestion du formulaire d'édition de lead
+    const editLeadBtns = document.querySelectorAll('.edit-lead');
+    const editLeadModal = new bootstrap.Modal(document.getElementById('editLeadModal'));
+    const saveChangesBtn = document.getElementById('saveLeadChanges');
+    
+    editLeadBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const leadId = this.dataset.leadId;
+            const leadName = this.dataset.leadName;
+            const leadEmail = this.dataset.leadEmail;
+            const leadInterest = this.dataset.leadInterest;
+            const leadStatus = this.dataset.leadStatus;
+            const leadNotes = this.dataset.leadNotes;
+            
+            document.getElementById('edit_lead_id').value = leadId;
+            document.getElementById('edit_lead_name').value = leadName;
+            document.getElementById('edit_lead_email').value = leadEmail;
+            document.getElementById('edit_lead_interest').value = leadInterest;
+            document.getElementById('edit_lead_status').value = leadStatus || 'new';
+            document.getElementById('edit_lead_notes').value = leadNotes;
+            
+            editLeadModal.show();
+        });
+    });
+    
+    saveChangesBtn.addEventListener('click', async function() {
+        const leadId = document.getElementById('edit_lead_id').value;
+        const status = document.getElementById('edit_lead_status').value;
+        const notes = document.getElementById('edit_lead_notes').value;
+        
+        try {
+            const response = await fetch(`/lead/update/${leadId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ status, notes })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Lead mis à jour avec succès', 'success');
+                editLeadModal.hide();
+                
+                // Recharger la page après un petit délai
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showAlert(`Erreur: ${data.message}`, 'error');
+            }
+        } catch (error) {
+            showAlert(`Erreur: ${error.message}`, 'error');
+        }
+    });
+    
+    // Gestion de l'envoi d'invitation
+    const inviteBtns = document.querySelectorAll('.send-invite');
+    const inviteModal = new bootstrap.Modal(document.getElementById('inviteLeadModal'));
+    const confirmInviteBtn = document.getElementById('confirmInvite');
+    let currentInviteLeadId = null;
+    
+    inviteBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentInviteLeadId = this.dataset.leadId;
+            const leadEmail = this.dataset.leadEmail;
+            
+            document.getElementById('invite_email_display').textContent = leadEmail;
+            inviteModal.show();
+        });
+    });
+    
+    confirmInviteBtn.addEventListener('click', async function() {
+        if (!currentInviteLeadId) return;
+        
+        try {
+            const response = await fetch(`/lead/send-invite/${currentInviteLeadId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('Invitation envoyée avec succès', 'success');
+                inviteModal.hide();
+            } else {
+                showAlert(`Erreur: ${data.message}`, 'error');
+            }
+        } catch (error) {
+            showAlert(`Erreur: ${error.message}`, 'error');
+        }
+    });
+    
+    // Gestion de l'envoi d'email
+    const emailBtns = document.querySelectorAll('.email-lead');
+    const emailModal = new bootstrap.Modal(document.getElementById('emailLeadModal'));
+    const sendEmailBtn = document.getElementById('sendEmail');
+    const emailTemplateSelect = document.getElementById('email_template');
+    const emailContentTextarea = document.getElementById('email_content');
+    
+    // Templates d'emails prédéfinis
+    const emailTemplates = {
+        follow_up_1: `Bonjour,\n\nMerci pour votre intérêt pour tilto. \nJe me permets de vous contacter suite à votre inscription sur notre site.\n\nSeriez-vous disponible pour un rapide échange téléphonique cette semaine ?\n\nCordialement,\nL'équipe tilto`,
+        
+        offer: `Bonjour,\n\nNous sommes ravis de vous offrir une réduction de 15% sur votre première session de coaching avec tilto.\n\nPour en profiter, utilisez le code BIENVENUE15 à la commande.\n\nCordialement,\nL'équipe tilto`,
+        
+        newsletter: `Bonjour,\n\nVoici les dernières nouvelles de tilto :\n\n- Nouvelle fonctionnalité disponible\n- Témoignage client du mois\n- Astuces pour booster votre carrière\n\nCordialement,\nL'équipe tilto`
+    };
+    
+    emailTemplateSelect.addEventListener('change', function() {
+        const selectedTemplate = this.value;
+        if (selectedTemplate !== 'custom') {
+            emailContentTextarea.value = emailTemplates[selectedTemplate] || '';
+        }
+    });
+    
+    emailBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const leadId = this.dataset.leadId;
+            const leadEmail = this.dataset.leadEmail;
+            
+            document.getElementById('email_lead_id').value = leadId;
+            document.getElementById('email_recipient').value = leadEmail;
+            document.getElementById('email_subject').value = 'À propos de votre intérêt pour tilto';
+            
+            // Définir le template par défaut
+            emailTemplateSelect.value = 'follow_up_1';
+            emailContentTextarea.value = emailTemplates.follow_up_1;
+            
+            emailModal.show();
+        });
+    });
+    
+    sendEmailBtn.addEventListener('click', async function() {
+        const leadId = document.getElementById('email_lead_id').value;
+        const recipient = document.getElementById('email_recipient').value;
+        const subject = document.getElementById('email_subject').value;
+        const content = document.getElementById('email_content').value;
+        
+        if (!subject || !content) {
+            showAlert('Veuillez remplir tous les champs', 'warning');
+            return;
+        }
+        
+        // Cette fonction est simulée pour l'instant
+        // Dans une implémentation réelle, vous appelleriez une API pour envoyer l'email
+        simulateSendEmail(leadId, recipient, subject, content);
+    });
+    
+    function simulateSendEmail(leadId, recipient, subject, content) {
+        // Simuler un délai d'envoi
+        showAlert('Envoi en cours...', 'info');
+        
+        setTimeout(() => {
+            showAlert(`Email envoyé avec succès à ${recipient}`, 'success');
+            emailModal.hide();
+            
+            // Dans une implémentation réelle, vous mettriez également à jour le lead pour indiquer qu'un email a été envoyé
+            // updateLeadAfterEmail(leadId);
+        }, 1500);
+    }
+    
+    // Fonction utilitaire pour afficher des alertes
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Ajouter l'alerte en haut de la page
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Supprimer automatiquement après 5 secondes
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // Bouton de rechargement
+    document.getElementById('reloadLeads').addEventListener('click', function() {
+        window.location.reload();
+    });
+    
+    // Email à tous les leads
+    document.getElementById('emailAllLeadsBtn').addEventListener('click', function() {
+        alert('Fonctionnalité en cours de développement');
+        // Dans une implémentation complète, cela ouvrirait un modal pour envoyer un email groupé
+    });
+    
+    // Recherche de leads
+    const searchInput = document.getElementById('searchLeads');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('tbody tr');
+        
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

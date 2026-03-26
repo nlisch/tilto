@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["https://tilto.co", "https://www.tilto.co"],
+      "method": ["GET", "HEAD", "POST"],
+      "responseHeader": ["Content-Type", "Content-Length", "ETag"],
+      "maxAgeSeconds": 3600
+    }
+]

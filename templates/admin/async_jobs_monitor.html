@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="flash-messages"></div>
+<div class="container-fluid mt-4 px-4">
+  <div class="page-header mb-4">
+    <h2 class="page-title">
+      <span class="title-icon">📊</span>
+      Monitoring Jobs Async
+    </h2>
+    <p class="page-subtitle">Suivi en temps réel des générations d'analyses en arrière-plan</p>
+  </div>
+
+  <!-- ==================== STATS GLOBALES ==================== -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card stat-pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <div class="stat-value" id="stat-pending">-</div>
+        <div class="stat-label">En attente</div>
+      </div>
+    </div>
+    <div class="stat-card stat-processing">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-content">
+        <div class="stat-value" id="stat-processing">-</div>
+        <div class="stat-label">En cours</div>
+      </div>
+    </div>
+    <div class="stat-card stat-completed">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value" id="stat-completed">-</div>
+        <div class="stat-label">Terminés (24h)</div>
+      </div>
+    </div>
+    <div class="stat-card stat-error">
+      <div class="stat-icon">❌</div>
+      <div class="stat-content">
+        <div class="stat-value" id="stat-error">-</div>
+        <div class="stat-label">Erreurs (24h)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FILTRES ==================== -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">🔍</span>
+      <span class="header-title">Filtres & Actions</span>
+    </div>
+    <div class="card-body">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label class="filter-label">Statut</label>
+          <select id="filter-status" class="filter-select">
+            <option value="">Tous</option>
+            <option value="pending">En attente</option>
+            <option value="processing">En cours</option>
+            <option value="completed">Terminés</option>
+            <option value="error">Erreurs</option>
+            <option value="cancelled">Annulés</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Utilisateur ID</label>
+          <input type="number" id="filter-user" class="filter-input" placeholder="Ex: 104">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Limite</label>
+          <select id="filter-limit" class="filter-select">
+            <option value="20">20</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
+        <div class="filter-group filter-actions">
+          <button type="button" class="btn-action btn-action-primary" id="btn-refresh">
+            <i class="fas fa-sync-alt"></i> Actualiser
+          </button>
+          <button type="button" class="btn-action btn-action-warning" id="btn-cleanup" title="Nettoyer les vieux jobs et jobs bloqués">
+            <i class="fas fa-broom"></i> Nettoyer
+          </button>
+          <label class="auto-refresh-toggle">
+            <input type="checkbox" id="auto-refresh" checked>
+            <span>Auto-refresh (10s)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LISTE DES JOBS ==================== -->
+  <div class="card card-modern">
+    <div class="card-header-modern">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="header-content">
+          <span class="header-icon">📋</span>
+          <span class="header-title">Jobs récents</span>
+        </div>
+        <div class="header-meta">
+          <span id="last-refresh">Dernière MAJ: -</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Statut</th>
+              <th>Utilisateur</th>
+              <th>Quiz</th>
+              <th>Step</th>
+              <th>Créé le</th>
+              <th>Durée</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-tbody">
+            <tr>
+              <td colspan="8" class="loading-cell">
+                <i class="fas fa-spinner fa-spin"></i> Chargement...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL DÉTAILS JOB ==================== -->
+<div id="jobDetailModal" class="modal-overlay" style="display: none;">
+  <div class="modal-container modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-info-circle"></i> Détails du Job</h3>
+      <button type="button" class="modal-close" id="closeJobModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="jobDetailContent">
+      <!-- Contenu dynamique -->
+    </div>
+    <div class="modal-footer" id="jobDetailFooter">
+      <button type="button" class="btn-action btn-action-secondary" id="closeJobModalBtn2">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ==================== VARIABLES ==================== */
+:root {
+  --primary: #4c0336;
+  --primary-light: #6b0f4a;
+  --tilto-gradient-purple: linear-gradient(135deg, #4c0336 0%, #6b0f4a 100%);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --processing: #8b5cf6;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.page-header { text-align: center; padding: 2rem 0; background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); }
+.page-title { font-size: 2rem; font-weight: 700; color: var(--primary); margin: 0; display: flex; align-items: center; justify-content: center; gap: 1rem; }
+.title-icon { font-size: 2.5rem; }
+.page-subtitle { font-size: 1rem; color: var(--gray-500); margin: 0.5rem 0 0; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+.stat-card { background: white; border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-md); border-left: 4px solid; transition: transform 0.2s ease; }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-pending { border-left-color: var(--warning); }
+.stat-processing { border-left-color: var(--processing); }
+.stat-completed { border-left-color: var(--success); }
+.stat-error { border-left-color: var(--danger); }
+.stat-icon { font-size: 2.5rem; opacity: 0.9; }
+.stat-value { font-size: 2rem; font-weight: 700; color: var(--gray-800); line-height: 1; }
+.stat-label { font-size: 0.9rem; color: var(--gray-500); margin-top: 0.25rem; }
+
+.card-modern { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); overflow: hidden; }
+.card-header-modern { background: var(--tilto-gradient-purple); color: white; padding: 1.25rem 1.5rem; font-weight: 600; display: flex; align-items: center; }
+.header-content { display: flex; align-items: center; gap: 0.75rem; }
+.header-icon { font-size: 1.5rem; }
+.header-title { font-size: 1.1rem; }
+.header-meta { font-size: 0.85rem; opacity: 0.8; }
+.card-body { padding: 1.5rem; }
+.card-body.p-0 { padding: 0; }
+
+.filters-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; }
+.filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.filter-label { font-size: 0.85rem; font-weight: 600; color: var(--gray-600); }
+.filter-select, .filter-input { padding: 0.625rem 1rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md); font-size: 0.95rem; min-width: 150px; transition: border-color 0.2s; }
+.filter-select:focus, .filter-input:focus { border-color: var(--primary); outline: none; }
+.filter-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+.auto-refresh-toggle { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--gray-600); cursor: pointer; }
+.auto-refresh-toggle input { width: 18px; height: 18px; cursor: pointer; }
+
+.table-responsive { overflow-x: auto; }
+.jobs-table { width: 100%; border-collapse: collapse; }
+.jobs-table th { background: var(--gray-50); padding: 1rem; text-align: left; font-weight: 600; font-size: 0.85rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--gray-200); }
+.jobs-table td { padding: 1rem; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+.jobs-table tbody tr:hover { background: var(--gray-50); }
+.loading-cell { text-align: center; padding: 3rem !important; color: var(--gray-500); }
+
+.status-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-processing { background: #ede9fe; color: #5b21b6; animation: pulse-bg 2s ease-in-out infinite; }
+@keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+.status-completed { background: #d1fae5; color: #065f46; }
+.status-error { background: #fee2e2; color: #991b1b; }
+.status-cancelled { background: var(--gray-200); color: var(--gray-600); }
+
+.user-info { display: flex; flex-direction: column; }
+.user-name { font-weight: 600; color: var(--gray-800); }
+.user-id { font-size: 0.8rem; color: var(--gray-500); }
+.duration { font-family: 'Monaco', monospace; font-size: 0.9rem; }
+.duration-long { color: var(--warning); font-weight: 600; }
+
+.action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn-action { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.btn-action:hover { transform: translateY(-1px); }
+.btn-action:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-action-primary { background: var(--tilto-gradient-purple); color: white; }
+.btn-action-secondary { background: var(--gray-200); color: var(--gray-700); }
+.btn-action-success { background: var(--success); color: white; }
+.btn-action-warning { background: var(--warning); color: white; }
+.btn-action-danger { background: var(--danger); color: white; }
+.btn-action-info { background: var(--info); color: white; }
+.btn-action-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-action-sm { padding: 0.375rem 0.625rem; font-size: 0.8rem; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal-container { background: white; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); max-height: 90vh; display: flex; flex-direction: column; width: 95%; max-width: 800px; }
+.modal-header { background: var(--tilto-gradient-purple); color: white; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+.modal-title { margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.75rem; }
+.modal-close { background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+.modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+
+.job-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.detail-item { background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); }
+.detail-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 0.25rem; }
+.detail-value { font-size: 1rem; color: var(--gray-800); font-weight: 500; }
+.error-box { background: #fee2e2; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; }
+.error-box-title { font-weight: 600; color: #991b1b; margin-bottom: 0.5rem; }
+.error-box-content { font-family: monospace; font-size: 0.85rem; color: #7f1d1d; white-space: pre-wrap; word-break: break-word; }
+.params-box { background: var(--gray-50); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; }
+.params-box-title { font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; }
+.params-content { font-family: monospace; font-size: 0.8rem; background: white; padding: 0.75rem; border-radius: var(--radius-sm); max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+
+.empty-state { text-align: center; padding: 3rem; color: var(--gray-500); }
+.empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+#flash-messages { position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px; }
+.flash-message { margin-bottom: 1rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 0.75rem; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.flash-success { background: var(--success); color: white; }
+.flash-error { background: var(--danger); color: white; }
+.flash-warning { background: var(--warning); color: white; }
+.flash-info { background: var(--info); color: white; }
+
+@media (max-width: 768px) {
+  .filters-row { flex-direction: column; align-items: stretch; }
+  .filter-actions { margin-left: 0; flex-direction: column; align-items: stretch; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.d-flex { display: flex; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+.w-100 { width: 100%; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mt-4 { margin-top: 1.5rem; }
+.text-center { text-align: center; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+  const csrfToken = "{{ csrf_token() }}";
+  let autoRefreshInterval = null;
+  let currentJobs = [];
+  let currentJobDetail = null;
+
+  function showFlashMessage(type, message) {
+    const container = document.getElementById('flash-messages');
+    const div = document.createElement('div');
+    div.className = 'flash-message flash-' + type;
+    div.innerHTML = message;
+    container.appendChild(div);
+    setTimeout(() => {
+      div.style.animation = 'slideIn 0.3s ease reverse';
+      setTimeout(() => div.remove(), 300);
+    }, 4000);
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function formatDuration(seconds) {
+    if (!seconds && seconds !== 0) return '-';
+    if (seconds < 60) return seconds.toFixed(1) + 's';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return mins + 'm ' + secs + 's';
+  }
+
+  function getStatusBadge(status) {
+    const icons = { 'pending': '⏳', 'processing': '🔄', 'completed': '✅', 'error': '❌', 'cancelled': '🚫' };
+    return '<span class="status-badge status-' + status + '">' + (icons[status] || '❓') + ' ' + status + '</span>';
+  }
+
+  async function apiCall(url, method, body) {
+    method = method || 'GET';
+    const options = { method: method, headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' } };
+    if (body) options.body = JSON.stringify(body);
+    const response = await fetch(url, options);
+    return await response.json();
+  }
+
+  async function loadJobs() {
+    const status = document.getElementById('filter-status').value;
+    const userId = document.getElementById('filter-user').value;
+    const limit = document.getElementById('filter-limit').value;
+    let url = '/analysis/async/jobs?limit=' + limit;
+    if (status) url += '&status=' + status;
+    if (userId) url += '&user_id=' + userId;
+    try {
+      const data = await apiCall(url);
+      if (data.success) {
+        currentJobs = data.jobs || [];
+        renderJobs(currentJobs);
+        updateStats(data.stats || {});
+        document.getElementById('last-refresh').textContent = 'Dernière MAJ: ' + new Date().toLocaleTimeString('fr-FR');
+      } else {
+        showFlashMessage('error', 'Erreur: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Erreur chargement jobs:', error);
+      showFlashMessage('error', 'Erreur de connexion');
+    }
+  }
+
+  function renderJobs(jobs) {
+    const tbody = document.getElementById('jobs-tbody');
+    if (!jobs || jobs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><p>Aucun job trouvé</p></td></tr>';
+      return;
+    }
+    let html = '';
+    jobs.forEach(function(job) {
+      const duration = job.generation_time_seconds || (job.started_at && !job.completed_at ? Math.floor((Date.now() - new Date(job.started_at).getTime()) / 1000) : null);
+      const durationClass = duration && duration > 300 ? 'duration-long' : '';
+      html += '<tr data-job-uuid="' + job.job_uuid + '">';
+      html += '<td><code style="font-size:0.75rem;">' + job.job_uuid.substring(0, 8) + '...</code></td>';
+      html += '<td>' + getStatusBadge(job.job_status) + '</td>';
+      html += '<td><div class="user-info"><span class="user-name">' + (job.user_firstname || 'User') + '</span><span class="user-id">ID: ' + job.user_id + '</span></div></td>';
+      html += '<td>' + job.quiz_id + '</td>';
+      html += '<td>' + (job.step_id || '-') + '</td>';
+      html += '<td>' + formatDate(job.created_at) + '</td>';
+      html += '<td><span class="duration ' + durationClass + '">' + formatDuration(duration) + '</span></td>';
+      html += '<td><div class="action-buttons">';
+      html += '<button class="btn-action btn-action-outline btn-action-sm btn-view-job" data-uuid="' + job.job_uuid + '" title="Voir détails"><i class="fas fa-eye"></i></button>';
+      if (job.job_status === 'pending') {
+        html += '<button class="btn-action btn-action-success btn-action-sm btn-process-job" data-uuid="' + job.job_uuid + '" title="Traiter maintenant"><i class="fas fa-play"></i></button>';
+        html += '<button class="btn-action btn-action-danger btn-action-sm btn-cancel-job" data-uuid="' + job.job_uuid + '" title="Annuler"><i class="fas fa-times"></i></button>';
+      }
+      if (job.job_status === 'error' || job.job_status === 'cancelled') {
+        html += '<button class="btn-action btn-action-warning btn-action-sm btn-retry-job" data-uuid="' + job.job_uuid + '" title="Relancer"><i class="fas fa-redo"></i></button>';
+        html += '<button class="btn-action btn-action-danger btn-action-sm btn-delete-job" data-uuid="' + job.job_uuid + '" title="Supprimer"><i class="fas fa-trash"></i></button>';
+      }
+      if (job.job_status === 'completed') {
+        html += '<a href="/admin/retry-analysis?user_id=' + job.user_id + '" class="btn-action btn-action-info btn-action-sm" title="Voir utilisateur"><i class="fas fa-user"></i></a>';
+        html += '<button class="btn-action btn-action-secondary btn-action-sm btn-delete-job" data-uuid="' + job.job_uuid + '" title="Supprimer"><i class="fas fa-trash"></i></button>';
+      }
+      html += '</div></td></tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function updateStats(stats) {
+    document.getElementById('stat-pending').textContent = stats.pending || 0;
+    document.getElementById('stat-processing').textContent = stats.processing || 0;
+    document.getElementById('stat-completed').textContent = stats.completed || 0;
+    document.getElementById('stat-error').textContent = stats.error || 0;
+  }
+
+  async function viewJobDetail(jobUuid) {
+    const modal = document.getElementById('jobDetailModal');
+    const content = document.getElementById('jobDetailContent');
+    modal.style.display = 'flex';
+    content.innerHTML = '<div class="text-center" style="padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+    try {
+      const data = await apiCall('/analysis/async/status/' + jobUuid);
+      currentJobDetail = data;
+      renderJobDetail(data);
+      renderJobDetailFooter(data);
+    } catch (error) {
+      content.innerHTML = '<div class="error-box"><div class="error-box-title">Erreur</div><div class="error-box-content">' + error.message + '</div></div>';
+    }
+  }
+
+  function renderJobDetail(job) {
+    const content = document.getElementById('jobDetailContent');
+    let html = '<div class="job-detail-grid">';
+    html += '<div class="detail-item"><div class="detail-label">Job UUID</div><div class="detail-value"><code>' + job.job_uuid + '</code></div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Statut</div><div class="detail-value">' + getStatusBadge(job.status) + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Utilisateur</div><div class="detail-value">' + (job.user_firstname || 'User') + ' (ID: ' + job.user_id + ')</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Quiz</div><div class="detail-value">' + job.quiz_id + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Step</div><div class="detail-value">' + (job.step_id || '-') + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Result ID</div><div class="detail-value"><code>' + (job.result_id || '-') + '</code></div></div>';
+    html += '</div>';
+    html += '<div class="job-detail-grid">';
+    html += '<div class="detail-item"><div class="detail-label">Créé le</div><div class="detail-value">' + formatDate(job.created_at) + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Démarré le</div><div class="detail-value">' + formatDate(job.started_at) + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Terminé le</div><div class="detail-value">' + formatDate(job.completed_at) + '</div></div>';
+    html += '<div class="detail-item"><div class="detail-label">Durée</div><div class="detail-value">' + formatDuration(job.duration_seconds || job.elapsed_seconds) + '</div></div>';
+    html += '</div>';
+    if (job.validation_status) {
+      html += '<div class="job-detail-grid">';
+      html += '<div class="detail-item"><div class="detail-label">Validation</div><div class="detail-value">' + job.validation_status + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Tentatives</div><div class="detail-value">' + (job.validation_attempts || 0) + '</div></div>';
+      html += '</div>';
+    }
+    if (job.error) {
+      html += '<div class="error-box"><div class="error-box-title"><i class="fas fa-exclamation-triangle"></i> Erreur</div><div class="error-box-content">' + escapeHtml(job.error) + '</div></div>';
+    }
+    if (job.error_details) {
+      html += '<div class="params-box"><div class="params-box-title">Détails de l\'erreur</div><div class="params-content">' + escapeHtml(JSON.stringify(job.error_details, null, 2)) + '</div></div>';
+    }
+    if (job.generation_params) {
+      html += '<div class="params-box"><div class="params-box-title">Paramètres de génération</div><div class="params-content">' + escapeHtml(JSON.stringify(job.generation_params, null, 2)) + '</div></div>';
+    }
+    content.innerHTML = html;
+  }
+
+  function renderJobDetailFooter(job) {
+    const footer = document.getElementById('jobDetailFooter');
+    let html = '';
+    if (job.status === 'pending') {
+      html += '<button class="btn-action btn-action-success btn-modal-process" data-uuid="' + job.job_uuid + '"><i class="fas fa-play"></i> Traiter maintenant</button>';
+      html += '<button class="btn-action btn-action-danger btn-modal-cancel" data-uuid="' + job.job_uuid + '"><i class="fas fa-times"></i> Annuler</button>';
+    }
+    if (job.status === 'error' || job.status === 'cancelled') {
+      html += '<button class="btn-action btn-action-warning btn-modal-retry" data-uuid="' + job.job_uuid + '"><i class="fas fa-redo"></i> Relancer</button>';
+      html += '<button class="btn-action btn-action-danger btn-modal-delete" data-uuid="' + job.job_uuid + '"><i class="fas fa-trash"></i> Supprimer</button>';
+    }
+    if (job.status === 'completed') {
+      html += '<a href="/admin/retry-analysis?user_id=' + job.user_id + '" class="btn-action btn-action-info"><i class="fas fa-user"></i> Voir utilisateur</a>';
+    }
+    html += '<button class="btn-action btn-action-secondary btn-close-modal">Fermer</button>';
+    footer.innerHTML = html;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
+  async function cancelJob(jobUuid) {
+    if (!confirm('Annuler ce job ?')) return;
+    try {
+      const data = await apiCall('/analysis/async/cancel/' + jobUuid, 'POST');
+      if (data.success) { showFlashMessage('success', 'Job annulé'); loadJobs(); closeModal(); }
+      else { showFlashMessage('error', 'Erreur: ' + data.error); }
+    } catch (error) { showFlashMessage('error', 'Erreur: ' + error.message); }
+  }
+
+  async function processJob(jobUuid) {
+    if (!confirm('Traiter ce job maintenant ? (peut prendre 2-5 minutes)')) return;
+    showFlashMessage('info', 'Traitement en cours...');
+    try {
+      const data = await apiCall('/analysis/async/process-manual/' + jobUuid, 'POST');
+      if (data.success) { showFlashMessage('success', 'Job traité avec succès !'); loadJobs(); closeModal(); }
+      else { showFlashMessage('error', 'Erreur: ' + data.error); }
+    } catch (error) { showFlashMessage('error', 'Erreur: ' + error.message); }
+  }
+
+  async function retryJob(jobUuid) {
+    if (!confirm('Relancer ce job ? Un nouveau job sera créé.')) return;
+    try {
+      const data = await apiCall('/analysis/async/retry/' + jobUuid, 'POST');
+      if (data.success) { showFlashMessage('success', 'Nouveau job créé: ' + data.new_job_uuid.substring(0, 8) + '...'); loadJobs(); closeModal(); }
+      else { showFlashMessage('error', 'Erreur: ' + data.error); }
+    } catch (error) { showFlashMessage('error', 'Erreur: ' + error.message); }
+  }
+
+  async function deleteJob(jobUuid) {
+    if (!confirm('Supprimer définitivement ce job ?')) return;
+    try {
+      const data = await apiCall('/analysis/async/delete/' + jobUuid, 'DELETE');
+      if (data.success) { showFlashMessage('success', 'Job supprimé'); loadJobs(); closeModal(); }
+      else { showFlashMessage('error', 'Erreur: ' + data.error); }
+    } catch (error) { showFlashMessage('error', 'Erreur: ' + error.message); }
+  }
+
+  async function cleanupJobs() {
+    if (!confirm('Nettoyer les jobs ?\n\n• Jobs bloqués (>2h) → marqués en erreur\n• Jobs terminés (>30j) → supprimés')) return;
+    try {
+      const data = await apiCall('/analysis/async/cleanup', 'POST', { days_to_keep: 30, stuck_hours: 2 });
+      if (data.success) {
+        showFlashMessage('success', 'Nettoyage: ' + data.stuck_jobs_cleaned + ' bloqués, ' + data.old_jobs_cleaned.deleted_total + ' supprimés');
+        loadJobs();
+      } else { showFlashMessage('error', 'Erreur: ' + data.error); }
+    } catch (error) { showFlashMessage('error', 'Erreur: ' + error.message); }
+  }
+
+  function closeModal() {
+    document.getElementById('jobDetailModal').style.display = 'none';
+    currentJobDetail = null;
+  }
+
+  function startAutoRefresh() { stopAutoRefresh(); autoRefreshInterval = setInterval(loadJobs, 10000); }
+  function stopAutoRefresh() { if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; } }
+
+  // Event listeners
+  document.getElementById('btn-refresh').addEventListener('click', loadJobs);
+  document.getElementById('btn-cleanup').addEventListener('click', cleanupJobs);
+  document.getElementById('auto-refresh').addEventListener('change', function() { if (this.checked) startAutoRefresh(); else stopAutoRefresh(); });
+  document.getElementById('filter-status').addEventListener('change', loadJobs);
+  document.getElementById('filter-limit').addEventListener('change', loadJobs);
+  document.getElementById('filter-user').addEventListener('change', function() { if (this.value === '' || this.value.length >= 1) loadJobs(); });
+
+  document.getElementById('jobs-tbody').addEventListener('click', function(e) {
+    const target = e.target.closest('button');
+    if (!target) return;
+    const uuid = target.dataset.uuid;
+    if (target.classList.contains('btn-view-job')) viewJobDetail(uuid);
+    else if (target.classList.contains('btn-cancel-job')) cancelJob(uuid);
+    else if (target.classList.contains('btn-process-job')) processJob(uuid);
+    else if (target.classList.contains('btn-retry-job')) retryJob(uuid);
+    else if (target.classList.contains('btn-delete-job')) deleteJob(uuid);
+  });
+
+  document.getElementById('jobDetailFooter').addEventListener('click', function(e) {
+    const target = e.target.closest('button');
+    if (!target) return;
+    const uuid = target.dataset.uuid;
+    if (target.classList.contains('btn-modal-cancel')) cancelJob(uuid);
+    else if (target.classList.contains('btn-modal-process')) processJob(uuid);
+    else if (target.classList.contains('btn-modal-retry')) retryJob(uuid);
+    else if (target.classList.contains('btn-modal-delete')) deleteJob(uuid);
+    else if (target.classList.contains('btn-close-modal')) closeModal();
+  });
+
+  document.getElementById('closeJobModalBtn').addEventListener('click', closeModal);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+  document.getElementById('jobDetailModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+  // Init
+  loadJobs();
+  if (document.getElementById('auto-refresh').checked) startAutoRefresh();
+});
+</script>
+{% endblock %}

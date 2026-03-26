@@ -1,0 +1,196 @@
+{% if show_expiration_banner and expires_at %}
+<div class="access-banner-inline" id="accessBanner">
+    <div class="banner-compact">
+        <i class="fas fa-clock"></i>
+        <span>Accès limité · Expire le {{ expires_at.strftime('%d/%m/%Y') }}</span>
+        {% if days_left is not none and days_left <= 3 %}
+        <span class="badge-urgent">{{ days_left }}j</span>
+        {% endif %}
+        <button class="banner-close-btn" aria-label="Fermer">×</button>
+    </div>
+</div>
+
+<style nonce="{{ g.nonce }}">
+    /* Positionnement sticky au-dessus de tous les éléments */
+    .access-banner-inline {
+        position: sticky;
+        top: 70px;
+        z-index: 99;
+        background: rgba(169, 55, 67, 0.12);
+        border-left: 3px solid #A93743;
+        padding-top: 20px;
+        padding-bottom: 10px;
+        padding-left: 20px;
+        padding-right: 20px;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* Reset conflits avec analysis-container */
+    .analysis-container .access-banner-inline {
+        border-radius: 0;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .banner-compact {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #A11857;
+        font-weight: 500;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        line-height: 1; 
+    }
+    
+    .banner-compact i {
+        opacity: 0.7;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .badge-urgent {
+        background: #A93743;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-left: 4px;
+    }
+    
+    .banner-close-btn {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #A11857;
+        opacity: 0.5;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        line-height: 1;
+        transition: opacity 0.2s ease;
+    }
+    
+    .banner-close-btn:hover {
+        opacity: 1;
+    }
+    
+    .access-banner-inline.closing {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            max-height: 60px;
+        }
+        to {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+    
+    /* Responsive mobile */
+    @media (max-width: 768px) {
+        .access-banner-inline {
+            position: fixed !important;
+            top: 80px !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 999 !important;
+            padding: 10px 12px !important;
+            width: 100% !important;
+            margin: 0 !important;
+            box-shadow: 0 2px 8px rgba(169, 55, 67, 0.15) !important;
+        }
+        
+        .banner-compact {
+            font-size: 0.8rem !important;
+            gap: 6px !important;
+            padding: 0 10px !important;
+        }
+        
+        .banner-compact i {
+            font-size: 0.85rem !important;
+        }
+        
+        .badge-urgent {
+            font-size: 0.7rem !important;
+            padding: 2px 6px !important;
+        }
+        
+        .banner-close-btn {
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 1.2rem !important;
+        }
+        
+        /* Compenser l'espace pour la bannière fixe */
+        body.analysis-coaching-page .analysis-container {
+            padding-top: 50px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .access-banner-inline {
+            padding: 8px 10px !important;
+        }
+        
+        .banner-compact {
+            font-size: 0.75rem !important;
+            gap: 5px !important;
+            padding: 0 8px !important;
+        }
+        
+        .banner-compact span {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+    }
+    </style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier si déjà fermé dans la session
+    if (sessionStorage.getItem('accessBannerDismissed') === 'true') {
+        const banner = document.getElementById('accessBanner');
+        if (banner) banner.style.display = 'none';
+        return;
+    }
+    
+    // Attacher l'événement de fermeture
+    const closeBtn = document.querySelector('.banner-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            const banner = document.getElementById('accessBanner');
+            if (banner) {
+                banner.classList.add('closing');
+                setTimeout(() => banner.remove(), 300);
+                sessionStorage.setItem('accessBannerDismissed', 'true');
+            }
+        });
+    }
+});
+</script>
+{% endif %}

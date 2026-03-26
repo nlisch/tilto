@@ -1,0 +1,899 @@
+<!--Nouveau fichier base optimisé SEO -->
+<!DOCTYPE html>
+<html lang="{{ g.lang_code }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="{% block meta_description %}{{ _('5-10 min de quiz, puis notre duo IA + expert humain te livre 3 pistes pro qui font tilt sous 24h. Gratuit et confidentiel.') }}{% endblock %}">
+<title>{% block title %}{{ _('Perdu·e dans ta vie pro ? 3 pistes concrètes sous 24h | Tilto') }}{% endblock %}</title>
+
+<!-- SEO optimisé pour reconnaissance LLM et moteurs de recherche -->
+
+<!-- Balise robots conditionnelle pour les pages d'analyse -->
+{% if request.endpoint and ('analysis' in request.endpoint or 'demo' in request.endpoint) %}
+<!-- Pages d'analyse : blocage complet moteurs + LLMs -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="bingbot" content="noindex, nofollow">
+<meta name="AdsBot-Google" content="noindex, nofollow">
+<meta name="CCBot" content="noindex, nofollow">
+<meta name="GPTBot" content="noindex, nofollow">
+<meta name="ChatGPT-User" content="noindex, nofollow">
+<meta name="Google-Extended" content="noindex, nofollow">
+<meta name="anthropic-ai" content="noindex, nofollow">
+<meta name="ClaudeBot" content="noindex, nofollow">
+<meta name="Bytespider" content="noindex, nofollow">
+<meta name="Diffbot" content="noindex, nofollow">
+<meta name="PerplexityBot" content="noindex, nofollow">
+<meta name="YouBot" content="noindex, nofollow">
+<meta name="Applebot-Extended" content="noindex, nofollow">
+<meta name="FacebookBot" content="noindex, nofollow">
+<meta name="facebookexternalhit" content="noindex, nofollow">
+{% else %}
+<!-- Pages publiques : indexation normale -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="googlebot" content="index, follow">
+<meta name="bingbot" content="index, follow">
+{% endif %}
+<link rel="canonical" href="{{ request.url }}">
+
+<!-- Métadonnées pour classification -->
+<meta name="subject" content="Clarté professionnelle et orientation carrière">
+<meta name="topic" content="Reconversion professionnelle, évolution carrière, transition professionnelle, perte de sens au travail">
+<meta name="classification" content="business">
+<meta name="category" content="professional-development, career-guidance">
+<meta name="coverage" content="France">
+<meta name="target" content="professionnels en questionnement, salariés en reconversion">
+<meta name="language" content="{{ g.lang_code }}">
+<meta name="geo.region" content="FR">
+<meta name="geo.country" content="France">
+
+<!-- Métadonnées pour crawlers IA -->
+<meta name="ai-content-type" content="service-orientation-professionnelle">
+<meta name="ai-purpose" content="clarté-professionnelle pistes-concrètes analyse-situation">
+<meta name="ai-audience" content="professionnels-en-questionnement salariés-perte-de-sens reconversion">
+<meta name="ai-differentiator" content="5-10-minutes IA-plus-humain diagnostic-sous-24h 3-pistes-personnalisées">
+
+<!-- Open Graph optimisé -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tilto">
+<meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='image/tilto_favicon.png', _external=True) }}{% endblock %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="{% if g.lang_code == 'fr' %}fr_FR{% else %}en_US{% endif %}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+<meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description() }}{% endblock %}">
+<meta name="twitter:image" content="{{ self.og_image() }}">
+
+<!-- Hreflang pour SEO international -->
+<link rel="alternate" hreflang="fr" href="{{ url_for(request.endpoint, lang_code='fr', _external=True, **request.view_args) if request.endpoint else url_for('auth.home', lang_code='fr', _external=True) }}">
+<link rel="alternate" hreflang="x-default" href="{{ url_for(request.endpoint, _external=True, **request.view_args) if request.endpoint else url_for('auth.home', _external=True) }}">
+
+<link rel="stylesheet" href="{{ versioned_asset_url('css_main') }}">
+
+<link rel="preload" as="style" id="font-poppins" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"></noscript>
+
+<link rel="preload" as="style" id="font-awesome" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+<script nonce="{{ g.nonce }}">
+    document.addEventListener('DOMContentLoaded', function(){
+      ['font-poppins','font-awesome'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el){ el.rel = 'stylesheet'; }
+      });
+    });
+  </script>
+<link rel="icon" type="image/png" href="{{ url_for('static', filename='image/tilto_favicon.png') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<!-- Structured Data - Organisation (factuel uniquement) -->
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Tilto",
+    "url": "{{ url_for('auth.home', _external=True) }}",
+    "logo": "{{ url_for('static', filename='image/tilto_favicon.png', _external=True) }}",
+    "description": "Tilto aide les professionnels à y voir clair dans leur vie pro. En 5-10 minutes de quiz, notre approche IA + expert humain analyse ta situation et te propose 3 pistes concrètes sous 24h.",
+    "foundingDate": "2025",
+    "areaServed": {
+        "@type": "Country",
+        "name": "France"
+    },
+    "knowsAbout": [
+        "Orientation professionnelle",
+        "Reconversion professionnelle",
+        "Évolution de carrière",
+        "Transition professionnelle",
+        "Perte de sens au travail"
+    ]
+}
+</script>
+
+<!-- Structured Data - Service principal (factuel, prix réel) -->
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Analyse Tilto",
+    "provider": {
+        "@type": "Organization",
+        "name": "Tilto"
+    },
+    "description": "5-10 minutes de quiz analysées par IA + expert humain pour recevoir sous 24h 3 pistes professionnelles personnalisées qui respectent tes contraintes (salaire, région, équilibre).",
+    "serviceType": "Orientation professionnelle",
+    "areaServed": {
+        "@type": "Country",
+        "name": "France"
+    },
+    "offers": {
+        "@type": "Offer",
+        "price": "29.00",
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock"
+    }
+}
+</script>
+
+{% block extra_head %}{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% if GOOGLE_ANALYTICS_ID %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}" nonce="{{ g.nonce }}"></script>
+<script nonce="{{ g.nonce }}">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('consent', 'default', {
+    'analytics_storage':      {% if g.can_use_analytics %}'granted'{% else %}'denied'{% endif %},
+    'ad_storage':             {% if g.can_use_marketing %}'granted'{% else %}'denied'{% endif %},
+    'ad_user_data':           {% if g.can_use_marketing %}'granted'{% else %}'denied'{% endif %},
+    'ad_personalization':     {% if g.can_use_marketing %}'granted'{% else %}'denied'{% endif %},
+    'functionality_storage':  'denied',
+    'personalization_storage':'denied',
+    'security_storage':       'granted'
+  });
+
+  gtag('js', new Date());
+
+  gtag('config', '{{ GOOGLE_ANALYTICS_ID }}', {
+    'anonymize_ip': true,
+    'allow_ad_personalization_signals': false,
+    'allow_google_signals': false,
+    'transport_type': 'beacon',
+    'cookie_flags': 'SameSite=Strict;Secure'
+  });
+
+{% if GOOGLE_ADS_ID %}
+gtag('config', '{{ GOOGLE_ADS_ID }}');
+window.GOOGLE_ADS_ID = '{{ GOOGLE_ADS_ID }}';
+window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // ← ajouter
+{% endif %}
+
+  window.googleAnalyticsLoaded = true;
+  window.GOOGLE_ANALYTICS_ID = '{{ GOOGLE_ANALYTICS_ID }}';
+</script>
+{% else %}
+<script nonce="{{ g.nonce }}">
+  console.error('❌ GOOGLE_ANALYTICS_ID manquant');
+</script>
+{% endif %}
+
+{% if FACEBOOK_PIXEL_ID %}
+<script nonce="{{ g.nonce }}">
+  window.FACEBOOK_PIXEL_ID = '{{ FACEBOOK_PIXEL_ID }}';
+  window.FB_MARKETING_CONSENT = {% if g.can_use_marketing %}true{% else %}false{% endif %};
+
+  window._fbqReady = function() {
+    fbq('consent', window.FB_MARKETING_CONSENT ? 'grant' : 'revoke');
+    if (window.FB_MARKETING_CONSENT) {
+      fbq('init', window.FACEBOOK_PIXEL_ID);
+      fbq('track', 'PageView');
+    }
+  };
+
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
+  t.onload=function(){ if(window._fbqReady) window._fbqReady(); };
+  s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+  (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+</script>
+<noscript>
+  <img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id={{ FACEBOOK_PIXEL_ID }}&ev=PageView&noscript=1"/>
+</noscript>
+{% endif %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Header principal -->
+    <header class="header-parallax">
+      <div class="container header-container">
+          <a href="{{ url_for('auth.home') }}" class="logo">
+              Tilto
+              <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" 
+                   alt="Tilto Icon" 
+                   class="logo-icon" 
+                   width="27" 
+                   height="27">
+          </a>
+            
+          {% set is_tunnel_page = request.path.startswith('/buy') or request.path.startswith('/bilan-carriere-express') %}
+          <div style="display: flex; align-items: center; gap: 15px;">
+              {% if not is_tunnel_page %}
+              {% if config.PRELAUNCH_MODE %}
+                  <span class="prelaunch-badge">Pré-lancement</span>
+              {% endif %}
+              
+              {% if not config.PRELAUNCH_MODE %}
+              <nav class="nav-links">
+                  {% if current_user.is_authenticated %}
+                      <!-- 🎯 TEMPORAIRE : Badge crédits masqué - système de tokens désactivé -->
+                      <!--
+                      <div class="credit-badge" id="tokenBadge">
+                          <span>🎟️ Crédits</span>
+                          <span class="credit-count" id="tokenCount">-</span>
+                          
+                          <div class="credit-tooltip">
+                              <div class="credit-tooltip-title">Tes crédits Tilto</div>
+                              <div class="credit-tooltip-text" id="creditTooltipText">1 crédit = 1 piste pro débloquée.</div>
+                              <a href="{{ url_for('dashboard.index') }}" class="credit-tooltip-cta" id="creditTooltipCta">Voir mes analyses</a>
+                          </div>
+                      </div>
+                      -->
+                      <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                          <i class="fas fa-chart-line" style="margin-right: 6px;"></i>
+                          {{ _('Mon tableau de bord') }}
+                      </a>
+                      <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="nav-link">
+                          <i class="fas fa-address-card" style="margin-right: 6px;"></i>
+                          Smart Contact
+                      </a>
+                      <a href="{{ url_for('user.my_account') }}" class="nav-link">
+                          <i class="fas fa-cog" style="margin-right: 6px;"></i>
+                          {{ _('Mon compte') }}
+                      </a>
+                      <a href="{{ url_for('auth.logout') }}" class="nav-link cta">{{ _('Déconnexion') }}</a>
+                  {% elif session.get('prelaunch_bypass') %}
+                      <a href="{{ url_for('tokens.shop') }}" class="nav-link">{{ _('Boutique') }}</a>
+                      <a href="{{ url_for('auth.signup') }}" class="nav-link cta">{{ _('M\'inscrire') }}</a>
+                  {% else %}
+                  <a href="{{ url_for('tilto_pro') }}" class="nav-link">Tilto Pro</a>
+                  <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="nav-link">Smart Contact</a>
+                  <a href="{{ url_for('auth.login') }}" class="nav-link">{{ _('Me connecter') }}</a>
+                  {% endif %}
+              </nav>
+              {% endif %}
+              
+              <div class="language-selector">
+                  <a href="{{ url_for('set_language', lang_code='fr') }}" class="lang-link {% if g.lang_code == 'fr' %}active{% endif %}">FR</a>
+              </div>
+              
+              {% if not config.PRELAUNCH_MODE %}
+                  <button class="mobile-menu-btn" aria-label="Ouvrir le menu">
+                      <i class="fas fa-bars"></i>
+                  </button>
+              {% endif %}
+              {% endif %}
+          </div>
+        </div>
+    </header>
+    
+    {% if not config.PRELAUNCH_MODE %}
+    <div class="mobile-nav">
+        <div class="mobile-nav-top">
+            <a href="{{ url_for('auth.home') }}" class="logo">
+                Tilto.ai
+                <img src="https://images.tilto.co/production/2025/05/b38d0efb_car.webp" 
+                     alt="Tilto Icon" 
+                     class="logo-icon" 
+                     width="27" 
+                     height="27">
+            </a>
+            
+            <button class="close-menu" aria-label="Fermer le menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="mobile-nav-links">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard.index') }}" class="mobile-nav-link">
+                <i class="fas fa-chart-line" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                {{ _('Mon tableau de bord') }}
+            </a>
+            <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="mobile-nav-link">
+                <i class="fas fa-address-card" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                Smart Contact
+            </a>
+            <a href="{{ url_for('user.my_account') }}" class="mobile-nav-link">
+                <i class="fas fa-cog" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                {{ _('Mon compte') }}
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="mobile-nav-link cta">
+                <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
+                {{ _('Déconnexion') }}
+            </a>
+            {% else %}
+            <a href="{{ url_for('tilto_pro') }}" class="mobile-nav-link">
+                <i class="fas fa-briefcase" style="margin-right: 10px;"></i>
+                Tilto Pro
+            </a>
+            <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="mobile-nav-link">
+                <i class="fas fa-address-card" style="margin-right: 10px;"></i>
+                Smart Contact
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="mobile-nav-link">
+                <i class="fas fa-sign-in-alt" style="margin-right: 10px;"></i>
+                {{ _('Me connecter') }}
+            </a>
+
+                {% if session.get('prelaunch_bypass') %}
+                    <a href="{{ url_for('tokens.shop') }}" class="mobile-nav-link">
+                        <i class="fas fa-shopping-bag" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                        {{ _('Boutique') }}
+                    </a>
+                    <a href="{{ url_for('auth.signup') }}" class="mobile-nav-link cta">
+                        <i class="fas fa-user-plus" style="margin-right: 10px;"></i>
+                        {{ _('M\'inscrire') }}
+                    </a>
+                {% endif %}
+            {% endif %}
+            
+            <div style="margin-top: 30px; padding: 15px; background-color: var(--primary-light); border-radius: var(--radius-md);">
+                <p style="color: var(--primary); margin-bottom: 15px; font-weight: 600;">{{ _('Langue') }}</p>
+                <div style="display: flex; gap: 10px;">
+                    <a href="{{ url_for('set_language', lang_code='fr') }}" 
+                       class="lang-selector-mobile {% if g.lang_code == 'fr' %}active{% endif %}"
+                       style="padding: 8px 15px; border-radius: var(--radius-sm); background-color: {% if g.lang_code == 'fr' %}var(--primary){% else %}white{% endif %}; color: {% if g.lang_code == 'fr' %}white{% else %}var(--text){% endif %}; text-decoration: none; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        FR
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if (current_user.is_authenticated and current_user.user_status == 'admin' and session.get('two_factor_authenticated')) or session.get('prelaunch_bypass_token') %}
+    <nav class="secondary-navbar">
+        <p> CMS MODE : </p>
+        <a href="{{ url_for('images.image_handler') }}" class="secondary-nav-link">
+            <i class="fas fa-image" style="color: #0073b1; margin-right: 6px;"></i>
+            Gestion des Images
+        </a>
+        <a href="{{ url_for('videos.video_handler') }}" class="secondary-nav-link">
+            <i class="fas fa-video" style="color: #0073b1; margin-right: 6px;"></i>
+            Gestion des Videos
+        </a>
+        <a href="{{ url_for('admin.dashboard') }}" class="secondary-nav-link">
+            <i class="fas fa-users" style="color: #3498db; margin-right: 6px;"></i>
+            Gestion des Users
+        </a>
+        <a href="{{ url_for('chat.get_chat_messages') }}" class="secondary-nav-link">
+            <i class="fas fa-comments" style="color: #3498db; margin-right: 6px;"></i> Messages Chat
+        </a>
+        <a href="{{ url_for('quiz_analysis.retry_analysis') }}" class="secondary-nav-link" >
+            <i class="fas fa-sync" style="color: #2ecc71; margin-right: 6px;"></i>
+            Retry LLM Analysis
+        </a>
+        <a href="{{ url_for('async_analysis.monitor_page') }}" class="secondary-nav-link" >
+            <i class="fas fa-sync" style="color: #2ecc71; margin-right: 6px;"></i>
+            Monitor Async Job
+        </a>
+        <a href="{{ url_for('help_requests.admin_v4_tracking') }}" class="secondary-nav-link">
+            <i class="fas fa-hands-helping" style="color: #2ecc71; margin-right: 6px;"></i>Stats Analyse
+        </a>
+        <a href="{{ url_for('help_requests.admin_view') }}" class="secondary-nav-link">
+            <i class="fas fa-hands-helping" style="color: #2ecc71; margin-right: 6px;"></i> Demandes d'accompagnement
+        </a>
+        <a href="{{ url_for('admin.admin_activity_stats') }}" class="secondary-nav-link">
+            <i class="fas fa-chart-bar" style="color: #3498db; margin-right: 6px;"></i>
+            Stats Activité
+        </a>
+        <a href="{{ url_for('coupons.coupon_handler') }}" class="secondary-nav-link">
+            <i class="fas fa-tag" style="color: #e63946; margin-right: 6px;"></i>
+            Gestion des Coupons
+        </a>
+        <a href="{{ url_for('dashboard.admin_orders') }}" class="secondary-nav-link">
+            <i class="fas fa-shopping-basket" style="color: #e67e22; margin-right: 6px;"></i>
+            Commandes
+        </a>
+        <a href="{{ url_for('tokens.stripe_audit') }}" class="secondary-nav-link" style="background-color: #F7DEEA;">
+            <i class="fas fa-credit-card" style="color: #6772e5; margin-right: 6px;"></i>
+            Audit Stripe
+        </a>
+        {% if not config.get('GOOGLE_CLOUD_PROJECT') %}
+        <a href="{{ url_for('test_anonymization_ui') }}" class="secondary-nav-link" style="background-color: #F7DEEA;">
+            Test Anonymization
+        </a>
+        {% endif %}
+        <a href="{{ url_for('audio_capsule.admin_dashboard') }}" class="secondary-nav-link" style="background-color: #F7DEEA;">
+            <i class="fas fa-volume-up" style="color: #9b59b6; margin-right: 6px;"></i>
+            Capsules Audio
+        </a>
+        <a href="{{ url_for('audio_capsule.admin_feedbacks') }}" class="secondary-nav-link" style="background-color: #F7DEEA;">
+            <i class="fas fa-comment" style="color: #1abc9c; margin-right: 6px;"></i>
+            Feedbacks
+            {% if feedback_count %}
+            <span class="badge badge-primary">{{ feedback_count }}</span>
+            {% endif %}
+        </a>
+    </nav>
+    {% endif %}
+    
+    {% if current_user.is_authenticated and current_user.user_status == 'admin' and not session.get('two_factor_authenticated') %}
+    <div class="alert alert-warning">
+        {{ _('Vous devez compléter l\'authentification à deux facteurs pour accéder aux fonctionnalités administratives.') }}
+    </div>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} fade-in-element">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-times-circle" style="margin-right: 10px;"></i>
+                        {% elif category == 'info' %}
+                            <i class="fas fa-info-circle" style="margin-right: 10px;"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+          <div class="footer-grid">
+            <div class="footer-column">
+              <h4><a href="{{ url_for('auth.home') }}" style="color: inherit; text-decoration: none;">Tilto.ai</a></h4>
+              <ul>
+                <li><a href="{{ url_for('auth.about') }}">{{ _('À propos de nous') }}</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h4>{{ _('Legal') }}</h4>
+              <ul>
+                <li><a href="{{ url_for('terms_of_service') }}">{{ _("Conditions Générales") }}</a></li>
+                <li><a href="{{ url_for('cookie_policy') }}">{{ _('Politique des cookies') }}</a></li>
+                <li><a href="{{ url_for('legal') }}">{{ _('Mentions légales') }}</a></li>
+                <li><a href="{{ url_for('privacy_policy') }}">{{ _('Politique de confidentialité') }}</a></li>
+              </ul>
+            </div>
+          </div>
+      
+          <div class="copyright-text">
+            &copy; {{ now.year }} Tilto. {{ _('Tous droits réservés.') }}
+          </div>
+        </div>
+    </footer>
+      
+    <script src="{{ versioned_asset_url('js_common') }}" nonce="{{ g.nonce }}"></script>
+
+    <!-- NOUVEAU : Rendre les traductions globales -->
+    <script nonce="{{ g.nonce }}">
+    // Exposer les traductions globalement pour tous les scripts
+    window.translations = {
+        'fr': {
+            'shortAudioError': 'Votre enregistrement dure moins de {min} secondes. Développez un peu plus votre réponse pour nous aider à mieux vous conseiller.',
+            'emptyAudioOrTextError': 'Veuillez enregistrer un message audio ou saisir une réponse écrite.',
+            'emptyTextAreaError': 'Veuillez saisir une réponse avant de continuer.',
+            'shortTextAreaError': 'Votre réponse est un peu courte. Développez davantage pour nous aider à mieux vous conseiller (minimum {min} caractères).',
+            'erreurGlobale': 'Une erreur est survenue. Veuillez réessayer.',
+            'noChoiceError': 'Veuillez sélectionner une option.',
+            'minChoicesError': 'Veuillez sélectionner au moins {min} options.',
+            'maxChoicesError': 'Veuillez sélectionner au maximum {max} options.',
+            'minChoicesInfinite': "Sélectionnez au moins une réponse",
+            'maxChoicesInfinite': "Sélectionnez autant de réponses que vous le souhaitez",
+            'locationPlaceholder': 'Entrez votre ville',
+            'emptyLocationError': 'Veuillez sélectionner une ville',
+            'invalidLocationError': 'Veuillez sélectionner une ville valide dans la liste',
+        }
+    };
+    
+    window.currentLanguage = '{{ g.lang_code }}';
+    
+    // Fonction globale de traduction
+    window.getTranslation = function(key, replacements = {}) {
+        let translation = window.translations[window.currentLanguage][key] || key;
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            translation = translation.replace(`{${placeholder}}`, value);
+        }
+        return translation;
+    };
+    </script>
+    
+    <script nonce="{{ g.nonce }}">
+        window.addEventListener('load', function() {
+            const loader = document.querySelector('.page-loader');
+            if (loader) {
+                loader.classList.add('loader-hidden');
+            }
+        });
+        
+        {% if not config.PRELAUNCH_MODE %}
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const closeMenuBtn = document.querySelector('.close-menu');
+        const mobileNav = document.querySelector('.mobile-nav');
+        
+        if (mobileMenuBtn && mobileNav) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileNav.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                const links = document.querySelectorAll('.mobile-nav-link');
+                links.forEach((link, index) => {
+                    link.style.opacity = "0";
+                    link.style.transform = "translateX(-30px)";
+                    
+                    setTimeout(() => {
+                        link.style.transition = "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)";
+                        link.style.opacity = "1";
+                        link.style.transform = "translateX(0)";
+                    }, index * 80 + 200);
+                });
+            });
+        }
+        
+        if (closeMenuBtn && mobileNav) {
+            closeMenuBtn.addEventListener('click', () => {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        if (mobileNavLinks.length > 0 && mobileNav) {
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileNav.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+        {% endif %}
+        
+        function fadeInOnScroll() {
+            const elements = document.querySelectorAll('.fade-in-element');
+            
+            if (elements) {
+                elements.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const triggerPoint = window.innerHeight * 0.8;
+                    
+                    if (elementTop < triggerPoint) {
+                        element.classList.add('visible');
+                    }
+                });
+            }
+        }
+        
+        function handleHeaderParallax() {
+            const scrolled = window.pageYOffset;
+            const header = document.querySelector('.header-parallax');
+            
+            if (header && scrolled < 500) {
+                header.style.transform = `translateY(${scrolled * 0.05}px)`;
+                header.style.opacity = Math.max(0.9, 1 - scrolled / 1000);
+            }
+        }
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        let ticking = false;
+        function handleScroll() {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    fadeInOnScroll();
+                    handleHeaderParallax();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            fadeInOnScroll();
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            
+            const fadeElements = document.querySelectorAll('.fade-in-element');
+            if (fadeElements) {
+                fadeElements.forEach(element => {
+                    element.classList.add('visible');
+                });
+            }
+        });
+        
+        const alerts = document.querySelectorAll('.alert');
+        if (alerts && alerts.length > 0) {
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-20px) scale(0.9)';
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                    }, 300);
+                }, 5000);
+            });
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            {% if not config.PRELAUNCH_MODE %}
+            if (e.key === 'Escape' && mobileNav && mobileNav.classList.contains('active')) {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            {% endif %}
+        });
+        
+        if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+            document.documentElement.style.setProperty('--transition', 'all 0.2s ease');
+            document.documentElement.style.setProperty('--transition-smooth', 'all 0.3s ease');
+        }
+    </script>
+    
+    {% block scripts %}
+    {% endblock %}
+    {% block extra_js %}{% endblock %}
+    
+    {% from 'components/cookie_consent.html' import cookie_banner %}
+    {{ cookie_banner() }}
+    
+    {% if g.can_use_analytics %}
+    <script nonce="{{ g.nonce }}">
+        console.log('Analytics chargés avec consentement');
+    </script>
+    {% endif %}
+    
+    {% if g.can_use_marketing %}
+    <script nonce="{{ g.nonce }}">
+        console.log('Scripts marketing chargés avec consentement');
+    </script>
+    {% endif %}
+    
+    {% if g.can_use_preferences %}
+    <script nonce="{{ g.nonce }}">
+        console.log('Scripts de préférences chargés avec consentement');
+    </script>
+    {% endif %}
+    
+    {% if 'debug' in request.args or 'debug_lang' in request.args %}
+    <div style="position: fixed; top: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 5px; font-size: 12px; z-index: 9999;">
+        Lang: {{ g.lang_code }} / Session: {{ session.lang_code if session.lang_code else 'None' }}
+    </div>
+    {% endif %}
+    
+    {% if current_user.is_authenticated and current_user.user_status == 'admin' and not session.get('two_factor_authenticated') %}
+    <script nonce="{{ g.nonce }}">
+    if (window.location.pathname !== "{{ url_for('auth.two_factor') }}" && 
+        window.location.pathname !== "{{ url_for('auth.setup_two_factor') }}" && 
+        window.location.pathname !== "{{ url_for('auth.verify_setup') }}" && 
+        window.location.pathname !== "{{ url_for('auth.reset_2fa') }}") {
+        window.location.href = "{{ url_for('auth.two_factor') }}";
+    }
+    </script>
+    {% endif %}
+
+   <!-- ✅ Badge crédits dans la navbar -->
+{% if current_user.is_authenticated %}
+<style>
+.credit-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%);
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    opacity: 0;
+    box-shadow: 0 2px 8px rgba(161, 24, 87, 0.3);
+}
+
+.credit-badge.loaded {
+    opacity: 1;
+}
+
+.credit-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(161, 24, 87, 0.4);
+}
+
+.credit-badge .credit-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 0.5rem;
+    background: white;
+    border-radius: 12px;
+    color: #A11857;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.credit-badge.empty {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.credit-badge.empty:hover {
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+}
+
+.credit-badge.empty .credit-count {
+    color: #6b7280;
+}
+
+/* Tooltip au survol */
+.credit-badge .credit-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    width: 220px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 1000;
+    text-align: left;
+}
+
+.credit-badge .credit-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+.credit-badge:hover .credit-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+}
+
+.credit-tooltip-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.credit-tooltip-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+}
+
+.credit-tooltip-cta {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, #A11857 0%, #8b1249 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.credit-tooltip-cta:hover {
+    transform: scale(1.02);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .credit-badge {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .credit-badge .credit-count {
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .credit-badge .credit-tooltip {
+        display: none;
+    }
+}
+</style>
+
+<!-- 🎯 TEMPORAIRE : Script crédits désactivé -->
+<!--
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    var creditBadge = document.getElementById('tokenBadge');
+    var creditCount = document.getElementById('tokenCount');
+    var tooltipText = document.getElementById('creditTooltipText');
+    var tooltipCta = document.getElementById('creditTooltipCta');
+    
+    if (creditBadge && creditCount) {
+        fetch('/my-tokens')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                creditCount.textContent = data.count;
+                
+                if (data.count === 0) {
+                    creditBadge.classList.add('empty');
+                    if (tooltipText) tooltipText.textContent = 'Tu n\'as plus de crédits. Achète-en pour débloquer tes pistes pro !';
+                    if (tooltipCta) {
+                        tooltipCta.textContent = 'Obtenir des crédits';
+                        tooltipCta.href = '/buy/tilto_analysis';
+                    }
+                } else {
+                    if (tooltipText) tooltipText.textContent = '1 crédit = 1 piste pro débloquée avec métier, salaire et formations.';
+                    if (tooltipCta) {
+                        tooltipCta.textContent = 'Voir mes analyses';
+                        tooltipCta.href = '{{ url_for("dashboard.index") }}';
+                    }
+                }
+            }
+            creditBadge.classList.add('loaded');
+        })
+        .catch(function(err) {
+            console.error('Erreur chargement crédits:', err);
+            creditCount.textContent = '?';
+            creditBadge.classList.add('loaded');
+        });
+    }
+});
+</script>
+-->
+{% endif %}
+<!-- Chat Widget -->
+{% include 'components/chat_widget.html' %}
+    
+</body>
+</html>

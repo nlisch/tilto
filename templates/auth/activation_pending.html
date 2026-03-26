@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Activation de ton compte - Tilto{% endblock %}
+
+{% block content %}
+<div class="activation-pending-wrapper">
+    <div class="activation-pending-container">
+        <!-- Icône email -->
+        <div class="activation-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z" fill="#A11857"/>
+            </svg>
+        </div>
+        
+        <h1 class="activation-title">📧 Un email est en route !</h1>
+        
+        <!-- MODIFIÉ : Message conditionnel selon le contexte -->
+        {% if email_sent %}
+        <p class="activation-message">
+            Nous venons de t'envoyer un nouvel email à <strong>{{ email }}</strong> avec un lien pour créer ton mot de passe et activer ton compte.
+        </p>
+        {% else %}
+        <p class="activation-message">
+            Nous t'avons déjà envoyé un email à <strong>{{ email }}</strong> avec un lien pour créer ton mot de passe. Vérifie ta boîte mail et tes spams.
+        </p>
+        {% endif %}
+        
+        <!-- Étapes à suivre -->
+        <div class="activation-steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <span class="step-text">Vérifie ta boîte email (et tes spams 📨)</span>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <span class="step-text">Clique sur le lien d'activation</span>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <span class="step-text">Crée ton mot de passe sécurisé 🔐</span>
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                <span class="step-text">Accède à tes recommandations ! 🎯</span>
+            </div>
+        </div>
+        
+        <!-- Aide -->
+        <div class="activation-help">
+            <p>💡 <strong>Tu ne reçois pas l'email ?</strong></p>
+            <ul>
+                <li>Vérifie tes <strong>spams/promotions</strong></li>
+                <li>Attends quelques minutes (jusqu'à 5 min)</li>
+                <li>Contacte-nous : <a href="mailto:contact@tilto.ai">contact@tilto.ai</a></li>
+            </ul>
+        </div>
+        
+        <a href="{{ url_for('auth.login', lang_code=g.lang_code) }}" class="btn-back">
+            ← Retour à la connexion
+        </a>
+    </div>
+</div>
+
+<style nonce="{{ g.nonce }}">
+.activation-pending-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+}
+
+.activation-pending-container {
+    max-width: 550px;
+    width: 100%;
+    background: white;
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    text-align: center;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.activation-icon {
+    background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%);
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.75rem;
+    box-shadow: 0 8px 24px rgba(97, 5, 69, 0.3);
+}
+
+.activation-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1.25rem;
+    line-height: 1.2;
+}
+
+.activation-message {
+    font-size: 1.0625rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0 0 2.5rem;
+}
+
+.activation-message strong {
+    color: #A11857;
+    font-weight: 600;
+}
+
+.activation-steps {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.step:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    background: linear-gradient(135deg, #A11857 0%, #8b1a6b 100%);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(97, 5, 69, 0.2);
+}
+
+.step-text {
+    color: #2d3748;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    padding-top: 0.375rem;
+}
+
+.activation-help {
+    background: #fff9e6;
+    border: 2px solid #ffd700;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.activation-help p {
+    margin: 0 0 0.875rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: #856404;
+}
+
+.activation-help ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+.activation-help li {
+    margin-bottom: 0.625rem;
+}
+
+.activation-help li:last-child {
+    margin-bottom: 0;
+}
+
+.activation-help a {
+    color: #A11857;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.activation-help a:hover {
+    text-decoration: underline;
+}
+
+.btn-back {
+    display: inline-block;
+    color: #A11857;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.875rem 1.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    border-color: #A11857;
+    background: rgba(97, 5, 69, 0.03);
+    transform: translateY(-2px);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .activation-pending-wrapper {
+        padding: 1rem;
+    }
+    
+    .activation-pending-container {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .activation-icon {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .activation-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .activation-title {
+        font-size: 1.625rem;
+    }
+    
+    .activation-message {
+        font-size: 0.9375rem;
+    }
+    
+    .activation-steps {
+        padding: 1.25rem 1rem;
+    }
+    
+    .step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+    }
+    
+    .step-text {
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}

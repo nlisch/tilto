@@ -1,0 +1,10 @@
+quiz_id,question_id,question_ranking,is_active
+pack_clarte,67,1,TRUE
+pack_clarte,68,2,TRUE
+pack_clarte,69,3,TRUE
+pack_clarte,70,4,TRUE
+pack_clarte,26,5,TRUE
+pack_orientation,66,1,TRUE
+pack_orientation,53,2,TRUE
+smart_contact,66,1,TRUE
+smart_contact,53,2,TRUE

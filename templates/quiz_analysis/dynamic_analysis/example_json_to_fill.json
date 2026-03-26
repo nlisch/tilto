@@ -1,0 +1,234 @@
+{
+  "actions": {
+    "items": [
+      {
+        "access_type": "free",
+        "badge_text": "Ton action 1",
+        "detail_content": "<h4>📋 Méthode pas à pas (3h total)</h4><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 1 : Accroche repositionnée (30 min)</p><p style='font-size:0.9rem;'><strong>❌ Version actuelle à éviter :</strong></p><p style='background:white;padding:10px;font-size:0.85rem;opacity:0.7;'>Dessinatrice projeteur Autocad 3D, 17 ans d'expérience bureau d'études structure bâtiment</p><p style='margin-top:8px;font-size:0.9rem;'><strong>✅ Version repositionnée :</strong></p><p style='background:white;padding:10px;font-size:0.85rem;border:2px solid var(--primary);'>Coordinatrice projets bâtiment : 17 ans pilotage gros projets ouest parisien (suivi planning/budget, animation réunions techniques, formation équipes, amélioration process) → Expertise gestion de projets techniques + coordination équipes pluridisciplinaires</p></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 2 : Reformule tes missions (1h30)</p><p style='font-size:0.9rem;'><strong>Pour chaque poste, ajoute 3 puces 'coordination' AVANT les puces techniques :</strong></p><p style='font-size:0.85rem;margin-top:8px;'><strong>Exemple mission actuelle :</strong></p><ul style='padding-left:20px;font-size:0.85rem;'><li>✅ Coordination équipe pluridisciplinaire (architectes, ingénieurs, économistes) sur projets 5-15M€</li><li>✅ Animation réunions de synthèse hebdomadaires (10-15 participants)</li><li>✅ Formation et tutorat d'une dessinatrice intermédiaire (2 ans d'accompagnement)</li><li>✅ Participation groupes de travail amélioration méthodes de production</li><li>Puis seulement après : Réalisation plans exécution Autocad 3D (structures béton/métal)</li></ul></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 3 : Bloc compétences transverses (1h)</p><p style='font-size:0.85rem;'>Crée un encadré 'Compétences clés' en haut du CV :</p><ul style='padding-left:20px;font-size:0.85rem;'><li>Gestion de projets techniques (planning, budget, coordination)</li><li>Animation réunions et groupes de travail</li><li>Formation et tutorat d'équipes</li><li>Intelligence émotionnelle : médiation conflits, empathie, écoute active</li><li>Amélioration continue des process</li></ul><p style='font-size:0.85rem;margin-top:8px;'>Puis seulement : Maîtrise Autocad 3D, calcul structures béton/métal</p></div>",
+        "icon": "🎯",
+        "preview_text": "Ton CV actuel crie 'je dessine sur Autocad'. Résultat : on te propose des postes techniques stressants. Il faut le réécrire pour crier 'je coordonne des projets, j'anime des équipes, j'améliore des process'. Même expérience, angle différent.",
+        "subtitle": "3h pour transformer ton profil technique en profil gestion de projets",
+        "title": "Repositionne ton CV en 'coordinatrice projets' (pas 'dessinatrice')",
+        "unlock_source": "action_1"
+      },
+      {
+        "access_type": "free",
+        "badge_text": "Ton action 2",
+        "detail_content": "<h4>📋 Méthode pas à pas (1 samedi matin)</h4><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 1 : Choisis un format simple (30 min préparation)</p><p style='font-size:0.9rem;'><strong>3 formats testés et approuvés :</strong></p><ul style='padding-left:20px;font-size:0.85rem;'><li><strong>Atelier mini-bouquets champêtres</strong> (6-10 ans, 1h30) : Les enfants composent un bouquet avec fleurs séchées + raphia. Matériel : 30-40€ chez fleuriste grossiste.</li><li><strong>Atelier land art en extérieur</strong> (5-12 ans, 1h30) : Création œuvres éphémères avec éléments nature (feuilles, branches, cailloux). Matériel : 0€, juste un parc.</li><li><strong>Atelier couronnes de fleurs</strong> (7-12 ans, 2h) : Confection couronnes avec fleurs fraîches + fil de fer. Matériel : 50-60€.</li></ul></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 2 : Recrute 6-8 enfants via ton réseau (1h)</p><p style='font-size:0.85rem;'>Envoie ce message à 10 parents de ton entourage (école de tes enfants, voisins, collègues) :</p><p style='background:white;padding:10px;font-size:0.85rem;border-left:3px solid var(--primary);margin-top:8px;'>'Coucou ! Je teste un projet d'ateliers créatifs pour enfants et je cherche 6-8 cobayes 😊 Samedi [DATE] 10h-11h30, atelier mini-bouquets champêtres GRATUIT (valeur 20€). Tes enfants sont intéressés ? Réponds-moi vite, places limitées !'</p></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 3 : Anime l'atelier et OBSERVE-TOI (1h30)</p><p style='font-size:0.85rem;'>Pendant l'atelier, note mentalement :</p><ul style='padding-left:20px;font-size:0.85rem;'><li>✅ Est-ce que tu KIFFES gérer le groupe (bruit, énergie, imprévus) ?</li><li>✅ Est-ce que tu te sens ÉNERGISÉE ou ÉPUISÉE après ?</li><li>✅ Est-ce que tu as des idées plein la tête pour le prochain atelier ?</li></ul><p style='font-size:0.85rem;margin-top:8px;'><strong>Si 3 OUI :</strong> Fonce sur la piste ateliers créatifs.<br><strong>Si 2 NON ou plus :</strong> Abandonne cette piste, concentre-toi sur AMO ou coordination projets sociaux.</p></div>",
+        "icon": "🔍",
+        "preview_text": "Tu hésites entre plusieurs pistes (floral, enfants, social). Avant de te lancer, teste CONCRÈTEMENT 1 atelier créatif gratuit avec 6-8 enfants. Objectif : valider que tu kiffes l'animation de groupes (ou pas). Ça t'évitera de perdre 6 mois sur une fausse piste.",
+        "subtitle": "1 samedi matin pour savoir si tu AIMES vraiment animer des groupes d'enfants",
+        "title": "Teste 1 atelier créatif gratuit pour valider la piste enfants",
+        "unlock_source": "action_2"
+      },
+      {
+        "access_type": "free",
+        "badge_text": "Ton action 3",
+        "detail_content": "<h4>📋 Méthode pas à pas (3 cafés virtuels)</h4><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 1 : Identifie 3 profils cibles sur LinkedIn (1h)</p><p style='font-size:0.9rem;'><strong>Pour chaque piste, cherche 1 personne :</strong></p><ul style='padding-left:20px;font-size:0.85rem;'><li><strong>Piste AMO :</strong> Recherche LinkedIn 'assistante maîtrise ouvrage' + 'Val-de-Marne' ou 'Île-de-France'. Filtre par personnes (pas offres). Cible : femmes 35-50 ans en poste depuis 2-5 ans.</li><li><strong>Piste coordination sociale :</strong> Recherche 'coordinatrice projets insertion' ou 'chargée de projets inclusion' + 'association'. Cible : profils en reconversion (regarde parcours avant).</li><li><strong>Piste ateliers créatifs :</strong> Recherche 'ateliers créatifs enfants' + 'micro-entreprise' ou 'auto-entrepreneur'. Cible : personnes actives (posts récents).</li></ul></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 2 : Envoie ce message (copie-colle adapté)</p><p style='background:white;padding:10px;font-size:0.85rem;border-left:3px solid var(--primary);margin-top:8px;'>'Bonjour [Prénom],<br><br>Je suis en réflexion de reconversion après 17 ans en bureau d'études bâtiment et ton parcours m'inspire beaucoup. J'explore la piste [AMO projets éducatifs / coordination projets sociaux / ateliers créatifs enfants].<br><br>Accepterais-tu un café virtuel de 30 min pour me partager ton retour d'expérience ? Je ne cherche pas de job, juste des conseils concrets 😊<br><br>Merci d'avance !<br>[Ton prénom]'</p><p style='font-size:0.85rem;margin-top:8px;'><strong>Taux de réponse :</strong> 30-40% si tu contactes 10 personnes, tu auras 3-4 OUI.</p></div><div style='background:var(--primary-light);padding:15px;border-radius:8px;margin:12px 0;'><p style='margin:0 0 8px 0;font-weight:600;'>ÉTAPE 3 : Pose ces 5 questions CASH (30 min par café)</p><ul style='padding-left:20px;font-size:0.85rem;'><li>1. Qu'est-ce qui te prend le PLUS de temps dans une journée type ? (pour vérifier que ça colle à ce que tu aimes)</li><li>2. Quel est ton salaire réel aujourd'hui ? (pour valider que c'est viable financièrement)</li><li>3. Quels sont les 2 trucs CHIANTS que personne ne dit sur ce métier ? (pour éviter les désillusions)</li><li>4. Si c'était à refaire, tu referais ce choix ? Pourquoi ? (pour sentir si la personne est épanouie ou pas)</li><li>5. Quel conseil tu me donnerais pour me lancer sans perdre 1 an ? (pour gagner du temps)</li></ul></div>",
+        "icon": "🤝",
+        "preview_text": "Tu as 3 pistes (AMO, coordination sociale, ateliers créatifs) mais tu connais personne qui fait ça. Résultat : tu projettes un idéal qui risque de ne pas coller à la réalité. Solution : contacte 3 personnes via LinkedIn pour 30 min de questions cash.",
+        "subtitle": "3 cafés virtuels de 30 min pour valider que la réalité colle à ton idéal",
+        "title": "Contacte 3 personnes qui font le métier que tu vises",
+        "unlock_source": "action_3"
+      }
+    ],
+    "strengths_recap": [
+      {
+        "description": "Autocad 3D, gros chantiers, formation équipes = expertise technique prouvée",
+        "title": "17 ans coordination projets"
+      },
+      {
+        "description": "Empathie, désamorçage conflits, animation équipes = talent rare coordination",
+        "title": "Intelligence émotionnelle reconnue"
+      },
+      {
+        "description": "Tu donnes de l'énergie, tu répartis selon forces/faiblesses = leadership naturel",
+        "title": "Organisée et positive"
+      }
+    ],
+    "subtitle": "Ton profil technique + empathie + besoin de créer = combinaison RARE. Voici comment le valoriser concrètement."
+  },
+  "starting_point": {
+    "key_insight": "Tu ne veux PAS fuir la technique. Tu veux utiliser tes 17 ans d'expertise pour créer des projets utiles, gérer ton temps et retrouver du sens sans sacrifier ta vie de maman",
+    "strengths": [
+      {
+        "description": "Autocad 3D, gros projets, formation intermédiaire = crédibilité technique massive + capacité à transmettre.",
+        "title": "17 ans bureau d'études"
+      },
+      {
+        "description": "Empathie, désamorçage conflits, animation groupes de travail = talent rare pour coordonner des équipes.",
+        "title": "Intelligence émotionnelle reconnue"
+      },
+      {
+        "description": "Tu donnes de l'énergie aux autres, tu répartis le travail selon les forces/faiblesses = leadership naturel.",
+        "title": "Organisée et positive"
+      },
+      {
+        "description": "Tu as participé à des réunions d'amélioration process = tu sais optimiser et structurer.",
+        "title": "Expérience amélioration méthodes"
+      },
+      {
+        "description": "Danse en compétition malgré 3 enfants = tu vas au bout de ce que tu entreprends.",
+        "title": "Dépassement de soi prouvé"
+      }
+    ],
+    "transformations": [
+      {
+        "after_text": "Gérer mon emploi du temps, prendre mes décisions, liberté",
+        "before_text": "Stress permanent, urgence, plans exécutés direct sur chantier"
+      },
+      {
+        "after_text": "Créer quelque chose de beau et utile, faire fonctionner mon cerveau",
+        "before_text": "Projets qui changent en permanence, conflits chantier"
+      },
+      {
+        "after_text": "Aider les autres, que ma réflexion apporte quelque chose",
+        "before_text": "Impression de ne plus servir à rien"
+      },
+      {
+        "after_text": "Avoir mes soirées et week-ends, être présente pour eux",
+        "before_text": "Pas de temps pour mes 3 enfants (soirs/week-ends pris)"
+      }
+    ],
+    "user_quote": "J'ai l'impression de ne plus trop faire fonctionner mon cerveau. J'aime bien aider les autres, servir à quelque chose, que ma réflexion apporte quelque chose. Dans l'idéal travailler en équipe et faire quelque chose que je trouve beau, au moins quelque chose d'utile."
+  },
+  "strategies": {
+    "honesty_message": "Je te préviens direct : AUCUNE de ces voies ne te fera gagner 3000€/mois la 1ère année à ton compte. Mais toutes respectent tes 2 lignes rouges (soirs/week-ends libres + sens). Et toutes démarrent sous les 6 mois.",
+    "items": [
+      {
+        "access_type": "free",
+        "badge_text": "Ta Stratégie 1",
+        "detail_content": "<div class='detail-section'><h4>🎯 Comment ça marche concrètement</h4><p>Tu intègres une collectivité (mairie, département, région) ou un cabinet AMO spécialisé éducatif/culturel comme assistante maîtrise d'ouvrage. Tu coordonnes des projets de réhabilitation ou construction : écoles, crèches, médiathèques, centres culturels.</p><p><strong>Ton rôle précis :</strong></p><ul><li>Interface entre élus/directeurs d'établissement et bureaux d'études techniques</li><li>Suivi planning/budget (mais sans urgence chantier permanente)</li><li>Animation réunions de coordination</li><li>Validation plans avec ta vision technique + besoins utilisateurs</li></ul><p><strong>Structures cibles :</strong></p><ul><li>Mairies moyennes (20 000-100 000 hab) : Saint-Maur, Créteil, Vincennes, Nogent-sur-Marne</li><li>Départements : Val-de-Marne, Seine-Saint-Denis</li><li>Cabinets AMO : Transitec, Alto Ingénierie, Génie des Lieux</li></ul></div><div class='detail-section'><h4>💡 Pourquoi c'est fait pour toi</h4><p>C'est LE poste qui coche TOUTES tes cases :</p><ul><li>✅ <strong>Utilité concrète :</strong> Tu crées des lieux pour enfants, familles, culture</li><li>✅ <strong>Technique + sens :</strong> Tu utilises tes 17 ans d'expertise MAIS pour du beau et utile</li><li>✅ <strong>Pas de stress chantier :</strong> Tu coordonnes SANS être en exécution urgente</li><li>✅ <strong>Équipe + autonomie :</strong> Tu animes des réunions MAIS tu gères ton planning</li><li>✅ <strong>Vie perso respectée :</strong> Horaires 9h-17h30, télétravail 2-3j/semaine possible</li></ul></div><div class='detail-section'><h4>💰 Revenus réalistes</h4><p><strong>Assistante AMO projets éducatifs : 2200-2600€ brut/mois</strong></p><ul><li>Petites mairies/cabinets AMO : 2200-2400€ brut</li><li>Départements/grandes villes : 2400-2600€ brut</li><li>Après 2-3 ans, passage indépendante possible : 300-450€/jour (= 4500-6750€/mois sur base 15j facturés)</li></ul><p><strong>Réalité :</strong> Tu commences sous ton minimum idéal (1800€ net = environ 2300€ brut) MAIS en 12-18 mois tu atteins 2400-2500€ brut.</p></div><div class='detail-section'><h4>🚀 Stratégie de lancement</h4><p><strong>1. CV repositionné AMO (pas dessinatrice)</strong></p><p>Exemple accroche : '17 ans coordination projets bâtiment (Autocad 3D, gros chantiers ouest parisien, formation équipes) → Expertise suivi technique + animation réunions projet'</p><p><strong>2. CIBLAGE mairies moyennes Val-de-Marne</strong></p><ul><li>Saint-Maur, Créteil, Vincennes, Nogent, Fontenay-sous-Bois</li><li>Départements 94/93 (services bâtiments scolaires)</li><li>Cabinets AMO spécialisés éducatif (Transitec, Alto Ingénierie)</li></ul><p><strong>3. Pitch LinkedIn/réseau :</strong></p><p style='background:white;padding:12px;border-left:3px solid var(--primary);font-size:0.9rem;'>'Après 17 ans en bureau d'études structure, je cherche à mettre mon expertise technique au service de projets éducatifs/culturels. Mon profil : coordination gros projets + animation équipes + empathie pour comprendre besoins utilisateurs. Cible : poste AMO collectivités ou cabinet spécialisé.'</p></div><div class='detail-section'><h4>⏱️ Délai réaliste</h4><p>4-6 mois en mode recherche ACTIVE (candidatures ciblées 3-5/semaine + réseau LinkedIn actif)</p><ul><li>Mois 1-2 : CV repositionné + ciblage 30 structures</li><li>Mois 3-4 : Candidatures + activation réseau BTP/collectivités</li><li>Mois 5-6 : Entretiens + négociation</li></ul></div><div class='detail-section compromise'><h4>⚖️ Le compromis honnête</h4><p>Tu devras accepter 1-2 ans en CDI (pas à ton compte direct) pour prouver ton repositionnement. Salaire démarrage 2200-2400€ brut (légèrement sous ton idéal). MAIS c'est la SEULE voie qui te permet de garder ta technique SANS le stress chantier.</p></div>",
+        "duration": "4-6 mois",
+        "preview_items": [
+          {
+            "icon": "✅",
+            "text": "Tu coordonnes des projets de A à Z (réhabilitation écoles, médiathèques, crèches) sans stress chantier",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu utilises ton expertise technique MAIS pour des bâtiments utiles et beaux",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Horaires bureau classiques (pas de soirs/week-ends), souvent télétravail 2-3j/semaine",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu animes des réunions, tu coordonnes des équipes = tu utilises ton intelligence émotionnelle",
+            "type": "pro"
+          },
+          {
+            "icon": "❌",
+            "text": "Salaire 2200-2600€ brut/mois en CDI (pas à ton compte tout de suite)",
+            "type": "con"
+          },
+          {
+            "icon": "❌",
+            "text": "Tu dois accepter 1-2 ans en poste salarié avant de te lancer en indépendante",
+            "type": "con"
+          }
+        ],
+        "realism": "⭐⭐⭐⭐⭐",
+        "salary": "2200-2600€ brut",
+        "subtitle": "Priorité = utilité + équipe + gestion projets (pas urgence chantier)",
+        "title": "Assistante maîtrise d'ouvrage (AMO) projets éducatifs/culturels",
+        "unlock_source": "strategy_1"
+      },
+      {
+        "access_type": "free",
+        "badge_text": "Ta Stratégie 2",
+        "detail_content": "<div class='detail-section'><h4>🎯 Comment ça marche concrètement</h4><p>Tu intègres une association, fondation ou structure d'insertion comme coordinatrice de projets. Tu conçois et pilotes des programmes d'accompagnement : ateliers insertion pro, parcours retour emploi, projets collectifs (jardins partagés, ateliers créatifs solidaires).</p><p><strong>Ton rôle précis :</strong></p><ul><li>Conception programmes d'accompagnement (de A à Z)</li><li>Coordination équipes (travailleurs sociaux, bénévoles, intervenants)</li><li>Animation ateliers collectifs (mais pas suivi individuel lourd)</li><li>Suivi budget/planning/partenariats</li></ul><p><strong>Structures cibles :</strong></p><ul><li>Associations insertion : Emmaüs Solidarité, Aurore, Groupe SOS, La Cravate Solidaire</li><li>Fondations : Fondation Abbé Pierre, Fondation de France (programmes insertion)</li><li>Régies de quartier Val-de-Marne : Saint-Maur, Créteil, Ivry-sur-Seine</li></ul></div><div class='detail-section'><h4>💡 Pourquoi c'est fait pour toi</h4><p>C'est LE poste qui répond à ton besoin d'utilité SANS te noyer émotionnellement :</p><ul><li>✅ <strong>Aider concrètement :</strong> Tu crées des parcours qui changent des vies</li><li>✅ <strong>Empathie utilisée intelligemment :</strong> Tu coordonnes des équipes, tu animes des ateliers collectifs (pas de suivi psy individuel)</li><li>✅ <strong>Créer de A à Z :</strong> Tu conçois des programmes, tu testes, tu ajustes</li><li>✅ <strong>Équipe protectrice :</strong> Tu travailles AVEC des travailleurs sociaux (tu n'es pas seule face à la détresse)</li><li>✅ <strong>Horaires respectés :</strong> Peu de soirs/week-ends (sauf événements ponctuels)</li></ul></div><div class='detail-section'><h4>💰 Revenus réalistes</h4><p><strong>Coordinatrice projets insertion : 2000-2400€ brut/mois</strong></p><ul><li>Petites associations locales : 2000-2200€ brut</li><li>Grandes associations nationales : 2200-2400€ brut</li><li>Fondations : 2300-2500€ brut (rare, très sélectif)</li></ul><p><strong>Réalité dure :</strong> Le secteur social paye mal. Tu seras à 2000-2200€ brut les 12-18 premiers mois (= environ 1600-1750€ net). C'est sous ton minimum 1800€ net. MAIS certaines assos proposent avantages : tickets resto, mutuelle top, télétravail, RTT.</p></div><div class='detail-section'><h4>🚀 Stratégie de lancement</h4><p><strong>1. CV narratif compétences transverses</strong></p><p>Exemple accroche : 'Profil atypique : 17 ans coordination projets techniques (gestion équipes, amélioration méthodes, animation réunions) + intelligence émotionnelle reconnue → Expertise pilotage projets collectifs à impact social'</p><p><strong>2. CIBLAGE structures ouvertes profils atypiques</strong></p><ul><li>Associations moyennes (50-200 salariés) : Aurore, Groupe SOS, La Cravate Solidaire</li><li>Régies de quartier locales (Saint-Maur, Créteil, Ivry)</li><li>Fondations innovantes (appels à projets inclusion)</li></ul><p><strong>3. Bénévolat stratégique 2-3 mois</strong></p><p>Propose à une asso locale (Secours Populaire Saint-Maur, Restos du Cœur Créteil) d'animer 1 atelier/mois (ex: atelier CV collectif, atelier confiance en soi). Ça prouve ton engagement + tu testes le secteur.</p></div><div class='detail-section'><h4>⏱️ Délai réaliste</h4><p>5-8 mois (dont 2-3 mois bénévolat stratégique)</p><ul><li>Mois 1-3 : Bénévolat 1 atelier/mois + CV repositionné</li><li>Mois 4-6 : Candidatures ciblées (3-5/semaine) + réseau secteur social</li><li>Mois 7-8 : Entretiens + négociation</li></ul></div><div class='detail-section compromise'><h4>⚖️ Le compromis honnête</h4><p>Salaire 2000-2200€ brut les 18 premiers mois (= 1600-1750€ net) donc SOUS ton minimum 1800€ net. Tu devras compléter avec allocations chômage si tu en as, ou accepter de serrer la ceinture 1 an. MAIS c'est la voie la plus rapide pour retrouver du SENS et utiliser ton empathie sans t'épuiser.</p></div>",
+        "duration": "5-8 mois",
+        "preview_items": [
+          {
+            "icon": "✅",
+            "text": "Tu coordonnes des projets d'insertion (ateliers, parcours accompagnement) pour aider concrètement",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu utilises ton intelligence émotionnelle + ton organisation SANS porter la charge émotionnelle seule",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Horaires compatibles vie famille (9h-17h, peu de soirs/week-ends)",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu crées des programmes de A à Z, tu animes des équipes = tu fais fonctionner ton cerveau",
+            "type": "pro"
+          },
+          {
+            "icon": "❌",
+            "text": "Salaire 2000-2400€ brut/mois (secteur associatif moins rémunérateur)",
+            "type": "con"
+          },
+          {
+            "icon": "❌",
+            "text": "Tu dois accepter que ton empathie sera sollicitée (mais en équipe, pas seule face aux bénéficiaires)",
+            "type": "con"
+          }
+        ],
+        "realism": "⭐⭐⭐⭐",
+        "salary": "2000-2400€ brut",
+        "subtitle": "Priorité = aider les autres + équipe + créer quelque chose d'utile",
+        "title": "Coordinatrice projets inclusion/insertion (structures sociales)",
+        "unlock_source": "strategy_2"
+      },
+      {
+        "access_type": "free",
+        "badge_text": "Ta Stratégie 3",
+        "detail_content": "<div class='detail-section'><h4>🎯 Comment ça marche concrètement</h4><p>Tu lances une micro-entreprise d'ateliers créatifs pour enfants 4-12 ans et familles. Format : ateliers ponctuels mercredis/samedis + stages vacances scolaires. Thématiques : création florale enfants, ateliers nature/land art, DIY déco famille.</p><p><strong>Formats rentables :</strong></p><ul><li>Ateliers parent-enfant (samedi matin 10h-12h) : 35-45€/binôme</li><li>Stages vacances 3 jours (9h-12h) : 120-150€/enfant</li><li>Anniversaires créatifs à domicile : 180-250€ (2h pour 8-10 enfants)</li><li>Partenariats centres de loisirs/MJC : 60-80€/heure d'intervention</li></ul><p><strong>Lieux cibles :</strong></p><ul><li>MJC/centres sociaux Saint-Maur, Créteil, Vincennes</li><li>Boutiques créatives/fleuristes (partenariat location espace)</li><li>Ton domicile si pièce dédiée (économie location)</li></ul></div><div class='detail-section'><h4>💡 Pourquoi c'est fait pour toi</h4><p>C'est LA voie qui respecte à 100% tes 3 priorités non-négociables :</p><ul><li>✅ <strong>Autonomie totale :</strong> Tu décides de tes créneaux, tu refuses les soirs si tu veux</li><li>✅ <strong>Créer du beau :</strong> Ateliers floraux, land art, DIY = tu utilises ta fibre artistique (danse, esthétique)</li><li>✅ <strong>Enfants SANS contrainte scolaire :</strong> Tu animes des ateliers ludiques mercredis/samedis (pas de correction copies le soir)</li><li>✅ <strong>Vie perso protégée :</strong> Tes 3 enfants peuvent même participer aux ateliers tests</li></ul></div><div class='detail-section'><h4>💰 Revenus réalistes</h4><p><strong>Année 1 (démarrage progressif) : 800-1500€/mois</strong></p><ul><li>Mois 1-3 : 200-400€/mois (1-2 ateliers tests gratuits + 2-3 payants)</li><li>Mois 4-8 : 600-1000€/mois (1 atelier/semaine + 1 anniversaire/mois)</li><li>Mois 9-12 : 1000-1500€/mois (2 ateliers/semaine + stages vacances)</li></ul><p><strong>Année 2 (si passage temps plein) : 1800-2500€/mois</strong></p><ul><li>3-4 ateliers/semaine + 2 stages/vacances + anniversaires</li></ul><p><strong>Réalité brutale :</strong> Tu NE PEUX PAS vivre de ça les 12 premiers mois. Il te faut un complément (CDI actuel à temps partiel, allocation chômage, conjoint, ou économies).</p></div><div class='detail-section'><h4>🚀 Stratégie de lancement</h4><p><strong>1. Test marché 0€ (2 mois)</strong></p><p>Propose 2 ateliers gratuits dans MJC Saint-Maur ou école de tes enfants (fête d'école). Objectif : valider que tu AIMES animer des groupes d'enfants + récolter témoignages parents.</p><p><strong>2. Offre pilote payante (mois 3-4)</strong></p><p>Lance 1 atelier/mois payant (25€/enfant, 6-8 enfants max) via :</p><ul><li>Groupe Facebook parents Saint-Maur</li><li>Flyers écoles de tes enfants</li><li>Bouche-à-oreille ton réseau</li></ul><p><strong>3. Partenariats structurants (mois 5-8)</strong></p><p>Démarche 5 MJC/centres sociaux Val-de-Marne pour proposer ateliers mercredis (60-80€/heure). Pitch : 'Ateliers créatifs nature/floral pour enfants 6-10 ans, animés par professionnelle 17 ans coordination projets + maman 3 enfants'.</p></div><div class='detail-section'><h4>⏱️ Délai réaliste</h4><p>6-12 mois pour atteindre 1200-1500€/mois réguliers</p><ul><li>Mois 1-2 : Ateliers tests gratuits + création micro-entreprise</li><li>Mois 3-6 : 1-2 ateliers payants/mois (400-800€/mois)</li><li>Mois 7-12 : Montée en charge (1000-1500€/mois)</li></ul><p><strong>Passage temps plein :</strong> Possible après 12-18 mois SI tu as sécurisé 2-3 partenariats MJC/centres + base clients fidèles 30-40 familles.</p></div><div class='detail-section compromise'><h4>⚖️ Le compromis honnête</h4><p>Tu devras accepter 12-18 mois de DOUBLE journée : CDI actuel en journée + ateliers mercredis/samedis. C'est ÉPUISANT. Et revenus ateliers insuffisants pour vivre (800-1500€/mois an 1). MAIS c'est la SEULE voie qui te donne autonomie totale + créativité + enfants SANS refaire 3 ans d'études.</p></div>",
+        "duration": "6-12 mois",
+        "preview_items": [
+          {
+            "icon": "✅",
+            "text": "Tu crées tes ateliers (floral, créatif, nature) et tu gères 100% ton emploi du temps",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu travailles avec des enfants MAIS sur créneaux mercredis/samedis (pas de soirées)",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Démarrage progressif en parallèle CDI actuel (test sans risque financier)",
+            "type": "pro"
+          },
+          {
+            "icon": "✅",
+            "text": "Tu fais quelque chose de beau et utile (éveil créatif, lien parent-enfant)",
+            "type": "pro"
+          },
+          {
+            "icon": "❌",
+            "text": "Revenus irréguliers : 800-1500€/mois les 12 premiers mois (complément indispensable)",
+            "type": "con"
+          },
+          {
+            "icon": "❌",
+            "text": "Tu dois accepter 12-18 mois de double activité (CDI + ateliers soirs/week-ends)",
+            "type": "con"
+          }
+        ],
+        "realism": "⭐⭐⭐",
+        "salary": "800-1500€/mois",
+        "subtitle": "Priorité = autonomie emploi du temps + créer du beau + être avec enfants (sans contrainte scolaire)",
+        "title": "Créatrice ateliers créatifs enfants/familles (micro-entreprise progressive)",
+        "unlock_source": "strategy_3"
+      }
+    ],
+    "subtitle": "Chaque voie combine : autonomie emploi du temps + utilité concrète + pas 3 ans d'études",
+    "title": "3 voies réalistes qui capitalisent sur tes 17 ans de technique + ton empathie"
+  },
+  "welcome": {
+    "content": "Après 17 ans dans le même bureau d'études structure (IUT Mesures Physiques + licence pro conception technique), tu maîtrises Autocad, la modélisation 3D, la gestion de gros projets ouest parisien. Tu as même formé une intermédiaire il y a 2 ans. Bref, tu es COMPÉTENTE.<br><br>Mais le stress permanent, les urgences, les projets qui changent sans arrêt, les conflits chantier... ça t'épuise. Tu veux utiliser ton cerveau autrement, aider les autres, créer quelque chose de beau et utile. Et surtout : gérer ton emploi du temps pour être présente avec tes 3 enfants (la plus grande a 11 ans).<br><br><strong>La bonne nouvelle :</strong> Ton profil technique + ton intelligence émotionnelle (empathie, désamorçage conflits, animation équipes) + ton besoin de créer = combinaison RARE qui ouvre 3 voies concrètes. Pas besoin de refaire 3 ans d'études.<br><br><span style='font-style: italic; opacity: 0.9;'>— Claire de Tilto 💜</span>"
+  }
+}

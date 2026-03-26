@@ -1,0 +1,2632 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="flash-messages"></div>
+<div class="container-fluid mt-4 px-4">
+  <div class="page-header mb-4">
+    <h2 class="page-title">
+      <span class="title-icon">📊</span>
+      Statistiques d'Activité
+    </h2>
+    <p class="page-subtitle">Suivi des parcours utilisateurs et analytics</p>
+  </div>
+
+  <!-- ==================== FILTRES ==================== -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="header-content">
+          <span class="header-icon">🔍</span>
+          <span class="header-title">Filtres</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-user"></i> Utilisateur
+          </label>
+          <select id="user_filter" class="form-select-modern">
+            <option value="">-- Tous les utilisateurs --</option>
+            {% for user in users %}
+              <option value="{{ user.user_id }}" {% if selected_user_id == user.user_id %}selected{% endif %}>
+                {{ user.firstname }} {{ user.lastname or '' }} · ID: {{ user.user_id }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-calendar"></i> Période
+          </label>
+          <select id="period_filter" class="form-select-modern">
+            <option value="today" {% if period == 'today' %}selected{% endif %}>Aujourd'hui</option>
+            <option value="7days" {% if period == '7days' or not period %}selected{% endif %}>7 derniers jours</option>
+            <option value="30days" {% if period == '30days' %}selected{% endif %}>30 derniers jours</option>
+            <option value="90days" {% if period == '90days' %}selected{% endif %}>90 derniers jours</option>
+            <option value="custom" {% if period == 'custom' %}selected{% endif %}>Personnalisé</option>
+            <option value="all" {% if period == 'all' %}selected{% endif %}>Tout</option>
+          </select>
+        </div>
+        
+        <!-- Dates personnalisées -->
+        <div class="filter-group filter-group-dates" id="customDatesGroup" style="{% if period != 'custom' %}display: none;{% endif %}">
+          <label class="filter-label">
+            <i class="fas fa-calendar-alt"></i> Du
+          </label>
+          <input type="date" id="date_from" class="form-input-modern" value="{{ date_from or '' }}">
+        </div>
+        
+        <div class="filter-group filter-group-dates" id="customDatesGroupTo" style="{% if period != 'custom' %}display: none;{% endif %}">
+          <label class="filter-label">
+            <i class="fas fa-calendar-alt"></i> Au
+          </label>
+          <input type="date" id="date_to" class="form-input-modern" value="{{ date_to or '' }}">
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-filter"></i> Type d'événement
+          </label>
+          <select id="event_filter" class="form-select-modern">
+            <option value="">Tous les événements</option>
+            <option value="page_view" {% if event_type == 'page_view' %}selected{% endif %}>Page views</option>
+            <option value="login" {% if event_type == 'login' %}selected{% endif %}>Logins</option>
+            <option value="quiz_complete" {% if event_type == 'quiz_complete' %}selected{% endif %}>Quiz complétés</option>
+            <option value="payment" {% if event_type == 'payment' %}selected{% endif %}>Paiements</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-link"></i> Page (contient)
+          </label>
+          <input type="text" id="page_filter" class="form-input-modern" 
+                 placeholder="Ex: /admin, /quiz, /dashboard"
+                 value="{{ page_path_filter or '' }}">
+          <small style="color: var(--gray-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+            Recherche partielle (LIKE)
+          </small>
+        </div>
+        
+        <div class="filter-group filter-actions">
+          <button class="btn-action btn-action-primary" id="applyFilters">
+            <i class="fas fa-search"></i> Appliquer
+          </button>
+          <button class="btn-action btn-action-secondary" id="resetFilters">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VUE GLOBALE (si pas d'utilisateur sélectionné) ==================== -->
+  {% if not selected_user_id %}
+  
+  <!-- KPIs -->
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon-blue">
+        <i class="fas fa-eye"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-value">{{ stats.total_views | default(0) }}</div>
+        <div class="kpi-label">Pages vues</div>
+      </div>
+      <div class="kpi-trend kpi-trend-up">
+        <i class="fas fa-arrow-up"></i>
+      </div>
+    </div>
+    
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon-green">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-value">{{ stats.active_users | default(0) }}</div>
+        <div class="kpi-label">Utilisateurs actifs</div>
+      </div>
+      <div class="kpi-trend kpi-trend-up">
+        <i class="fas fa-arrow-up"></i>
+      </div>
+    </div>
+    
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon-orange">
+        <i class="fas fa-mobile-alt"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-value">{{ stats.mobile_percent | default(0) }}%</div>
+        <div class="kpi-label">Mobile</div>
+      </div>
+      <div class="kpi-badge">
+        <i class="fas fa-chart-pie"></i>
+      </div>
+    </div>
+    
+    <div class="kpi-card">
+      <div class="kpi-icon kpi-icon-purple">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="kpi-content">
+        <div class="kpi-value">{{ "%.1f" | format(stats.pages_per_user if stats.pages_per_user is not none else 0) }}</div>
+        <div class="kpi-label">Pages/utilisateur</div>
+      </div>
+      <div class="kpi-badge">
+        <i class="fas fa-calculator"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphique activité par jour -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">📈</span>
+      <span class="header-title">Activité par jour</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="activityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top pages + Top users -->
+  <div class="stats-grid mb-4">
+    <!-- Top pages -->
+    <div class="card card-modern">
+      <div class="card-header-modern">
+        <span class="header-icon">🔥</span>
+        <span class="header-title">Top 10 Pages</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="stats-table-wrapper">
+          <!-- Table remplacée par une structure CSS Grid pour éviter les conflits -->
+          <div id="topPagesGrid" class="top-pages-grid">
+            <div class="grid-header">
+              <div class="grid-cell cell-rank">#</div>
+              <div class="grid-cell cell-page">Page</div>
+              <div class="grid-cell cell-views">Vues</div>
+              <div class="grid-cell cell-percent">Répartition</div>
+            </div>
+            {% for page in top_pages %}
+            <div class="grid-data-row">
+              <div class="grid-cell cell-rank">
+                <span class="rank-badge {% if loop.index <= 3 %}rank-top{% endif %}">{{ loop.index }}</span>
+              </div>
+              <div class="grid-cell cell-page">
+                <code class="page-path-code">{{ page.page_path }}</code>
+              </div>
+              <div class="grid-cell cell-views">
+                <strong>{{ page.views }}</strong>
+              </div>
+              <div class="grid-cell cell-percent">
+                <div class="percent-bar-container">
+                  <div class="percent-bar-track">
+                    <div class="percent-bar-fill" style="width: {{ page.percent }}%"></div>
+                  </div>
+                  <span class="percent-value">{{ "%.1f" | format(page.percent if page.percent is not none else 0) }}%</span>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="grid-data-row grid-empty">
+              <div class="grid-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <i class="fas fa-inbox" style="font-size: 2rem; color: var(--gray-300);"></i>
+                <p style="margin-top: 0.5rem; color: var(--gray-500);">Aucune donnée</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top users -->
+    <div class="card card-modern">
+      <div class="card-header-modern">
+        <span class="header-icon">👥</span>
+        <span class="header-title">Top 10 Utilisateurs</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="stats-table-wrapper">
+          <!-- Table remplacée par une structure CSS Grid -->
+          <div id="topUsersGrid" class="top-users-grid">
+            <div class="grid-header">
+              <div class="grid-cell cell-rank">#</div>
+              <div class="grid-cell cell-user">Utilisateur</div>
+              <div class="grid-cell cell-pages">Pages</div>
+              <div class="grid-cell cell-action">Action</div>
+            </div>
+            {% for user in top_users %}
+            <div class="grid-data-row">
+              <div class="grid-cell cell-rank">
+                <span class="rank-badge {% if loop.index <= 3 %}rank-top{% endif %}">{{ loop.index }}</span>
+              </div>
+              <div class="grid-cell cell-user">
+                <div class="user-cell">
+                  <span class="user-avatar-mini">{{ user.firstname[0] if user.firstname else '?' }}</span>
+                  <div class="user-info-cell">
+                    <span class="user-name-cell">{{ user.firstname }}</span>
+                    <span class="user-id-cell">ID: {{ user.user_id }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="grid-cell cell-pages">
+                <strong>{{ user.page_count }}</strong>
+              </div>
+              <div class="grid-cell cell-action">
+                <button class="btn-action btn-action-outline btn-sm view-user-logs" 
+                        data-user-id="{{ user.user_id }}">
+                  <i class="fas fa-eye"></i> Voir
+                </button>
+              </div>
+            </div>
+            {% else %}
+            <div class="grid-data-row grid-empty">
+              <div class="grid-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                <i class="fas fa-users-slash" style="font-size: 2rem; color: var(--gray-300);"></i>
+                <p style="margin-top: 0.5rem; color: var(--gray-500);">Aucune donnée</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Répartition par type d'événement -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">🎯</span>
+      <span class="header-title">Répartition par type d'événement</span>
+    </div>
+    <div class="card-body">
+      <div class="event-types-grid">
+        {% for event in event_types %}
+        <div class="event-type-card">
+          <div class="event-type-icon-wrapper">
+            {% if event.event_type == 'page_view' %}
+              <div class="event-type-icon event-icon-blue"><i class="fas fa-eye"></i></div>
+            {% elif event.event_type == 'login' %}
+              <div class="event-type-icon event-icon-green"><i class="fas fa-sign-in-alt"></i></div>
+            {% elif event.event_type == 'quiz_complete' %}
+              <div class="event-type-icon event-icon-purple"><i class="fas fa-check-circle"></i></div>
+            {% elif event.event_type == 'payment' %}
+              <div class="event-type-icon event-icon-gold"><i class="fas fa-credit-card"></i></div>
+            {% else %}
+              <div class="event-type-icon event-icon-gray"><i class="fas fa-bolt"></i></div>
+            {% endif %}
+          </div>
+          <div class="event-type-info">
+            <div class="event-type-count">{{ event.count }}</div>
+            <div class="event-type-name">{{ event.event_type }}</div>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-message">
+          <i class="fas fa-calendar-times"></i>
+          <p>Aucun événement</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Dernières connexions -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">🕐</span>
+      <span class="header-title">Dernières connexions</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="stats-table-wrapper">
+        <div id="recentConnectionsGrid" class="recent-connections-grid">
+          <div class="grid-header">
+            <div class="grid-cell cell-user">Utilisateur</div>
+            <div class="grid-cell cell-time">Dernière activité</div>
+            <div class="grid-cell cell-pages">Pages</div>
+            <div class="grid-cell cell-device">Device</div>
+            <div class="grid-cell cell-action">Action</div>
+          </div>
+          {% for conn in recent_connections %}
+          <div class="grid-data-row">
+            <div class="grid-cell cell-user">
+              <div class="user-cell">
+                <span class="user-avatar-mini">{{ conn.firstname[0] if conn.firstname else '?' }}</span>
+                <div class="user-info-cell">
+                  <span class="user-name-cell">{{ conn.firstname or 'Inconnu' }} {{ conn.lastname[0] if conn.lastname else '' }}.</span>
+                  <span class="user-id-cell">{{ (conn.email or 'N/A')|truncate(23, True, '...') }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="grid-cell cell-time">
+              <div class="time-display">
+                {% set now = None %}
+                {% set diff = (now or conn.last_activity).date() %}
+                <span class="time-main">{{ conn.last_activity.strftime('%d/%m/%Y') }}</span>
+                <span class="time-detail">{{ conn.last_activity.strftime('%H:%M') }}</span>
+              </div>
+            </div>
+            <div class="grid-cell cell-pages">
+              <span class="pages-badge">{{ conn.page_count }}</span>
+            </div>
+            <div class="grid-cell cell-device">
+              {% if conn.last_device == 'mobile' %}
+                <span class="device-pill device-mobile"><i class="fas fa-mobile-alt"></i> Mobile</span>
+              {% else %}
+                <span class="device-pill device-desktop"><i class="fas fa-desktop"></i> Desktop</span>
+              {% endif %}
+            </div>
+            <div class="grid-cell cell-action">
+              <button class="btn-action btn-action-outline btn-sm view-user-logs" 
+                      data-user-id="{{ conn.user_id }}">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          {% else %}
+          <div class="grid-data-row grid-empty">
+            <div class="grid-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+              <i class="fas fa-user-clock" style="font-size: 2rem; color: var(--gray-300);"></i>
+              <p style="margin-top: 0.5rem; color: var(--gray-500);">Aucune connexion sur cette période</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  
+  <!-- ==================== VUE UTILISATEUR SPÉCIFIQUE ==================== -->
+  
+  <!-- Infos utilisateur -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <span class="header-icon">👤</span>
+      <span class="header-title">Profil : {{ user_info.firstname }} {{ user_info.lastname or '' }}</span>
+    </div>
+    <div class="card-body">
+      <div class="user-profile-grid">
+        <div class="user-profile-item">
+          <div class="profile-icon"><i class="fas fa-envelope"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Email</span>
+            <span class="profile-value">{{ user_info.email }}</span>
+          </div>
+        </div>
+        <div class="user-profile-item">
+          <div class="profile-icon"><i class="fas fa-calendar-plus"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Inscrit le</span>
+            <span class="profile-value">{{ user_info.created_at.strftime('%d/%m/%Y à %H:%M') if user_info.created_at else 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="user-profile-item user-profile-highlight">
+          <div class="profile-icon"><i class="fas fa-eye"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Total pages vues</span>
+            <span class="profile-value profile-value-big">{{ user_stats.total_views | default(0) }}</span>
+          </div>
+        </div>
+        <div class="user-profile-item">
+          <div class="profile-icon"><i class="fas fa-clock"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Dernière activité</span>
+            <span class="profile-value">{{ user_stats.last_activity.strftime('%d/%m/%Y à %H:%M') if user_stats.last_activity else 'Jamais' }}</span>
+          </div>
+        </div>
+        <div class="user-profile-item">
+          <div class="profile-icon"><i class="fas fa-{{ 'mobile-alt' if user_stats.preferred_device == 'mobile' else 'desktop' }}"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Device préféré</span>
+            <span class="profile-value">
+              <span class="device-pill device-pill-{{ user_stats.preferred_device }}">
+                {{ 'Mobile' if user_stats.preferred_device == 'mobile' else 'Desktop' }}
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="user-profile-item">
+          <div class="profile-icon"><i class="fas fa-layer-group"></i></div>
+          <div class="profile-content">
+            <span class="profile-label">Sessions estimées</span>
+            <span class="profile-value">{{ user_stats.sessions_count | default(0) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline des activités -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="header-content">
+          <span class="header-icon">🕐</span>
+          <span class="header-title">Timeline d'activité</span>
+        </div>
+        <div class="timeline-controls">
+          <label class="toggle-switch">
+            <input type="checkbox" id="groupBySessions" {% if group_sessions %}checked{% endif %}>
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Grouper par sessions</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      
+      {% if group_sessions and sessions %}
+        <!-- Vue groupée par sessions -->
+        {% for session in sessions %}
+        <div class="session-group">
+          <div class="session-header">
+            <div class="session-header-left">
+              <span class="session-badge">Session {{ loop.index }}</span>
+              <span class="session-time">
+                <i class="fas fa-calendar-alt"></i>
+                {{ session.start_time.strftime('%d/%m/%Y %H:%M') }} - {{ session.end_time.strftime('%H:%M') }}
+              </span>
+            </div>
+            <div class="session-header-right">
+              <span class="session-stat">
+                <i class="fas fa-stopwatch"></i>
+                {{ session.duration }} min
+              </span>
+              <span class="session-stat">
+                <i class="fas fa-file-alt"></i>
+                {{ session.page_count }} pages
+              </span>
+            </div>
+          </div>
+          <div class="timeline-list">
+            {% for log in session.logs %}
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-time">{{ log.created_at.strftime('%H:%M:%S') }}</div>
+              <div class="timeline-content">
+                <div class="timeline-page">
+                  <code class="timeline-path">{{ log.page_path }}</code>
+                  {% if log.event_type != 'page_view' %}
+                    <span class="event-badge event-badge-{{ log.event_type }}">{{ log.event_type }}</span>
+                  {% endif %}
+                </div>
+                <div class="timeline-meta">
+                  <span class="device-badge device-badge-{{ log.device_type }}">
+                    <i class="fas fa-{{ 'mobile-alt' if log.device_type == 'mobile' else 'desktop' }}"></i>
+                    {{ log.device_type }}
+                  </span>
+                  {% if log.referrer %}
+                    <span class="referrer-badge">
+                      <i class="fas fa-external-link-alt"></i> {{ log.referrer | truncate(40) }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        
+      {% else %}
+        <!-- Vue chronologique simple -->
+        <div class="timeline-list timeline-list-simple">
+          {% for log in logs %}
+          <div class="timeline-item {% if loop.first or (logs[loop.index0 - 1].created_at.date() != log.created_at.date()) %}new-day{% endif %}">
+            {% if loop.first or (logs[loop.index0 - 1].created_at.date() != log.created_at.date()) %}
+            <div class="timeline-day-separator">
+              <span class="day-badge">
+                <i class="fas fa-calendar-day"></i>
+                {{ log.created_at.strftime('%A %d %B %Y') }}
+              </span>
+            </div>
+            {% endif %}
+            <div class="timeline-dot"></div>
+            <div class="timeline-time">{{ log.created_at.strftime('%H:%M:%S') }}</div>
+            <div class="timeline-content">
+              <div class="timeline-page">
+                <code class="timeline-path">{{ log.page_path }}</code>
+                {% if log.event_type != 'page_view' %}
+                  <span class="event-badge event-badge-{{ log.event_type }}">{{ log.event_type }}</span>
+                {% endif %}
+              </div>
+              <div class="timeline-meta">
+                <span class="device-badge device-badge-{{ log.device_type }}">
+                  <i class="fas fa-{{ 'mobile-alt' if log.device_type == 'mobile' else 'desktop' }}"></i>
+                  {{ log.device_type }}
+                </span>
+                {% if log.referrer %}
+                  <span class="referrer-badge">
+                    <i class="fas fa-external-link-alt"></i> {{ log.referrer | truncate(40) }}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-inbox"></i>
+            </div>
+            <h3 class="empty-state-title">Aucune activité</h3>
+            <p class="empty-state-subtitle">Aucune activité enregistrée pour cet utilisateur</p>
+          </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="pagination-container">
+        <div class="pagination">
+          {% if current_page > 1 %}
+            <a href="?user_id={{ selected_user_id }}&period={{ period }}&page={{ current_page - 1 }}" class="pagination-btn pagination-prev">
+              <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+          {% endif %}
+          
+          <div class="pagination-info">
+            <span class="pagination-current">{{ current_page }}</span>
+            <span class="pagination-separator">/</span>
+            <span class="pagination-total">{{ total_pages }}</span>
+          </div>
+          
+          {% if current_page < total_pages %}
+            <a href="?user_id={{ selected_user_id }}&period={{ period }}&page={{ current_page + 1 }}" class="pagination-btn pagination-next">
+              Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      
+    </div>
+  </div>
+
+  {% endif %}
+
+  <!-- ==================== DERNIÈRES ACTIVITÉS (Live Feed) ==================== -->
+  <div class="card card-modern mb-4">
+    <div class="card-header-modern">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="header-content">
+          <span class="header-icon">⚡</span>
+          <span class="header-title">Dernières activités (Live)</span>
+          <span class="live-indicator">
+            <span class="live-dot"></span>
+            <span class="live-text">En direct</span>
+          </span>
+        </div>
+        <button class="btn-action btn-action-outline btn-sm" id="refreshLive">
+          <i class="fas fa-sync-alt"></i> Rafraîchir
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="live-feed" id="liveFeed">
+        {% for log in recent_logs %}
+        <div class="live-item">
+          <div class="live-user">
+            <span class="user-avatar-mini">{{ log.firstname[0] if log.firstname else '?' }}</span>
+            <span class="live-user-name">{{ log.firstname }}</span>
+          </div>
+          <div class="live-page">
+            <code class="live-path">{{ log.page_path }}</code>
+          </div>
+          <div class="live-device">
+            <span class="device-icon device-icon-{{ log.device_type }}">
+              <i class="fas fa-{{ 'mobile-alt' if log.device_type == 'mobile' else 'desktop' }}"></i>
+            </span>
+          </div>
+          <div class="live-time">
+            <i class="fas fa-clock"></i>
+            {{ log.created_at.strftime('%H:%M:%S') }}
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <i class="fas fa-satellite-dish"></i>
+          </div>
+          <h3 class="empty-state-title">Aucune activité récente</h3>
+          <p class="empty-state-subtitle">Les nouvelles activités apparaîtront ici</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+/* ==================== VARIABLES GLOBALES ==================== */
+:root {
+  --primary: #4c0336;
+  --primary-light: #7c1a5a;
+  --primary-dark: #3a0229;
+  
+  --success: #10b981;
+  --success-light: #34d399;
+  --success-dark: #059669;
+  
+  --warning: #f59e0b;
+  --warning-light: #fbbf24;
+  --warning-dark: #d97706;
+  
+  --danger: #ef4444;
+  --danger-light: #f87171;
+  --danger-dark: #dc2626;
+  
+  --info: #3b82f6;
+  --info-light: #60a5fa;
+  --info-dark: #2563eb;
+  
+  --purple: #8b5cf6;
+  --purple-light: #a78bfa;
+  --purple-dark: #6d28d9;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --tilto-gradient-purple: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+/* ==================== RESET & BASE ==================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  color: var(--gray-800);
+  line-height: 1.6;
+}
+
+.container-fluid {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ==================== PAGE HEADER ==================== */
+.page-header {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #A11857;
+}
+
+.page-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.title-icon {
+  font-size: 2.75rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: var(--gray-500);
+  margin: 0.75rem 0 0;
+  font-weight: 500;
+}
+
+/* ==================== CARDS MODERNES ==================== */
+.card-modern {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-modern:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.card-header-modern {
+  background: #A11857;
+  color: white;
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* ==================== FILTRES ==================== */
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.filter-label i {
+  color: var(--primary);
+  width: 16px;
+}
+
+.form-select-modern {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all var(--transition-normal);
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.form-select-modern:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+  outline: none;
+}
+
+.form-select-modern:hover {
+  border-color: var(--gray-300);
+}
+
+.form-input-modern {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: all var(--transition-normal);
+  background: white;
+}
+
+.form-input-modern:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+  outline: none;
+}
+
+.filter-group-dates {
+  min-width: 160px;
+  flex: 0.8;
+}
+
+/* ==================== BOUTONS D'ACTION ==================== */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.btn-action:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.btn-action i {
+  font-size: 0.95rem;
+}
+
+.btn-action-primary {
+  background: #A11857;
+  color: white;
+  box-shadow: 0 4px 14px rgba(76, 3, 54, 0.25);
+}
+
+.btn-action-primary:hover {
+  box-shadow: 0 6px 20px rgba(76, 3, 54, 0.35);
+}
+
+.btn-action-secondary {
+  background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(75, 85, 99, 0.25);
+}
+
+.btn-action-secondary:hover {
+  box-shadow: 0 6px 20px rgba(75, 85, 99, 0.35);
+}
+
+.btn-action-outline {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-action-outline:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.85rem;
+}
+
+/* ==================== KPI CARDS ==================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.kpi-card:hover::before {
+  opacity: 1;
+}
+
+.kpi-card:nth-child(1)::before { background: var(--info); }
+.kpi-card:nth-child(2)::before { background: var(--success); }
+.kpi-card:nth-child(3)::before { background: var(--warning); }
+.kpi-card:nth-child(4)::before { background: var(--purple); }
+
+.kpi-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-icon-blue { background: linear-gradient(135deg, var(--info) 0%, var(--info-dark) 100%); }
+.kpi-icon-green { background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%); }
+.kpi-icon-orange { background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%); }
+.kpi-icon-purple { background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); }
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.kpi-label {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+.kpi-trend, .kpi-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.kpi-trend-up {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.kpi-badge {
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+
+/* ==================== CHART ==================== */
+.chart-container {
+  height: 320px;
+  position: relative;
+  padding: 1rem 0;
+}
+
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 280px;
+  text-align: center;
+  color: var(--gray-400);
+  padding: 2rem;
+}
+
+.chart-empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--gray-300);
+  opacity: 0.7;
+}
+
+.chart-empty-state h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin: 0 0 0.5rem 0;
+}
+
+.chart-empty-state p {
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  margin: 0;
+  max-width: 300px;
+}
+
+/* ==================== STATS TABLES ==================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1.5rem;
+}
+
+.stats-table-wrapper {
+  overflow-x: auto;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table th {
+  padding: 1rem 1rem;
+  text-align: left;
+  background: linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  font-weight: 700;
+  color: var(--gray-600);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.stats-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  vertical-align: middle;
+}
+
+/* ============================================
+   TOP PAGES GRID - Structure CSS Grid
+   ============================================ */
+.top-pages-grid,
+.top-users-grid {
+  display: grid !important;
+  width: 100% !important;
+}
+
+.top-pages-grid {
+  grid-template-columns: 70px 1fr 100px 1fr !important;
+}
+
+.top-users-grid {
+  grid-template-columns: 70px 1fr 100px 100px !important;
+}
+
+.top-pages-grid .grid-header,
+.top-pages-grid .grid-data-row,
+.top-users-grid .grid-header,
+.top-users-grid .grid-data-row {
+  display: contents !important;
+}
+
+.top-pages-grid .grid-cell,
+.top-users-grid .grid-cell {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.top-pages-grid .grid-header .grid-cell,
+.top-users-grid .grid-header .grid-cell {
+  background: linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%) !important;
+  font-weight: 700 !important;
+  color: var(--gray-600) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 2px solid var(--gray-200) !important;
+}
+
+.top-pages-grid .cell-rank,
+.top-users-grid .cell-rank {
+  justify-content: center !important;
+}
+
+.top-pages-grid .cell-views,
+.top-users-grid .cell-pages,
+.top-users-grid .cell-action {
+  justify-content: center !important;
+}
+
+.top-pages-grid .cell-views strong,
+.top-users-grid .cell-pages strong {
+  font-size: 1.1rem !important;
+  color: var(--gray-800) !important;
+}
+
+.grid-data-row:hover .grid-cell {
+  background: linear-gradient(90deg, rgba(76, 3, 54, 0.02) 0%, transparent 100%) !important;
+}
+
+/* ============================================
+   RECENT CONNECTIONS GRID
+   ============================================ */
+.recent-connections-grid {
+  display: grid !important;
+  width: 100% !important;
+  grid-template-columns: 1fr 150px 80px 110px 70px !important;
+}
+
+.recent-connections-grid .grid-header,
+.recent-connections-grid .grid-data-row {
+  display: contents !important;
+}
+
+.recent-connections-grid .grid-cell {
+  padding: 1rem !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.recent-connections-grid .grid-header .grid-cell {
+  background: linear-gradient(180deg, var(--gray-50) 0%, var(--gray-100) 100%) !important;
+  font-weight: 700 !important;
+  color: var(--gray-600) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 2px solid var(--gray-200) !important;
+}
+
+.recent-connections-grid .cell-time,
+.recent-connections-grid .cell-pages,
+.recent-connections-grid .cell-device,
+.recent-connections-grid .cell-action {
+  justify-content: center !important;
+}
+
+.time-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.time-main {
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 0.9rem;
+}
+
+.time-detail {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.pages-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-full);
+  min-width: 40px;
+}
+
+.device-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.device-pill.device-mobile {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+}
+
+.device-pill.device-desktop {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #7c3aed;
+}
+
+.device-pill i {
+  font-size: 0.85rem;
+}
+
+/* Responsive pour la grille des connexions */
+@media (max-width: 992px) {
+  .recent-connections-grid {
+    grid-template-columns: 1fr 120px 60px 90px 50px !important;
+  }
+  
+  .device-pill span:not(.fas):not(.fa) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .recent-connections-grid {
+    grid-template-columns: 1fr 100px 50px 50px !important;
+  }
+  
+  .recent-connections-grid .cell-action {
+    display: none !important;
+  }
+  
+  .time-main {
+    font-size: 0.8rem;
+  }
+  
+  .time-detail {
+    display: none;
+  }
+}
+
+.stats-row {
+  transition: all var(--transition-fast);
+}
+
+.stats-row:hover {
+  background: linear-gradient(90deg, rgba(76, 3, 54, 0.02) 0%, transparent 100%);
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.rank-badge.rank-top {
+  background: #A11857;
+  color: white;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.25);
+}
+
+.page-path-code {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.views-count, .pages-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--gray-800);
+  font-size: 1.1rem;
+}
+
+.percent-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.percent-bar-track {
+  width: 100px;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.percent-bar-fill {
+  height: 100%;
+  background: #A11857;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+  min-width: 4px;
+}
+
+.percent-value {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar-mini {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: #A11857;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.user-info-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name-cell {
+  font-weight: 600;
+  color: var(--gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-id-cell {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.empty-row {
+  text-align: center;
+  padding: 2rem !important;
+}
+
+.empty-state-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-400);
+}
+
+.empty-state-mini i {
+  font-size: 1.5rem;
+}
+
+/* ==================== EVENT TYPES ==================== */
+.event-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.event-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--gray-200);
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.event-type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.event-type-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.event-icon-blue { background: linear-gradient(135deg, var(--info) 0%, var(--info-dark) 100%); }
+.event-icon-green { background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%); }
+.event-icon-purple { background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%); }
+.event-icon-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+.event-icon-gray { background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-700) 100%); }
+
+.event-type-count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  line-height: 1;
+}
+
+.event-type-name {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* ==================== USER PROFILE ==================== */
+.user-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.user-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  transition: all var(--transition-normal);
+}
+
+.user-profile-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.user-profile-highlight {
+  background: linear-gradient(135deg, rgba(76, 3, 54, 0.05) 0%, rgba(124, 26, 90, 0.05) 100%);
+  border-color: var(--primary-light);
+}
+
+.profile-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: #A11857;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-label {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.profile-value {
+  font-size: 1rem;
+  color: var(--gray-800);
+  font-weight: 500;
+}
+
+.profile-value-big {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.device-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.device-pill-mobile {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--info);
+}
+
+.device-pill-desktop {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--purple);
+}
+
+/* ==================== TIMELINE ==================== */
+.timeline-controls {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  width: 44px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: var(--radius-full);
+  top: 3px;
+  left: 3px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.session-group {
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.session-group:last-child {
+  border-bottom: none;
+}
+
+.session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(90deg, var(--gray-100) 0%, var(--gray-50) 100%);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.session-header-left, .session-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-badge {
+  background: #A11857;
+  color: white;
+  padding: 0.35rem 0.875rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.session-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+}
+
+.session-time i {
+  color: var(--primary);
+}
+
+.session-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--gray-600);
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--gray-200);
+}
+
+.session-stat i {
+  color: var(--info);
+}
+
+.timeline-list {
+  padding: 0;
+}
+
+.timeline-list-simple {
+  padding: 1rem 0;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 20px 90px 1fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: all var(--transition-fast);
+  align-items: start;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-item:hover {
+  background: linear-gradient(90deg, rgba(76, 3, 54, 0.02) 0%, transparent 100%);
+}
+
+.timeline-item.new-day {
+  padding-top: 0;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  box-shadow: 0 0 0 4px rgba(76, 3, 54, 0.1);
+}
+
+.timeline-day-separator {
+  grid-column: 1 / -1;
+  padding: 1rem 0 0.75rem 0;
+  margin-bottom: 0;
+}
+
+.day-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #A11857;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.timeline-time {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  padding-top: 0.2rem;
+}
+
+.timeline-content {
+  min-width: 0;
+}
+
+.timeline-page {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.timeline-path {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  border: 1px solid var(--gray-200);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.event-badge-login { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.event-badge-quiz_complete { background: rgba(139, 92, 246, 0.1); color: var(--purple); }
+.event-badge-payment { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+.timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.device-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.device-badge-mobile {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--info);
+}
+
+.device-badge-desktop {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--purple);
+}
+
+.referrer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--gray-500);
+  font-size: 0.8rem;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.referrer-badge i {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination-container {
+  padding: 1.25rem 1.5rem;
+  border-top: 2px solid var(--gray-100);
+  display: flex;
+  justify-content: center;
+  background: var(--gray-50);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #A11857;
+  color: white;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.pagination-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 3, 54, 0.3);
+  color: white;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-200);
+}
+
+.pagination-current {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.pagination-separator {
+  color: var(--gray-400);
+}
+
+.pagination-total {
+  color: var(--gray-600);
+}
+
+/* ==================== LIVE FEED ==================== */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: var(--radius-full);
+  animation: pulse-live 2s infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.live-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.live-feed {
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.live-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-100);
+  transition: all var(--transition-fast);
+}
+
+.live-item:last-child {
+  border-bottom: none;
+}
+
+.live-item:hover {
+  background: linear-gradient(90deg, rgba(76, 3, 54, 0.02) 0%, transparent 100%);
+}
+
+.live-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 140px;
+}
+
+.live-user-name {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.live-page {
+  flex: 1;
+}
+
+.live-path {
+  background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  border: 1px solid var(--gray-200);
+}
+
+.live-device {
+  width: 36px;
+  display: flex;
+  justify-content: center;
+}
+
+.device-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.device-icon-mobile {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--info);
+}
+
+.device-icon-desktop {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--purple);
+}
+
+.live-time {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  min-width: 100px;
+  justify-content: flex-end;
+}
+
+.live-time i {
+  font-size: 0.75rem;
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--gray-300);
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-icon i {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-subtitle {
+  font-size: 1rem;
+  color: var(--gray-500);
+}
+
+.empty-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--gray-500);
+}
+
+.empty-message i {
+  font-size: 3rem;
+  color: var(--gray-300);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* ==================== FLASH MESSAGES ==================== */
+#flash-messages {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+  width: 100%;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.flash-message {
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight var(--transition-normal);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  #topPagesTable,
+  #topUsersTable {
+    table-layout: auto !important;
+  }
+  
+  #topPagesTable colgroup col:nth-child(1) { width: 60px; }
+  #topPagesTable colgroup col:nth-child(3) { width: 70px; }
+  
+  .percent-bar-track {
+    width: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .title-icon {
+    font-size: 2rem;
+  }
+  
+  .filters-row {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: 100%;
+  }
+  
+  .filter-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .filter-actions .btn-action {
+    flex: 1;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-table {
+    font-size: 0.85rem;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .page-path-code {
+    max-width: 150px;
+    font-size: 0.75rem;
+  }
+  
+  .session-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .timeline-item {
+    grid-template-columns: 16px 70px 1fr;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+  
+  .timeline-path {
+    font-size: 0.8rem;
+    max-width: 200px;
+  }
+  
+  .live-item {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .live-user {
+    min-width: 100%;
+  }
+  
+  .live-page {
+    order: 3;
+    width: 100%;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  #flash-messages {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .timeline-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .timeline-dot {
+    display: none;
+  }
+  
+  .timeline-time {
+    font-size: 0.8rem;
+    color: var(--gray-400);
+  }
+  
+  .percent-bar-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .percent-bar-track {
+    width: 100%;
+  }
+}
+
+/* ==================== UTILITIES ==================== */
+.w-100 { width: 100%; }
+.d-flex { display: flex; }
+.align-items-center { align-items: center; }
+.justify-content-between { justify-content: space-between; }
+.mb-4 { margin-bottom: 1.5rem; }
+.p-0 { padding: 0; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+  const csrfToken = "{{ csrf_token() }}";
+
+  // ==================== UTILITAIRES ====================
+  function showFlashMessage(type, message, persistent = false) {
+    const flashContainer = document.getElementById('flash-messages');
+    if (!flashContainer) {
+      alert(message);
+      return;
+    }
+    
+    const typeMap = {
+      'success': { icon: '✓', bg: '#10b981', text: '#fff' },
+      'danger': { icon: '✕', bg: '#ef4444', text: '#fff' },
+      'error': { icon: '✕', bg: '#ef4444', text: '#fff' },
+      'warning': { icon: '⚠', bg: '#f59e0b', text: '#fff' },
+      'info': { icon: 'ℹ', bg: '#3b82f6', text: '#fff' }
+    };
+    
+    const style = typeMap[type] || typeMap['info'];
+    if (type === 'danger') persistent = true;
+    
+    const div = document.createElement('div');
+    div.className = 'flash-message';
+    div.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: ${style.bg};
+      color: ${style.text};
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    `;
+    
+    div.innerHTML = `
+      <span style="font-size: 20px; font-weight: bold;">${style.icon}</span>
+      <span style="flex: 1; font-size: 14px; font-weight: 500;">${message}</span>
+      <button type="button" class="flash-close" style="
+        background: transparent;
+        border: none;
+        color: ${style.text};
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        opacity: 0.7;
+      ">✕</button>
+    `;
+    
+    if (!persistent) {
+      const progressBar = document.createElement('div');
+      progressBar.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255,255,255,0.4);
+        width: 100%;
+        transform-origin: left;
+        animation: shrink 4s linear;
+      `;
+      div.appendChild(progressBar);
+    }
+    
+    flashContainer.appendChild(div);
+    
+    div.querySelector('.flash-close').addEventListener('click', () => {
+      div.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => div.remove(), 300);
+    });
+    
+    if (!persistent) {
+      setTimeout(() => {
+        if (div.parentNode) {
+          div.style.animation = 'slideOutRight 0.3s ease-in';
+          setTimeout(() => div.remove(), 300);
+        }
+      }, 4000);
+    }
+  }
+
+  // ==================== FILTRES ====================
+  const periodFilter = document.getElementById('period_filter');
+  const customDatesGroup = document.getElementById('customDatesGroup');
+  const customDatesGroupTo = document.getElementById('customDatesGroupTo');
+  
+  // Afficher/masquer les dates personnalisées
+  periodFilter.addEventListener('change', function() {
+    const isCustom = this.value === 'custom';
+    customDatesGroup.style.display = isCustom ? 'block' : 'none';
+    customDatesGroupTo.style.display = isCustom ? 'block' : 'none';
+    
+    // Si custom, pré-remplir avec les 7 derniers jours
+    if (isCustom) {
+      const today = new Date();
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      const dateFrom = document.getElementById('date_from');
+      const dateTo = document.getElementById('date_to');
+      
+      if (!dateFrom.value) {
+        dateFrom.value = weekAgo.toISOString().split('T')[0];
+      }
+      if (!dateTo.value) {
+        dateTo.value = today.toISOString().split('T')[0];
+      }
+    }
+  });
+  
+document.getElementById('applyFilters').addEventListener('click', function() {
+    const userId = document.getElementById('user_filter').value;
+    const period = document.getElementById('period_filter').value;
+    const eventType = document.getElementById('event_filter').value;
+    const pageFilterEl = document.getElementById('page_filter');
+    const pagePath = pageFilterEl ? pageFilterEl.value.trim() : '';
+    const dateFrom = document.getElementById('date_from').value;
+    const dateTo = document.getElementById('date_to').value;
+    
+    // Utiliser URLSearchParams pour un encodage propre
+    const params = new URLSearchParams();
+    
+    if (userId) params.append('user_id', userId);
+    if (period) params.append('period', period);
+    if (eventType) params.append('event_type', eventType);
+    if (pagePath) params.append('page_path', pagePath);
+    
+    // Ajouter les dates personnalisées
+    if (period === 'custom') {
+      if (dateFrom) params.append('date_from', dateFrom);
+      if (dateTo) params.append('date_to', dateTo);
+    }
+    
+    const queryString = params.toString();
+    window.location.href = '/admin/activity-stats' + (queryString ? '?' + queryString : '');
+  });
+
+
+  // Clic sur "Voir" dans top users
+  document.querySelectorAll('.view-user-logs').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const userId = this.getAttribute('data-user-id');
+      const period = document.getElementById('period_filter').value;
+      window.location.href = `/admin/activity-stats?user_id=${userId}&period=${period}`;
+    });
+  });
+
+  // Toggle grouper par sessions
+  const groupToggle = document.getElementById('groupBySessions');
+  if (groupToggle) {
+    groupToggle.addEventListener('change', function() {
+      const url = new URL(window.location);
+      url.searchParams.set('group_sessions', this.checked ? '1' : '0');
+      window.location.href = url.toString();
+    });
+  }
+
+  // ==================== GRAPHIQUE ====================
+  {% if not selected_user_id and daily_stats and daily_stats['labels'] and daily_stats['labels']|length > 0 %}
+  const ctx = document.getElementById('activityChart');
+  if (ctx) {
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(76, 3, 54, 0.3)');
+    gradient.addColorStop(1, 'rgba(76, 3, 54, 0.0)');
+    
+    const chartData = {{ daily_stats['values'] | tojson }};
+    const chartLabels = {{ daily_stats['labels'] | tojson }};
+    
+    // Vérifier si on a des données
+    const hasData = chartData && chartData.length > 0 && chartData.some(v => v > 0);
+    
+    if (hasData) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Pages vues',
+            data: chartData,
+            borderColor: '#4c0336',
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#4c0336',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7,
+            pointHoverBackgroundColor: '#7c1a5a',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 13 },
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { 
+                stepSize: 1,
+                font: { size: 12 },
+                color: '#6b7280'
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 12 },
+                color: '#6b7280',
+                maxRotation: 45,
+                minRotation: 0
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    } else {
+      // Afficher un état vide dans le canvas
+      const container = ctx.parentElement;
+      container.innerHTML = `
+        <div class="chart-empty-state">
+          <i class="fas fa-chart-line"></i>
+          <h4>Aucune donnée disponible</h4>
+          <p>Les statistiques d'activité apparaîtront ici une fois qu'il y aura des visites</p>
+        </div>
+      `;
+    }
+  }
+  {% elif not selected_user_id %}
+  // Pas de données du tout - afficher état vide
+  const ctx = document.getElementById('activityChart');
+  if (ctx) {
+    const container = ctx.parentElement;
+    container.innerHTML = `
+      <div class="chart-empty-state">
+        <i class="fas fa-chart-line"></i>
+        <h4>Aucune donnée disponible</h4>
+        <p>Les statistiques d'activité apparaîtront ici une fois qu'il y aura des visites</p>
+      </div>
+    `;
+  }
+  {% endif %}
+
+  // ==================== LIVE REFRESH ====================
+  document.getElementById('refreshLive').addEventListener('click', function() {
+    const btn = this;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+    btn.disabled = true;
+    
+    fetch('/admin/activity-stats/live-feed')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const feed = document.getElementById('liveFeed');
+          let html = '';
+          
+          data.logs.forEach(log => {
+            const deviceType = log.device_type || 'desktop';
+            html += `
+              <div class="live-item">
+                <div class="live-user">
+                  <span class="user-avatar-mini">${log.firstname ? log.firstname[0] : '?'}</span>
+                  <span class="live-user-name">${log.firstname || 'Inconnu'}</span>
+                </div>
+                <div class="live-page">
+                  <code class="live-path">${log.page_path}</code>
+                </div>
+                <div class="live-device">
+                  <span class="device-icon device-icon-${deviceType}">
+                    <i class="fas fa-${deviceType === 'mobile' ? 'mobile-alt' : 'desktop'}"></i>
+                  </span>
+                </div>
+                <div class="live-time">
+                  <i class="fas fa-clock"></i>
+                  ${log.time}
+                </div>
+              </div>
+            `;
+          });
+          
+          feed.innerHTML = html || `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <i class="fas fa-satellite-dish"></i>
+              </div>
+              <h3 class="empty-state-title">Aucune activité récente</h3>
+              <p class="empty-state-subtitle">Les nouvelles activités apparaîtront ici</p>
+            </div>
+          `;
+          
+          showFlashMessage('success', '✓ Données actualisées');
+        }
+        
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        showFlashMessage('danger', 'Erreur lors du rafraîchissement');
+      });
+  });
+});
+</script>
+{% endblock %}

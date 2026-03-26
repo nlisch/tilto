@@ -1,0 +1,41 @@
+product_id,feature_order,feature_icon,feature_text,is_active
+personal_profiling_quiz_fr,1,🔍,Analysez vos traits de personnalité dominants,TRUE
+personal_profiling_quiz_fr,2,💡,Identifiez vos talents naturels et vos motivations profondes,TRUE
+personal_profiling_quiz_fr,3,🔄,Comprenez vos modes de fonctionnement en société,TRUE
+personal_profiling_quiz_fr,4,📊,Recevez un rapport détaillé personnalisé,TRUE
+personal_profiling_quiz_fr,5,🚀,Obtenez des conseils pratiques pour votre développement personnel,TRUE
+professional_profiling_quiz_fr,1,📋,Évaluez vos compétences techniques et relationnelles,TRUE
+professional_profiling_quiz_fr,2,🎯,Identifiez vos forces et axes d'amélioration,TRUE
+professional_profiling_quiz_fr,3,🌱,Découvrez vos potentiels de développement,TRUE
+professional_profiling_quiz_fr,4,📑,Obtenez un rapport détaillé sur votre profil professionnel,TRUE
+professional_profiling_quiz_fr,5,📈,Recevez des recommandations pour votre évolution de carrière,TRUE
+profiling_bundle_fr,1,🧠,Accès au quiz de profil personnel,TRUE
+profiling_bundle_fr,2,💼,Accès au quiz de profil professionnel,TRUE
+profiling_bundle_fr,3,🔄,Analyse des correspondances entre vos profils personnels et professionnels,TRUE
+profiling_bundle_fr,4,📊,Rapports détaillés pour les deux évaluations,TRUE
+profiling_bundle_fr,5,🚀,Plan d'action personnalisé pour votre développement,TRUE
+personal_profiling_quiz_en,1,🔍,Analyze your dominant personality traits,TRUE
+personal_profiling_quiz_en,2,💡,Identify your natural talents and deep motivations,TRUE
+personal_profiling_quiz_en,3,🔄,Understand your social functioning patterns,TRUE
+personal_profiling_quiz_en,4,📊,Receive a detailed personalized report,TRUE
+personal_profiling_quiz_en,5,🚀,Get practical advice for your personal development,TRUE
+profiling_bundle_en,1,🧠,Access to the personal profile quiz,TRUE
+profiling_bundle_en,2,💼,Access to the professional profile quiz,TRUE
+profiling_bundle_en,3,🔄,Analysis of the correspondences between your personal and professional profiles,TRUE
+profiling_bundle_en,4,📊,Detailed reports for both assessments,TRUE
+profiling_bundle_en,5,🚀,Personalized action plan for your development,TRUE
+coaching_1h_fr,1,🎯,Session individuelle de 60 minutes avec un coach professionnel,TRUE
+coaching_1h_fr,2,🔍,Analyse approfondie de votre situation actuelle,TRUE
+coaching_1h_fr,3,🗺️,Plan d'action personnalisé sur 6 mois,TRUE
+coaching_1h_fr,4,📄,Document de synthèse complet livré sous 24h,TRUE
+coaching_1h_fr,5,💎,Identification de vos valeurs non-négociables,TRUE
+coaching_3h_fr,1,🔄,3 sessions de coaching de 60 minutes,TRUE
+coaching_3h_fr,2,📊,Suivi personnalisé entre les sessions,TRUE
+coaching_3h_fr,3,📝,Exercices pratiques et ressources exclusives,TRUE
+coaching_3h_fr,4,🛠️,Outils d'auto-évaluation et de progression,TRUE
+coaching_3h_fr,5,📱,Support par email pendant 3 mois,TRUE
+pack_clarte_fr,1,💬,1h d’échange structuré,True
+pack_clarte_fr,2,🔍,Diagnostic précis de votre situation actuelle,True
+pack_clarte_fr,3,🗺️,Plan d'action détaillé sur 6 mois,True
+pack_clarte_fr,4,⏱️,Livraison sous 72h après l'entretien,True
+pack_clarte_fr,5,✓,3 options professionnelles concrètes avec analyse,True

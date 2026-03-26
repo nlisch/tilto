@@ -1,0 +1,1546 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Administration - Parcours V4') }}{% endblock %}
+
+{% block content %}
+<div class="v4-admin-page">
+    <!-- HEADER -->
+    <div class="v4a-header">
+        <div class="v4a-header-top">
+            <h1 class="v4a-title"><span class="v4a-title-icon">🛤️</span> Parcours V4 — Tracking</h1>
+            <p class="v4a-subtitle">Progression des utilisateurs, feedbacks et demandes de RDV</p>
+        </div>
+        <button class="v4a-refresh-btn" id="refreshAll"><i class="fas fa-sync-alt"></i> Rafraîchir</button>
+    </div>
+
+    <!-- ══════════════ FUNNEL ══════════════ -->
+    <div class="v4a-funnel">
+        <div class="v4a-funnel-step">
+            <div class="v4a-funnel-icon"><i class="fas fa-door-open"></i></div>
+            <div class="v4a-funnel-value" id="funnelWelcome">–</div>
+            <div class="v4a-funnel-label">Accueil</div>
+        </div>
+        <div class="v4a-funnel-arrow">
+            <div class="v4a-funnel-line"></div>
+            <span class="v4a-funnel-rate" id="funnelRate1">–</span>
+        </div>
+        <div class="v4a-funnel-step">
+            <div class="v4a-funnel-icon icon-diag"><i class="fas fa-stethoscope"></i></div>
+            <div class="v4a-funnel-value" id="funnelDiagnostic">–</div>
+            <div class="v4a-funnel-label">Diagnostic</div>
+        </div>
+        <div class="v4a-funnel-arrow">
+            <div class="v4a-funnel-line"></div>
+            <span class="v4a-funnel-rate" id="funnelRate2">–</span>
+        </div>
+        <div class="v4a-funnel-step">
+            <div class="v4a-funnel-icon icon-pistes"><i class="fas fa-compass"></i></div>
+            <div class="v4a-funnel-value" id="funnelPistes">–</div>
+            <div class="v4a-funnel-label">Pistes métiers</div>
+        </div>
+        <div class="v4a-funnel-arrow">
+            <div class="v4a-funnel-line"></div>
+            <span class="v4a-funnel-rate" id="funnelRate3">–</span>
+        </div>
+        <div class="v4a-funnel-step">
+            <div class="v4a-funnel-icon icon-suite"><i class="fas fa-handshake"></i></div>
+            <div class="v4a-funnel-value" id="funnelSuite">–</div>
+            <div class="v4a-funnel-label">Suite Tilto</div>
+        </div>
+    </div>
+
+    <!-- ══════════════ STATS GRID ══════════════ -->
+    <div class="v4a-section-title"><span>📊</span> Vue d'ensemble</div>
+
+    <div class="v4a-kpi-row">
+        <div class="v4a-kpi">
+            <div class="v4a-kpi-icon blue"><i class="fas fa-users"></i></div>
+            <div class="v4a-kpi-body">
+                <div class="v4a-kpi-value" id="kpiTotalUsers">–</div>
+                <div class="v4a-kpi-label">Users trackés</div>
+            </div>
+        </div>
+        <div class="v4a-kpi">
+            <div class="v4a-kpi-icon purple"><i class="fas fa-calendar-check"></i></div>
+            <div class="v4a-kpi-body">
+                <div class="v4a-kpi-value" id="kpiBookings">–</div>
+                <div class="v4a-kpi-label">Demandes RDV</div>
+            </div>
+        </div>
+        <div class="v4a-kpi">
+            <div class="v4a-kpi-icon green"><i class="fas fa-percentage"></i></div>
+            <div class="v4a-kpi-body">
+                <div class="v4a-kpi-value" id="kpiConvRate">–<small>%</small></div>
+                <div class="v4a-kpi-label">Taux conversion</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════ ACCURACY ══════════════ -->
+    <div class="v4a-section-title"><span>🎯</span> "Est-ce que j'ai vu juste ?"</div>
+
+    <div class="v4a-accuracy-row">
+        <div class="v4a-accuracy-card yes">
+            <div class="v4a-accuracy-emoji">✅</div>
+            <div class="v4a-accuracy-value" id="accYes">–</div>
+            <div class="v4a-accuracy-label">Oui</div>
+        </div>
+        <div class="v4a-accuracy-card nuance">
+            <div class="v4a-accuracy-emoji">🤔</div>
+            <div class="v4a-accuracy-value" id="accNuance">–</div>
+            <div class="v4a-accuracy-label">Nuancé</div>
+        </div>
+        <div class="v4a-accuracy-card no">
+            <div class="v4a-accuracy-emoji">❌</div>
+            <div class="v4a-accuracy-value" id="accNo">–</div>
+            <div class="v4a-accuracy-label">Pas vraiment</div>
+        </div>
+    </div>
+
+    <!-- ══════════════ PISTE FEEDBACKS ══════════════ -->
+    <div class="v4a-section-title"><span>👍</span> Feedbacks pistes</div>
+
+    <div class="v4a-piste-row">
+        <div class="v4a-piste-card p1">
+            <div class="v4a-piste-badge">P1</div>
+            <div class="v4a-piste-name">Piste 1</div>
+            <div class="v4a-piste-stats">
+                <span class="v4a-fb up"><i class="fas fa-thumbs-up"></i> <strong id="p1Yes">–</strong></span>
+                <span class="v4a-fb down"><i class="fas fa-thumbs-down"></i> <strong id="p1No">–</strong></span>
+            </div>
+            <div class="v4a-piste-bar"><div class="v4a-piste-bar-fill" id="p1Bar"></div></div>
+        </div>
+        <div class="v4a-piste-card p2">
+            <div class="v4a-piste-badge">P2</div>
+            <div class="v4a-piste-name">Piste 2</div>
+            <div class="v4a-piste-stats">
+                <span class="v4a-fb up"><i class="fas fa-thumbs-up"></i> <strong id="p2Yes">–</strong></span>
+                <span class="v4a-fb down"><i class="fas fa-thumbs-down"></i> <strong id="p2No">–</strong></span>
+            </div>
+            <div class="v4a-piste-bar"><div class="v4a-piste-bar-fill" id="p2Bar"></div></div>
+        </div>
+        <div class="v4a-piste-card p3">
+            <div class="v4a-piste-badge">P3</div>
+            <div class="v4a-piste-name">Piste 3</div>
+            <div class="v4a-piste-stats">
+                <span class="v4a-fb up"><i class="fas fa-thumbs-up"></i> <strong id="p3Yes">–</strong></span>
+                <span class="v4a-fb down"><i class="fas fa-thumbs-down"></i> <strong id="p3No">–</strong></span>
+            </div>
+            <div class="v4a-piste-bar"><div class="v4a-piste-bar-fill" id="p3Bar"></div></div>
+        </div>
+    </div>
+
+    <!-- ══════════════ BOOKINGS TABLE ══════════════ -->
+    <div class="v4a-section-title"><span>📞</span> Demandes d'appel gratuit <span class="v4a-count-badge" id="bookingsCount">0</span></div>
+
+    <div class="v4a-card">
+        <div class="v4a-table-wrap">
+            <table class="v4a-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsBody">
+                    <tr><td colspan="4"><div class="v4a-loading"><div class="v4a-spinner"></div> Chargement…</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════ USERS TABLE ══════════════ -->
+    <div class="v4a-section-title"><span>👥</span> Parcours utilisateurs <span class="v4a-count-badge" id="usersCount">0</span></div>
+
+    <div class="v4a-card">
+        <div class="v4a-table-wrap">
+            <table class="v4a-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Progression</th>
+                        <th>Interactions</th>
+                        <th>Accuracy</th>
+                        <th>Feedbacks</th>
+                        <th>Pack cliqué</th>
+                        <th>RDV</th>
+                        <th>Dernière visite</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="usersBody">
+                    <tr><td colspan="6"><div class="v4a-loading"><div class="v4a-spinner"></div> Chargement…</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ════════════════════════════════════════════
+   ADMIN V4 TRACKING — Standalone page
+   ════════════════════════════════════════════ */
+:root {
+    --v4a-primary: #4C0336;
+    --v4a-primary-light: #6b0548;
+    --v4a-bg: #f5f3f0;
+    --v4a-card: #ffffff;
+    --v4a-text: #1a1a1a;
+    --v4a-text-medium: #4a4a4a;
+    --v4a-text-muted: #8a8a8a;
+    --v4a-border: #e8e4df;
+    --v4a-p1: #610540;
+    --v4a-p1-bg: #F3E8F0;
+    --v4a-p2: #F19631;
+    --v4a-p2-bg: #FEF3E2;
+    --v4a-p3: #26BB8E;
+    --v4a-p3-bg: #E8F8F3;
+    --v4a-green: #059669;
+    --v4a-red: #dc2626;
+    --v4a-amber: #d97706;
+    --v4a-blue: #2563eb;
+    --v4a-purple: #7c3aed;
+    --v4a-radius: 14px;
+}
+
+.v4-admin-page {
+    background: var(--v4a-bg);
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: 'Segoe UI', -apple-system, system-ui, sans-serif;
+    color: var(--v4a-text);
+}
+
+.v4-admin-page * { box-sizing: border-box; }
+
+/* ── Header ── */
+.v4a-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.v4a-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--v4a-primary);
+    margin: 0 0 .35rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.v4a-title-icon { font-size: 2rem; }
+
+.v4a-subtitle {
+    color: var(--v4a-text-muted);
+    font-size: .95rem;
+    margin: 0;
+}
+
+.v4a-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .65rem 1.25rem;
+    background: var(--v4a-primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+
+.v4a-refresh-btn:hover {
+    background: var(--v4a-primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76,3,54,.25);
+}
+
+.v4a-refresh-btn .fa-spin { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Section titles ── */
+.v4a-section-title {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--v4a-text);
+    margin: 2rem auto 1rem;
+    max-width: 1200px;
+}
+
+.v4a-section-title span:first-child { font-size: 1.3rem; }
+
+.v4a-count-badge {
+    background: var(--v4a-primary);
+    color: #fff;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-left: .35rem;
+}
+
+/* ══════════════ FUNNEL ══════════════ */
+.v4a-funnel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: var(--v4a-card);
+    padding: 2rem 2.5rem;
+    border-radius: var(--v4a-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.v4a-funnel-step {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    background: var(--v4a-bg);
+    min-width: 130px;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.v4a-funnel-step:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.v4a-funnel-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto .6rem;
+    background: var(--v4a-primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.v4a-funnel-icon.icon-diag { background: var(--v4a-blue); }
+.v4a-funnel-icon.icon-pistes { background: var(--v4a-amber); }
+.v4a-funnel-icon.icon-suite { background: var(--v4a-green); }
+
+.v4a-funnel-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--v4a-text);
+    line-height: 1;
+}
+
+.v4a-funnel-label {
+    font-size: .75rem;
+    color: var(--v4a-text-muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin-top: .4rem;
+}
+
+.v4a-funnel-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .3rem;
+    padding: 0 .75rem;
+}
+
+.v4a-funnel-line {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--v4a-border), var(--v4a-primary), var(--v4a-border));
+    border-radius: 2px;
+}
+
+.v4a-funnel-rate {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--v4a-primary);
+    background: rgba(76,3,54,.08);
+    padding: .15rem .5rem;
+    border-radius: 4px;
+}
+
+/* ══════════════ KPI ROW ══════════════ */
+.v4a-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.v4a-kpi {
+    background: var(--v4a-card);
+    border-radius: var(--v4a-radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    transition: transform .2s;
+}
+
+.v4a-kpi:hover { transform: translateY(-2px); }
+
+.v4a-kpi-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.v4a-kpi-icon.blue { background: #dbeafe; color: var(--v4a-blue); }
+.v4a-kpi-icon.purple { background: #ede9fe; color: var(--v4a-purple); }
+.v4a-kpi-icon.green { background: #d1fae5; color: var(--v4a-green); }
+
+.v4a-kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--v4a-text);
+    line-height: 1;
+}
+
+.v4a-kpi-value small { font-size: 1rem; font-weight: 600; }
+
+.v4a-kpi-label {
+    font-size: .85rem;
+    color: var(--v4a-text-muted);
+    margin-top: .2rem;
+}
+
+/* ══════════════ ACCURACY ══════════════ */
+.v4a-accuracy-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.v4a-accuracy-card {
+    background: var(--v4a-card);
+    border-radius: var(--v4a-radius);
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border-top: 4px solid var(--v4a-border);
+    transition: transform .2s;
+}
+
+.v4a-accuracy-card:hover { transform: translateY(-2px); }
+.v4a-accuracy-card.yes { border-top-color: var(--v4a-green); }
+.v4a-accuracy-card.nuance { border-top-color: var(--v4a-amber); }
+.v4a-accuracy-card.no { border-top-color: var(--v4a-red); }
+
+.v4a-accuracy-emoji { font-size: 1.75rem; margin-bottom: .5rem; }
+
+.v4a-accuracy-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--v4a-text);
+    line-height: 1;
+}
+
+.v4a-accuracy-label {
+    font-size: .85rem;
+    color: var(--v4a-text-muted);
+    font-weight: 600;
+    margin-top: .35rem;
+}
+
+/* ══════════════ PISTE FEEDBACKS ══════════════ */
+.v4a-piste-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.v4a-piste-card {
+    background: var(--v4a-card);
+    border-radius: var(--v4a-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border-left: 5px solid var(--v4a-border);
+    transition: transform .2s;
+}
+
+.v4a-piste-card:hover { transform: translateY(-2px); }
+.v4a-piste-card.p1 { border-left-color: var(--v4a-p1); }
+.v4a-piste-card.p2 { border-left-color: var(--v4a-p2); }
+.v4a-piste-card.p3 { border-left-color: var(--v4a-p3); }
+
+.v4a-piste-badge {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 5px;
+    font-size: .7rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: .5rem;
+}
+
+.p1 .v4a-piste-badge { background: var(--v4a-p1); }
+.p2 .v4a-piste-badge { background: var(--v4a-p2); }
+.p3 .v4a-piste-badge { background: var(--v4a-p3); }
+
+.v4a-piste-name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--v4a-text);
+    margin-bottom: .75rem;
+}
+
+.v4a-piste-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+}
+
+.v4a-fb {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .9rem;
+}
+
+.v4a-fb.up { color: var(--v4a-green); }
+.v4a-fb.down { color: var(--v4a-red); }
+.v4a-fb strong { font-size: 1.2rem; }
+
+.v4a-piste-bar {
+    height: 6px;
+    background: #fee2e2;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.v4a-piste-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--v4a-green);
+    transition: width .6s ease;
+    width: 0;
+}
+
+/* ══════════════ CARDS & TABLES ══════════════ */
+.v4a-card {
+    background: var(--v4a-card);
+    border-radius: var(--v4a-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto 1.5rem;
+}
+
+.v4a-table-wrap { overflow-x: auto; }
+
+.v4a-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.v4a-table th {
+    background: var(--v4a-bg);
+    padding: .85rem 1.25rem;
+    text-align: left;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--v4a-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border-bottom: 2px solid var(--v4a-border);
+}
+
+.v4a-table td {
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid var(--v4a-border);
+    vertical-align: middle;
+    font-size: .9rem;
+}
+
+.v4a-table tbody tr:hover { background: #faf8f6; }
+.v4a-table tbody tr:last-child td { border-bottom: none; }
+
+/* User cell */
+.v4a-user-cell {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+}
+
+.v4a-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--v4a-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+
+.v4a-user-name {
+    font-weight: 600;
+    color: var(--v4a-text);
+}
+
+.v4a-user-email {
+    font-size: .8rem;
+    color: var(--v4a-text-muted);
+    text-decoration: none;
+}
+
+.v4a-user-email:hover { color: var(--v4a-primary); text-decoration: underline; }
+
+/* Phone link */
+.v4a-phone-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .75rem;
+    background: #d1fae5;
+    color: var(--v4a-green);
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+}
+
+.v4a-phone-link:hover { background: #a7f3d0; transform: translateY(-1px); }
+
+/* Progress bar inline */
+.v4a-progress {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.v4a-progress-seg {
+    width: 32px;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--v4a-border);
+    transition: background .3s;
+}
+
+.v4a-progress-seg.reached { background: var(--v4a-primary); }
+.v4a-progress-seg.current { background: var(--v4a-primary); box-shadow: 0 0 0 3px rgba(76,3,54,.2); }
+
+.v4a-progress-label {
+    font-size: .7rem;
+    color: var(--v4a-text-muted);
+    margin-top: 3px;
+}
+
+/* Badges */
+.v4a-acc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .6rem;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.v4a-acc-badge.oui { background: #d1fae5; color: var(--v4a-green); }
+.v4a-acc-badge.nuance { background: #fef3c7; color: var(--v4a-amber); }
+.v4a-acc-badge.non { background: #fef2f2; color: var(--v4a-red); }
+
+.v4a-fb-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .2rem .5rem;
+    border-radius: 5px;
+    font-size: .78rem;
+    font-weight: 600;
+    margin: .1rem;
+}
+
+.v4a-fb-tag.up-1 { background: var(--v4a-p1-bg); color: var(--v4a-p1); }
+.v4a-fb-tag.up-2 { background: var(--v4a-p2-bg); color: var(--v4a-p2); }
+.v4a-fb-tag.up-3 { background: var(--v4a-p3-bg); color: var(--v4a-p3); }
+.v4a-fb-tag.down { background: #fef2f2; color: var(--v4a-red); }
+
+.v4a-booking-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+}
+
+.v4a-booking-dot.yes { background: #d1fae5; color: var(--v4a-green); }
+.v4a-booking-dot.no { background: var(--v4a-bg); color: var(--v4a-text-muted); }
+
+.v4a-muted { color: var(--v4a-text-muted); font-style: italic; font-size: .85rem; }
+
+/* Loading */
+.v4a-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    padding: 2.5rem;
+    color: var(--v4a-text-muted);
+    font-size: .9rem;
+}
+
+.v4a-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid var(--v4a-border);
+    border-top-color: var(--v4a-primary);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+
+.v4a-empty {
+    text-align: center;
+    padding: 2.5rem;
+    color: var(--v4a-text-muted);
+}
+
+.v4a-empty i { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+
+/* ══════════════ RESPONSIVE ══════════════ */
+@media (max-width: 1024px) {
+    .v4a-funnel { padding: 1.5rem; gap: 0; }
+    .v4a-funnel-step { min-width: 100px; padding: .75rem 1rem; }
+    .v4a-funnel-value { font-size: 1.5rem; }
+    .v4a-funnel-arrow { padding: 0 .4rem; }
+    .v4a-funnel-line { width: 24px; }
+}
+
+@media (max-width: 768px) {
+    .v4-admin-page { padding: 1rem; }
+
+    .v4a-header { flex-direction: column; gap: 1rem; }
+    .v4a-title { font-size: 1.35rem; }
+
+    .v4a-funnel {
+        flex-direction: column;
+        padding: 1.25rem;
+        gap: .5rem;
+    }
+
+    .v4a-funnel-arrow {
+        transform: rotate(90deg);
+        padding: .25rem 0;
+    }
+
+    .v4a-funnel-step { min-width: auto; width: 100%; }
+
+    .v4a-kpi-row,
+    .v4a-accuracy-row,
+    .v4a-piste-row {
+        grid-template-columns: 1fr;
+    }
+
+    .v4a-table th, .v4a-table td { padding: .65rem .75rem; font-size: .82rem; }
+}
+
+/* ══════════════ RECAP MODAL ══════════════ */
+.v4a-recap-btn {
+    background: var(--v4a-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .4rem .7rem;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s;
+}
+.v4a-recap-btn:hover { background: var(--v4a-primary-light); transform: translateY(-1px); }
+
+.v4a-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.6); z-index: 9999;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 2rem; overflow-y: auto;
+}
+
+.v4a-modal {
+    background: #fff; border-radius: 16px; max-width: 900px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: v4aSlideIn .3s ease;
+}
+
+@keyframes v4aSlideIn { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+
+.v4a-modal-header {
+    background: var(--v4a-primary); color: #fff; padding: 1.25rem 1.5rem;
+    border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center;
+}
+.v4a-modal-header h2 { margin: 0; font-size: 1.2rem; }
+.v4a-modal-close { background: rgba(255,255,255,.2); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; }
+.v4a-modal-close:hover { background: rgba(255,255,255,.3); }
+
+.v4a-modal-body { padding: 1.5rem; max-height: 75vh; overflow-y: auto; }
+.v4a-modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--v4a-border); display: flex; justify-content: flex-end; gap: .75rem; }
+
+.v4a-recap-section { margin-bottom: 1.5rem; }
+.v4a-recap-section-title { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; color: var(--v4a-primary); margin-bottom: .6rem; border-bottom: 2px solid var(--v4a-primary); padding-bottom: .3rem; display: inline-block; }
+
+.v4a-recap-grid { display: grid; grid-template-columns: 140px 1fr; gap: .35rem .75rem; font-size: .9rem; }
+.v4a-recap-label { color: var(--v4a-text-muted); font-weight: 600; }
+.v4a-recap-value { color: var(--v4a-text); }
+
+.v4a-recap-qa { background: #f9f7f5; border-radius: 10px; padding: 1rem; margin-bottom: .5rem; }
+.v4a-recap-q { font-weight: 600; color: var(--v4a-text); margin-bottom: .35rem; font-size: .88rem; }
+.v4a-recap-a { color: var(--v4a-text-medium); font-size: .88rem; line-height: 1.55; white-space: pre-wrap; }
+
+.v4a-recap-interaction-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .4rem; font-size: .9rem; }
+
+.v4a-recap-json-toggle { background: var(--v4a-bg); border: 1px solid var(--v4a-border); border-radius: 8px; padding: .5rem 1rem; cursor: pointer; font-size: .85rem; font-weight: 600; color: var(--v4a-text-medium); width: 100%; text-align: left; }
+.v4a-recap-json-toggle:hover { background: #eee; }
+.v4a-recap-json-content { display: none; background: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: .78rem; max-height: 400px; overflow: auto; white-space: pre-wrap; margin-top: .5rem; }
+
+.v4a-copy-btn {
+    background: var(--v4a-primary); color: #fff; border: none; border-radius: 8px;
+    padding: .5rem 1.25rem; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.v4a-copy-btn:hover { background: var(--v4a-primary-light); }
+.v4a-copy-btn.copied { background: var(--v4a-green); }
+
+/* ═══════ Mini timeline (progression) ═══════ */
+.v4a-mini-tl { display: flex; align-items: center; gap: 0; }
+.v4a-mini-tl-node {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 700; flex-shrink: 0;
+}
+.v4a-mini-tl-node.done { background: var(--v4a-primary); color: #fff; }
+.v4a-mini-tl-node.current { background: var(--v4a-primary); color: #fff; box-shadow: 0 0 0 4px rgba(76,3,54,.1); }
+.v4a-mini-tl-node.future { background: #f0ece8; color: var(--v4a-text-muted); }
+.v4a-mini-tl-line { width: 16px; height: 3px; flex-shrink: 0; border-radius: 2px; }
+.v4a-mini-tl-line.done { background: var(--v4a-primary); }
+.v4a-mini-tl-line.future { background: var(--v4a-border); }
+.v4a-mini-tl-label { font-size: .72rem; color: var(--v4a-text-muted); margin-top: 3px; }
+.v4a-mini-tl-label.active { color: var(--v4a-primary); font-weight: 600; }
+
+/* ═══════ Visit counter ═══════ */
+.v4a-visit-counter { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.v4a-visit-big { font-size: 1.1rem; font-weight: 800; color: var(--v4a-text); line-height: 1; }
+.v4a-visit-sub { font-size: .7rem; color: var(--v4a-text-muted); }
+
+/* ═══════ Pack chips ═══════ */
+.v4a-pack-chip {
+    display: inline-block; padding: .2rem .55rem; border-radius: 5px;
+    font-size: .75rem; font-weight: 700;
+}
+.v4a-pack-chip.clarte { background: #ede9fe; color: #7c3aed; }
+.v4a-pack-chip.boost { background: #dbeafe; color: #2563eb; }
+.v4a-pack-chip.solo { background: var(--v4a-bg); color: var(--v4a-text-muted); border: 1px solid var(--v4a-border); }
+.v4a-pack-chip.secondary { opacity: .55; font-size: .68rem; }
+
+/* ═══════ Parcours button ═══════ */
+.v4a-parcours-btn {
+    background: var(--v4a-bg); color: var(--v4a-text-medium); border: 1px solid var(--v4a-border);
+    border-radius: 8px; padding: .4rem .55rem; font-size: .85rem;
+    cursor: pointer; transition: all .2s;
+}
+.v4a-parcours-btn:hover { background: rgba(76,3,54,.08); border-color: var(--v4a-primary); color: var(--v4a-primary); }
+
+/* ═══════ Timeline panel (expand) ═══════ */
+.v4a-detail-row td { border-bottom: 1px solid var(--v4a-border) !important; }
+.v4a-tl-panel {
+    padding: 1.25rem 1.5rem;
+    animation: v4aPanelIn .25s ease;
+}
+@keyframes v4aPanelIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.v4a-tl-panel-title {
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--v4a-primary); font-weight: 700; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.v4a-tl-list {
+    position: relative; padding-left: 30px;
+    max-height: 480px; overflow-y: auto;
+}
+.v4a-tl-list::-webkit-scrollbar { width: 4px; }
+.v4a-tl-list::-webkit-scrollbar-thumb { background: var(--v4a-border); border-radius: 2px; }
+.v4a-tl-list::before {
+    content: ''; position: absolute; left: 9px; top: 0; bottom: 0;
+    width: 2px; background: var(--v4a-border);
+}
+
+.v4a-tl-item {
+    position: relative; padding: .55rem 0 .55rem .65rem;
+    border-bottom: 1px solid #f0ece8;
+}
+.v4a-tl-item:last-child { border-bottom: none; }
+
+.v4a-tl-dot {
+    position: absolute; left: -26px; top: .7rem;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2.5px solid var(--v4a-border); background: #fff; z-index: 1;
+}
+.v4a-tl-item.view .v4a-tl-dot     { border-color: #93c5fd; background: #dbeafe; }
+.v4a-tl-item.accuracy .v4a-tl-dot { border-color: #6ee7b7; background: #d1fae5; }
+.v4a-tl-item.piste .v4a-tl-dot    { border-color: #fcd34d; background: #fef3c7; }
+.v4a-tl-item.pack .v4a-tl-dot     { border-color: #c4b5fd; background: #ede9fe; }
+.v4a-tl-item.booking .v4a-tl-dot  { border-color: var(--v4a-green); background: #d1fae5; box-shadow: 0 0 0 3px rgba(5,150,105,.15); }
+
+.v4a-tl-main {
+    display: flex; align-items: baseline; gap: .6rem;
+}
+.v4a-tl-time {
+    font-family: 'Courier New', monospace; font-size: .72rem;
+    color: var(--v4a-text-muted); flex-shrink: 0; width: 80px; font-weight: 500;
+}
+.v4a-tl-action { font-size: .85rem; color: var(--v4a-text); line-height: 1.4; }
+.v4a-tl-action strong { font-weight: 700; }
+.v4a-tl-ref {
+    display: inline-block; font-size: .68rem; color: var(--v4a-text-muted);
+    background: var(--v4a-bg); padding: .1rem .35rem; border-radius: 3px;
+    margin-left: .3rem; font-style: italic;
+}
+
+.v4a-tl-gap {
+    padding: .3rem 0;
+    display: flex; align-items: center;
+    margin-left: calc(80px + .65rem + .65rem);
+}
+.v4a-tl-gap-badge {
+    font-size: .72rem; font-weight: 600; color: var(--v4a-amber);
+    background: #fef3c7; padding: .15rem .55rem; border-radius: 4px;
+}
+
+.v4a-tl-legend {
+    display: flex; gap: .75rem; flex-wrap: wrap;
+    margin-top: .85rem; padding-top: .75rem;
+    border-top: 1px solid #f0ece8;
+}
+.v4a-tl-legend-item {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .7rem; color: var(--v4a-text-muted);
+}
+.v4a-tl-legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; border: 2.5px solid;
+}
+.v4a-tl-legend-dot.view     { border-color: #93c5fd; background: #dbeafe; }
+.v4a-tl-legend-dot.accuracy { border-color: #6ee7b7; background: #d1fae5; }
+.v4a-tl-legend-dot.piste    { border-color: #fcd34d; background: #fef3c7; }
+.v4a-tl-legend-dot.pack     { border-color: #c4b5fd; background: #ede9fe; }
+.v4a-tl-legend-dot.booking  { border-color: var(--v4a-green); background: #d1fae5; }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+
+    var sectionNames = ['Accueil', 'Diagnostic', 'Pistes', 'Suite Tilto'];
+
+    // ===== LOAD ALL DATA =====
+    loadV4Stats();
+
+    document.getElementById('refreshAll').addEventListener('click', function() {
+        this.querySelector('i').classList.add('fa-spin');
+        var btn = this;
+        loadV4Stats().finally(function() {
+            setTimeout(function() { btn.querySelector('i').classList.remove('fa-spin'); }, 500);
+        });
+    });
+
+    function loadV4Stats() {
+        return fetch('/help-requests/admin/v4-tracking-stats')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.success) return;
+
+                var s = data.stats;
+                var f = s.funnel;
+
+                // ── Funnel ──
+                document.getElementById('funnelWelcome').textContent = f.welcome;
+                document.getElementById('funnelDiagnostic').textContent = f.diagnostic;
+                document.getElementById('funnelPistes').textContent = f.pistes;
+                document.getElementById('funnelSuite').textContent = f.suite;
+                document.getElementById('funnelRate1').textContent = f.rates.welcome_to_diagnostic + '%';
+                document.getElementById('funnelRate2').textContent = f.rates.diagnostic_to_pistes + '%';
+                document.getElementById('funnelRate3').textContent = f.rates.pistes_to_suite + '%';
+
+                // ── KPIs ──
+                document.getElementById('kpiTotalUsers').textContent = f.total_users;
+                document.getElementById('kpiBookings').textContent = s.bookings_count;
+                var convRate = f.total_users > 0 ? Math.round(s.bookings_count / f.total_users * 100) : 0;
+                document.getElementById('kpiConvRate').innerHTML = convRate + '<small>%</small>';
+
+                // ── Accuracy ──
+                document.getElementById('accYes').textContent = s.accuracy['exact'] || 0;
+                document.getElementById('accNuance').textContent = s.accuracy['nuance'] || 0;
+                document.getElementById('accNo').textContent = s.accuracy['not-really'] || 0;
+
+                // ── Piste feedbacks ──
+                var pf = s.piste_feedbacks;
+                fillPiste('1', pf);
+                fillPiste('2', pf);
+                fillPiste('3', pf);
+
+                // ── Bookings table ──
+                document.getElementById('bookingsCount').textContent = s.bookings_count;
+                renderBookings(data.bookings || []);
+
+                // ── Users table ──
+                document.getElementById('usersCount').textContent = (data.users || []).length;
+                renderUsers(data.users || []);
+            })
+            .catch(function(e) {
+                console.error('V4 stats error:', e);
+            });
+    }
+
+    function fillPiste(num, pf) {
+        var d = pf[num] || { interested: 0, not_interested: 0 };
+        document.getElementById('p' + num + 'Yes').textContent = d.interested;
+        document.getElementById('p' + num + 'No').textContent = d.not_interested;
+        var total = d.interested + d.not_interested;
+        var pct = total > 0 ? Math.round(d.interested / total * 100) : 0;
+        document.getElementById('p' + num + 'Bar').style.width = pct + '%';
+    }
+
+    function renderBookings(bookings) {
+        var tbody = document.getElementById('bookingsBody');
+
+        if (bookings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4"><div class="v4a-empty"><i class="fas fa-inbox"></i>Aucune demande de RDV</div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bookings.map(function(b) {
+            var date = b.created_at
+                ? new Date(b.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' })
+                : '–';
+            var phone = b.phone
+                ? '<a href="tel:' + b.phone + '" class="v4a-phone-link"><i class="fas fa-phone"></i> ' + b.phone + '</a>'
+                : '<span class="v4a-muted">–</span>';
+
+            return '<tr>' +
+                '<td><div class="v4a-user-cell"><div class="v4a-avatar">' + (b.firstname ? b.firstname[0].toUpperCase() : '?') + '</div><div><div class="v4a-user-name">' + (b.firstname || '') + ' ' + (b.lastname || '') + '</div></div></div></td>' +
+                '<td><a href="mailto:' + (b.email || '') + '" class="v4a-user-email">' + (b.email || '–') + '</a></td>' +
+                '<td>' + phone + '</td>' +
+                '<td>' + date + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    function renderUsers(users) {
+    var tbody = document.getElementById('usersBody');
+
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="v4a-empty"><i class="fas fa-inbox"></i>Aucun utilisateur tracké</div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = users.map(function(u) {
+        // Mini timeline
+        var progressHtml = '<div class="v4a-mini-tl">';
+        for (var i = 0; i < 4; i++) {
+            var cls = i < u.max_section ? 'done' : (i === u.max_section ? 'current' : 'future');
+            progressHtml += '<div class="v4a-mini-tl-node ' + cls + '">' + (i+1) + '</div>';
+            if (i < 3) progressHtml += '<div class="v4a-mini-tl-line ' + (i < u.max_section ? 'done' : 'future') + '"></div>';
+        }
+        progressHtml += '</div><div class="v4a-mini-tl-label ' + (u.max_section >= 0 ? 'active' : '') + '">' + sectionNames[u.max_section] + '</div>';
+
+        // Visites
+        var visitHtml = '<div class="v4a-visit-counter"><div class="v4a-visit-big">' + (u.action_count || '–') + '</div><div class="v4a-visit-sub">' + (u.days_active ? u.days_active + ' jour' + (u.days_active > 1 ? 's' : '') : '') + '</div></div>';
+
+        // Accuracy
+        var accHtml = '<span class="v4a-muted">–</span>';
+        if (u.accuracy) {
+            var accClass = (u.accuracy === 'exact') ? 'oui' : (u.accuracy === 'nuance' ? 'nuance' : 'non');
+            var accIcon = (u.accuracy === 'exact') ? '✅' : (u.accuracy === 'nuance' ? '🤔' : '❌');
+            accHtml = '<span class="v4a-acc-badge ' + accClass + '">' + accIcon + '</span>';
+        }
+
+        // Feedbacks
+        var fbHtml = '';
+        for (var p = 1; p <= 3; p++) {
+            if (u.feedbacks[p] !== undefined) {
+                fbHtml += u.feedbacks[p]
+                    ? '<span class="v4a-fb-tag up-' + p + '">P' + p + ' 👍</span>'
+                    : '<span class="v4a-fb-tag down">P' + p + ' 👎</span>';
+            }
+        }
+        if (!fbHtml) fbHtml = '<span class="v4a-muted">–</span>';
+
+        // Pack cliqué
+        var packHtml = '<span class="v4a-muted">–</span>';
+        if (u.pack_clicks && u.pack_clicks.length > 0) {
+            packHtml = u.pack_clicks.map(function(pc) {
+                var pid = pc.product_id || '';
+                var cls = pid.indexOf('clarte') > -1 ? 'clarte' : (pid.indexOf('boost') > -1 ? 'boost' : 'solo');
+                var isSecondary = pc.action !== 'pack_click';
+                var label = pc.action === 'pack_click' ? pid : (pc.action === 'solo_click' ? 'Solo' : pid);
+                return '<span class="v4a-pack-chip ' + cls + (isSecondary ? ' secondary' : '') + '">' + label + '</span>';
+            }).join('');
+        }
+
+        // RDV
+        var bookHtml = u.has_booking
+            ? '<span class="v4a-booking-dot yes">✓</span>'
+            : '<span class="v4a-booking-dot no">✗</span>';
+
+        var lastVisit = u.last_visit
+            ? new Date(u.last_visit).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
+            : '–';
+
+        return '<tr>' +
+            '<td><div class="v4a-user-cell"><div class="v4a-avatar">' + (u.firstname ? u.firstname[0].toUpperCase() : '?') + '</div><div><div class="v4a-user-name">' + (u.firstname || 'N/A') + ' ' + (u.lastname || '') + '</div><a href="mailto:' + (u.email || '') + '" class="v4a-user-email">' + (u.email || '') + '</a></div></div></td>' +
+            '<td>' + progressHtml + '</td>' +
+            '<td>' + visitHtml + '</td>' +
+            '<td>' + accHtml + '</td>' +
+            '<td><div style="display:flex;flex-wrap:wrap;gap:.2rem;">' + fbHtml + '</div></td>' +
+            '<td><div style="display:flex;flex-wrap:wrap;gap:.3rem;">' + packHtml + '</div></td>' +
+            '<td>' + bookHtml + '</td>' +
+            '<td>' + lastVisit + '</td>' +
+            '<td><div style="display:flex;gap:.35rem;"><button class="v4a-parcours-btn" data-user-id="' + u.user_id + '" title="Timeline">🔍</button><button class="v4a-recap-btn" data-user-id="' + u.user_id + '" title="Recap">📋</button></div></td>' +
+            '</tr>';
+    }).join('');
+}
+
+    // ══════════════ USER RECAP ══════════════
+    var sectionLabels = {0: 'Accueil', 1: 'Diagnostic', 2: 'Pistes métiers', 3: 'Suite Tilto'};
+    var accLabels = {'exact': '✅ Oui, c\'est exactement ça', 'nuance': '🤔 J\'aimerais nuancer', 'not-really': '❌ Pas vraiment'};
+
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.v4a-recap-btn');
+        if (!btn) return;
+        var uid = btn.getAttribute('data-user-id');
+        btn.textContent = '⏳';
+        btn.disabled = true;
+
+        fetch('/help-requests/admin/user-recap/' + uid)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                btn.textContent = '📋';
+                btn.disabled = false;
+                if (!data.success) { alert('Erreur: ' + data.error); return; }
+                showRecapModal(data);
+            })
+            .catch(function(err) {
+                btn.textContent = '📋';
+                btn.disabled = false;
+                alert('Erreur: ' + err.message);
+            });
+    });
+
+    function showRecapModal(data) {
+        var u = data.user;
+        var inter = data.interactions;
+        var qs = data.questions;
+        var analysis = data.analysis;
+
+        var html = '<div class="v4a-modal-overlay" id="recapOverlay">';
+        html += '<div class="v4a-modal">';
+        html += '<div class="v4a-modal-header"><h2>📋 Recap — ' + (u.firstname || '') + ' ' + (u.lastname || '') + '</h2><button class="v4a-modal-close" id="closeRecap">✕</button></div>';
+        html += '<div class="v4a-modal-body" id="recapBody">';
+
+        // ── PROFIL ──
+        html += '<div class="v4a-recap-section">';
+        html += '<div class="v4a-recap-section-title">👤 Profil</div>';
+        html += '<div class="v4a-recap-grid">';
+        html += '<div class="v4a-recap-label">Nom</div><div class="v4a-recap-value">' + esc(u.firstname || '') + ' ' + esc(u.lastname || '') + '</div>';
+        html += '<div class="v4a-recap-label">Email</div><div class="v4a-recap-value">' + esc(u.email || '–') + '</div>';
+        html += '<div class="v4a-recap-label">Téléphone</div><div class="v4a-recap-value">' + esc(u.phone_number || '–') + '</div>';
+        html += '<div class="v4a-recap-label">Localisation</div><div class="v4a-recap-value">' + esc(u.location || '–') + '</div>';
+        html += '</div></div>';
+
+        // ── INTERACTIONS V4 ──
+        html += '<div class="v4a-recap-section">';
+        html += '<div class="v4a-recap-section-title">📊 Interactions V4</div>';
+        html += '<div class="v4a-recap-grid">';
+        html += '<div class="v4a-recap-label">Progression</div><div class="v4a-recap-value">' + (sectionLabels[inter.max_section] || 'Accueil') + ' (' + inter.max_section + '/3)</div>';
+        html += '<div class="v4a-recap-label">1ère visite</div><div class="v4a-recap-value">' + fmtDate(inter.first_visit) + '</div>';
+        html += '<div class="v4a-recap-label">Dernière visite</div><div class="v4a-recap-value">' + fmtDate(inter.last_visit) + '</div>';
+        html += '<div class="v4a-recap-label">Accuracy</div><div class="v4a-recap-value">' + (inter.accuracy ? accLabels[inter.accuracy] || inter.accuracy : '–') + '</div>';
+        if (inter.accuracy_comment) {
+            html += '<div class="v4a-recap-label">Commentaire</div><div class="v4a-recap-value" style="font-style:italic;">"' + esc(inter.accuracy_comment) + '"</div>';
+        }
+        html += '</div>';
+
+        // Piste feedbacks
+        if (Object.keys(inter.piste_feedbacks).length > 0) {
+            html += '<div style="margin-top:.75rem;">';
+            for (var pn in inter.piste_feedbacks) {
+                var liked = inter.piste_feedbacks[pn];
+                var pisteTitle = getPisteTitle(analysis, parseInt(pn));
+                html += '<div class="v4a-recap-interaction-row">' + (liked ? '👍' : '👎') + ' <strong>Piste ' + pn + '</strong> — ' + esc(pisteTitle) + ' → ' + (liked ? 'Ça m\'intéresse' : 'Pas pour moi') + '</div>';
+            }
+            html += '</div>';
+        }
+
+        // Pack interest
+        if (inter.pack_interests.length > 0) {
+            html += '<div style="margin-top:.75rem;">';
+            inter.pack_interests.forEach(function(pi) {
+                html += '<div class="v4a-recap-interaction-row">📦 ' + esc(pi.action || '') + ' → ' + esc(pi.product_id || '') + ' <span style="color:var(--v4a-text-muted);font-size:.8rem;">(' + fmtDate(pi.date) + ')</span></div>';
+            });
+            html += '</div>';
+        }
+
+        // Booking
+        if (inter.booking) {
+            var b = inter.booking;
+            html += '<div style="margin-top:.75rem;background:#d1fae5;padding:.75rem;border-radius:8px;">';
+            html += '<strong>✅ Demande de RDV</strong> — Pack: <strong>' + esc(b.pack || '–') + '</strong><br>';
+            html += esc(b.firstname) + ' ' + esc(b.lastname) + ' · ' + esc(b.email) + ' · ' + esc(b.phone) + '<br>';
+            html += '<span style="font-size:.8rem;color:var(--v4a-text-muted);">' + fmtDate(b.date) + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+
+        // ── QUESTIONS / RÉPONSES ──
+        if (qs.length > 0) {
+            html += '<div class="v4a-recap-section">';
+            html += '<div class="v4a-recap-section-title">💬 Questions & Réponses (' + qs.length + ')</div>';
+            qs.forEach(function(q, i) {
+                html += '<div class="v4a-recap-qa">';
+                html += '<div class="v4a-recap-q">Q' + (i+1) + ': ' + esc(q.question) + '</div>';
+                html += '<div class="v4a-recap-a">' + esc(q.answer) + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
+        // ── JSON ANALYSE ──
+        if (analysis) {
+            html += '<div class="v4a-recap-section">';
+            html += '<div class="v4a-recap-section-title">🧠 Analyse (' + esc(analysis.step) + ' · ' + esc(analysis.generator_type) + ')</div>';
+            html += '<button class="v4a-recap-json-toggle" id="toggleJson">▶ Voir le JSON complet</button>';
+            html += '<div class="v4a-recap-json-content" id="recapJsonContent">' + esc(JSON.stringify(analysis.data, null, 2)) + '</div>';
+            html += '</div>';
+        }
+
+        html += '</div>'; // modal-body
+        html += '<div class="v4a-modal-footer"><button class="v4a-copy-btn" id="copyRecapBtn">📋 Copier texte brut</button> <button class="v4a-copy-btn" id="copyLlmBtn" style="background:var(--v4a-purple, #7c3aed);">🤖 Copier pour LLM</button></div>';
+        html += '</div></div>';
+
+        // Supprimer ancien modal si existant
+        var old = document.getElementById('recapOverlay');
+        if (old) old.remove();
+
+        document.body.insertAdjacentHTML('beforeend', html);
+
+        // Events
+        document.getElementById('closeRecap').addEventListener('click', function() { document.getElementById('recapOverlay').remove(); });
+        document.getElementById('recapOverlay').addEventListener('click', function(ev) { if (ev.target === this) this.remove(); });
+        document.getElementById('toggleJson').addEventListener('click', function() {
+            var c = document.getElementById('recapJsonContent');
+            if (c.style.display === 'block') { c.style.display = 'none'; this.textContent = '▶ Voir le JSON complet'; }
+            else { c.style.display = 'block'; this.textContent = '▼ Masquer le JSON'; }
+        });
+        document.getElementById('copyRecapBtn').addEventListener('click', function() {
+            var txt = buildPlainTextRecap(data);
+            navigator.clipboard.writeText(txt).then(function() {
+                var btn2 = document.getElementById('copyRecapBtn');
+                btn2.textContent = '✅ Copié !';
+                btn2.classList.add('copied');
+                setTimeout(function() { btn2.textContent = '📋 Copier texte brut'; btn2.classList.remove('copied'); }, 2000);
+            });
+        });
+        document.getElementById('copyLlmBtn').addEventListener('click', function() {
+            var txt = buildLlmRecap(data);
+            navigator.clipboard.writeText(txt).then(function() {
+                var btn2 = document.getElementById('copyLlmBtn');
+                btn2.textContent = '✅ Copié !';
+                btn2.classList.add('copied');
+                setTimeout(function() { btn2.textContent = '🤖 Copier pour LLM'; btn2.classList.remove('copied'); }, 2000);
+            });
+        });
+    }
+
+    function buildPlainTextRecap(data) {
+        var u = data.user;
+        var inter = data.interactions;
+        var qs = data.questions;
+        var analysis = data.analysis;
+        var t = '';
+
+        t += 'RECAP UTILISATEUR ANONYMISE \n';
+        t += '═'.repeat(50) + '\n\n';
+
+        t += 'PROFIL\n';
+        t += '  Localisation: ' + (u.location || '–') + '\n\n';
+
+        t += 'INTERACTIONS V4\n';
+        t += '  Progression: ' + (sectionLabels[inter.max_section] || 'Accueil') + ' (' + inter.max_section + '/3)\n';
+        t += '  1ère visite: ' + fmtDate(inter.first_visit) + '\n';
+        t += '  Dernière visite: ' + fmtDate(inter.last_visit) + '\n';
+        t += '  Accuracy: ' + (inter.accuracy ? accLabels[inter.accuracy] || inter.accuracy : '–') + '\n';
+        if (inter.accuracy_comment) t += '  Commentaire: "' + inter.accuracy_comment + '"\n';
+
+        if (Object.keys(inter.piste_feedbacks).length > 0) {
+            t += '\n  Feedbacks pistes:\n';
+            for (var pn in inter.piste_feedbacks) {
+                var liked = inter.piste_feedbacks[pn];
+                var pisteTitle = getPisteTitle(analysis, parseInt(pn));
+                t += '    Piste ' + pn + ' (' + pisteTitle + '): ' + (liked ? 'Ça m\'intéresse ✓' : 'Pas pour moi ✗') + '\n';
+            }
+        }
+
+        if (inter.pack_interests.length > 0) {
+            t += '\n  Pack interest:\n';
+            inter.pack_interests.forEach(function(pi) {
+                t += '    ' + (pi.action || '') + ' → ' + (pi.product_id || '') + ' (' + fmtDate(pi.date) + ')\n';
+            });
+        }
+
+        if (inter.booking) {
+            var b = inter.booking;
+            t += '\n  ✅ DEMANDE DE RDV\n';
+            t += '    Pack: ' + (b.pack || '–') + '\n';
+            t += '    Date: ' + fmtDate(b.date) + '\n';
+        }
+
+        if (qs.length > 0) {
+            t += '\n' + '─'.repeat(50) + '\n';
+            t += 'QUESTIONS & RÉPONSES\n\n';
+            qs.forEach(function(q, i) {
+                t += 'Q' + (i+1) + ': ' + q.question + '\n';
+                t += 'R: ' + q.answer + '\n\n';
+            });
+        }
+
+        if (analysis && analysis.data) {
+            t += '─'.repeat(50) + '\n';
+            t += 'ANALYSE JSON (' + analysis.step + ' · ' + analysis.generator_type + ')\n\n';
+            t += JSON.stringify(analysis.data, null, 2) + '\n';
+        }
+
+        return t;
+    }
+
+    function getPisteTitle(analysis, pisteNum) {
+        if (!analysis || !analysis.data) return 'Piste ' + pisteNum;
+        var pistes = analysis.data.pistes || analysis.data.voies || [];
+        if (pistes[pisteNum - 1]) {
+            return pistes[pisteNum - 1].job_title || pistes[pisteNum - 1].hero_title || pistes[pisteNum - 1].title || 'Piste ' + pisteNum;
+        }
+        return 'Piste ' + pisteNum;
+    }
+
+    function fmtDate(iso) {
+        if (!iso) return '–';
+        var d = new Date(iso);
+        return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
+    }
+
+    function esc(t) {
+        if (!t) return '';
+        var d = document.createElement('div');
+        d.textContent = String(t);
+        return d.innerHTML;
+    }
+
+    function buildLlmRecap(data) {
+        var u = data.user;
+        var inter = data.interactions;
+        var qs = data.questions;
+        var analysis = data.analysis;
+        var t = '';
+
+        t += 'CONTEXTE UTILISATEUR ANONYMISE \n';
+        t += 'Localisation: ' + (u.location || '–') + '\n\n';
+
+        if (qs.length > 0) {
+            t += 'RÉPONSES AU QUESTIONNAIRE\n';
+            qs.forEach(function(q) {
+                t += 'Q: ' + q.question + '\n';
+                t += 'R: ' + q.answer + '\n\n';
+            });
+        }
+
+        if (analysis && analysis.data) {
+            var pistes = analysis.data.pistes || analysis.data.voies || [];
+            if (pistes.length > 0) {
+                t += 'ANALYSE GÉNÉRÉE (' + pistes.length + ' pistes)\n';
+                pistes.forEach(function(p, i) {
+                    var num = i + 1;
+                    var title = p.job_title || p.hero_title || p.title || 'Piste ' + num;
+                    var fb = inter.piste_feedbacks[num];
+                    var fbStr = fb === true ? '→ "Ça m\'intéresse" ✓' : fb === false ? '→ "Pas pour moi" ✗' : '→ Pas de feedback';
+                    t += 'Piste ' + num + ': ' + title + ' ' + fbStr + '\n';
+                });
+                t += '\n';
+            }
+        }
+
+        t += 'FEEDBACK GLOBAL\n';
+        t += 'Accuracy ("Est-ce que j\'ai vu juste ?") : ' + (inter.accuracy ? accLabels[inter.accuracy] || inter.accuracy : 'Pas de réponse') + '\n';
+        if (inter.accuracy_comment) {
+            t += 'Commentaire: "' + inter.accuracy_comment + '"\n';
+        }
+        t += 'Progression: ' + (sectionLabels[inter.max_section] || 'Accueil') + ' (' + inter.max_section + '/3)\n';
+
+        if (inter.booking) {
+            var b = inter.booking;
+            t += '\nDEMANDE DE RDV\n';
+            t += 'Pack demandé: ' + (b.pack || '–') + '\n';
+        } else {
+            t += '\nAucune demande de RDV.\n';
+        }
+        if (analysis && analysis.data) {
+            t += '\nANALYSE JSON COMPLÈTE (' + (analysis.step || '') + ' · ' + (analysis.generator_type || '') + ')\n';
+            t += JSON.stringify(analysis.data, null, 2) + '\n';
+        }
+
+        return t;
+    }
+    // ══════════════ PARCOURS TIMELINE (expand) ══════════════
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.v4a-parcours-btn');
+    if (!btn) return;
+    var uid = btn.getAttribute('data-user-id');
+    var row = btn.closest('tr');
+    var existingDetail = row.nextElementSibling;
+    
+    // Toggle : si déjà ouvert, fermer
+    if (existingDetail && existingDetail.classList.contains('v4a-detail-row')) {
+        existingDetail.remove();
+        btn.style.background = '';
+        return;
+    }
+    
+    // Fermer les autres panels ouverts
+    document.querySelectorAll('.v4a-detail-row').forEach(function(r) { r.remove(); });
+    document.querySelectorAll('.v4a-parcours-btn').forEach(function(b) { b.style.background = ''; });
+    
+    btn.textContent = '⏳';
+    btn.style.background = 'var(--v4a-text-muted)';
+    
+    fetch('/help-requests/admin/user-recap/' + uid)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.textContent = '🔍';
+            if (!data.success || !data.timeline || data.timeline.length === 0) {
+                btn.style.background = '';
+                return;
+            }
+            
+            var html = buildTimelinePanel(data.timeline);
+            var detailRow = document.createElement('tr');
+            detailRow.className = 'v4a-detail-row';
+            detailRow.innerHTML = '<td colspan="9" style="padding:0 !important;background:var(--v4a-bg) !important;">' + html + '</td>';
+            row.after(detailRow);
+        })
+        .catch(function() {
+            btn.textContent = '🔍';
+            btn.style.background = '';
+        });
+});
+
+function buildTimelinePanel(timeline) {
+    var html = '<div class="v4a-tl-panel">';
+    html += '<div class="v4a-tl-panel-title"><i class="fas fa-stream"></i> Timeline complète — ' + timeline.length + ' actions</div>';
+    html += '<div class="v4a-tl-list">';
+    
+    var prevTime = null;
+    var sections = {0:'Accueil', 1:'Pistes métiers', 2:'Suite Tilto', 3:'Réserver'};
+    
+    timeline.forEach(function(ev) {
+        var t = new Date(ev.time);
+        var timeStr = t.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + ' ' + t.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+        
+        // Gap temporel
+        if (prevTime) {
+            var diffMin = Math.round((t - prevTime) / 60000);
+            if (diffMin > 30) {
+                var gapLabel = diffMin > 1440 ? Math.round(diffMin/1440) + ' jours' : (diffMin > 60 ? Math.round(diffMin/60) + 'h' : diffMin + ' min');
+                html += '<div class="v4a-tl-gap"><span class="v4a-tl-gap-badge">⏱ +' + gapLabel + '</span></div>';
+            }
+        }
+        prevTime = t;
+        
+        var icon = '📍', label = '', cls = 'view';
+        
+        if (ev.type === 'section_view') {
+            var si = ev.payload.section_index;
+            var isReturn = prevTime && timeline.indexOf(ev) > 0;
+            var ref = ev.payload.referrer || '';
+            var refTag = '';
+            if (ref.indexOf('magic-login') > -1) refTag = ' <span class="v4a-tl-ref">magic-link</span>';
+            else if (ref.indexOf('retry-analysis') > -1) refTag = ' <span class="v4a-tl-ref">retry</span>';
+            label = '→ ' + (sections[si] || ev.payload.section || '?') + refTag;
+        } else if (ev.type === 'accuracy_feedback') {
+            icon = '🎯'; cls = 'accuracy';
+            var ratingLabels = {'exact':'Oui exact', 'nuance':'Nuancé', 'not-really':'Pas vraiment'};
+            label = 'Accuracy : <strong>' + (ratingLabels[ev.payload.rating] || ev.payload.rating || '') + '</strong>';
+            if (ev.payload.comment && ev.payload.comment !== '' && ev.payload.comment !== 'null') {
+                label += ' — <em>"' + esc(ev.payload.comment) + '"</em>';
+            }
+        } else if (ev.type === 'piste_feedback') {
+            cls = 'piste';
+            icon = ev.payload.interested ? '👍' : '👎';
+            label = 'P' + ev.piste_number + ' → <strong>' + (ev.payload.interested ? 'Ça m\'intéresse' : 'Pas pour moi') + '</strong>';
+        } else if (ev.type === 'pack_interest') {
+            icon = '📦'; cls = 'pack';
+            var a = ev.payload.action || '';
+            if (a === 'pack_click') label = '👆 Clic <strong>' + (ev.payload.product_id || '') + '</strong> (principal)';
+            else if (a === 'solo_click') label = '📋 Explore "Avancer seul"';
+            else if (a === 'secondary_pack_click') label = '👀 Explore <strong>' + (ev.payload.product_id || '') + '</strong> (secondaire)';
+            else label = a + ' ' + (ev.payload.product_id || '');
+        } else if (ev.type === 'booking_request') {
+            icon = '✅'; cls = 'booking';
+            label = '<strong>Demande de RDV</strong> — Pack ' + (ev.payload.pack || '');
+        }
+        
+        html += '<div class="v4a-tl-item ' + cls + '">';
+        html += '<div class="v4a-tl-dot"></div>';
+        html += '<div class="v4a-tl-main"><span class="v4a-tl-time">' + timeStr + '</span><span class="v4a-tl-action">' + icon + ' ' + label + '</span></div>';
+        html += '</div>';
+    });
+    
+    html += '</div>';
+    
+    // Légende
+    html += '<div class="v4a-tl-legend">';
+    html += '<span class="v4a-tl-legend-item"><span class="v4a-tl-legend-dot view"></span> Navigation</span>';
+    html += '<span class="v4a-tl-legend-item"><span class="v4a-tl-legend-dot accuracy"></span> Accuracy</span>';
+    html += '<span class="v4a-tl-legend-item"><span class="v4a-tl-legend-dot piste"></span> Feedback piste</span>';
+    html += '<span class="v4a-tl-legend-item"><span class="v4a-tl-legend-dot pack"></span> Clic pack</span>';
+    html += '<span class="v4a-tl-legend-item"><span class="v4a-tl-legend-dot booking"></span> Booking</span>';
+    html += '</div>';
+    
+    html += '</div>';
+    return html;
+}
+});
+</script>
+{% endblock %}

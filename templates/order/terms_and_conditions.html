@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('tilto - Conditions Générales de Vente') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.terms-page-wrapper {
+    width: 100%;
+    background-color: white !important;
+    min-height: calc(100vh - 180px) !important;
+}
+
+.terms-main-container {
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    padding: 2rem 1rem !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.terms-header-section {
+    text-align: center !important;
+    margin-bottom: 3rem !important;
+}
+
+.terms-main-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: var(--text) !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+}
+
+.terms-content {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), 
+                0 4px 6px rgba(0,0,0,0.05) !important;
+    padding: 2rem !important;
+    margin-bottom: 2rem !important;
+}
+
+.terms-section {
+    margin-bottom: 2rem !important;
+}
+
+.terms-section-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    margin: 1.5rem 0 1rem 0 !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.terms-subsection-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    margin: 1.25rem 0 0.75rem 0 !important;
+}
+
+.terms-content p {
+    margin-bottom: 1rem !important;
+    line-height: 1.6 !important;
+    color: var(--text) !important;
+}
+
+.terms-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 3rem !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.terms-back-button {
+    padding: 0.75rem 1.5rem !important;
+    background: var(--bg-light) !important;
+    color: var(--text) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.terms-back-button:hover {
+    background: var(--bg) !important;
+}
+
+.terms-contact-info {
+    font-size: 0.9rem !important;
+    color: var(--text-light) !important;
+}
+
+@media (max-width: 768px) {
+    .terms-main-title {
+        font-size: 2rem !important;
+        padding: 0 1rem !important;
+    }
+    
+    .terms-content {
+        padding: 1.5rem !important;
+    }
+    
+    .terms-footer {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block main_class %}terms-page-wrapper{% endblock %}
+
+{% block content %}
+<div class="terms-main-container">
+    <div class="terms-header-section">
+        <h1 class="terms-main-title">{{ _('Conditions Générales de Vente') }}</h1>
+    </div>
+
+    <div class="terms-content">
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 1 - CHAMP D\'APPLICATION') }}</h2>
+            <p>
+                Les présentes Conditions Générales s'appliquent, sans restriction ni réserve, à l'ensemble des ventes conclues par tilto (ci-après "le Vendeur") auprès de clients professionnels ou particuliers (ci-après "les Clients").
+            </p>
+            <p>
+                Les caractéristiques principales des produits/services sont présentées sur notre site web. Le Client est tenu d'en prendre connaissance avant toute passation de commande. Le choix et l'achat d'un produit/service est de la seule responsabilité du Client.
+            </p>
+            <p>
+                Ces CGV sont accessibles à tout moment sur notre site web et prévaudront sur tout autre document. Sauf preuve contraire, les données enregistrées par tilto constituent la preuve de l'ensemble des transactions.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 2 - PRIX') }}</h2>
+            <p>
+                Les produits/services sont fournis aux tarifs en vigueur figurant sur notre site web, lors de l'enregistrement de la commande par le Vendeur. Les prix sont exprimés en Euros, HT et TTC.
+            </p>
+            <p>
+                Les tarifs tiennent compte d'éventuelles réductions qui seraient consenties par le Vendeur sur notre site web. Ces tarifs sont fermes et non révisables pendant leur période de validité mais le Vendeur se réserve le droit, hors période de validité, d'en modifier les prix à tout moment.
+            </p>
+            <p>
+                Les prix ne comprennent pas les frais de traitement, d'expédition, de transport et de livraison, qui sont facturés en supplément, dans les conditions indiquées sur notre site web et calculés préalablement à la passation de la commande. Le paiement demandé au Client correspond au montant total de l'achat, y compris ces frais.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 3 - COMMANDES') }}</h2>
+            <p>
+                Le Vendeur se réserve le droit d'annuler ou de refuser toute commande d'un Client avec lequel il existerait un litige relatif au paiement d'une commande antérieure.
+            </p>
+
+            <h3 class="terms-subsection-title">{{ _('3.1 Étapes de conclusion du contrat') }}</h3>
+            <p>
+                Pour passer commande, le Client doit suivre les étapes suivantes :
+            </p>
+            <ul>
+                <li>Choix des produits/services et ajout au panier</li>
+                <li>Vérification des éléments de la commande et correction des éventuelles erreurs</li>
+                <li>Validation de la commande</li>
+                <li>Acceptation des présentes CGV</li>
+                <li>Paiement de la commande</li>
+            </ul>
+            <p>
+                Le Client recevra ensuite par email une confirmation de commande. Pour les produits livrés, cette livraison se fera à l'adresse indiquée par le Client. Aux fins de bonne réalisation de la commande, le Client s'engage à fournir ses éléments d'identification véridiques.
+            </p>
+
+            <h3 class="terms-subsection-title">{{ _('3.2 Modification de commande') }}</h3>
+            <p>
+                Toute modification de commande par le Client après confirmation de sa commande est soumise à l'acceptation du Vendeur.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 4 - CONDITIONS DE PAIEMENT') }}</h2>
+            <p>
+                Le prix est payé par voie de paiement sécurisé, selon les modalités suivantes :
+            </p>
+            <ul>
+                <li>Paiement par carte bancaire</li>
+                <li>Paiement par virement bancaire</li>
+            </ul>
+            <p>
+                Le prix est payable en totalité et en un seul versement à la commande, sauf accord préalable exprès entre les parties.
+            </p>
+            <p>
+                Une facture sera établie par le Vendeur et remise au Client lors de la livraison des produits/services commandés.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 5 - DROIT DE RÉTRACTATION') }}</h2>
+            <p>
+                Conformément aux dispositions légales en vigueur, le Client dispose d'un délai de quatorze jours à compter de la réception du produit pour exercer son droit de rétractation auprès du Vendeur, sans avoir à justifier de motifs ni à payer de pénalité.
+            </p>
+            <p>
+                Pour les clients professionnels : Les clients professionnels ne bénéficient pas du droit de rétractation.
+            </p>
+            <p>
+                En cas d'exercice du droit de rétractation dans le délai susmentionné, le prix du ou des produits achetés et les frais d'envoi seront remboursés, les frais de retour restant à la charge du Client.
+            </p>
+            <p>
+                Les retours sont à effectuer dans leur état d'origine et complets (emballage, accessoires, notice...) permettant leur remise sur le marché à l'état neuf, accompagnés de la facture d'achat. Les produits endommagés, salis ou incomplets ne sont pas repris.
+            </p>
+            <p>
+                Le droit de rétractation peut être exercé en contactant notre service client à l'adresse email : contact@tilto.ai
+            </p>
+            <p>
+                En cas d'exercice du droit de rétractation, le Vendeur procédera au remboursement des sommes versées, dans un délai de 14 jours suivant la notification de la demande et via le même moyen de paiement que celui utilisé lors de la commande.
+            </p>
+            <h3 class="terms-subsection-title">{{ _('EXCEPTIONS AU DROIT DE RÉTRACTATION') }}</h3>
+            <p>
+                Conformément aux dispositions de l'article L.121-21-8 du Code de la Consommation, le droit de rétractation ne s'applique pas à :
+            </p>
+            <ul>
+                <li>La fourniture de services pleinement exécutés avant la fin du délai de rétractation et dont l'exécution a commencé après accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation.</li>
+                <li>La fourniture de biens ou de services dont le prix dépend de fluctuations sur le marché financier</li>
+                <li>La fourniture de biens confectionnés selon les spécifications du consommateur ou nettement personnalisés</li>
+                <li>La fourniture de biens susceptibles de se détériorer ou de se périmer rapidement</li>
+                <li>La fourniture de contenu numérique non fourni sur un support matériel dont l'exécution a commencé après accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation</li>
+            </ul>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 6 - GARANTIES') }}</h2>
+            <p>
+                Le Vendeur garantit, conformément aux dispositions légales, le Client, contre tout défaut de conformité des produits et tout vice caché, provenant d'un défaut de conception ou de réalisation des produits commandés dans les conditions et selon les modalités suivantes :
+            </p>
+            <h3 class="terms-subsection-title">{{ _('Garantie légale de conformité') }}</h3>
+            <p>
+                Le Client bénéficie d'un délai de deux ans à compter de la délivrance du produit pour agir en garantie légale de conformité. Le Client peut choisir entre la réparation ou le remplacement du produit, sous réserve des conditions de coût prévues par l'article L. 217-9 du Code de la consommation. Le Client est dispensé de rapporter la preuve de l'existence du défaut de conformité du produit durant les vingt-quatre mois suivant la délivrance du produit.
+            </p>
+            <h3 class="terms-subsection-title">{{ _('Garantie des vices cachés') }}</h3>
+            <p>
+                Le Client peut décider de mettre en œuvre la garantie contre les défauts cachés de la chose vendue au sens de l'article 1641 du Code civil dans un délai de deux ans à compter de la découverte du vice. Dans cette hypothèse, il peut choisir entre la résolution de la vente ou une réduction du prix de vente conformément à l'article 1644 du Code civil.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 7 - PROPRIÉTÉ INTELLECTUELLE') }}</h2>
+            <p>
+                Le Vendeur reste propriétaire de tous les droits de propriété intellectuelle sur les études, dessins, modèles, prototypes, etc., réalisés (même à la demande du Client) en vue de la fourniture des services au Client. Le Client s'interdit donc toute reproduction ou exploitation desdites études, dessins, modèles et prototypes, etc., sans l'autorisation expresse, écrite et préalable du Vendeur qui peut la conditionner à une contrepartie financière.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 8 - DONNÉES PERSONNELLES') }}</h2>
+            <p>
+                Les données personnelles recueillies auprès des Clients font l'objet d'un traitement informatique réalisé par le Vendeur. Elles sont enregistrées dans son fichier Clients et sont indispensables au traitement de sa commande.
+            </p>
+            <p>
+                Ces informations et données personnelles sont également conservées à des fins de sécurité, afin de respecter les obligations légales et réglementaires.
+            </p>
+            <p>
+                Conformément à la loi n°78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés, modifiée par le règlement européen n°2016/679 du 27 avril 2016, le Client dispose d'un droit d'accès, de rectification, d'effacement, et de portabilité des données le concernant, ainsi que du droit de s'opposer au traitement pour motif légitime, droits qu'il peut exercer en s'adressant au responsable de traitement à l'adresse email : privacy@tilto.co
+            </p>
+            <p>
+                En cas de réclamation, le client peut adresser une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 9 - DROIT APPLICABLE - LANGUE') }}</h2>
+            <p>
+                Les présentes CGV et les opérations qui en découlent sont régies par le droit français. Elles sont rédigées en langue française. Dans le cas où elles seraient traduites en une ou plusieurs langues, seul le texte français ferait foi en cas de litige.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 10 - LITIGES') }}</h2>
+            <p>
+                Tous les litiges auxquels les opérations d'achat et de vente conclues en application des présentes CGV pourraient donner lieu, concernant tant leur validité, leur interprétation, leur exécution, leur résiliation, leurs conséquences et leurs suites et qui n'auraient pu être résolues entre le vendeur et le client seront soumis aux tribunaux compétents dans les conditions de droit commun.
+            </p>
+            <p>
+                Le Client est informé qu'il peut en tout état de cause recourir à une médiation conventionnelle, notamment auprès de la Commission de la médiation de la consommation ou auprès des instances de médiation sectorielles existantes, ou à tout mode alternatif de règlement des différends (conciliation, par exemple) en cas de contestation.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 11 - INFORMATION PRÉCONTRACTUELLE - ACCEPTATION DU CLIENT') }}</h2>
+            <p>
+                Le Client reconnaît avoir eu communication, préalablement à la passation de sa commande, d'une manière lisible et compréhensible, des présentes CGV et de toutes les informations et renseignements visés aux articles L111-1 à L111-7 du Code de la consommation.
+            </p>
+        </section>
+
+        <section class="terms-section">
+            <h2 class="terms-section-title">{{ _('ARTICLE 12 - DISPOSITIONS FINALES') }}</h2>
+            <p>
+                L'invalidité ou l'inapplicabilité d'une quelconque disposition des présentes CGV n'affectera pas les autres dispositions, qui resteront en vigueur.
+            </p>
+            <p>
+                Le fait pour l'une des parties de ne pas exiger à un moment quelconque l'exécution stricte par l'autre partie d'une disposition ou condition quelconque des présentes CGV ne sera pas réputé constituer une renonciation définitive à cette disposition ou condition.
+            </p>
+        </section>
+    </div>
+
+    <div class="terms-footer">
+        <a href="{{ url_for('tokens.shop') }}" class="terms-back-button">{{ _('Retour à la boutique') }}</a>
+        <div class="terms-contact-info">
+            <p>tilto - {{ _('Dernière mise à jour') }}: {{ now.strftime('%d/%m/%Y') if now else '19/03/2025' }}</p>
+            <p>Email: contact@tilto.ai</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

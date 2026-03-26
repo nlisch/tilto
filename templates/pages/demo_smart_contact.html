@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto Smart Contact — Mon Cockpit{% endblock %}
+
+{% block meta_description %}Votre cockpit Tilto Smart Contact : 10 contacts stratégiques personnalisés avec messages prêts à envoyer pour accéder au marché caché de l'emploi.{% endblock %}
+
+{% block body_class %}sc-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.sc-page .header-parallax,
+.sc-page .mobile-nav,
+.sc-page .secondary-navbar,
+.sc-page > footer,
+.sc-page .flash-messages,
+.sc-page .cookie-banner { display: none !important; }
+.chat-widget { display: none !important; }
+.sc-page main { padding: 0; max-width: none; }
+
+.sc-page {
+    --pri: #A11857; --pri-dk: #7B1046; --pri-lt: #FDF2F8;
+    --cream: #FAF7F2; --sand: #F5F0E8; --rose: #EBD5E3;
+    --txt: #1C1917; --txt-md: #57534E; --txt-lt: #A8A29E;
+    --wh: #FFFFFF; --brd: #E7E5E4;
+    --green: #16A34A; --green-lt: #F0FDF4;
+    --amber: #D97706; --amber-lt: #FFFBEB;
+    --blue: #0A66C2;
+    --r: 16px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: #EDEAE3; color: var(--txt); line-height: 1.55;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+
+/* ═══ TOPBAR ═══ */
+.ck-topbar {
+    position: fixed; inset: 0 0 auto; z-index: 1000; height: 56px;
+    background: rgba(250,247,242,.96); backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(235,213,227,.5);
+    padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.ck-tb-brand { display: flex; align-items: baseline; gap: 5px; text-decoration: none; }
+.ck-tb-logo { font-family: 'Instrument Serif', serif; font-size: 1.25rem; color: var(--pri); }
+.ck-tb-back {
+    display: none; align-items: center; gap: 7px;
+    font-size: .82rem; font-weight: 700; color: var(--wh);
+    text-decoration: none; padding: 9px 18px;
+    background: var(--pri); border: none; border-radius: 10px;
+    transition: all .2s;
+    box-shadow: 0 3px 12px rgba(161,24,87,.3);
+}
+.ck-tb-back:hover { background: var(--pri-dk); transform: translateY(-1px); box-shadow: 0 5px 16px rgba(161,24,87,.4); color: var(--wh); }
+.ck-tb-back.ck-visible { display: flex; }
+
+/* ═══ SHELL ═══ */
+.ck-shell { max-width: 960px; margin: 0 auto; padding: 76px 20px 80px; }
+
+/* ═══ BLUR for demo ═══ */
+.ck-blur-name { filter: blur(6px); -webkit-filter: blur(6px); user-select: none; pointer-events: none; display: inline-block; }
+.ck-blur-logo { filter: blur(8px); -webkit-filter: blur(8px); }
+
+/* ═══ CARDS ═══ */
+.ck-card-list { position: relative;margin-top:1rem; }
+.ck-card { background: var(--wh); border-radius: var(--r); border: 1.5px solid var(--brd); overflow: hidden; transition: all .3s; box-shadow: 0 1px 4px rgba(0,0,0,.03); }
+.ck-card:hover { border-color: rgba(161,24,87,.15); box-shadow: 0 6px 20px rgba(0,0,0,.05); }
+.ck-card.ck-open { border-color: var(--pri); box-shadow: 0 8px 32px rgba(161,24,87,.08); }
+.ck-card.ck-contacted { opacity: .6; } .ck-card.ck-contacted:hover { opacity: .8; }
+.ck-card-top { padding: 24px 28px; display: flex; flex-direction: column; gap: 10px; }
+
+/* Carousel nav */
+.ck-carousel-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
+.ck-carousel-btn { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--brd); background: var(--wh); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s; font-size: 1.1rem; color: var(--txt-md); }
+.ck-carousel-btn:hover:not(:disabled) { border-color: var(--pri); color: var(--pri); background: var(--pri-lt); }
+.ck-carousel-btn:disabled { opacity: .3; cursor: default; }
+.ck-carousel-counter { font-size: .85rem; font-weight: 700; color: var(--txt-md); min-width: 60px; text-align: center; }
+.ck-carousel-counter span { color: var(--pri); font-size: 1.1rem; }
+.ck-carousel-dots { display: flex; gap: 6px; margin-top: 10px; justify-content: center; }
+.ck-carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brd); border: none; cursor: pointer; transition: all .3s; padding: 0; }
+.ck-carousel-dot.ck-active { background: var(--pri); width: 24px; border-radius: 4px; }
+.ck-carousel-dot.ck-done { background: var(--green); }
+
+.ck-card-tags-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--pri); margin-bottom: 4px; }
+
+.ck-card-ent { display: flex; align-items: center; gap: 16px; }
+.ck-card-logo { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-weight: 700; color: var(--wh); flex-shrink: 0; overflow: hidden; background: var(--wh); border: none; }
+.ck-card-logo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.ck-card-logo.ck-has-img { background: var(--wh); }
+.ck-card-logo.ck-fallback { border: none; }
+.ck-card-name { font-family: 'Instrument Serif', serif; font-size: 1.3rem; color: var(--txt); line-height: 1.2; }
+.ck-card-meta { font-size: .78rem; color: var(--txt-lt); margin-top: 3px; }
+
+.ck-card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 2px; }
+.ck-card-tag { font-size: .72rem; padding: 4px 10px; border-radius: 7px; font-weight: 600; line-height: 1.3; }
+.ck-card-tag.ck-match { background: var(--green-lt); color: #15803D; border: 1px solid #BBF7D0; }
+.ck-card-desc { font-size: .8rem; color: #948E89; line-height: 1.5; }
+
+.ck-why-now-section { margin-top: 6px; padding: 14px 0 4px; border-top: 1.5px dashed var(--brd); }
+.ck-why-now-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--pri); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.ck-why-now-label::before { content: '⏰'; font-size: .82rem; }
+
+.ck-timeline { position: relative; padding: 4px 0; margin: 4px 0; }
+.ck-tl-line { position: absolute; top: 20px; left: 0; right: 0; height: 2px; background: var(--brd); z-index: 0; }
+.ck-tl-fill { height: 100%; border-radius: 1px; }
+.ck-tl-row { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; z-index: 1; }
+.ck-tl-row-dots { margin-bottom: 8px; }
+.ck-tl-row-labels { margin-bottom: 2px; }
+.ck-tl-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2.5px solid var(--brd); background: var(--cream); margin: 0 auto; }
+.ck-tl-dot svg { width: 18px; height: 18px; stroke-width: 2.5; fill: none; stroke: var(--txt-lt); stroke-linecap: round; stroke-linejoin: round; }
+.ck-tl-dot.ck-done { background: var(--green-lt); border-color: var(--green); } .ck-tl-dot.ck-done svg { stroke: var(--green); }
+.ck-tl-dot.ck-hot { background: #FEF2F2; border-color: #DC2626; animation: ckPulseRed 2s infinite; } .ck-tl-dot.ck-hot svg { stroke: #DC2626; }
+.ck-tl-dot.ck-you { background: var(--pri-lt); border-color: var(--pri); animation: ckPulsePri 2s infinite; } .ck-tl-dot.ck-you svg { stroke: var(--pri); }
+.ck-tl-dot.ck-seed { background: #FFFBEB; border-color: #D97706; animation: ckPulseAmber 2s infinite; } .ck-tl-dot.ck-seed svg { stroke: #D97706; }
+.ck-tl-dot.ck-future { background: var(--cream); border-color: var(--brd); } .ck-tl-dot.ck-future svg { stroke: var(--txt-lt); }
+@keyframes ckPulseRed { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.3); } 50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); } }
+@keyframes ckPulsePri { 0%,100% { box-shadow: 0 0 0 0 rgba(161,24,87,.3); } 50% { box-shadow: 0 0 0 8px rgba(161,24,87,0); } }
+@keyframes ckPulseAmber { 0%,100% { box-shadow: 0 0 0 0 rgba(217,119,6,.3); } 50% { box-shadow: 0 0 0 8px rgba(217,119,6,0); } }
+.ck-tl-label { font-size: .7rem; font-weight: 700; color: var(--txt-md); line-height: 1.3; text-align: center; }
+.ck-tl-label.ck-green { color: var(--green); } .ck-tl-label.ck-red { color: #DC2626; } .ck-tl-label.ck-pri { color: var(--pri); } .ck-tl-label.ck-amber { color: #D97706; }
+.ck-tl-sub { font-size: .62rem; color: var(--txt-lt); text-align: center; }
+.ck-tl-sub.ck-red { color: #DC2626; font-weight: 700; } .ck-tl-sub.ck-pri { color: var(--pri); font-weight: 700; } .ck-tl-sub.ck-amber { color: #D97706; font-weight: 700; }
+
+.ck-card-cta-row { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--brd); flex-wrap: wrap; }
+.ck-card-cta-role { font-size: .85rem; color: var(--txt-md); flex: 1; min-width: 0; } .ck-card-cta-role strong { color: var(--txt); font-weight: 700; }
+.ck-card-cta-row-done { font-size: .85rem; font-weight: 700; color: var(--green); flex: 1; }
+.ck-btn-go { padding: 10px 22px; background: var(--pri); color: var(--wh); border: none; border-radius: 12px; font-weight: 700; font-size: .88rem; cursor: pointer; transition: all .2s; box-shadow: 0 4px 15px rgba(161,24,87,.3); font-family: inherit; flex-shrink: 0; flex-grow: 0; white-space: nowrap; }
+.ck-btn-go:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(161,24,87,.4); }
+
+.ck-card-expand { display: none; border-top: 1.5px solid var(--brd); }
+.ck-card.ck-open .ck-card-expand { display: block; animation: ckSlideIn .3s ease; }
+@keyframes ckSlideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.ck-card-expand-inner { padding: 24px 28px; }
+
+.ck-cx-guide { margin-bottom: 20px; }
+.ck-cx-guide-intro { font-size: .9rem; color: var(--txt); line-height: 1.6; margin-bottom: 16px; }
+.ck-cx-guide-intro strong { color: var(--pri); font-weight: 700; }
+
+.ck-sf { background: var(--pri-lt); border: 1.5px solid var(--rose); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+.ck-sf-label { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pri); margin-bottom: 10px; }
+.ck-sf-level { max-height: 0; opacity: 0; overflow: hidden; transition: all .35s ease; margin: 0; }
+.ck-sf-level.ck-visible { max-height: 120px; opacity: 1; }
+.ck-sf-level.ck-visible + .ck-sf-level.ck-visible { margin-top: 8px; }
+.ck-sf-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--wh); border-radius: 10px; border: 1.5px solid var(--brd); transition: border-color .2s; }
+.ck-sf-row:hover { border-color: var(--pri); }
+.ck-sf-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .6rem; font-weight: 800; flex-shrink: 0; background: var(--pri); color: var(--wh); }
+.ck-sf-lv2 .ck-sf-num { background: var(--amber-lt); color: var(--amber); }
+.ck-sf-lv3 .ck-sf-num { background: var(--cream); color: var(--txt-lt); border: 1.5px solid var(--brd); }
+.ck-sf-query { flex: 1; min-width: 0; }
+.ck-sf-query code { font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 600; color: var(--pri-dk); }
+.ck-sf-query .ck-sf-hint { font-size: .66rem; color: var(--txt-lt); margin-top: 1px; }
+.ck-sf-open { width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid var(--brd); background: var(--wh); color: var(--blue); font-size: .72rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; transition: all .15s; }
+.ck-sf-open:hover { background: rgba(10,102,194,.06); border-color: var(--blue); }
+.ck-sf-next { max-height: 0; opacity: 0; overflow: hidden; transition: all .35s ease; margin: 0; }
+.ck-sf-next.ck-show { max-height: 60px; opacity: 1; margin: 10px 0 2px; }
+.ck-sf-next-btn { border: 1.5px dashed var(--brd); background: var(--wh); font-family: inherit; font-size: .74rem; font-weight: 500; color: var(--txt-md); cursor: pointer; padding: 9px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; width: 100%; justify-content: center; }
+.ck-sf-next-btn:hover { border-color: var(--pri); color: var(--pri); border-style: solid; }
+.ck-sf-verify { max-height: 0; opacity: 0; overflow: hidden; transition: all .35s ease; margin: 0; }
+.ck-sf-verify.ck-show { max-height: 80px; opacity: 1; margin-top: 10px; }
+.ck-sf-verify-inner { font-size: .68rem; color: var(--txt-md); line-height: 1.5; padding: 8px 12px; background: var(--wh); border-radius: 8px; border: 1px solid var(--brd); }
+.ck-sf-verify-inner strong { color: var(--txt); font-weight: 600; }
+
+.ck-plan-title { font-family: 'Instrument Serif', serif; font-size: 1.15rem; color: var(--txt); margin-bottom: 16px; }
+.ck-tl4 { position: relative; }
+.ck-tl4::before { content: ''; position: absolute; left: 21px; top: 0; bottom: 0; width: 2px; background: var(--brd); z-index: 0; }
+.ck-tl4-step { position: relative; display: flex; gap: 14px; z-index: 1; }
+.ck-tl4-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 44px; }
+.ck-tl4-dot { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 800; border: 2.5px solid; transition: all .4s; position: relative; z-index: 2; }
+.ck-tl4-line { width: 2px; flex: 1; min-height: 8px; transition: background .4s; }
+.ck-tl4-right { flex: 1; padding-bottom: 18px; }
+.ck-tl4-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.ck-tl4-timing { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; }
+.ck-tl4-name { font-family: 'Instrument Serif', serif; font-size: .98rem; color: var(--txt); }
+.ck-tl4-obj { font-size: .78rem; color: var(--txt-md); line-height: 1.5; margin-bottom: 10px; }
+.ck-tl4-obj strong { color: var(--txt); font-weight: 600; }
+.ck-tl4-body { transition: all .4s ease; }
+.ck-tl4-lock { font-size: .74rem; color: var(--txt-lt); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+
+.ck-tl4-step.ck-active .ck-tl4-dot { border-color: var(--pri); background: var(--pri-lt); color: var(--pri); animation: ckPulseTl4 2s infinite; }
+.ck-tl4-step.ck-active .ck-tl4-line { background: var(--brd); }
+.ck-tl4-step.ck-active .ck-tl4-timing { background: var(--pri-lt); color: var(--pri); }
+.ck-tl4-step.ck-active .ck-tl4-body { max-height: 1200px; opacity: 1; }
+@keyframes ckPulseTl4 { 0%,100% { box-shadow: 0 0 0 0 rgba(161,24,87,.25); } 50% { box-shadow: 0 0 0 7px rgba(161,24,87,0); } }
+
+.ck-tl4-step.ck-done .ck-tl4-dot { border-color: var(--green); background: var(--green-lt); color: var(--green); }
+.ck-tl4-step.ck-done .ck-tl4-line { background: var(--green); }
+.ck-tl4-step.ck-done .ck-tl4-timing { background: var(--green-lt); color: var(--green); }
+.ck-tl4-step.ck-done .ck-tl4-name { color: var(--green); }
+.ck-tl4-step.ck-done .ck-tl4-obj { color: var(--txt-lt); margin-bottom: 0; }
+.ck-tl4-step.ck-done .ck-tl4-body { max-height: 0; opacity: 0; overflow: hidden; }
+.ck-tl4-step.ck-done .ck-tl4-right { padding-bottom: 10px; }
+
+.ck-tl4-step.ck-locked .ck-tl4-dot { border-color: var(--brd); background: var(--cream); color: var(--txt-lt); }
+.ck-tl4-step.ck-locked .ck-tl4-line { background: var(--brd); }
+.ck-tl4-step.ck-locked .ck-tl4-timing { background: var(--cream); color: var(--txt-lt); }
+.ck-tl4-step.ck-locked .ck-tl4-name { color: var(--txt-lt); }
+.ck-tl4-step.ck-locked .ck-tl4-obj { display: none; }
+.ck-tl4-step.ck-locked .ck-tl4-body { max-height: 0; opacity: 0; overflow: hidden; }
+.ck-tl4-step.ck-locked .ck-tl4-right { padding-bottom: 10px; }
+
+.ck-tl4-task { background: var(--cream); border-radius: 10px; padding: 14px 16px; border: 1.5px solid var(--brd); }
+.ck-tl4-task-label { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--pri); margin-bottom: 8px; }
+.ck-tl4-task-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; font-size: .8rem; color: var(--txt-md); line-height: 1.5; }
+.ck-tl4-task-item:not(:last-child) { border-bottom: 1px solid var(--brd); }
+.ck-tl4-task-num { width: 20px; height: 20px; border-radius: 50%; background: var(--pri); color: var(--wh); display: flex; align-items: center; justify-content: center; font-size: .58rem; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+.ck-tl4-task-item code { background: var(--pri-lt); color: var(--pri); padding: 2px 6px; border-radius: 4px; font-size: .76rem; font-family: 'DM Sans', sans-serif; }
+
+.ck-tl4-msg { background: var(--cream); border-radius: 10px; padding: 14px 16px; border: 1.5px solid var(--brd); }
+.ck-tl4-msg-label { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--pri); margin-bottom: 6px; }
+.ck-tl4-msg-text { font-size: .82rem; color: var(--txt); line-height: 1.7; white-space: pre-line; }
+.ck-tl4-msg-tip { font-size: .76rem; color: var(--pri); margin-top: 8px; padding: 8px 12px; background: var(--pri-lt); border-radius: 8px; }
+.ck-tl4-msg-tip strong { font-weight: 700; }
+
+.ck-hl-stat { background: rgba(161,24,87,.08); border-radius: 4px; padding: 0 2px; cursor: pointer; border-bottom: 1.5px solid var(--pri); transition: background .2s; }
+.ck-hl-stat::after { content: '💡'; font-size: .6rem; margin-left: 2px; }
+.ck-hl-stat.ck-hl-active { background: rgba(161,24,87,.15); }
+.ck-hl-reveal { display: none; margin: 6px 0 10px; padding: 8px 12px; border-radius: 10px; background: var(--pri); color: var(--wh); font-size: .7rem; font-weight: 500; line-height: 1.5; }
+.ck-hl-reveal.ck-hl-show { display: block; animation: ckRevealSlide .25s ease; }
+@keyframes ckRevealSlide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+.ck-tl4-outcome { background: linear-gradient(135deg, var(--pri-lt), var(--cream)); border-radius: 10px; padding: 14px 16px; border: 1.5px solid var(--rose); }
+.ck-tl4-outcome-item { font-size: .8rem; color: var(--txt-md); line-height: 1.5; padding: 3px 0 3px 18px; position: relative; }
+.ck-tl4-outcome-item::before { content: '→'; position: absolute; left: 0; color: var(--pri); font-weight: 700; }
+.ck-tl4-outcome-tip { font-size: .76rem; color: var(--txt-md); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rose); line-height: 1.5; }
+.ck-tl4-outcome-tip strong { color: var(--pri); }
+
+.ck-tl4-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-size: .8rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all .2s; margin-top: 10px; background: var(--pri); color: var(--wh); box-shadow: 0 4px 15px rgba(161,24,87,.3); }
+.ck-tl4-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(161,24,87,.4); }
+.ck-tl4-btn.ck-done-btn { background: var(--green-lt); color: var(--green); box-shadow: none; cursor: default; }
+
+.ck-tl4-copy { display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 8px; font-size: .76rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--brd); background: var(--wh); color: var(--txt-md); font-family: inherit; transition: all .2s; margin-top: 8px; margin-right: 6px; }
+.ck-tl4-copy:hover { border-color: var(--pri); color: var(--pri); }
+.ck-tl4-copy.ck-copied { border-color: var(--green); color: var(--green); background: var(--green-lt); }
+
+.ck-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--txt); color: var(--wh); padding: 12px 24px; border-radius: 12px; font-size: .84rem; font-weight: 600; box-shadow: 0 12px 40px rgba(0,0,0,.25); z-index: 999; opacity: 0; transition: all .4s cubic-bezier(.175,.885,.32,1.275); pointer-events: none; }
+.ck-toast.ck-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.ck-foot { text-align: center; padding: 20px 0 0; font-size: .72rem; color: var(--txt-lt); }
+
+@media (max-width: 768px) {
+    .ck-shell { padding: 76px 12px 60px; }
+    .ck-card-cta-row { flex-direction: column; align-items: stretch; gap: 12px; }
+    .ck-btn-go { text-align: center; }
+}
+
+/* ═══ BANNIÈRE TOP CTA ═══ */
+/* ═══ BANNIÈRE TOP CTA ═══ */
+.ck-top-cta-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f7b100; color: #590925; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: .88rem;
+    padding: 9px 18px; border-radius: 10px; text-align: center;
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 3px 12px rgba(247,177,0,.3);
+    transition: all .2s;
+}
+.ck-top-cta-btn:hover { background: #e0a000; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(247,177,0,.45); color: #590925; }
+/* ═══ BANNIÈRE STICKY CTA ═══ */
+.ck-sticky-cta {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+    padding: 14px 20px 18px;
+    background: rgba(250,247,242,0.97);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1.5px solid var(--rose);
+    box-shadow: 0 -8px 32px rgba(161,24,87,0.12);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+.ck-sticky-cta.ck-sticky-visible { transform: translateY(0); }
+.ck-sticky-left { flex: 1; min-width: 0; }
+.ck-sticky-eyebrow { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--pri); margin-bottom: 3px; }
+.ck-sticky-title { font-family: 'Instrument Serif', serif; font-size: 1rem; color: var(--txt); line-height: 1.25; }
+.ck-sticky-title em { color: var(--pri); font-style: normal; }
+.ck-sticky-sub { font-size: .72rem; color: var(--txt-lt); margin-top: 2px; }
+.ck-sticky-btn {
+    flex-shrink: 0; background: var(--pri); color: var(--wh);
+    border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 700; font-size: .9rem; padding: 13px 22px; border-radius: 12px;
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    transition: all .2s; box-shadow: 0 4px 18px rgba(161,24,87,.35); white-space: nowrap;
+}
+.ck-sticky-btn:hover { background: var(--pri-dk); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(161,24,87,.4); color: var(--wh); }
+@media (max-width: 600px) {
+    .ck-sticky-cta { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px 20px; }
+    .ck-sticky-btn { text-align: center; justify-content: center; font-size: .85rem; padding: 13px 16px; }
+    .ck-sticky-title { font-size: .92rem; }
+}
+
+.ck-demo-banner {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: .72rem; color: var(--txt-md);
+    background: var(--pri-lt); border: 1px solid var(--rose);
+    border-radius: 6px; padding: 5px 10px;
+    margin-bottom: 12px;
+}
+.ck-demo-banner strong { color: var(--pri); font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ck-topbar">
+    <a href="{{ url_for('tilto_smart_contacts', slug_id=session.get('smart_contact_slug', '8793')) }}" class="ck-tb-brand">
+        <img src="https://images.tilto.co/production/2026/02/bfb592d3_Tilto_SmartContact_Horizontal_transparent_1.webp" alt="Tilto Smart Contact" style="height:44px;width:auto;">
+    </a>
+    {% if current_user.is_authenticated %}
+    <form action="{{ url_for('tokens.direct_buy', product_id=request.args.get('product_id', 'pack_smart_contact_fr')) }}" method="GET" style="margin:0">
+        {% if session.get('smart_contact_coupon') %}<input type="hidden" name="coupon" value="{{ session.get('smart_contact_coupon') }}">{% endif %}
+        <button type="submit" class="ck-top-cta-btn">Contacter mes entreprises →</button>
+    </form>
+    {% else %}
+    <a href="{{ url_for('tilto_smart_contacts_default') }}" class="ck-top-cta-btn">Contacter mes entreprises →</a>
+    {% endif %}
+</div>
+
+<div class="ck-shell">
+    <div class="ck-demo-banner">
+        Exemple pour <strong>Sarah Dumont</strong> · Social Media Specialist
+    </div>
+    <div class="ck-card-list" id="ckCardList"></div>
+    <div class="ck-carousel-nav">
+        <button class="ck-carousel-btn" id="ckNavPrev" disabled>←</button>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div class="ck-carousel-counter"><span id="ckCarIdx">1</span> / <span id="ckCarTotal">10</span></div>
+            <div style="font-size:.68rem;color:#A8A29E;text-align:center">Exemple · tu recevras <strong style="color:#A11857">10 entreprises ciblées</strong> pour ton profil</div>
+        </div>
+        <button class="ck-carousel-btn" id="ckNavNext">→</button>
+    </div>
+    <div class="ck-carousel-dots" id="ckCarDots"></div>
+    <div class="ck-foot">Préparé par Tilto Jobs · Données actualisées le 24 fév. 2026 · Logos par <a href="https://logo.dev" target="_blank" rel="noopener" style="color:var(--pri);text-decoration:none;font-weight:600">Logo.dev</a></div>
+</div>
+
+<div class="ck-toast" id="ckToast"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function() {
+'use strict';
+
+
+var CK_LOGO_TOKEN = {{ logo_token | tojson }} || '';
+
+var U = { fn: 'Sarah', ln: 'Dumont', ini: 'SD', poste: 'Social Media Specialist · Ex-Helios Digital', loc: 'Paris · Remote OK' };
+
+var IC = {
+    check: '<path d="M20 6L9 17l-5-5"/>',
+    bolt: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+    users: '<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M14 7a4 4 0 11-8 0 4 4 0 018 0zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+    trend: '<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+    userPlus: '<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M14 7a4 4 0 11-8 0 4 4 0 018 0zM20 8v6M23 11h-6"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>',
+    activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    seed: '<path d="M7 20h10M10 20c5.5-2.5.8-6.4 3-10 0 0-5 2-7 5.5M17 20c-5.5-2.5-.8-6.4-3-10 0 0 5 2 7 5.5"/>',
+    megaphone: '<path d="M3 11l18-5v12L3 13v-2zM11.6 16.8a3 3 0 11-5.8-1.6"/>'
+};
+function ckSvg(ic) { return '<svg viewBox="0 0 24 24">' + IC[ic] + '</svg>'; }
+
+var E = [
+{
+    id: 'doctolib', name: 'Doctolib', ini: 'Do', color: 'linear-gradient(135deg,#107ACA,#0B5BA8)', domain: 'doctolib.fr',
+    sector: 'HealthTech · SaaS', size: '2 800 sal.', loc: 'Paris · Hybride',
+    matchTags: ['Contenu expert à vulgariser ✓', 'Paris hybride ✓', 'Social Media B2B + B2C ✓', 'Scale-up internationale ✓'],
+    desc: 'Leader HealthTech en Europe — 80M+ patients, 900K+ praticiens. Expansion active en Allemagne et Italie.',
+    timeline: { fill: '25%', fillColor: 'var(--green)', steps: [
+        { icon: 'check', state: 'done', label: 'Recrutements Product Marketing', labelClass: 'green', sub: '3 postes récents', subClass: '' },
+        { icon: 'activity', state: 'you', label: 'Équipe Brand en structuration', labelClass: 'pri', sub: 'Signal détecté', subClass: '' },
+        { icon: 'seed', state: 'seed', label: 'Plante la graine', labelClass: 'amber', sub: 'Tu arrives tôt', subClass: '' },
+        { icon: 'target', state: 'future', label: 'Prochain poste Social', labelClass: '', sub: 'Q2 2026 ?', subClass: '' }
+    ]},
+    target: {
+        role: 'Head of Social Media',
+        shortWhy: 'Pas encore de poste Social publié — mais l\'équipe grossit, ça ne devrait pas tarder'
+    },
+    searchFunnel: [
+        { q: 'Social Media Manager Doctolib', hint: 'Titre le plus probable — Doctolib utilise des titres classiques', url: 'https://www.linkedin.com/search/results/people/?keywords=Social%20Media%20Manager%20Doctolib' },
+        { q: 'Content Manager Doctolib', hint: 'Rôle connexe — souvent la même personne en scale-up', url: 'https://www.linkedin.com/search/results/people/?keywords=Content%20Manager%20Doctolib' },
+        { q: 'Page Doctolib → Employés → filtre Marketing', hint: 'Identifie qui pilote le contenu social — regarde qui publie pour la marque', url: 'https://www.linkedin.com/company/doctolib/people/' }
+    ],
+    searchVerify: 'en poste chez Doctolib, titre contient « Social », « Content », « Brand » ou « Marketing », et publie du contenu',
+    contactIntro: 'Doctolib doit parler à <strong>deux audiences opposées</strong> (praticiens B2B + patients B2C) sur les mêmes canaux — exactement le défi que tu as géré chez Helios Digital. Pas de poste publié, mais l\'équipe Marketing recrute activement. Tu arrives <strong>avant tout le monde</strong>.',
+    howSteps: ['Cherche sur LinkedIn : <code>Social Media Doctolib</code> ou <code>Content Marketing Doctolib</code>', 'Doctolib publie beaucoup de contenu santé — identifie qui pilote la stratégie social', 'Commente un post LinkedIn de Doctolib avec un regard « contenu expert »'],
+    msg1: {
+        text: "Bonjour [Prénom],\n\nJe regardais récemment le contenu LinkedIn de Doctolib et je trouvais intéressant comment vous arrivez à parler aux praticiens (ton expert, ROI cabinet) et aux patients (ton accessible, santé au quotidien) sans que l'un dilue l'autre.\n\nC'est un sujet qui me parle beaucoup — chez Helios Digital on avait exactement ce dual messaging : recruteurs d'un côté, candidats de l'autre, sur les mêmes canaux. Pas simple à équilibrer.\n\nEn tout cas bravo pour la cohérence !\n\nSarah Dumont",
+        tip: "Tu cites leur double audience (praticiens/patients) avec un regard métier. Elle voit que tu analyses, pas que tu flattes.",
+        ann: [{ f: "parler aux praticiens (ton expert, ROI cabinet) et aux patients (ton accessible, santé au quotidien)", s: "Montrer que tu vois la double audience → te distingue de 90% des candidats" }, { f: "sans que l'un dilue l'autre", s: "Reconnaître la difficulté → +72% d'acceptation de connexion" }, { f: "on avait exactement ce dual messaging", s: "Partager un vécu similaire → +58% de connexion perçue" }]
+    },
+    msg2: {
+        text: "Bonjour [Prénom],\n\nJe me posais une question sur votre expansion en Allemagne et Italie : comment vous adaptez la stratégie de contenu social par marché ? Le rapport à la santé et au numérique est tellement différent entre la France et l'Allemagne par exemple.\n\nChez Helios Digital on avait un sujet similaire sur 8 marchés — les messages qui fonctionnaient en France ne passaient pas du tout en Allemagne. On avait dû repenser le contenu localement, pas juste traduire.\n\nCurieuse d'avoir votre approche.\n\nSarah",
+        tip: "Question concrète sur le multi-marchés. Si elle répond, propose un call de 15 min.",
+        ann: [{ f: "comment vous adaptez la stratégie de contenu social par marché", s: "Question ouverte sur un dilemme réel → x4 réponses" }, { f: "Le rapport à la santé et au numérique est tellement différent", s: "Montrer du respect pour leur spécificité → te distingue des profils génériques" }, { f: "repenser le contenu localement, pas juste traduire", s: "Partager un apprentissage concret → crée de l'authenticité, pas un pitch" }]
+    }
+}
+];
+
+var ckOpenId = null, ckContacted = {}, ckContactStep = {};
+var ckCurCard = 0;
+
+function ckRenderDots() {
+    var dots = document.getElementById('ckCarDots'); dots.innerHTML = '';
+    E.forEach(function(_, i) {
+        var d = document.createElement('button');
+        d.className = 'ck-carousel-dot' + (i === ckCurCard ? ' ck-active' : '') + (ckContacted[E[i].id] ? ' ck-done' : '');
+        d.onclick = function() { ckCurCard = i; ckRenderCards(); ckRenderDots(); };
+        dots.appendChild(d);
+    });
+}
+
+function ckNavCard(dir) {
+    ckCurCard = Math.max(0, Math.min(E.length - 1, ckCurCard + dir));
+    ckOpenId = null; ckRenderCards(); ckRenderDots();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function ckRenderCards() {
+    var list = document.getElementById('ckCardList'); list.innerHTML = '';
+    document.getElementById('ckCarIdx').textContent = ckCurCard + 1;
+    document.getElementById('ckCarTotal').textContent = '10';
+    document.getElementById('ckNavPrev').disabled = ckCurCard === 0;
+    document.getElementById('ckNavNext').disabled = false;
+
+    var e = E[ckCurCard];
+    var isOpen = ckOpenId === e.id, isSent = !!ckContacted[e.id];
+    var c = document.createElement('div');
+    c.className = 'ck-card' + (isOpen ? ' ck-open' : '') + (isSent ? ' ck-contacted' : '');
+    c.id = 'ck-c-' + e.id;
+
+    var matchTags = e.matchTags.map(function(t) { return '<span class="ck-card-tag ck-match">' + t + '</span>'; }).join('');
+    var tlDots = e.timeline.steps.map(function(s) { return '<div class="ck-tl-dot ck-' + s.state + '">' + ckSvg(s.icon) + '</div>'; }).join('');
+    var tlLabels = e.timeline.steps.map(function(s) { return '<div class="ck-tl-label' + (s.labelClass ? ' ck-' + s.labelClass : '') + '">' + s.label + '</div>'; }).join('');
+    var tlSubs = e.timeline.steps.map(function(s) { return '<div class="ck-tl-sub' + (s.subClass ? ' ck-' + s.subClass : '') + '">' + s.sub + '</div>'; }).join('');
+
+    var top = '<div class="ck-card-top" data-action="open-card" data-id="' + e.id + '" style="cursor:pointer">' +
+        '<div class="ck-card-ent">' +
+            '<div class="ck-card-logo ck-has-img" id="ck-logo-' + e.id + '" data-color="' + e.color + '" data-initials="' + e.ini + '"><img src="https://img.logo.dev/' + e.domain + '?token=' + CK_LOGO_TOKEN + '&format=png&size=64" data-fallback-id="' + e.id + '"></div>' +
+            '<div><div class="ck-card-name">' + e.name + '</div><div class="ck-card-meta">' + e.sector + ' · ' + e.size + ' · 📍 ' + e.loc + '</div></div>' +
+        '</div>' +
+        '<div class="ck-card-desc">' + e.desc + '</div>' +
+        '<div class="ck-card-tags-label">✓ Pourquoi c\'est fait pour toi</div>' +
+        '<div class="ck-card-tags">' + matchTags + '</div>' +
+        '<div class="ck-why-now-section">' +
+            '<div class="ck-why-now-label">Pourquoi c\'est le moment parfait</div>' +
+            '<div class="ck-timeline">' +
+                '<div class="ck-tl-line"><div class="ck-tl-fill" style="width:' + e.timeline.fill + ';background:' + e.timeline.fillColor + '"></div></div>' +
+                '<div class="ck-tl-row ck-tl-row-dots">' + tlDots + '</div>' +
+                '<div class="ck-tl-row ck-tl-row-labels">' + tlLabels + '</div>' +
+                '<div class="ck-tl-row ck-tl-row-subs">' + tlSubs + '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="ck-card-cta-row">' +
+            '<div class="ck-card-cta-role"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--pri);margin-bottom:4px">🎯 Ton contact clé</div><strong>' + e.target.role + '</strong> — ' + e.target.shortWhy + '</div>' +
+            '<button class="ck-btn-go" data-action="open-card" data-id="' + e.id + '">Ma stratégie gagnante →</button>' +
+        '</div>' +
+    '</div>';
+
+    var stepState = ckContactStep[e.id] || 0;
+    function ss(n) { return n < stepState ? 'ck-done' : n === stepState ? 'ck-active' : 'ck-locked'; }
+
+    function annotate(txt, anns) {
+        if (!anns || !anns.length) return txt;
+        var out = txt;
+        anns.forEach(function(a) {
+            out = out.replace(a.f, '<span class="ck-hl-stat">' + a.f + '</span><div class="ck-hl-reveal">' + a.s + '</div>');
+        });
+        return out;
+    }
+
+    var m1html = annotate(e.msg1.text, e.msg1.ann);
+    var m2html = annotate(e.msg2.text, e.msg2.ann);
+
+    var expand = '<div class="ck-card-expand"><div class="ck-card-expand-inner">' +
+        '<div class="ck-cx-guide"><div class="ck-cx-guide-intro">' + e.contactIntro + '</div></div>' +
+        '<div class="ck-sf">' +
+            '<div class="ck-sf-label">🔎 Trouve ton contact · ' + e.target.role + '</div>' +
+            '<div class="ck-sf-level ck-visible"><div class="ck-sf-row"><div class="ck-sf-num">1</div><div class="ck-sf-query"><code>' + e.searchFunnel[0].q + '</code><div class="ck-sf-hint">' + e.searchFunnel[0].hint + '</div></div><a class="ck-sf-open" href="' + e.searchFunnel[0].url + '" target="_blank">↗</a></div></div>' +
+            '<div class="ck-sf-next ck-show" id="ck-sft2-' + e.id + '"><button class="ck-sf-next-btn" data-action="search-level" data-id="' + e.id + '" data-level="2">Pas trouvé ? Essaie un autre titre ↓</button></div>' +
+            '<div class="ck-sf-level ck-sf-lv2" id="ck-sfl2-' + e.id + '"><div class="ck-sf-row"><div class="ck-sf-num">2</div><div class="ck-sf-query"><code>' + e.searchFunnel[1].q + '</code><div class="ck-sf-hint">' + e.searchFunnel[1].hint + '</div></div><a class="ck-sf-open" href="' + e.searchFunnel[1].url + '" target="_blank">↗</a></div></div>' +
+            '<div class="ck-sf-next" id="ck-sft3-' + e.id + '"><button class="ck-sf-next-btn" data-action="search-level" data-id="' + e.id + '" data-level="3">Toujours rien ? Cherche autrement ↓</button></div>' +
+            '<div class="ck-sf-level ck-sf-lv3" id="ck-sfl3-' + e.id + '"><div class="ck-sf-row"><div class="ck-sf-num">3</div><div class="ck-sf-query"><code>' + e.searchFunnel[2].q + '</code><div class="ck-sf-hint">' + e.searchFunnel[2].hint + '</div></div><a class="ck-sf-open" href="' + e.searchFunnel[2].url + '" target="_blank">↗</a></div></div>' +
+            '<div class="ck-sf-verify" id="ck-sfv-' + e.id + '"><div class="ck-sf-verify-inner"><strong>✓ Bonne personne si :</strong> ' + e.searchVerify + '</div></div>' +
+        '</div>' +
+        '<div class="ck-plan-title">Ton plan d\'approche</div>' +
+        '<div class="ck-tl4">' +
+            '<div class="ck-tl4-step ' + ss(0) + '"><div class="ck-tl4-left"><div class="ck-tl4-dot">1</div><div class="ck-tl4-line"></div></div><div class="ck-tl4-right"><div class="ck-tl4-head"><div class="ck-tl4-timing">J-7</div><div class="ck-tl4-name">Warm-up</div></div><div class="ck-tl4-obj"><strong>Objectif :</strong> Apparaître dans ses notifications avant de la contacter.</div><div class="ck-tl4-body"><div class="ck-tl4-task"><div class="ck-tl4-task-label">Cette semaine</div>' + e.howSteps.map(function(s, i) { return '<div class="ck-tl4-task-item"><div class="ck-tl4-task-num">' + (i + 1) + '</div><div>' + s + '</div></div>'; }).join('') + '</div><button class="ck-tl4-btn' + (stepState > 0 ? ' ck-done-btn' : '') + '" data-action="advance-step" data-id="' + e.id + '" data-step="1">' + (stepState > 0 ? '✓ Fait' : '✓ C\'est fait') + '</button></div></div></div>' +
+            '<div class="ck-tl4-step ' + ss(1) + '"><div class="ck-tl4-left"><div class="ck-tl4-dot">2</div><div class="ck-tl4-line"></div></div><div class="ck-tl4-right"><div class="ck-tl4-head"><div class="ck-tl4-timing">J0</div><div class="ck-tl4-name">Contact & Crédibilité</div></div><div class="ck-tl4-obj"><strong>Objectif :</strong> Demande de connexion + message. Zéro demande, zéro CV.</div><div class="ck-tl4-lock">' + (stepState < 1 ? '🔒 Débloqué après le warm-up' : '') + '</div><div class="ck-tl4-body"><div class="ck-tl4-msg"><div class="ck-tl4-msg-label">Note de connexion LinkedIn</div><div class="ck-tl4-msg-text" id="ck-m1t-' + e.id + '">' + m1html + '</div><div class="ck-tl4-msg-tip"><strong>💡</strong> ' + e.msg1.tip + '</div></div><button class="ck-tl4-copy" id="ck-cp1-' + e.id + '" data-action="copy-msg" data-id="' + e.id + '" data-msg="1" data-btn="ck-cp1-' + e.id + '">📋 Copier</button><button class="ck-tl4-btn' + (stepState > 1 ? ' ck-done-btn' : '') + '" data-action="advance-step" data-id="' + e.id + '" data-step="2">' + (stepState > 1 ? '✓ Envoyé' : '✓ Connexion envoyée') + '</button></div></div></div>' +
+            '<div class="ck-tl4-step ' + ss(2) + '"><div class="ck-tl4-left"><div class="ck-tl4-dot">3</div><div class="ck-tl4-line"></div></div><div class="ck-tl4-right"><div class="ck-tl4-head"><div class="ck-tl4-timing">J+15</div><div class="ck-tl4-name">Interaction réelle</div></div><div class="ck-tl4-obj"><strong>Objectif :</strong> Passer de « contact LinkedIn » à conversation entre pairs.</div><div class="ck-tl4-lock">' + (stepState < 2 ? '🔒 Débloqué après le premier message' : '') + '</div><div class="ck-tl4-body"><div class="ck-tl4-msg"><div class="ck-tl4-msg-label">Message de relance stratégique</div><div class="ck-tl4-msg-text">' + m2html + '</div><div class="ck-tl4-msg-tip"><strong>💡</strong> ' + e.msg2.tip + '</div></div><button class="ck-tl4-copy" id="ck-cp2-' + e.id + '" data-action="copy-msg" data-id="' + e.id + '" data-msg="2" data-btn="ck-cp2-' + e.id + '">📋 Copier</button><button class="ck-tl4-btn' + (stepState > 2 ? ' ck-done-btn' : '') + '" data-action="advance-step" data-id="' + e.id + '" data-step="3">' + (stepState > 2 ? '✓ Envoyé' : '✓ Message envoyé') + '</button></div></div></div>' +
+            '<div class="ck-tl4-step ' + ss(3) + '"><div class="ck-tl4-left"><div class="ck-tl4-dot">4</div></div><div class="ck-tl4-right"><div class="ck-tl4-head"><div class="ck-tl4-timing">J+30</div><div class="ck-tl4-name">Opportunité</div></div><div class="ck-tl4-obj"><strong>Objectif :</strong> Récolter. Tu es dans sa shortlist mentale.</div><div class="ck-tl4-lock">' + (stepState < 3 ? '🔒 Débloqué après la relance' : '') + '</div><div class="ck-tl4-body"><div class="ck-tl4-outcome"><div class="ck-tl4-outcome-item">Si elle a répondu — propose un call de 15 min « pour comparer vos approches »</div><div class="ck-tl4-outcome-item">Si pas de réponse — continue à interagir sur ses posts</div><div class="ck-tl4-outcome-item">Quand le prochain poste s\'ouvre, ton nom est déjà là</div><div class="ck-tl4-outcome-tip"><strong>💡 Ce n\'est pas que pour un job.</strong> Tu construis un réseau de décideurs qui te connaissent comme experte.</div></div></div></div></div>' +
+        '</div>' +
+    '</div></div>';
+
+    c.innerHTML = top + expand;
+    list.appendChild(c);
+
+    var logoImg = c.querySelector('[data-fallback-id="' + e.id + '"]');
+    if (logoImg) {
+        logoImg.addEventListener('error', function() { ckLogoFallback(e.id); });
+    }
+}
+
+function ckOpenCard(id) {
+    ckOpenId = ckOpenId === id ? null : id;
+    ckRenderCards();
+    if (ckOpenId) setTimeout(function() {
+        var expand = document.querySelector('#ck-c-' + id + ' .ck-card-expand');
+        if (expand) expand.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+}
+
+function ckShowSearchLevel(id, n) {
+    var lv = document.getElementById('ck-sfl' + n + '-' + id);
+    if (lv) lv.classList.add('ck-visible');
+    var trig = document.getElementById('ck-sft' + n + '-' + id);
+    if (trig) trig.style.display = 'none';
+    var nextTrig = document.getElementById('ck-sft' + (n + 1) + '-' + id);
+    if (nextTrig) nextTrig.classList.add('ck-show');
+    if (n >= 2) { var v = document.getElementById('ck-sfv-' + id); if (v) v.classList.add('ck-show'); }
+}
+
+function ckAdvanceStep(id, step) {
+    var cur = ckContactStep[id] || 0;
+    if (step === cur + 1) {
+        ckContactStep[id] = step;
+        if (step >= 4) { ckContacted[id] = true; ckShowToast('🚀 Stratégie activée !'); ckRenderDots(); }
+        else { ckShowToast('✓ Étape ' + step + ' validée'); }
+        ckOpenId = id; ckRenderCards();
+    }
+}
+
+function ckCopyMsg(entId, msgNum, btnId) {
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    var ent = E.find(function(e) { return e.id === entId; });
+    if (!ent) return;
+    var txt = msgNum === 1 ? ent.msg1.text : ent.msg2.text;
+    navigator.clipboard.writeText(txt).then(function() {
+        btn.classList.add('ck-copied'); btn.innerHTML = '✓ Copié !';
+        ckShowToast('Message copié !');
+        setTimeout(function() { btn.classList.remove('ck-copied'); btn.innerHTML = '📋 Copier'; }, 2500);
+    });
+}
+
+function ckLogoFallback(id) {
+    var el = document.getElementById('ck-logo-' + id);
+    if (!el) return;
+    el.classList.remove('ck-has-img'); el.classList.add('ck-fallback');
+    el.style.background = el.dataset.color; el.innerHTML = el.dataset.initials;
+}
+
+function ckShowToast(msg) {
+    var t = document.getElementById('ckToast');
+    t.textContent = msg; t.classList.add('ck-show');
+    setTimeout(function() { t.classList.remove('ck-show'); }, 2500);
+}
+
+document.addEventListener('click', function(ev) {
+    var hl = ev.target.closest('.ck-hl-stat');
+    if (hl) {
+        ev.stopPropagation();
+        var reveal = hl.nextElementSibling;
+        if (!reveal || !reveal.classList.contains('ck-hl-reveal')) return;
+        var wasOpen = reveal.classList.contains('ck-hl-show');
+        document.querySelectorAll('.ck-hl-reveal').forEach(function(r) { r.classList.remove('ck-hl-show'); });
+        document.querySelectorAll('.ck-hl-stat').forEach(function(h) { h.classList.remove('ck-hl-active'); });
+        if (!wasOpen) { reveal.classList.add('ck-hl-show'); hl.classList.add('ck-hl-active'); }
+        return;
+    }
+    var target = ev.target.closest('[data-action]');
+    if (!target) return;
+    var action = target.dataset.action, id = target.dataset.id;
+    switch (action) {
+        case 'open-card': ev.stopPropagation(); ckOpenCard(id); break;
+        case 'search-level': ev.stopPropagation(); ckShowSearchLevel(id, parseInt(target.dataset.level)); break;
+        case 'advance-step': ev.stopPropagation(); ckAdvanceStep(id, parseInt(target.dataset.step)); break;
+        case 'copy-msg': ev.stopPropagation(); ckCopyMsg(id, parseInt(target.dataset.msg), target.dataset.btn); break;
+    }
+});
+
+document.getElementById('ckNavPrev').addEventListener('click', function() { ckNavCard(-1); });
+document.getElementById('ckNavNext').addEventListener('click', function() { ckNavCard(1); });
+
+ckRenderCards();
+ckRenderDots();
+
+// Bannière sticky — apparaît après 2 secondes
+setTimeout(function() {
+    var banner = document.getElementById('ckStickyCta');
+    if (banner) {
+        banner.classList.add('ck-sticky-visible');
+        document.body.style.paddingBottom = '110px';
+    }
+}, 2000);
+})();
+</script>
+{% endblock %}

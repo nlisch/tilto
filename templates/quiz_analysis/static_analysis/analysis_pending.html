@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse en préparation - Tilto{% endblock %}
+
+{% block meta_description %}Votre analyse personnalisée est en cours de préparation par notre équipe d'experts.{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+
+    .pending-hero {
+        background: linear-gradient(135deg, #A11857 0%, #A11857 100%);
+        padding: 8rem 0 3rem 0;
+        margin-top: 0;
+        color: white;
+        text-align: center;
+    }
+
+    .pending-container {
+        max-width: 800px;
+        margin: -3rem auto 4rem;
+        padding: 0 1rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .icon-pulse {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 10px 30px rgba(97, 5, 69, 0.3);
+    }
+
+    @keyframes pulse {
+        0%, 100% { 
+            transform: scale(1); 
+            box-shadow: 0 10px 30px rgba(97, 5, 69, 0.3);
+        }
+        50% { 
+            transform: scale(1.05); 
+            box-shadow: 0 15px 40px rgba(97, 5, 69, 0.4);
+        }
+    }
+
+    .status-title {
+        color: var(--primary);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .status-subtitle {
+        color: var(--text-light);
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: var(--secondary);
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .info-grid {
+        background: var(--primary-light);
+        border-left: 4px solid var(--accent);
+        padding: 2rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        text-align: left;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        color: var(--text);
+        font-size: 1rem;
+    }
+
+    .access-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .access-premium {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+    }
+
+    .access-free {
+        background: #F3F4F6;
+        color: #6B7280;
+    }
+
+    .timeline {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 19px;
+        top: 45px;
+        width: 2px;
+        height: calc(100% - 25px);
+        background: linear-gradient(to bottom, var(--primary), transparent);
+    }
+
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 10px rgba(97, 5, 69, 0.2);
+        z-index: 1;
+    }
+
+    .timeline-icon.pending {
+        background: var(--warning);
+        animation: pulse-warning 1.5s ease-in-out infinite;
+    }
+
+    .timeline-icon.future {
+        background: #D1D5DB;
+    }
+
+    @keyframes pulse-warning {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .timeline-content h3 {
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .timeline-content p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .alert-box {
+        background: #FFF3CD;
+        border-left: 4px solid #FFB020;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+    }
+
+    .alert-title {
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert-content {
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .tip-box {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .tip-box strong {
+        color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+        .pending-hero {
+            padding: 3rem 0 2rem 0;
+        }
+
+        .status-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .icon-pulse {
+            width: 100px;
+            height: 100px;
+            font-size: 3rem;
+        }
+
+        .status-title {
+            font-size: 1.5rem;
+        }
+
+        .status-subtitle {
+            font-size: 1rem;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .timeline {
+            padding: 1.5rem;
+        }
+
+        .timeline-item {
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Section Héros -->
+<section class="pending-hero">
+    <div class="container" style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.2;">
+            Ton analyse arrive bientôt
+        </h1>
+        <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">
+            Notre équipe prépare ton analyse personnalisée avec soin
+        </p>
+    </div>
+</section>
+
+<div class="pending-container">
+    <!-- Carte de statut principale -->
+    <div class="status-card">
+        <div class="icon-pulse">⏳</div>
+        
+        <h2 class="status-title">En cours de préparation</h2>
+        <p class="status-subtitle">{{ firstname }}, ton analyse personnalisée est entre de bonnes mains</p>
+        
+        <div class="status-badge">
+            🚧 Création en cours
+        </div>
+        
+        <!-- Informations utilisateur -->
+        
+    </div>
+    
+    <!-- Timeline du processus -->
+    <div class="timeline">
+        <h3 class="timeline-title">Où en sommes-nous ?</h3>
+        
+        <div class="timeline-item">
+            <div class="timeline-icon">✅</div>
+            <div class="timeline-content">
+                <h3>Quiz complété</h3>
+                <p>Tu as terminé le questionnaire avec succès. Tes réponses ont bien été enregistrées.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-icon pending">🔄</div>
+            <div class="timeline-content">
+                <h3>Analyse en cours</h3>
+                <p>Notre IA analyse tes réponses en profondeur et nos coachs préparent tes recommandations personnalisées.</p>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-icon future">📬</div>
+            <div class="timeline-content">
+                <h3>Notification par email</h3>
+                <p>Tu recevras un email à <strong>{{ email }}</strong> dès que ton analyse sera prête à consulter.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerte délai -->
+    <div class="alert-box">
+        <div class="alert-title">
+            <span>⏱️</span>
+            <strong>Délai estimé : 24 à 48 heures</strong>
+        </div>
+        <div class="alert-content">
+            Nos coachs prennent le temps d'analyser chaque réponse individuellement pour te fournir 
+            des recommandations vraiment adaptées à ta situation unique. La qualité prend du temps !
+        </div>
+    </div>
+    
+    <!-- Conseil -->
+    <div class="tip-box">
+        <p style="margin: 0; color: var(--text); line-height: 1.6;">
+            <strong>💡 Astuce :</strong> Garde ce lien précieusement ! Il te permettra d'accéder à ton analyse 
+            dès qu'elle sera disponible.
+            {% if access_type == 'free' and views_left is not none %}
+            Tu pourras consulter cette analyse <strong>{{ views_left + 1 }} fois au total</strong>.
+            {% endif %}
+        </p>
+    </div>
+    
+    <!-- Navigation -->
+    <div style="text-align: center; margin-top: 3rem;">
+        <a href="{{ url_for('auth.home') }}" 
+           style="background: linear-gradient(135deg, #A11857 0%, #A11857 100%); 
+                  color: white; 
+                  padding: 1rem 2rem; 
+                  border-radius: 8px; 
+                  text-decoration: none; 
+                  font-weight: 600; 
+                  display: inline-flex; 
+                  align-items: center; 
+                  gap: 0.5rem;
+                  box-shadow: 0 4px 15px rgba(139, 27, 92, 0.25);
+                  transition: all 0.3s ease;">
+            ← Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}

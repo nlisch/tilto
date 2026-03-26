@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Connexion') }}{% endblock %}
+{% block body_class %}flex-layout{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h1 class="auth-title">{{ _('Connexion') }}</h1>
+        
+        <!-- Section Magic Link (visible par défaut) -->
+        <div class="magic-link-section" id="magicLinkSection">
+            
+            <form method="POST" action="{{ url_for('auth.login', lang_code=g.lang_code) }}" id="magicLinkForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="auth-form-group">
+                    <label for="magic-email" class="auth-label">{{ _('Email') }}</label>
+                    <input type="email" 
+                           id="magic-email" 
+                           name="email" 
+                           class="auth-input" 
+                           placeholder="{{ _('Saisir mon addresse e-mail') }}" 
+                           required
+                           autocomplete="email">
+                </div>
+                
+                <button type="submit" name="request_magic_link" class="auth-button">
+                    📧 {{ _('Recevoir un lien de connexion') }}
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>{{ _('ou') }}</span>
+            </div>
+            
+            <button type="button" class="toggle-login-mode" data-target="password">
+                🔐 {{ _('Se connecter avec un mot de passe') }}
+            </button>
+        </div>
+
+        <!-- Section Mot de passe (masquée par défaut) -->
+        <div class="password-login-section" id="passwordLoginSection" style="display: none;">
+            
+            <form id="loginForm" method="POST" action="{{ url_for('auth.login', lang_code=g.lang_code) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="auth-form-group">
+                    {{ form.username.label(class="auth-label") }}
+                    {{ form.username(class="auth-input", placeholder=_("Email"), autocomplete="email") }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="auth-form-group">
+                    {{ form.password.label(class="auth-label") }}
+                    {{ form.password(class="auth-input", placeholder=_("Mot de passe"), autocomplete="current-password") }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="auth-form-group remember-me">
+                    {{ form.remember(class="auth-checkbox") }}
+                    {{ form.remember.label(class="auth-checkbox-label") }}
+                </div>
+                
+                {{ form.submit(class="auth-button") }}
+                
+            </form>
+            <div class="auth-form-group auth-link">
+                <a href="{{ url_for('auth.forgot_password', lang_code=g.lang_code) }}" class="forgot-password">
+                    {{ _('Mot de passe oublié ?') }}
+                </a>
+            </div>
+            <div class="auth-divider">
+                <span>{{ _('ou') }}</span>
+            </div>
+            
+            <button type="button" class="toggle-login-mode" data-target="magic">
+                🚀 {{ _('Connexion rapide par email') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Section subtitles */
+.section-subtitle {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.section-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Divider style */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+    padding: 0 16px;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Toggle button style */
+.toggle-login-mode {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-login-mode:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(97, 5, 69, 0.2);
+}
+
+.toggle-login-mode:active {
+    transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .section-subtitle {
+        font-size: 16px;
+    }
+    
+    .section-description {
+        font-size: 13px;
+    }
+}
+</style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Login page JavaScript loaded');
+    
+    const magicSection = document.getElementById('magicLinkSection');
+    const passwordSection = document.getElementById('passwordLoginSection');
+    const toggleButtons = document.querySelectorAll('.toggle-login-mode');
+    
+    console.log('Magic section:', magicSection);
+    console.log('Password section:', passwordSection);
+    console.log('Toggle buttons:', toggleButtons);
+    
+    // Fonction pour basculer entre les sections
+    function toggleSection(targetMode) {
+        console.log('Toggle to:', targetMode);
+        
+        if (targetMode === 'password') {
+            // Afficher le mode mot de passe
+            magicSection.style.display = 'none';
+            passwordSection.style.display = 'block';
+            
+            // Focus sur le champ email du formulaire mot de passe
+            const emailInput = document.querySelector('#loginForm input[name="username"]');
+            if (emailInput) {
+                setTimeout(() => emailInput.focus(), 100);
+            }
+        } else if (targetMode === 'magic') {
+            // Afficher le mode magic link
+            passwordSection.style.display = 'none';
+            magicSection.style.display = 'block';
+            
+            // Focus sur le champ email du formulaire magic link
+            const magicEmailInput = document.getElementById('magic-email');
+            if (magicEmailInput) {
+                setTimeout(() => magicEmailInput.focus(), 100);
+            }
+        }
+    }
+    
+    // Attacher les événements aux boutons de toggle
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetMode = this.getAttribute('data-target');
+            console.log('Button clicked, target:', targetMode);
+            toggleSection(targetMode);
+        });
+    });
+    
+    // Si on revient sur la page après une erreur de validation du formulaire mot de passe,
+    // afficher automatiquement la section mot de passe
+    {% if form.username.errors or form.password.errors %}
+        console.log('Form errors detected, showing password section');
+        toggleSection('password');
+    {% endif %}
+    
+    console.log('✅ Event listeners attached');
+});
+</script>
+{% endblock %}

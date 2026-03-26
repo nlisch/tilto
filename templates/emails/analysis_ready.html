@@ -1,0 +1,60 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Tes résultats Tilto sont prêts !{% endblock %}
+
+{% block header_title %}
+    Tes résultats Tilto sont prêts !
+{% endblock %}
+
+{% block content %}
+    <!-- Salutation -->
+    <p style="margin: 0 0 20px; font-size: 18px; font-weight: 600; color: #111827;">
+        Hello {{ firstname }} 👋
+    </p>
+    
+    <!-- Message principal -->
+    <p style="margin: 0 0 16px; font-size: 16px; color: #374151; line-height: 1.6;">
+        <strong style="color: #A11857;">Bonne nouvelle</strong> : tu peux maintenant accéder à ton diagnostic !
+    </p>
+    
+    <p style="margin: 0 0 24px; font-size: 16px; color: #374151; line-height: 1.6;">
+        On a pris le temps de faire les choses bien pour qu’elles collent à ta réalité, tes envies… et même à tes doutes.
+    </p>
+    
+    <!-- CTA Principal -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 32px 0;">
+                <a href="{{ analysis_url }}" 
+                   style="display: inline-block; background-color: #A11857; color: #ffffff; padding: 16px 48px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; box-shadow: 0 4px 12px rgba(97, 5, 69, 0.25);">
+                    👉 Découvrir
+                </a>
+            </td>
+        </tr>
+    </table>
+    
+    
+    <!-- Signature -->
+    <p style="margin: 40px 0 0; font-size: 15px; color: #6b7280; font-style: italic; line-height: 1.6;">
+        À tout de suite,<br>
+        <strong style="color: #A11857;">L'équipe Tilto 💜</strong>
+    </p>
+    
+    <!-- Fallback link -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 40px;">
+        <tr>
+            <td style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+                <p style="margin: 0 0 12px; font-size: 12px; color: #6b7280;">
+                    Si le bouton ne fonctionne pas, copie et colle ce lien :
+                </p>
+                <p style="margin: 0; font-size: 11px; color: #A11857; word-break: break-all; font-family: 'Courier New', monospace;">
+                    {{ analysis_url }}
+                </p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
+
+{% block footer_legal %}
+    Tu reçois cet email car tes opportunités pro Tilto sont disponibles.<br>
+{% endblock %}

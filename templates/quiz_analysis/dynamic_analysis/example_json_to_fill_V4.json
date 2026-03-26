@@ -1,0 +1,75 @@
+{
+  "genre_e": "e",
+  "pistes": [
+    {
+      "formation_duree": "3-6 mois",
+      "icon": "💡",
+      "job_title": "Chargée de mission rénovation énergétique",
+      "option_title": "L'option Impact Immédiat",
+      "pourquoi": "Tu as déjà géré l'audit énergétique et la rénovation des bâtiments à La Perverie, tu as dialogué avec les équipes maintenance sur le chauffage et la ventilation. <strong>Ton bagage chimie te donne une longueur d'avance sur les principes thermiques</strong>, et tu cherches justement cette finalité tangible qui améliore la vie des gens. Ce poste valorise 100% de ton acquis tout en servant ta conviction écologique.",
+      "quelques_mots": "Tu interviens auprès de copropriétés, bailleurs sociaux ou collectivités pour piloter des projets de rénovation énergétique. Ton quotidien : audits sur site, analyse des diagnostics de performance énergétique, chiffrage des travaux, dialogue avec bureaux d'études et artisans, suivi de chantier et vérification des performances après travaux. Tu jonglες entre technique (isolation, ventilation, systèmes de chauffage) et coordination de projet.",
+      "salaire": "2400-3200€ net",
+      "savais_tu": "La loi Climat et Résilience impose la rénovation de 4,8 millions de passoires thermiques d'ici 2034. Les collectivités de Nantes Métropole recrutent massivement des profils techniques pour accompagner cette transition.",
+      "stat_marche": "Plus de 180 offres d'emploi en rénovation énergétique publiées en Loire-Atlantique ces 3 derniers mois",
+      "tags": [
+        "Impact écologique",
+        "Technique appliquée",
+        "Projets concrets"
+      ]
+    },
+    {
+      "formation_duree": "1-3 mois",
+      "icon": "🏠",
+      "job_title": "Responsable technique patrimoine immobilier",
+      "option_title": "L'option Terrain et Diversité",
+      "pourquoi": "<strong>Tu as déjà fait ce métier à La Perverie</strong> en gérant les problématiques de chauffage, ventilation et maintenance des bâtiments. Tu cherches le contact avec des profils variés et des résultats concrets : c'est exactement ce poste. Ton expérience de gestion de projets chez Schlumberger et ton aisance technique te rendent opérationnelle immédiatement.",
+      "quelques_mots": "Tu supervises l'entretien et l'amélioration d'un parc immobilier (logements sociaux, bâtiments publics, résidences). Au programme : diagnostics techniques, planification de travaux (chauffage, toiture, électricité), pilotage des prestataires, suivi budgétaire, et gestion des urgences (pannes, fuites). Tu es sur le terrain plusieurs jours par semaine, tu échanges avec locataires, élus, artisans, bureaux d'études. Chaque journée est différente.",
+      "salaire": "2600-3400€ net",
+      "savais_tu": "Le secteur du logement social en Pays de la Loire gère plus de 200 000 logements et recrute activement des profils techniques capables de dialoguer avec les locataires autant qu'avec les bureaux d'études.",
+      "stat_marche": "Nantes Métropole Habitat et Atlantique Habitations ont publié 12 offres pour des postes de responsable technique patrimoine depuis novembre 2025",
+      "tags": [
+        "Polyvalence technique",
+        "Contact humain",
+        "Résultats visibles"
+      ]
+    },
+    {
+      "formation_duree": "2-4 mois",
+      "icon": "🏥",
+      "job_title": "Ingénieure procédés en industries pharmaceutiques ou agroalimentaires",
+      "option_title": "L'option Complexité et Sens",
+      "pourquoi": "<strong>Ton diplôme d'ingénieure chimiste et tes 10 ans chez Schlumberger</strong> (analyse technique, résolution de problèmes complexes, travail en équipe internationale) sont exactement ce que recherchent les industries pharmaceutiques et agroalimentaires de la région nantaise. Tu retrouves l'environnement technique complexe que tu aimes, avec une finalité alignée sur tes valeurs : améliorer la santé ou l'alimentation des gens.",
+      "quelques_mots": "Tu optimises les processus de fabrication (chimie, biotechnologie, transformation) pour améliorer qualité, rendement et sécurité. Ton quotidien : analyser les données de production, résoudre des problèmes techniques complexes (contamination, rendement faible, dysfonctionnement d'équipement), proposer des améliorations, travailler avec les équipes qualité, maintenance et R&D. Tu es au cœur de la technique, avec un impact direct sur la qualité du produit final.",
+      "salaire": "3000-4200€ net",
+      "savais_tu": "Nantes est le 2e pôle français en biotechnologies et santé. Des entreprises comme LFB Biomédicaments, Sanofi ou Eurofins recrutent des ingénieures chimistes pour des projets qui sauvent des vies ou améliorent la qualité de l'alimentation.",
+      "stat_marche": "Le pôle santé de Nantes compte plus de 70 entreprises pharmaceutiques et biotechs. 25 offres d'ingénieur procédés publiées en Loire-Atlantique depuis décembre 2025",
+      "tags": [
+        "Technicité élevée",
+        "Résolution de problèmes",
+        "Impact sociétal"
+      ]
+    }
+  ],
+  "section4": {
+    "result_multiple_text": "Si plusieurs pistes te parlent, c'est <strong>excellent signe</strong>. Ça montre que tu as plusieurs leviers pour retrouver ce qui compte pour toi : la technique, l'impact concret, le sens.<br><br>La nuance entre ces métiers, c'est surtout le <em>quotidien</em> : plus ou moins sur le terrain, plus ou moins en contact direct avec les bénéficiaires, plus ou moins orienté industrie ou bâtiment. <strong>L'important n'est pas de chercher d'autres idées, mais de clarifier quelle piste correspond le mieux à ton rythme de vie et à tes priorités actuelles.</strong>",
+    "result_one_text": "Si une seule piste te parle vraiment, c'est <em>parfait</em>. Tu as trouvé une direction claire qui te correspond.<br><br>Maintenant, l'enjeu n'est pas de te précipiter, mais de <strong>structurer ta recherche</strong> : identifier les bons employeurs dans ta région, adapter ton CV pour ce nouveau secteur, préparer un discours qui valorise ton expérience technique et tes convictions. <em>C'est cette méthode qui fera la différence.</em>",
+    "result_zero_text": "Si aucune de ces pistes ne résonne, <em>c'est normal</em>. Ça ne veut pas dire qu'il n'y a pas de solution, mais que <strong>les métiers ne sont pas le bon point de départ</strong>.<br><br>Il faut d'abord clarifier ce qui compte vraiment pour toi : quel équilibre entre technique et humain, quel rythme, quel environnement de travail, quel niveau d'autonomie. <em>Une fois ces besoins profonds posés, les bonnes pistes apparaîtront naturellement.</em>",
+    "variant_default": {
+      "conseil_metaphore": "C'est comme vouloir rénover un bâtiment sans audit énergétique : tu peux changer les fenêtres, refaire l'isolation, mais si tu n'as pas identifié la source du problème, tu dépenses de l'énergie pour rien. <strong>Ici, c'est pareil : avant d'envoyer des CV, il faut poser le diagnostic.</strong>",
+      "conseil_para1": "<strong>Mon conseil, c'est de ne pas rester seule à cette étape.</strong> Tu as un profil technique solide, une expérience internationale, et des convictions fortes. Mais tu sors d'un grand groupe dont les valeurs ne correspondaient plus, tu es de retour à Nantes après deux ans aux États-Unis, et tu cherches une nouvelle voie. <strong>C'est précisément dans ce moment de transition que le risque d'inaction est le plus grand.</strong>",
+      "conseil_para2": "Si tu ne structures pas cette réflexion maintenant, tu risques de postuler au hasard, de te disperser entre plusieurs directions, ou pire : de te retrouver dans un poste 'alimentaire' qui ne te correspond pas, juste parce qu'il fallait trancher. Et dans six mois, tu seras au même point, avec encore plus de doutes.",
+      "recommendation_suite": "pour clarifier quelle piste correspond vraiment à <em>ton rythme de vie actuel</em>, à tes priorités, et surtout pour structurer une stratégie de transition efficace qui valorise ton expérience technique sans repartir de zéro."
+    },
+    "variant_one": {
+      "conseil_metaphore": "C'est comme vouloir convaincre un client d'adopter une nouvelle technologie : tu peux avoir la meilleure solution du monde, si tu ne parles pas son langage et que tu n'adaptes pas ton discours à ses besoins, il ne te choisira pas. <strong>Ici, c'est pareil : il faut adapter ton discours pour ce nouveau secteur.</strong>",
+      "conseil_para1": "<strong>Mon conseil, c'est de ne pas rester seule à cette étape.</strong> Tu as identifié une direction qui te parle, et c'est déjà une grande avancée. Mais passer d'un grand groupe international comme Schlumberger à un nouveau secteur (rénovation énergétique, gestion de patrimoine ou pharma), ça ne se fait pas en envoyant simplement ton CV sur les plateformes classiques. <strong>Il te faut une méthode pour traduire ton expérience et convaincre des recruteurs qui ne connaissent pas ton parcours.</strong>",
+      "conseil_para2": "Si tu cherches seule, tu risques de multiplier les candidatures sans retour, de te décourager, ou de sous-estimer la valeur de ton expérience. Les recruteurs ne feront pas le lien entre 'ingénieure chimiste chez Schlumberger' et 'chargée de mission rénovation énergétique' si tu ne le poses pas clairement pour eux.",
+      "recommendation_suite": "pour structurer une recherche d'emploi ultra-ciblée sur Nantes, adapter ton CV et ton discours à ce nouveau secteur, et surtout pour <em>convaincre les recruteurs que ton profil technique international est un atout majeur</em>, pas un frein."
+    }
+  },
+  "welcome": {
+    "comprends_text": "Tu cherches un environnement <em>technique et complexe</em> avec une <em>finalité tangible</em> qui améliore <em>concrètement la vie des gens</em>.",
+    "point_important": "Tu as un profil rare : <strong>ingénieure chimiste avec 10 ans d'expérience internationale</strong>, une vraie appétence technique et une expérience concrète en gestion immobilière et rénovation énergétique. Le problème, c'est que tu as quitté un grand groupe dont les valeurs ne te correspondaient plus, et tu cherches maintenant un secteur aligné avec tes convictions. <strong>Ce n'est pas un manque de compétences, c'est un besoin de sens retrouvé.</strong>",
+    "quote_verbatim": "J'aimerais bien être dans un environnement technique, peu importe la technique parce qu'en fait j'ai envie d'un environnement complexe. J'aime bien les cas où il faut se creuser la tête, j'ai envie d'être dans une équipe aussi dynamique qui travaille pour des solutions, pour clients et pas des équipes qui travaillent pour les profits des actionnaires. Vraiment avoir une finalité tangible pour finalement peut-être améliorer la vie des gens ou améliorer quelque chose qui peut correspondre à mes valeurs, l'inclusion, le respect de mon environnement."
+  }
+}

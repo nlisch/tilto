@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Erreur Serveur') }}{% endblock %}
+
+{% block body_class %}error-page{% endblock %}
+
+{% block content %}
+    <!-- Section Erreur -->
+    <section class="error-hero">
+        <div class="container">
+            <div class="error-content fade-in-element">
+                <p class="tagline">📍 {{ _('500') }}</p>
+                <h1 class="error-title">{{ _('Oups ! Une erreur s\'est produite') }}</h1>
+                <p class="error-description">
+                    {{ _('Nous rencontrons des difficultés techniques. Veuillez nous excuser pour la gêne occasionnée.') }}
+                </p>
+                <div class="error-details">
+                    <div class="error-point fade-in-element">
+                        <div class="error-icon">🔧</div>
+                        <p>{{ _('Nos équipes techniques ont été informées et travaillent à résoudre le problème.') }}</p>
+                    </div>
+                    <div class="error-point fade-in-element">
+                        <div class="error-icon">🔄</div>
+                        <p>{{ _('Vous pouvez essayer de rafraîchir la page ou revenir plus tard.') }}</p>
+                    </div>
+                    <div class="error-point fade-in-element">
+                        <div class="error-icon">💬</div>
+                        <p>{{ _('Si le problème persiste, n\'hésitez pas à nous contacter directement.') }}</p>
+                    </div>
+                </div>
+                <div class="error-actions">
+                    <a href="{{ url_for('auth.dashboard', lang_code=g.lang_code) }}" class="btn btn-primary">{{ _('Retour à l\'accueil') }}</a>
+                    <a href="{{ request.url }}" class="btn btn-secondary">{{ _('Rafraîchir la page') }}</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Citation spéciale erreur -->
+    <section class="container quote-section">
+        <div class="quote-card fade-in-element">
+            <p class="quote-text">💪 {{ _('"Chaque obstacle est une opportunité déguisée."') }}</p>
+            <p class="quote-subtext">{{ _('En attendant la résolution du problème, pourquoi ne pas explorer d\'autres parties de notre site ?') }}</p>
+            <a href="{{ url_for('tokens.shop', coaching='true') }}" class="btn btn-primary quote-cta">📅 {{ _('Découvrir nos services de coaching') }}</a>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ g.nonce }}">
+    
+    /* Error section */
+    .error-hero {
+        padding: 8rem 0 5rem;
+        background: linear-gradient(135deg, #fff0f0 0%, var(--white) 100%);
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .error-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .tagline {
+        color: #d32f2f;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background-color: rgba(211, 47, 47, 0.08);
+        border-radius: 50px;
+    }
+    
+    .error-title {
+        font-size: 3rem;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        color: var(--primary)!important;
+        font-weight: 800;
+    }
+    
+    .error-description {
+        font-size: 1.3rem;
+        margin-bottom: 3rem;
+        color: var(--text);
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .error-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-width: 700px;
+        margin: 0 auto 3rem;
+    }
+    
+    .error-point {
+        display: flex;
+        align-items: center;
+        background-color: var(--white);
+        padding: 1.2rem 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+    
+    .error-point:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .error-icon {
+        font-size: 1.8rem;
+        margin-right: 1.5rem;
+        color: #d32f2f;
+        flex-shrink: 0;
+    }
+    
+    .error-point p {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.1rem;
+    }
+    
+    .error-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    /* Button styles */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.9rem 1.8rem;
+        border-radius: var(--radius-lg);
+        transition: var(--transition-bounce);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 4px 10px rgba(97, 5, 69, 0.2);
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(97, 5, 69, 0.3);
+    }
+    
+    .btn-secondary {
+        background-color: var(--white);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+        background-color: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Quote section */
+    .quote-section {
+        padding: 3rem 1rem;
+        position: relative;
+        z-index: 5;
+    }
+    
+    .quote-card {
+        background-color: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .quote-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .quote-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--primary), var(--accent));
+    }
+    
+    .quote-text {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+    
+    .quote-subtext {
+        color: var(--text-light);
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .quote-cta {
+        margin-top: 0.5rem;
+    }
+    
+    /* Animation */
+    .fade-in-element {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    
+    .fade-in-element.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 992px) {
+        .error-title {
+            font-size: 2.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .error-title {
+            font-size: 2rem;
+        }
+        
+        .error-hero {
+            padding: 6rem 0 3rem;
+        }
+        
+        .error-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .error-title {
+            font-size: 1.8rem;
+        }
+        
+        .error-description {
+            font-size: 1.1rem;
+        }
+        
+        .error-point {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .error-icon {
+            margin-right: 0;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des éléments au défilement
+    const fadeElements = document.querySelectorAll('.fade-in-element');
+    
+    function checkFade() {
+        fadeElements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight * 0.85;
+            
+            if (elementPosition < screenPosition) {
+                element.classList.add('visible');
+            }
+        });
+    }
+    
+    // Vérifier au chargement
+    checkFade();
+    
+    // Vérifier au défilement
+    window.addEventListener('scroll', checkFade);
+});
+</script>
+{% endblock %}

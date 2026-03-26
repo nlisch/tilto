@@ -1,0 +1,1714 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="flash-messages"></div>
+
+<div class="container-fluid mt-4 px-4">
+  <!-- HEADER -->
+  <div class="page-header mb-4">
+    <h2 class="page-title">
+      <span class="title-icon">💬</span>
+      Messages du Chat Widget
+    </h2>
+    <p class="page-subtitle">Gérer les questions des utilisateurs</p>
+  </div>
+
+  <!-- STATISTIQUES -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.pending }}</div>
+        <div class="stat-label">En attente</div>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-replied">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.replied }}</div>
+        <div class="stat-label">Répondus</div>
+      </div>
+    </div>
+    
+    <div class="stat-card stat-archived">
+      <div class="stat-icon">🗄️</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stats.archived }}</div>
+        <div class="stat-label">Archivés</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FILTRES -->
+  <div class="card-modern mb-4">
+    <div class="card-body">
+      <div class="filters-row">
+        <a href="?status=all" class="filter-btn {% if status_filter == 'all' %}active{% endif %}">
+          📊 Tous ({{ stats.total }})
+        </a>
+        <a href="?status=pending" class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">
+          ⏳ En attente ({{ stats.pending }})
+        </a>
+        <a href="?status=replied" class="filter-btn {% if status_filter == 'replied' %}active{% endif %}">
+          ✅ Répondus ({{ stats.replied }})
+        </a>
+        <a href="?status=archived" class="filter-btn {% if status_filter == 'archived' %}active{% endif %}">
+          🗄️ Archivés ({{ stats.archived }})
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTE DES MESSAGES -->
+  <div class="messages-container">
+    {% if messages %}
+      {% for msg in messages %}
+      <div class="message-card message-{{ msg.status }}" data-id="{{ msg.id }}">
+        <div class="message-header">
+          <div class="message-meta">
+            <span class="message-badge message-badge-{{ msg.status }}">
+              {% if msg.status == 'pending' %}⏳ En attente
+              {% elif msg.status == 'replied' %}✅ Répondu
+              {% elif msg.status == 'archived' %}🗄️ Archivé
+              {% endif %}
+            </span>
+            <span class="message-id">#{{ msg.id }}</span>
+            <span class="message-date">
+              📅 {{ msg.created_at.strftime('%d/%m/%Y à %H:%M') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="message-body">
+          <div class="message-from">
+            <strong>👤 De:</strong> 
+            {% if msg.username %}
+              {{ msg.username }} 
+            {% endif %}
+            (<a href="mailto:{{ msg.email }}" class="email-link">{{ msg.email }}</a>)
+          </div>
+
+          {% if msg.context_data and msg.context_data.page %}
+            <div class="message-context">
+              <strong>📍 Page:</strong> {{ msg.context_data.page }}
+            </div>
+          {% endif %}
+
+          <div class="message-content">
+            <strong>💬 Message:</strong>
+            <p>{{ msg.message }}</p>
+          </div>
+
+          {% if msg.notes %}
+          <div class="message-notes">
+            <strong>📝 Notes internes:</strong>
+            <p>{{ msg.notes }}</p>
+          </div>
+          {% endif %}
+
+          {% if msg.replied_at %}
+          <div class="message-replied-info">
+            ✅ Répondu le {{ msg.replied_at.strftime('%d/%m/%Y à %H:%M') }}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="message-actions">
+          <button class="btn-action btn-action-primary reply-btn" 
+                  data-id="{{ msg.id }}" 
+                  data-email="{{ msg.email }}"
+                  data-name="{% if msg.username %}{{ msg.username }}{% else %}{{ msg.email.split('@')[0] }}{% endif %}"
+                  data-message="{{ msg.message }}">
+            <i class="fas fa-reply"></i> Répondre par email
+          </button>
+
+          {% if msg.status == 'pending' %}
+          <button class="btn-action btn-action-success mark-replied-btn" data-id="{{ msg.id }}">
+            <i class="fas fa-check"></i> Marquer répondu
+          </button>
+          {% endif %}
+
+          <button class="btn-action btn-action-outline add-note-btn" data-id="{{ msg.id }}">
+            <i class="fas fa-sticky-note"></i> Ajouter note
+          </button>
+
+          {% if msg.status != 'archived' %}
+          <button class="btn-action btn-action-warning archive-btn" data-id="{{ msg.id }}">
+            <i class="fas fa-archive"></i> Archiver
+          </button>
+          {% endif %}
+
+          <button class="btn-action btn-action-danger delete-btn" data-id="{{ msg.id }}">
+            <i class="fas fa-trash"></i> Supprimer
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <i class="fas fa-inbox fa-4x"></i>
+        <p>Aucun message {{ 'en attente' if status_filter == 'pending' else 'dans cette catégorie' }}</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card-modern mb-4" id="securityMonitoring">
+    <div class="card-header-security">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="header-content">
+          <span class="header-icon">🛡️</span>
+          <span class="header-title">Monitoring Sécurité</span>
+        </div>
+        <button class="btn-action btn-action-outline btn-sm" id="refreshSecurityBtn">
+          <i class="fas fa-sync-alt"></i> Actualiser
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="securityContent" class="security-content">
+        <div class="loading-state">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="mt-2">Chargement des données de sécurité...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+
+<!-- MODAL RÉPONSE EMAIL -->
+<div id="replyModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content-large">
+    <div class="modal-header">
+      <h3><i class="fas fa-reply"></i> Répondre par email</h3>
+      <button class="btn-close-modal" id="closeReplyModal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="info-banner info-banner-blue mb-4">
+        <i class="fas fa-info-circle"></i>
+        <div>
+          <strong>Destinataire:</strong> <span id="reply-recipient-email"></span><br>
+          <strong>Nom:</strong> <span id="reply-recipient-name"></span>
+        </div>
+      </div>
+
+      <div class="form-group-modern mb-3">
+        <label class="form-label-modern">
+          <i class="fas fa-quote-left"></i> Message original
+        </label>
+        <div class="original-message-box" id="reply-original-message"></div>
+      </div>
+
+      <div class="form-group-modern">
+        <label class="form-label-modern">
+          <i class="fas fa-pen"></i> Votre réponse
+        </label>
+        <textarea id="replyText" class="form-textarea-modern" rows="10" placeholder="Écrivez votre réponse ici...
+
+
+NE PAS COMMENCER PAR  bonjour X car dans le Body
+NE PAS SIGNER  ( signature Claire automatique)
+
+Exemple: Merci pour ton message ! Voici ma réponse...
+Bien à vous
+
+"></textarea>
+        <small class="form-hint">Cette réponse sera envoyée par email à l'utilisateur</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-action btn-action-secondary" id="cancelReply">Annuler</button>
+      <button class="btn-action btn-action-success" id="sendReply">
+        <i class="fas fa-paper-plane"></i> Envoyer la réponse
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL NOTES -->
+<div id="noteModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-sticky-note"></i> Ajouter une note interne</h3>
+      <button class="btn-close-modal" id="closeNoteModal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <textarea id="noteText" class="form-textarea-modern" rows="5" placeholder="Note interne (visible uniquement par les admins)"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-action btn-action-secondary" id="cancelNote">Annuler</button>
+      <button class="btn-action btn-action-success" id="saveNote">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- STYLE -->
+<style>
+:root {
+  --primary: #4C0336;
+  --primary-light: #6b0548;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+}
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* PAGE HEADER */
+.page-header {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.title-icon {
+  font-size: 2.5rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--gray-600);
+  margin: 0.5rem 0 0;
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  margin-top: 0.25rem;
+}
+
+.stat-total { border-left: 4px solid var(--info); }
+.stat-total .stat-value { color: var(--info); }
+
+.stat-pending { border-left: 4px solid var(--warning); }
+.stat-pending .stat-value { color: var(--warning); }
+
+.stat-replied { border-left: 4px solid var(--success); }
+.stat-replied .stat-value { color: var(--success); }
+
+.stat-archived { border-left: 4px solid var(--gray-600); }
+.stat-archived .stat-value { color: var(--gray-600); }
+
+/* CARD MODERNE */
+.card-modern {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* FILTRES */
+.filters-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gray-200);
+  background: white;
+  color: var(--gray-700);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary);
+  background: var(--gray-50);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* MESSAGES */
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.message-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border-left: 4px solid;
+  transition: all var(--transition-normal);
+}
+
+.message-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.message-pending { border-left-color: var(--warning); }
+.message-replied { border-left-color: var(--success); }
+.message-archived { border-left-color: var(--gray-600); }
+
+.message-header {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.message-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.message-badge-pending {
+  background: var(--warning);
+  color: white;
+}
+
+.message-badge-replied {
+  background: var(--success);
+  color: white;
+}
+
+.message-badge-archived {
+  background: var(--gray-600);
+  color: white;
+}
+
+.message-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.message-date {
+  color: var(--gray-600);
+  font-size: 0.9rem;
+}
+
+.message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.message-from,
+.message-context,
+.message-content,
+.message-notes,
+.message-replied-info {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.message-content p,
+.message-notes p {
+  margin: 0.5rem 0 0 0;
+  padding: 0.75rem;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.email-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.email-link:hover {
+  text-decoration: underline;
+}
+
+.message-notes {
+  background: #fff3cd;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--warning);
+}
+
+.message-replied-info {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.message-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* BOUTONS */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+}
+
+.btn-action-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(76, 3, 54, 0.2);
+}
+
+.btn-action-primary:hover {
+  box-shadow: 0 4px 12px rgba(76, 3, 54, 0.3);
+}
+
+.btn-action-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-action-warning {
+  background: var(--warning);
+  color: white;
+}
+
+.btn-action-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-action-secondary {
+  background: var(--gray-600);
+  color: white;
+}
+
+.btn-action-outline {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray-600);
+}
+
+.empty-state i {
+  color: var(--gray-200);
+  margin-bottom: 1rem;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp 0.3s ease-out;
+}
+
+.modal-content-large {
+  background: white;
+  border-radius: var(--radius-xl);
+  max-width: 900px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-close-modal {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-modal:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.form-group-modern {
+  margin-bottom: 1.5rem;
+}
+
+.form-label-modern {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-label-modern i {
+  color: var(--primary);
+}
+
+.form-textarea-modern {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.form-textarea-modern:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 3, 54, 0.1);
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  font-style: italic;
+}
+
+.original-message-box {
+  background: var(--gray-50);
+  border-left: 4px solid var(--primary);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-style: italic;
+  color: var(--gray-700);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.info-banner i {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-banner-blue {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-left: 4px solid var(--info);
+}
+
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* FLASH MESSAGES */
+#flash-messages {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+}
+
+.flash-message {
+  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters-row {
+    flex-direction: column;
+  }
+  
+  .message-actions {
+    flex-direction: column;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-content,
+  .modal-content-large {
+    max-width: 100%;
+  }
+}
+
+/* LOADING STATE */
+.btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== SECURITY MONITORING ==================== */
+.card-header-security {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.security-content {
+  min-height: 200px;
+}
+
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.security-stat-card {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.security-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.security-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.security-stat-icon {
+  font-size: 2rem;
+}
+
+.security-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--danger);
+  line-height: 1;
+}
+
+.security-stat-label {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.security-stat-detail {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  margin-top: 0.5rem;
+}
+
+/* Table des emails suspects */
+.suspicious-emails-table {
+  width: 100%;
+  margin-top: 1.5rem;
+  border-collapse: collapse;
+}
+
+.suspicious-emails-table th {
+  background: var(--gray-100);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.suspicious-emails-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.9rem;
+}
+
+.suspicious-emails-table tr:hover {
+  background: var(--gray-50);
+}
+
+.email-cell {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.count-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.count-badge-high {
+  background: var(--danger);
+  color: white;
+}
+
+.count-badge-medium {
+  background: var(--warning);
+  color: white;
+}
+
+.count-badge-low {
+  background: var(--info);
+  color: white;
+}
+
+.time-ago {
+  color: var(--gray-600);
+  font-size: 0.85rem;
+}
+
+.security-alert {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left: 4px solid var(--warning);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.security-alert-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.security-alert-content {
+  flex: 1;
+}
+
+.security-alert-title {
+  font-weight: 700;
+  color: #78350f;
+  margin-bottom: 0.5rem;
+}
+
+.security-alert-text {
+  color: #78350f;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.no-threats {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--success);
+}
+
+.no-threats i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-threats h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.no-threats p {
+  color: var(--gray-600);
+  font-size: 0.95rem;
+}
+
+/* Loading state */
+.security-content .loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+/* Animation du bouton refresh */
+.btn-action .fa-sync-alt {
+  transition: transform 0.3s ease;
+}
+
+.btn-action.loading .fa-sync-alt {
+  animation: spin 1s linear infinite;
+}
+
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+  const csrfToken = "{{ csrf_token() }}";
+  let currentMessageId = null;
+  let currentReplyData = {};
+
+  // ==================== UTILITAIRES ====================
+  function showFlashMessage(type, message) {
+    const flashContainer = document.getElementById('flash-messages');
+    if (!flashContainer) {
+      alert(message);
+      return;
+    }
+    
+    const typeMap = {
+      'success': { icon: '✓', bg: '#10b981', text: '#fff' },
+      'danger': { icon: '✕', bg: '#ef4444', text: '#fff' },
+      'warning': { icon: '⚠', bg: '#f59e0b', text: '#fff' },
+      'info': { icon: 'ℹ', bg: '#3b82f6', text: '#fff' }
+    };
+    
+    const style = typeMap[type] || typeMap['info'];
+    
+    const div = document.createElement('div');
+    div.className = 'flash-message';
+    div.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: ${style.bg};
+      color: ${style.text};
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    `;
+    
+    div.innerHTML = `
+      <span style="font-size: 20px; font-weight: bold;">${style.icon}</span>
+      <span style="flex: 1; font-size: 14px; font-weight: 500;">${message}</span>
+      <button type="button" class="flash-close" style="
+        background: transparent;
+        border: none;
+        color: ${style.text};
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        opacity: 0.7;
+      ">✕</button>
+    `;
+    
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = `
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255,255,255,0.4);
+      width: 100%;
+      transform-origin: left;
+      animation: shrink 4s linear;
+    `;
+    div.appendChild(progressBar);
+    
+    flashContainer.appendChild(div);
+    
+    div.querySelector('.flash-close').addEventListener('click', () => {
+      div.style.animation = 'slideOutRight 0.3s ease-in';
+      setTimeout(() => div.remove(), 300);
+    });
+    
+    setTimeout(() => {
+      if (div.parentNode) {
+        div.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => div.remove(), 300);
+      }
+    }, 4000);
+  }
+
+  function setLoadingState(button, loading) {
+    if (loading) {
+      button.dataset.originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      button.disabled = true;
+    } else {
+      button.innerHTML = button.dataset.originalHTML || button.innerHTML;
+      button.disabled = false;
+    }
+  }
+
+  // ==================== MONITORING SÉCURITÉ ====================
+  function formatTimeAgo(dateString) {
+    if (!dateString) return 'N/A';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'À l\'instant';
+    if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
+    if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)}h`;
+    return `Il y a ${Math.floor(seconds / 86400)} jours`;
+  }
+
+  function blockEmail(email) {
+    fetch('/api/chat-messages/block-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showFlashMessage('success', `✅ Email ${email} bloqué avec succès`);
+        loadSecurityMonitoring();
+      } else {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  }
+
+  function renderSecurityStats(data) {
+    const contentDiv = document.getElementById('securityContent');
+    
+    const threatLevel = data.rate_limited_ips.length > 0 || data.suspicious_emails.length > 0 ? 'high' : 'low';
+    
+    let html = '<div class="security-grid">';
+    
+    html += `
+      <div class="security-stat-card">
+        <div class="security-stat-header">
+          <div class="security-stat-icon">🚫</div>
+          <div class="security-stat-value">${data.rate_limited_ips.length}</div>
+        </div>
+        <div class="security-stat-label">IPs Rate-limitées</div>
+        <div class="security-stat-detail">Dernières 24h</div>
+      </div>
+    `;
+    
+    html += `
+      <div class="security-stat-card">
+        <div class="security-stat-header">
+          <div class="security-stat-icon">⚠️</div>
+          <div class="security-stat-value">${data.suspicious_emails.length}</div>
+        </div>
+        <div class="security-stat-label">Emails Suspects</div>
+        <div class="security-stat-detail">
+          ${data.suspicious_emails.length > 0 ? 'Plus de 5 messages en 1h' : 'Aucune activité suspecte'}
+        </div>
+      </div>
+    `;
+    
+    html += `
+      <div class="security-stat-card">
+        <div class="security-stat-header">
+          <div class="security-stat-icon">📊</div>
+          <div class="security-stat-value">${data.messages_today || 0}</div>
+        </div>
+        <div class="security-stat-label">Messages Aujourd'hui</div>
+        <div class="security-stat-detail">${data.messages_last_hour || 0} dans la dernière heure</div>
+      </div>
+    `;
+    
+    html += '</div>';
+    
+    if (threatLevel === 'high') {
+      html += `
+        <div class="security-alert">
+          <div class="security-alert-icon">🚨</div>
+          <div class="security-alert-content">
+            <div class="security-alert-title">Activité suspecte détectée</div>
+            <div class="security-alert-text">
+              ${data.suspicious_emails.length > 0 ? `${data.suspicious_emails.length} email(s) ont envoyé un nombre anormal de messages. ` : ''}
+              ${data.rate_limited_ips.length > 0 ? `${data.rate_limited_ips.length} IP(s) ont été rate-limitées. ` : ''}
+              Vérifiez les détails ci-dessous.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    if (data.suspicious_emails.length > 0) {
+      html += `
+        <h5 class="mt-4 mb-3" style="color: var(--gray-800); font-weight: 700;">
+          <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+          Emails avec activité anormale
+        </h5>
+        <div style="overflow-x: auto;">
+          <table class="suspicious-emails-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Messages (1h)</th>
+                <th>Dernier message</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      data.suspicious_emails.forEach(item => {
+        const count = item.count;
+        const badgeClass = count >= 10 ? 'count-badge-high' : count >= 7 ? 'count-badge-medium' : 'count-badge-low';
+        const timeAgo = formatTimeAgo(item.last_attempt);
+        
+        html += `
+          <tr>
+            <td class="email-cell">${item.email}</td>
+            <td><span class="count-badge ${badgeClass}">${count}</span></td>
+            <td class="time-ago">${timeAgo}</td>
+            <td>
+              <button class="btn-action btn-action-danger btn-sm block-email-btn" data-email="${item.email}">
+                <i class="fas fa-ban"></i> Bloquer
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    
+    if (threatLevel === 'low' && data.suspicious_emails.length === 0) {
+      html += `
+        <div class="no-threats">
+          <i class="fas fa-shield-alt"></i>
+          <h4>Tout va bien !</h4>
+          <p>Aucune activité suspecte détectée dans les dernières 24h</p>
+        </div>
+      `;
+    }
+    
+    contentDiv.innerHTML = html;
+    
+    document.querySelectorAll('.block-email-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const email = this.getAttribute('data-email');
+        if (confirm(`Bloquer définitivement l'email ${email} ?\n\nCette action empêchera cet email d'envoyer de nouveaux messages.`)) {
+          blockEmail(email);
+        }
+      });
+    });
+  }
+
+  function loadSecurityMonitoring() {
+    const contentDiv = document.getElementById('securityContent');
+    const refreshBtn = document.getElementById('refreshSecurityBtn');
+    
+    if (!contentDiv) return;
+    
+    contentDiv.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-2">Chargement des données de sécurité...</p>
+      </div>
+    `;
+    
+    if (refreshBtn) {
+      refreshBtn.classList.add('loading');
+    }
+    
+    fetch('/api/chat-messages/security-stats')
+      .then(response => response.json())
+      .then(data => {
+        if (refreshBtn) {
+          refreshBtn.classList.remove('loading');
+        }
+        
+        if (data.error) {
+          contentDiv.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: var(--danger);"></i>
+              <p>Erreur lors du chargement des données de sécurité</p>
+            </div>
+          `;
+          return;
+        }
+        
+        renderSecurityStats(data);
+      })
+      .catch(error => {
+        if (refreshBtn) {
+          refreshBtn.classList.remove('loading');
+        }
+        console.error('Erreur:', error);
+        contentDiv.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-times-circle fa-3x mb-3" style="color: var(--danger);"></i>
+            <p>Impossible de charger les données de sécurité</p>
+          </div>
+        `;
+      });
+  }
+
+  // ✅ INITIALISER LE MONITORING AU DÉMARRAGE
+  loadSecurityMonitoring();
+  
+  // Actualiser toutes les 30 secondes
+  setInterval(loadSecurityMonitoring, 30000);
+  
+  // Bouton refresh manuel
+  const refreshBtn = document.getElementById('refreshSecurityBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', loadSecurityMonitoring);
+  }
+
+  // ==================== RÉPONDRE PAR EMAIL ====================
+  document.querySelectorAll('.reply-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentMessageId = this.getAttribute('data-id');
+      const email = this.getAttribute('data-email');
+      const name = this.getAttribute('data-name');
+      const message = this.getAttribute('data-message');
+
+      currentReplyData = {
+        messageId: currentMessageId,
+        email: email,
+        name: name,
+        originalMessage: message
+      };
+
+      document.getElementById('reply-recipient-email').textContent = email;
+      document.getElementById('reply-recipient-name').textContent = name;
+      document.getElementById('reply-original-message').textContent = message;
+      document.getElementById('replyText').value = '';
+
+      document.getElementById('replyModal').style.display = 'flex';
+
+      setTimeout(() => {
+        document.getElementById('replyText').focus();
+      }, 300);
+    });
+  });
+
+  const closeReplyModal = document.getElementById('closeReplyModal');
+  const cancelReply = document.getElementById('cancelReply');
+
+  closeReplyModal.addEventListener('click', () => {
+    document.getElementById('replyModal').style.display = 'none';
+    currentReplyData = {};
+  });
+
+  cancelReply.addEventListener('click', () => {
+    document.getElementById('replyModal').style.display = 'none';
+    currentReplyData = {};
+  });
+
+  // ENVOYER LA RÉPONSE
+  document.getElementById('sendReply').addEventListener('click', function() {
+    const replyText = document.getElementById('replyText').value.trim();
+
+    if (!replyText) {
+      showFlashMessage('warning', 'Veuillez écrire une réponse');
+      return;
+    }
+
+    if (!currentReplyData.email) {
+      showFlashMessage('warning', 'Données manquantes');
+      return;
+    }
+
+    if (!confirm(`Envoyer la réponse à ${currentReplyData.email} ?`)) return;
+
+    setLoadingState(this, true);
+
+    fetch('/api/chat-messages/send-reply', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({
+        message_id: currentReplyData.messageId,
+        recipient_email: currentReplyData.email,
+        recipient_name: currentReplyData.name,
+        original_message: currentReplyData.originalMessage,
+        reply_text: replyText
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(this, false);
+
+      if (data.success) {
+        showFlashMessage('success', '✅ Réponse envoyée avec succès !');
+        document.getElementById('replyModal').style.display = 'none';
+        currentReplyData = {};
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      setLoadingState(this, false);
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  });
+
+  // ==================== MARQUER COMME RÉPONDU ====================
+  document.querySelectorAll('.mark-replied-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const messageId = this.getAttribute('data-id');
+      
+      if (!confirm('Marquer ce message comme répondu ?')) return;
+      
+      setLoadingState(this, true);
+      
+      fetch('/api/chat-messages/mark-replied', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ message_id: messageId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(this, false);
+        
+        if (data.success) {
+          showFlashMessage('success', '✅ Message marqué comme répondu');
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(this, false);
+        showFlashMessage('danger', 'Erreur: ' + error.message);
+      });
+    });
+  });
+
+  // ==================== ARCHIVER ====================
+  document.querySelectorAll('.archive-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const messageId = this.getAttribute('data-id');
+      
+      if (!confirm('Archiver ce message ?')) return;
+      
+      setLoadingState(this, true);
+      
+      fetch('/api/chat-messages/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ message_id: messageId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(this, false);
+        
+        if (data.success) {
+          showFlashMessage('success', '🗄️ Message archivé');
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(this, false);
+        showFlashMessage('danger', 'Erreur: ' + error.message);
+      });
+    });
+  });
+
+  // ==================== SUPPRIMER ====================
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const messageId = this.getAttribute('data-id');
+      
+      if (!confirm('⚠️ SUPPRIMER ce message ? Action IRRÉVERSIBLE !')) return;
+      if (!confirm('Êtes-vous VRAIMENT sûr ?')) return;
+      
+      setLoadingState(this, true);
+      
+      fetch('/api/chat-messages/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ message_id: messageId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoadingState(this, false);
+        
+        if (data.success) {
+          showFlashMessage('success', '🗑️ Message supprimé');
+          
+          const card = document.querySelector(`.message-card[data-id="${messageId}"]`);
+          if (card) {
+            card.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => card.remove(), 300);
+          }
+        } else {
+          showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+        }
+      })
+      .catch(error => {
+        setLoadingState(this, false);
+        showFlashMessage('danger', 'Erreur: ' + error.message);
+      });
+    });
+  });
+
+  // ==================== AJOUTER NOTE ====================
+  const noteModal = document.getElementById('noteModal');
+  const noteText = document.getElementById('noteText');
+  const closeNoteModal = document.getElementById('closeNoteModal');
+  const cancelNote = document.getElementById('cancelNote');
+  const saveNote = document.getElementById('saveNote');
+
+  document.querySelectorAll('.add-note-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentMessageId = this.getAttribute('data-id');
+      
+      const messageCard = this.closest('.message-card');
+      const existingNote = messageCard.querySelector('.message-notes p');
+      noteText.value = existingNote ? existingNote.textContent : '';
+      
+      noteModal.style.display = 'flex';
+    });
+  });
+
+  closeNoteModal.addEventListener('click', () => {
+    noteModal.style.display = 'none';
+    currentMessageId = null;
+  });
+
+  cancelNote.addEventListener('click', () => {
+    noteModal.style.display = 'none';
+    currentMessageId = null;
+  });
+
+  saveNote.addEventListener('click', function() {
+    const notes = noteText.value.trim();
+    
+    if (!notes) {
+      showFlashMessage('warning', 'La note est vide');
+      return;
+    }
+    
+    if (!currentMessageId) {
+      showFlashMessage('warning', 'Aucun message sélectionné');
+      return;
+    }
+    
+    setLoadingState(this, true);
+    
+    fetch('/api/chat-messages/add-note', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({ 
+        message_id: currentMessageId,
+        notes: notes
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      setLoadingState(this, false);
+      
+      if (data.success) {
+        showFlashMessage('success', '📝 Note sauvegardée');
+        noteModal.style.display = 'none';
+        currentMessageId = null;
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showFlashMessage('danger', 'Erreur: ' + (data.error || 'Erreur inconnue'));
+      }
+    })
+    .catch(error => {
+      setLoadingState(this, false);
+      showFlashMessage('danger', 'Erreur: ' + error.message);
+    });
+  });
+
+  // Fermer modals au clic en dehors
+  [noteModal, document.getElementById('replyModal')].forEach(modal => {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        currentMessageId = null;
+        currentReplyData = {};
+      }
+    });
+  });
+
+  // Fermer modals avec ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (noteModal.style.display === 'flex') {
+        noteModal.style.display = 'none';
+        currentMessageId = null;
+      }
+      if (document.getElementById('replyModal').style.display === 'flex') {
+        document.getElementById('replyModal').style.display = 'none';
+        currentReplyData = {};
+      }
+    }
+  });
+});
+</script>
+
+<style>
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+</style>
+
+{% endblock %}

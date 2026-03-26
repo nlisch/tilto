@@ -1,0 +1,869 @@
+{% extends "base.html" %}
+
+{% block title %}🎄 Offre de Noël Tilto - 39 secondes pour comprendre{% endblock %}
+
+{% block meta_description %}Profite de -50% sur Tilto avec le code NOEL2025. Regarde cette vidéo de 39 secondes et découvre comment Tilto peut t'aider à y voir plus clair dans ta vie pro.{% endblock %}
+
+{% block body_class %}tilto-video-lp tilto-video-noel{% endblock %}
+
+{% block content %}
+<!-- Flocons de neige subtils -->
+<div class="snowflakes" aria-hidden="true">
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+    <div class="snowflake">❅</div>
+    <div class="snowflake">❆</div>
+    <div class="snowflake">❄</div>
+</div>
+
+
+<section class="video-lp-section">
+    <div class="video-lp-container">
+        
+        <!-- Titre principal -->
+        <h1 class="video-lp-title">Évoluer ou changer de job ?</h1>
+        
+        <!-- Accroche -->
+        <p class="video-lp-tagline">39 secondes pour voir comment Tilto traduit tes mots en vraies opportunités pro 👇</p>
+
+        
+        <!-- Vidéo - NOUVEAU STYLE COMME HOMEPAGE -->
+        <div class="video-container-wrapper">
+            <div class="video-container-premium">
+                <div class="video-placeholder-premium" 
+                    data-video-url=" https://images.tilto.co/videos/production/2025/12/e55b588e_D9BD163C-716D-4921-84A8-ED3073708E53.mov"
+                    data-video-url-mp4=" https://images.tilto.co/videos/production/2025/12/e55b588e_D9BD163C-716D-4921-84A8-ED3073708E53.mov">
+                    <!-- Image poster -->
+                    <img src="https://images.tilto.co/production/2025/12/c4268748_IMG_AF9A81FB6384-1.webp" 
+                         alt="Présentation Tilto"
+                         loading="lazy"
+                         class="video-poster-premium">
+                    
+                    <!-- Overlay gradient -->
+                    <div class="video-overlay"></div>
+                    
+                    <!-- Bouton play central -->
+                    <button class="play-button-premium" aria-label="Lire la vidéo">
+                        <div class="play-circle">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span class="play-text">Regarder la vidéo</span>
+                    </button>
+                    
+                    <!-- Badge durée -->
+                    <div class="video-duration">
+                        <i class="fas fa-clock"></i> 0:39
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Promo Box -->
+        <div class="promo-box-noel">
+            <div class="promo-box-content">
+                <div class="price-info">
+                    <span class="old-price">29,00€</span>
+                    <span class="new-price">14,00€</span>
+                    <span class="discount-tag">-50%</span>
+                </div>
+                <div class="code-info">
+                    <span class="code-label">Code promo</span>
+                    <span class="code-value" id="promoCode" title="Cliquer pour copier">NOEL2025</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <a href="{{ url_for('auth.home') }}#section-1" class="btn-cta-video" id="ctaBtn">
+            Démarrer mon expérience Tilto →
+        </a>
+        
+        <!-- Urgence -->
+        <p class="urgency-text">
+            ⏰ Offre valable jusqu'au <strong>31 décembre</strong> minuit
+        </p>
+        
+    </div>
+</section>
+
+<!-- Tracking data -->
+<input type="hidden" id="lpSource" value="{{ source }}">
+<input type="hidden" id="lpVariant" value="{{ variant }}">
+<input type="hidden" id="lpCampaign" value="{{ campaign }}">
+
+<style>
+/* Reset pour cette page */
+.tilto-video-lp header,
+.tilto-video-lp footer,
+.tilto-video-lp .navbar,
+.tilto-video-lp .secondary-navbar,
+.tilto-video-lp .flash-messages { display: none !important; }
+
+/* Masquer le chat widget */
+.tilto-video-lp .chat-widget,
+.tilto-video-lp .chat-widget-container,
+.tilto-video-lp #chat-widget,
+.tilto-video-lp [class*="chat-widget"],
+.tilto-video-lp .chat-bubble,
+.tilto-video-lp .chat-toggle,
+.tilto-video-lp #crisp-chatbox,
+.tilto-video-lp [class*="crisp"],
+.tilto-video-lp [id*="crisp"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.tilto-video-lp { 
+    background: linear-gradient(180deg, #1a1a1a 0%, #0d1f15 50%, #1a1a1a 100%);
+}
+.tilto-video-lp main { margin: 0 !important; padding: 0 !important; }
+
+/* ============================================
+   VARIABLES NOËL
+   ============================================ */
+:root {
+    --noel-gold: #D4A853;
+    --noel-gold-light: #F5E6C8;
+    --noel-green: #2D5A3D;
+}
+
+/* ============================================
+   FLOCONS DE NEIGE
+   ============================================ */
+.snowflakes {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.snowflake {
+    position: absolute;
+    top: -20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    animation: snowfall linear infinite;
+    text-shadow: 0 0 5px rgba(212, 168, 83, 0.2);
+    opacity: 0.4;
+}
+
+.snowflake:nth-child(1) { left: 5%; animation-duration: 18s; animation-delay: 0s; }
+.snowflake:nth-child(2) { left: 15%; animation-duration: 14s; animation-delay: 2s; }
+.snowflake:nth-child(3) { left: 30%; animation-duration: 20s; animation-delay: 4s; }
+.snowflake:nth-child(4) { left: 45%; animation-duration: 16s; animation-delay: 1s; }
+.snowflake:nth-child(5) { left: 60%; animation-duration: 22s; animation-delay: 3s; }
+.snowflake:nth-child(6) { left: 75%; animation-duration: 15s; animation-delay: 5s; }
+.snowflake:nth-child(7) { left: 90%; animation-duration: 19s; animation-delay: 2s; }
+
+@keyframes snowfall {
+    0% {
+        transform: translateY(-20px) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.4;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   BANDEAU PROMO NOËL
+   ============================================ */
+.promo-banner-noel {
+    background: linear-gradient(135deg, var(--noel-green) 0%, #1e4230 100%);
+    color: white;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    position: relative;
+    z-index: 100;
+}
+
+.promo-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.promo-badge-noel {
+    background: var(--noel-gold);
+    color: var(--noel-green);
+    padding: 0.2rem 0.6rem;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.promo-text-noel {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.promo-text-noel strong {
+    color: var(--noel-gold);
+}
+
+.promo-code-noel {
+    background: rgba(255,255,255,0.15);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: 1px dashed rgba(255,255,255,0.3);
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+.video-lp-section {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    z-index: 10;
+}
+
+.video-lp-container {
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* ============================================
+   TITRE PRINCIPAL
+   ============================================ */
+.video-lp-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   TAGLINE & SUBTITLE NOËL
+   ============================================ */
+.video-lp-tagline {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.1rem;
+    margin: 0 0 1.25rem 0;
+    font-weight: 500;
+}
+
+
+/* ============================================
+   VIDEO PLAYER PREMIUM (comme homepage)
+   ============================================ */
+.video-container-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.video-container-premium {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    max-height: 570px;
+    margin: 0 auto;
+    aspect-ratio: 9 / 16;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 
+        0 0 80px rgba(161, 24, 87, 0.25),
+        0 0 0 3px rgba(212, 168, 83, 0.3),
+        0 10px 40px rgba(139, 27, 92, 0.15);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #000;
+}
+
+.video-container-premium:hover {
+    transform: translateY(-8px);
+    box-shadow: 
+        0 0 100px rgba(161, 24, 87, 0.35),
+        0 0 0 3px rgba(212, 168, 83, 0.4),
+        0 20px 60px rgba(139, 27, 92, 0.25);
+}
+
+.video-placeholder-premium {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-poster-premium {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+}
+
+.video-placeholder-premium:hover .video-poster-premium {
+    transform: scale(1.05);
+}
+
+.video-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.4) 100%);
+    transition: opacity 0.3s ease;
+}
+
+.video-placeholder-premium:hover .video-overlay {
+    opacity: 0.7;
+}
+
+/* Play Button avec bordure dorée */
+.play-button-premium {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -45px;
+    margin-top: -45px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.play-circle {
+    width: 90px;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 4px rgba(212, 168, 83, 0.4);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    position: relative;
+}
+
+.play-circle::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 3px solid rgba(212, 168, 83, 0.5);
+    border-radius: 50%;
+    animation: pulse-ring-premium 2.5s ease-out infinite;
+}
+
+.play-circle i {
+    font-size: 32px;
+    color: #A11857;
+    margin-left: 6px;
+}
+
+.play-button-premium:hover .play-circle {
+    background: white;
+    box-shadow: 
+        0 12px 48px rgba(139, 6, 87, 0.4),
+        0 0 0 4px rgba(212, 168, 83, 0.6);
+    transform: scale(1.08);
+}
+
+.play-button-premium:hover .play-circle i {
+    color: #6d0445;
+}
+
+.play-text {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 60px);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.play-button-premium:hover .play-text {
+    opacity: 1;
+}
+
+.video-duration {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    z-index: 5;
+}
+
+@keyframes pulse-ring-premium {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ============================================
+   PROMO BOX NOËL
+   ============================================ */
+.promo-box-noel {
+    background: linear-gradient(135deg, var(--noel-green) 0%, #1e4230 100%);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-top: 1.5rem;
+    border: 2px solid var(--noel-gold);
+    position: relative;
+    overflow: hidden;
+}
+
+.promo-box-noel::before {
+    content: '🎄';
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.promo-box-noel::after {
+    content: '🎁';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.promo-box-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.price-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.old-price {
+    color: rgba(255,255,255,0.6);
+    text-decoration: line-through;
+    font-size: 1rem;
+}
+
+.new-price {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.discount-tag {
+    background: var(--noel-gold);
+    color: var(--noel-green);
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.code-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.code-label {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.code-value {
+    background: rgba(255,255,255,0.15);
+    color: var(--noel-gold);
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border: 1px dashed var(--noel-gold);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.code-value:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* ============================================
+   CTA BUTTON
+   ============================================ */
+.btn-cta-video {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #A11857;
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 4px 15px rgba(161, 24, 87, 0.3),
+        0 0 0 3px rgba(212, 168, 83, 0.2);
+}
+
+.btn-cta-video:hover {
+    background: #8b1249;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+    box-shadow: 
+        0 8px 25px rgba(161, 24, 87, 0.4),
+        0 0 0 3px rgba(212, 168, 83, 0.3);
+}
+
+/* ============================================
+   URGENCY TEXT
+   ============================================ */
+.urgency-text {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    margin-top: 1rem;
+}
+
+.urgency-text strong {
+    color: var(--noel-gold);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+    .promo-banner-noel {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .promo-banner-content {
+        gap: 0.5rem;
+    }
+    
+    .promo-badge-noel {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+    }
+    
+    .promo-text-noel {
+        font-size: 0.75rem;
+    }
+    
+    .video-lp-section {
+        padding: 1rem;
+    }
+    
+    .video-lp-title {
+        font-size: 1.6rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .video-lp-tagline {
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+    
+    .noel-subtitle {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.85rem;
+    }
+    
+    .video-container-premium {
+        max-width: 280px;
+        max-height: 498px;
+        border-radius: 20px;
+    }
+    
+    .play-circle {
+        width: 75px;
+        height: 75px;
+    }
+    
+    .play-button-premium {
+        margin-left: -37.5px;
+        margin-top: -37.5px;
+    }
+    
+    .play-circle i {
+        font-size: 28px;
+    }
+    
+    .promo-box-noel {
+        padding: 0.85rem 1rem;
+        margin-top: 1.25rem;
+    }
+    
+    .promo-box-noel::before,
+    .promo-box-noel::after {
+        font-size: 0.85rem;
+    }
+    
+    .promo-box-content {
+        gap: 0.75rem;
+    }
+    
+    .new-price {
+        font-size: 1.3rem;
+    }
+    
+    .code-value {
+        font-size: 0.9rem;
+    }
+    
+    .btn-cta-video {
+        width: 100%;
+        font-size: 1.05rem;
+        padding: 0.9rem 1.5rem;
+    }
+    
+    .urgency-text {
+        font-size: 0.8rem;
+    }
+}
+
+/* Réduire les animations si préférence utilisateur */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+    
+    .snowflakes {
+        display: none;
+    }
+}
+</style>
+
+<script nonce="{{ g.nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    const ctaBtn = document.getElementById('ctaBtn');
+    const promoCode = document.getElementById('promoCode');
+    
+    // Tracking data
+    const source = document.getElementById('lpSource')?.value || 'direct';
+    const variant = document.getElementById('lpVariant')?.value || 'noel';
+    const campaign = document.getElementById('lpCampaign')?.value || 'noel2025';
+    
+    let videoStarted = false;
+    let videoCompleted = false;
+    let watchTime = 0;
+    let trackingInterval = null;
+    
+    trackEvent('lp_video_view');
+    
+    // Lazy loading vidéo optimisé avec fallback MP4 pour mobile (comme homepage)
+    const videoPlaceholders = document.querySelectorAll('.video-placeholder-premium');
+    
+    videoPlaceholders.forEach(placeholder => {
+        placeholder.addEventListener('click', function() {
+            // Récupérer les deux URLs
+            const videoUrl = this.getAttribute('data-video-url');
+            const videoUrlMp4 = this.getAttribute('data-video-url-mp4');
+            const container = this.closest('.video-container-premium');
+            
+            // Créer l'élément vidéo
+            const video = document.createElement('video');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.setAttribute('controls', '');
+            video.setAttribute('preload', 'metadata');
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.style.borderRadius = '24px';
+            
+            // Source WebM (Chrome, Firefox)
+            if (videoUrl) {
+                const source = document.createElement('source');
+                source.src = videoUrl;
+                source.type = 'video/webm';
+                video.appendChild(source);
+            }
+            
+            // Source MP4 (Safari iOS, fallback universel)
+            if (videoUrlMp4) {
+                const sourceMp4 = document.createElement('source');
+                sourceMp4.src = videoUrlMp4;
+                sourceMp4.type = 'video/mp4';
+                video.appendChild(sourceMp4);
+            }
+            
+            // Fallback message
+            video.innerHTML += 'Votre navigateur ne supporte pas la lecture vidéo.';
+            
+            // Track video start
+            if (!videoStarted) {
+                videoStarted = true;
+                trackEvent('lp_video_started');
+                trackingInterval = setInterval(() => watchTime++, 1000);
+            }
+            
+            // Animation de transition
+            placeholder.style.opacity = '0';
+            placeholder.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+                container.appendChild(video);
+                
+                // Fade in + tentative autoplay
+                video.style.opacity = '0';
+                video.style.transition = 'opacity 0.4s ease';
+                
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Autoplay bloqué, contrôles disponibles');
+                    });
+                }
+                
+                setTimeout(() => {
+                    video.style.opacity = '1';
+                }, 50);
+                
+                // Track video progress
+                video.addEventListener('timeupdate', function() {
+                    const pct = Math.round((video.currentTime / video.duration) * 100);
+                    [25, 50, 75].forEach(m => {
+                        if (pct >= m && !video.dataset[`t${m}`]) {
+                            video.dataset[`t${m}`] = '1';
+                            trackEvent(`lp_video_${m}pct`);
+                        }
+                    });
+                });
+                
+                // Track video completion
+                video.addEventListener('ended', function() {
+                    if (!videoCompleted) {
+                        videoCompleted = true;
+                        clearInterval(trackingInterval);
+                        trackEvent('lp_video_completed');
+                    }
+                });
+            }, 300);
+        });
+    });
+    
+    ctaBtn.addEventListener('click', () => trackEvent('lp_cta_clicked'));
+    
+    // Copy promo code
+    promoCode.addEventListener('click', function() {
+        navigator.clipboard.writeText('NOEL2025').then(() => {
+            const original = this.textContent;
+            this.textContent = '✓ Copié !';
+            this.style.background = 'rgba(133, 224, 163, 0.3)';
+            trackEvent('promo_code_copied');
+            setTimeout(() => {
+                this.textContent = original;
+                this.style.background = 'rgba(255,255,255,0.15)';
+            }, 2000);
+        });
+    });
+    
+    function trackEvent(eventName) {
+        const data = { source, variant, campaign, videoStarted, videoCompleted, watchTime };
+        
+        {% if g.can_use_analytics %}
+        if (typeof gtag !== 'undefined' && window.googleAnalyticsLoaded) {
+            gtag('event', eventName, { 
+                event_category: 'video_lp_noel', 
+                event_label: `${source}_${variant}`,
+                ...data 
+            });
+        }
+        {% endif %}
+        
+        fetch('/lead/track-video-lp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                event: eventName, 
+                ...data, 
+                timestamp: new Date().toISOString(), 
+                url: window.location.href 
+            })
+        }).catch(() => {});
+    }
+    
+    // Stop snowflakes after 45 seconds for performance
+    setTimeout(() => {
+        const snowflakes = document.querySelector('.snowflakes');
+        if (snowflakes) {
+            snowflakes.style.transition = 'opacity 2s ease';
+            snowflakes.style.opacity = '0';
+            setTimeout(() => {
+                snowflakes.style.display = 'none';
+            }, 2000);
+        }
+    }, 45000);
+});
+</script>
+{% endblock content %}

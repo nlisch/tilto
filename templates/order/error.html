@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Erreur de paiement - tilto') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles de base */
+.shop-error-wrapper {
+    width: 100% !important;
+    min-height: calc(100vh - 180px) !important;
+    background: var(--bg-light) !important;
+    padding: 3rem 1rem !important;
+}
+
+.shop-error-container {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    background: var(--bg-light) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.shop-error-header {
+    padding: 2.5rem 2rem !important;
+    text-align: center !important;
+    background: #f8d7da !important;
+    margin-bottom: 0 !important;
+    margin-top: 2rem;
+}
+
+/* Styles pour l'icône d'erreur */
+.error-icon-container {
+    width: 120px !important;
+    height: 120px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-bottom: 2rem !important;
+}
+
+.error-icon {
+    width: 100% !important;
+    height: 100% !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    color: #721c24 !important;
+}
+
+.shop-error-title {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #721c24 !important;
+    margin: 0 0 1rem 0 !important;
+    line-height: 1.2 !important;
+}
+
+.shop-error-subtitle {
+    font-size: 1.1rem !important;
+    color: #721c24 !important;
+    margin: 0 !important;
+    opacity: 0.8 !important;
+}
+
+.shop-error-action {
+    font-size: 1rem !important;
+    color: #721c24 !important;
+    margin-top: 1rem !important;
+    opacity: 0.9 !important;
+}
+
+.shop-error-footer {
+    padding: 2rem !important;
+    text-align: center !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+/* Styles des boutons */
+.shop-error-buttons {
+    display: flex !important;
+    gap: 1rem !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.shop-retry-button,
+.shop-back-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.875rem 2rem !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    gap: 0.5rem !important;
+}
+
+.shop-retry-button {
+    background:linear-gradient(135deg,#A11857 0,#8B1A6B 100%);
+    color: white !important;
+}
+
+.shop-retry-button:hover {
+    background:linear-gradient(135deg,#A11857 0,#8B1A6B 100%);
+    transform: translateY(-1px) !important;
+}
+
+.shop-back-button {
+    background: var(--bg-light) !important;
+    color: var(--text) !important;
+}
+
+.shop-back-button:hover {
+    background: #e0e0e0 !important;
+}
+
+.shop-retry-button svg,
+.shop-back-button svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    overflow: visible !important;
+}
+
+.shop-error-support {
+    margin-top: 2rem !important;
+    text-align: center !important;
+    color: var(--text-light) !important;
+}
+
+.shop-error-support a {
+    color: var(--primary) !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.shop-error-support a:hover {
+    text-decoration: underline !important;
+}
+
+.shop-error-details {
+    padding: 1rem 2rem !important;
+    text-align: center !important;
+    color: var(--text-light) !important;
+}
+
+@media (max-width: 768px) {
+    .shop-error-wrapper {
+        padding: 1rem !important;
+    }
+    
+    .shop-error-buttons {
+        flex-direction: column !important;
+    }
+    
+    .shop-retry-button,
+    .shop-back-button {
+        width: 100% !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shop-error-wrapper">
+    <div class="shop-error-container">
+        <div class="shop-error-header">
+            <!-- Icône d'erreur -->
+            <div class="error-icon-container">
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+            <h1 class="shop-error-title">{{ _('Erreur') }}</h1>
+            <p class="shop-error-subtitle">
+                {% if error %}
+                    {{ error }}
+                {% else %}
+                    {{ _('Une erreur est survenue lors du traitement de votre paiement.') }}
+                {% endif %}
+            </p>
+            {% if action %}
+                <p class="shop-error-action">{{ action }}</p>
+            {% endif %}
+        </div>
+
+        <div class="shop-error-footer">
+            <div class="shop-error-buttons">
+                {% if product_id %}
+                <a href="{{ url_for('tokens.direct_buy', product_id=product_id, coupon=coupon_code) }}" class="shop-retry-button">
+                {% else %}
+                <a href="{{ url_for('tokens.shop') }}" class="shop-retry-button">
+                {% endif %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    {{ _('Réessayer') }}
+                </a>
+                <a href="{{ url_for('auth.dashboard') }}" class="shop-back-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    {{ _('Retour au tableau de bord') }}
+                </a>
+            </div>
+
+            <div class="shop-error-support">
+                {{ _('Pour toute assistance, contactez-nous à') }}
+                <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+            </div>
+
+            {% if error_code == 'payment_incomplete' %}
+                <div class="shop-error-details">
+                    <small>{{ _('ID de session :') }} {{ session_id }}</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
