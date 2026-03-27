@@ -3357,14 +3357,17 @@ function appendFreeTextInput(div, maxCharInput) {
         container.appendChild(audioContainer);
         container.appendChild(textContainer);
 
-        // Initialiser état audio
+        // Initialiser état audio — mode audio par défaut (plus d'écran de choix)
         if (!currentQuestionAudioState[questionId]) {
             currentQuestionAudioState[questionId] = {
                 audioBlob: null,
                 audioURL: null,
                 isRecording: false,
-                duration: 0
+                duration: 0,
+                selectedMode: 'audio'
             };
+        } else {
+            currentQuestionAudioState[questionId].selectedMode = currentQuestionAudioState[questionId].selectedMode || 'audio';
         }
 
         // Configurer événements
@@ -5125,18 +5128,17 @@ function initHeroPlaceholders() {
         heroElements.recordingState.style.display = 'none';
         heroElements.doneState.style.display = 'block';
         heroElements.doneText.textContent = `${formatRecordingTime(heroState.recordingTime)}`;
-        
+
         if (heroState.recordingTime < MIN_RECORDING_TIME) {
             heroElements.warningText.style.display = 'block';
+            heroElements.warningText.innerHTML = '<span class="too-short-message">⏱️ Moins de 15 secondes, c\'est trop court ! Réenregistre-toi en développant un peu plus.</span>';
             heroElements.submitAudio.disabled = true;
             heroElements.submitAudio.style.opacity = '0.5';
-            // CACHER le bouton écouter si trop court
             heroElements.listenBtn.style.display = 'none';
         } else {
             heroElements.warningText.style.display = 'none';
             heroElements.submitAudio.disabled = false;
             heroElements.submitAudio.style.opacity = '1';
-            // AFFICHER le bouton écouter si assez long
             heroElements.listenBtn.style.display = 'inline-flex';
         }
     }
@@ -5218,24 +5220,30 @@ function initHeroPlaceholders() {
     
     function stopHeroRecording() {
         if (!heroMediaRecorder || !heroState.isRecording) return;
-        
+
         heroState.recordingTime = Math.floor((Date.now() - heroRecordingStartTime) / 1000);
-        
+
         try {
             if (heroMediaRecorder.state === 'recording') heroMediaRecorder.stop();
         } catch (e) {}
-        
+
         heroState.isRecording = false;
-        
+
         // Stopper l'animation pulse
         const circleOuter = document.querySelector('.recording-circle-outer');
         if (circleOuter) circleOuter.classList.remove('is-recording');
-        
+
         if (heroRecordingTimer) {
             clearInterval(heroRecordingTimer);
             heroRecordingTimer = null;
         }
-        
+
+        // Nettoyer timers d'encouragement
+        if (heroState._encouragementTimers) {
+            heroState._encouragementTimers.forEach(t => clearTimeout(t));
+            heroState._encouragementTimers = null;
+        }
+
         if (heroAudioStream) {
             heroAudioStream.getTracks().forEach(track => track.stop());
             heroAudioStream = null;
@@ -5258,7 +5266,7 @@ function initHeroPlaceholders() {
     
     function startHeroTimer() {
         heroElements.timerDisplay.textContent = '0:00';
-        
+
         // Utiliser les hints personnalisés si définis (orientation vs homepage)
         const defaultHints = {
             start: "C'est parti ! Parle-moi de ta situation...",
@@ -5266,13 +5274,34 @@ function initHeroPlaceholders() {
             mid: "Super ! Tu peux aussi parler de tes rêves...",
             late: "Parfait ! Tu peux terminer quand tu veux."
         };
-        
+
         const hints = window.HERO_RECORDING_HINTS || defaultHints;
-        
+
+        // Ajouter audio-min-hint sous le timer (comme questions 2-4)
+        let minHint = heroElements.audioMode.querySelector('.audio-min-hint');
+        if (!minHint) {
+            minHint = document.createElement('div');
+            minHint.className = 'audio-min-hint recording';
+            minHint.textContent = '15 secondes minimum';
+            const hintRef = heroElements.recordingHint || heroElements.timerDisplay;
+            if (hintRef && hintRef.parentNode) {
+                hintRef.parentNode.insertBefore(minHint, hintRef);
+            }
+        }
+
+        // Initialiser les bulles d'encouragement (comme questions 2-4)
+        const questionId = getHeroQuestionId();
+        heroState._encouragementTimers = [
+            setTimeout(() => showHeroEncouragementBubble(questionId, 45), 45000),
+            setTimeout(() => showHeroEncouragementBubble(questionId, 75), 75000),
+            setTimeout(() => showHeroEncouragementBubble(questionId, 120), 120000),
+            setTimeout(() => showHeroEncouragementBubble(questionId, 160), 160000)
+        ];
+
         heroRecordingTimer = setInterval(() => {
             const elapsed = Math.floor((Date.now() - heroRecordingStartTime) / 1000);
             heroElements.timerDisplay.textContent = formatRecordingTime(elapsed);
-            
+
             if (elapsed < 5) {
                 heroElements.recordingHint.textContent = hints.start;
             } else if (elapsed < 20) {
@@ -5282,9 +5311,56 @@ function initHeroPlaceholders() {
             } else {
                 heroElements.recordingHint.textContent = hints.late;
             }
-            
+
+            // Mettre à jour audio-min-hint (comme questions 2-4)
+            if (minHint) {
+                if (elapsed < MIN_RECORDING_TIME) {
+                    var remaining = MIN_RECORDING_TIME - elapsed;
+                    minHint.textContent = '🎙️ Continue encore ' + remaining + 's avant de passer à la suite';
+                    minHint.className = 'audio-min-hint recording';
+                } else {
+                    minHint.textContent = '✓ Tu peux t\'arrêter ou continuer pour une analyse plus fine';
+                    minHint.className = 'audio-min-hint reached';
+                }
+            }
+
             if (elapsed >= MAX_RECORDING_TIME) stopHeroRecording();
         }, 1000);
+    }
+
+    function showHeroEncouragementBubble(questionId, timing) {
+        if (!heroState.isRecording) return;
+
+        // Créer la bulle si elle n'existe pas
+        let bubble = heroElements.audioMode.querySelector('.encouragement-bubble');
+        if (!bubble) {
+            bubble = document.createElement('div');
+            bubble.className = 'encouragement-bubble';
+            bubble.innerHTML = '<span class="bubble-content"></span>';
+            // Positionner relativement au recording state
+            const recordingState = heroElements.recordingState;
+            if (recordingState) {
+                recordingState.style.position = 'relative';
+                recordingState.appendChild(bubble);
+            }
+        }
+
+        const content = bubble.querySelector('.bubble-content') || bubble;
+        const messages = ENCOURAGEMENT_MESSAGES[questionId] || ENCOURAGEMENT_MESSAGES['default'];
+        let message = "Continue, je t'écoute...";
+
+        if (timing >= 120) message = messages[120] || ENCOURAGEMENT_MESSAGES['default'][120] || message;
+        else if (timing >= 60) message = messages[75] || ENCOURAGEMENT_MESSAGES['default'][75] || message;
+        else if (timing >= 25) message = messages[45] || ENCOURAGEMENT_MESSAGES['default'][45] || message;
+
+        content.textContent = message;
+        bubble.style.display = 'block';
+        setTimeout(() => bubble.classList.add('show'), 10);
+
+        setTimeout(() => {
+            bubble.classList.remove('show');
+            setTimeout(() => bubble.style.display = 'none', 300);
+        }, 4000);
     }
     
     function playHeroRecording() {
@@ -5323,13 +5399,23 @@ function initHeroPlaceholders() {
     
     function rerecordHero() {
         console.log('🔄 [Hero] Réenregistrement');
-        
+
         // Stopper tout
         if (heroRecordingTimer) {
             clearInterval(heroRecordingTimer);
             heroRecordingTimer = null;
         }
-        
+
+        // Nettoyer timers d'encouragement
+        if (heroState._encouragementTimers) {
+            heroState._encouragementTimers.forEach(t => clearTimeout(t));
+            heroState._encouragementTimers = null;
+        }
+
+        // Supprimer l'ancien audio-min-hint pour qu'il soit recréé proprement
+        const oldHint = heroElements.audioMode?.querySelector('.audio-min-hint');
+        if (oldHint) oldHint.remove();
+
         if (heroAudioStream) {
             heroAudioStream.getTracks().forEach(track => track.stop());
             heroAudioStream = null;
@@ -5360,10 +5446,67 @@ function initHeroPlaceholders() {
     function updateHeroCharCount() {
         const len = heroElements.textarea.value.length;
         heroElements.charCount.textContent = `${len} / ${MAX_TEXT_LENGTH}`;
-        
+
         heroElements.submitText.disabled = len < MIN_TEXT_LENGTH;
         heroElements.submitText.style.opacity = len >= MIN_TEXT_LENGTH ? '1' : '0.5';
         heroState.textValue = heroElements.textarea.value;
+
+        // Barre de progression + hint (comme questions 2-4)
+        const countEl = heroElements.charCount;
+        if (!countEl) return;
+
+        countEl.classList.remove('warning-active', 'valid');
+        if (len > 0 && len < MIN_TEXT_LENGTH) {
+            countEl.classList.add('warning-active');
+        } else if (len >= MIN_TEXT_LENGTH) {
+            countEl.classList.add('valid');
+        }
+
+        let bar = countEl.querySelector('.char-min-bar');
+        let hint = countEl.querySelector('.char-min-hint');
+
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.className = 'char-min-bar';
+            bar.innerHTML = '<div class="char-min-bar-fill"></div>';
+            countEl.appendChild(bar);
+        }
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.className = 'char-min-hint';
+            countEl.appendChild(hint);
+        }
+
+        const fill = bar.querySelector('.char-min-bar-fill');
+        const progress = Math.min(len / MIN_TEXT_LENGTH, 1);
+
+        if (fill) {
+            fill.style.width = (progress * 100) + '%';
+            if (len === 0) {
+                fill.style.background = '#e5e7eb';
+            } else if (len < MIN_TEXT_LENGTH) {
+                fill.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+            } else {
+                fill.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+            }
+        }
+
+        hint.classList.remove('reached');
+        if (len === 0) {
+            hint.textContent = MIN_TEXT_LENGTH + ' caractères minimum';
+        } else if (len < MIN_TEXT_LENGTH) {
+            var remaining = MIN_TEXT_LENGTH - len;
+            hint.textContent = '✍️ Développe encore un peu — ' + remaining + ' caractère' + (remaining > 1 ? 's' : '') + ' avant de passer à la suite';
+        } else {
+            hint.textContent = '✓ Tu peux continuer ou développer encore pour une analyse plus fine';
+            hint.classList.add('reached');
+        }
+
+        if (len >= MIN_TEXT_LENGTH) {
+            bar.style.opacity = '0.5';
+        } else {
+            bar.style.opacity = '1';
+        }
     }
     
 

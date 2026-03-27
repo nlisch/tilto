@@ -114,16 +114,16 @@
         <div class="hp-hero__carousel">
           <div class="hp-hero__track">
             <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2026/02/c021cec5_Lea.webp" alt="Léa" loading="eager">
+              <img src="https://images.tilto.co/production/2026/02/c021cec5_Lea.webp" alt="Léa" loading="lazy">
               <div class="hp-hero__lbl"><strong>Léa</strong>, 14 ans en marketing produit — retrouve du sens en explorant une direction plus créative.</div>
               <span class="hp-hero__bulb">💡</span>
             </div>
             <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2026/02/a2434d04_Alexis.webp" alt="Alexis" loading="eager">
+              <img src="https://images.tilto.co/production/2026/02/a2434d04_Alexis.webp" alt="Alexis" loading="lazy">
               <div class="hp-hero__lbl"><strong>Alexis</strong>, ingénieur depuis 20 ans — après une période de transition, se projette dans une nouvelle direction.</div>
             </div>
             <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2026/02/35c53452_Anna.webp" alt="Anna" loading="eager">
+              <img src="https://images.tilto.co/production/2026/02/35c53452_Anna.webp" alt="Anna" loading="lazy">
               <div class="hp-hero__lbl"><strong>Anna</strong>, 31 ans, chargée de projet — passe du flou à des pistes concrètes pour la suite de son parcours.</div>
             </div>
           </div>
@@ -140,7 +140,7 @@
 <!-- BLOC 2 : ÉTAPES + APERÇU -->
 <div class="hp-steps__lightbox" id="stepsLightbox">
     <button class="hp-steps__lightbox-close" id="stepsLightboxClose">&times;</button>
-    <img src="https://images.tilto.co/production/2026/02/ca478881_Tilto_example_piste_1.webp" alt="Exemple piste Tilto">
+    <img id="stepsLightboxImg" src="" alt="Exemple piste Tilto">
 </div>
 
 <!-- BLOC 2 : ÉTAPES + APERÇU -->
@@ -491,7 +491,7 @@
  #heroListenBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(251,191,36,0.3); }
  #heroRerecordBtn { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fbbf24; color: #92400e; }
  #heroRerecordBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(251,191,36,0.3); }
- .hero-warning-text { color: #F34213; font-size: 1.2rem; margin: 1rem 0; font-weight: 700; }
+ .hero-warning-text { color: #92400e; font-size: 0.95rem; margin: 1rem 0; font-weight: 600; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 0.75rem 1rem; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15); }
  .hero-done-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; }
  .hero-back-btn { background: none; border: none; color: #999; cursor: pointer; font-size: 0.9rem; padding: 0.5rem 0; font-family: inherit; }
  .hero-back-btn:hover { color: #666; }
@@ -502,7 +502,9 @@
  .hero-textarea::placeholder { color: #9ca3af; font-style: italic; }
  .hero-text-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; flex-wrap: wrap; gap: 1rem; }
  .hero-text-footer-left { display: flex; align-items: center; gap: 1rem; }
- .hero-char-count { font-size: 0.8rem; color: #bbb; }
+ .hero-char-count { font-size: 0.8rem; color: #bbb; display: flex; flex-direction: column; gap: 0.15rem; min-width: 160px; }
+ .hero-char-count.warning-active { color: #f59e0b; }
+ .hero-char-count.valid { color: #10b981; }
  .hero-switch-suggestion { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f0f0f0; font-size: 0.85rem; color: #94a3b8; }
  .hero-switch-link { background: none; border: none; color: #A11857; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; font-family: inherit; }
  .hero-switch-link:hover { color: #8b1249; }
@@ -1769,6 +1771,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!img || !lightbox) return;
 
     img.addEventListener('click', function() {
+        var lbImg = document.getElementById('stepsLightboxImg');
+        if (lbImg) lbImg.src = img.src;
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
