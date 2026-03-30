@@ -179,3 +179,7 @@ timeout: '2400s'
 images:
   - 'gcr.io/$PROJECT_ID/quiz-app:$BUILD_ID'
   - 'gcr.io/$PROJECT_ID/quiz-app:latest'
+
+substitutions:
+  _STORAGE_BUCKET: ''
+  _SERVICE_ACCOUNT: ''
