@@ -380,9 +380,8 @@ class AsyncAnalysisService:
             # ============================================================
             # 📧 ENVOYER EMAIL "TON ANALYSE EST PRÊTE" SI PUBLIÉE
             # ============================================================
-            # ✅ DÉSACTIVÉ : L'email est maintenant envoyé par le cron le lendemain entre 13h-16h
-            # if auto_publish:
-            #     cls._send_analysis_ready_email(cursor, job)
+            if auto_publish:
+                cls._send_analysis_ready_email(cursor, job)
             
             # 9. Envoyer notification Slack
             cls._send_completion_notification(cursor, job, auto_publish)

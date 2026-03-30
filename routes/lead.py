@@ -423,7 +423,7 @@ def capture():
                     if quiz_id == 'pack_orientation':
                         result_step_id = 'orientation_v1'  # À adapter selon votre config
                     else:
-                        result_step_id = 'career_path_v3'
+                        result_step_id = 'career_path_v4'
                     
                     # Récupérer les prompts par défaut depuis quiz_result
                     async_cursor.execute("""

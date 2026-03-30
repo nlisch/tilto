@@ -952,7 +952,7 @@ body.dashboard-page main {
                 <h2 class="pending-subtitle">On prépare ton diagnostic</h2>
                 <div class="garantie-box">
                     <p class="garantie-text" style="color: var(--tilto-primary);">
-                        <strong>📧 Tu recevras un email d'ici 24h dès qu'il sera prêt !</strong>
+                        <strong>📧 Tu recevras un email sous quelques minutes dès qu'il sera prêt !</strong>
                     </p>
                 </div>
             </div>
@@ -1157,7 +1157,7 @@ body.dashboard-page main {
         }, 300);
     }
 
-    function completeAnimation() {
+    function completeAnimation(redirectUrl) {
         state.isReady = true;
         els.progressFill.style.width = '100%';
         els.progressPercent.textContent = '100%';
@@ -1168,7 +1168,13 @@ body.dashboard-page main {
         els.processingTitle.textContent = "Tes pistes sont prêtes 🎉";
         els.processingSubtitle.textContent = "Redirection...";
         els.statusMessage.style.display = 'none';
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => {
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                window.location.reload();
+            }
+        }, 1500);
     }
 
     async function checkStatus() {
@@ -1179,7 +1185,7 @@ body.dashboard-page main {
             });
             if (response.ok) {
                 const data = await response.json();
-                if (data.ready === true) completeAnimation();
+                if (data.ready === true) completeAnimation(data.redirect_url);
             }
         } catch (e) { console.warn('Status check error:', e); }
     }

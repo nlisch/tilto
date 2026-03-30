@@ -1686,26 +1686,24 @@ def index():
                         firstname=firstname
                     )
 
+        # Vérifier si une analyse active existe → redirection directe
         cursor.execute("""
             SELECT ru.result_id, ru.result_step_id
             FROM result_user ru
-            JOIN analysis_notification_emails ane ON (
-                ane.result_id = ru.result_id 
-                AND ane.step_id = ru.result_step_id 
-                AND ane.user_id = ru.user_id
-            )
             WHERE ru.user_id = %s AND ru.quiz_id = %s AND ru.is_active = TRUE
+            ORDER BY ru.created_at DESC
             LIMIT 1
         """, (user_id, quiz_id))
-        
-        notified_analysis = cursor.fetchone()
-        
-        if notified_analysis:
-            return redirect(url_for('quiz_analysis.view_analysis', 
-                                quiz_id=quiz_id, 
-                                result_id=notified_analysis['result_id'], 
-                                step_id=notified_analysis['result_step_id']))
 
+        active_analysis = cursor.fetchone()
+
+        if active_analysis:
+            return redirect(url_for('quiz_analysis.view_analysis',
+                                quiz_id=quiz_id,
+                                result_id=active_analysis['result_id'],
+                                step_id=active_analysis['result_step_id']))
+
+        # Sinon vérifier si un job async est en cours
         cursor.execute("""
             SELECT 1 FROM async_analysis_jobs
             WHERE user_id = %s AND quiz_id = %s
@@ -1718,7 +1716,7 @@ def index():
             session['dashboard_state'] = 'processing'
             return render_template('pages/dashboard/dashboard.html',
                 dashboard_state='processing',
-                processing_status='humanized_wait',
+                processing_status='live',
                 firstname=firstname
             )
 
@@ -5892,38 +5890,42 @@ def get_all_user_bookings(user_id):
 @login_required
 def refresh_status():
     """
-    API pour polling - check si analyse prête ET email envoyé.
+    API pour polling - check si analyse prête (result_user active).
+    Renvoie l'URL de redirection directe vers l'analyse.
     """
     from utils import generate_request_id
-    
+
     request_id = generate_request_id()
     user_id = current_user.id
     quiz_id = 'pack_clarte'
-    
+
     try:
         cursor = current_app.mysql.connection.cursor(DictCursor)
-        
-        # ✅ Vérifier analyse active ET email déjà envoyé
+
+        # Vérifier si une analyse active existe (sans attendre l'email)
         cursor.execute("""
             SELECT ru.result_id, ru.result_step_id
             FROM result_user ru
-            JOIN analysis_notification_emails ane ON (
-                ane.result_id = ru.result_id 
-                AND ane.step_id = ru.result_step_id 
-                AND ane.user_id = ru.user_id
-            )
             WHERE ru.user_id = %s AND ru.quiz_id = %s AND ru.is_active = TRUE
+            ORDER BY ru.created_at DESC
             LIMIT 1
         """, (user_id, quiz_id))
-        
-        ready_and_notified = cursor.fetchone()
+
+        active_analysis = cursor.fetchone()
         cursor.close()
-        
-        is_ready = ready_and_notified is not None
-        logger.info(f"[{request_id}] Status check - ready_and_notified={is_ready}")
-        
-        return jsonify({'ready': is_ready})
-    
+
+        is_ready = active_analysis is not None
+        logger.info(f"[{request_id}] Status check - analysis_ready={is_ready}")
+
+        response = {'ready': is_ready}
+        if is_ready:
+            response['redirect_url'] = url_for('quiz_analysis.view_analysis',
+                quiz_id=quiz_id,
+                result_id=active_analysis['result_id'],
+                step_id=active_analysis['result_step_id'])
+
+        return jsonify(response)
+
     except Exception as e:
         logger.error(f"[{request_id}] Status check error: {str(e)}")
         if 'cursor' in locals() and cursor:
