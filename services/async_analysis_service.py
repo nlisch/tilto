@@ -51,7 +51,7 @@ class AsyncAnalysisService:
     @classmethod
     def get_queue_path(cls, queue_name: str = None) -> str:
         """Construit le chemin complet de la queue Cloud Tasks."""
-        project = current_app.config.get('GCP_PROJECT_ID')
+        project = current_app.config.get('GOOGLE_CLOUD_PROJECT') or os.getenv('GOOGLE_CLOUD_PROJECT')
         location = current_app.config.get('GCP_LOCATION', 'europe-west1')
         queue = queue_name or current_app.config.get('CLOUD_TASKS_QUEUE', cls.DEFAULT_QUEUE)
         
