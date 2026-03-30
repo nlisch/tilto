@@ -5208,7 +5208,11 @@ function initHeroPlaceholders() {
             
             const circleOuter = document.querySelector('.recording-circle-outer');
             if (circleOuter) circleOuter.classList.add('is-recording');
-            
+
+            // Afficher ✋ dans le cercle (comme les questions 2+)
+            const circleInner = document.getElementById('heroRecordingCircle');
+            if (circleInner) circleInner.innerHTML = '<div style="font-size:28px;animation:pulse 2s infinite">✋</div>';
+
             console.log('✓ [Hero] Enregistrement démarré');
             
         } catch (error) {
@@ -5669,6 +5673,14 @@ function initHeroPlaceholders() {
         heroElements.placeholderZone?.addEventListener('click', showHeroTextMode);
         
         heroElements.stopBtn?.addEventListener('click', stopHeroRecording);
+        // Permettre de stopper en cliquant sur le cercle animé (comme le bouton micro sur les autres questions)
+        const recordingCircle = document.querySelector('.recording-circle-outer');
+        if (recordingCircle) {
+            recordingCircle.style.cursor = 'pointer';
+            recordingCircle.addEventListener('click', () => {
+                if (heroState.isRecording) stopHeroRecording();
+            });
+        }
         heroElements.cancelRecording?.addEventListener('click', () => { stopHeroRecording(); showHeroChoiceScreen(); });
         heroElements.switchToTextFromRecording?.addEventListener('click', () => { stopHeroRecording(); showHeroTextMode(); });
         

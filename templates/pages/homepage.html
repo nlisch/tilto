@@ -469,7 +469,7 @@
  .recording-dot-pulse { animation: blink 1s ease-in-out infinite; }
  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
  .recording-visual, .done-visual { margin-bottom: 1rem; }
- .recording-circle-outer { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, rgba(161,24,87,0.1), rgba(161,24,87,0.05)); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+ .recording-circle-outer { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, rgba(161,24,87,0.1), rgba(161,24,87,0.05)); display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; }
  .recording-circle-outer.is-recording { animation: recording-pulse 2s ease-in-out infinite; }
  @keyframes recording-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 40px rgba(161,24,87,0.2); } }
  .recording-circle-inner { width: 75px; height: 75px; border-radius: 50%; background: linear-gradient(135deg, #A11857, #C44B89); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 30px rgba(239,68,68,0.4); }
@@ -954,7 +954,7 @@
     RESPONSIVE
     ============================================================================ */
  @media (max-width: 968px) {
-     .hp-hero__container { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
+     .hp-hero__container { grid-template-columns: 1fr; gap: 3rem; text-align: center; padding: 1.5rem 1.25rem; }
      .hp-hero__sub { max-width: 100%; margin-left: auto; margin-right: auto; }
      .hp-hero__photos { max-width: 560px; margin: 0 auto; min-height: 560px; }
      .hp-steps__ctn { grid-template-columns: 1fr; gap: 3rem; }
