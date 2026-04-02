@@ -63,6 +63,47 @@ class AudioService:
                 logger.warning(f"Erreur lors du nettoyage des fichiers temporaires: {cleanup_error}")
 
     @staticmethod
+    def text_to_speech(text, voice='nova'):
+        """
+        Convertit du texte en audio via OpenAI TTS API.
+        Returns: bytes (mp3) ou None si erreur.
+        """
+        try:
+            api_key = current_app.config.get('OPENAI_API_KEY')
+            if not api_key:
+                logger.error("[TTS] OpenAI API key not configured")
+                return None
+
+            response = requests.post(
+                'https://api.openai.com/v1/audio/speech',
+                headers={
+                    'Authorization': f'Bearer {api_key}',
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'model': 'tts-1',
+                    'input': text,
+                    'voice': voice,
+                    'response_format': 'mp3',
+                    'speed': 1.0
+                },
+                timeout=15
+            )
+
+            if response.status_code == 200:
+                content = response.content
+                header_hex = content[:4].hex() if len(content) >= 4 else 'too_short'
+                logger.info(f"[TTS] Generated {len(content)} bytes, header: {header_hex}, content-type: {response.headers.get('content-type')}, for: {text[:50]}...")
+                return content
+            else:
+                logger.error(f"[TTS] API error {response.status_code}: {response.text[:200]}")
+                return None
+
+        except Exception as e:
+            logger.error(f"[TTS] Error: {e}", exc_info=True)
+            return None
+
+    @staticmethod
     def save_quiz_audio_to_cloud(audio_blob, quiz_id, question_id, user_id, file_format=None):
         """
         Sauvegarde un fichier audio du quiz dans le cloud storage

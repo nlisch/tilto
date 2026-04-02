@@ -157,6 +157,7 @@ class BaseConfig:
         'ALLOWED_EXTENSIONS': {'mp4', 'webm', 'mov', 'avi', 'mkv'},
         'MAX_SIZE_MB': 100,
     }
+    QUIZ_CHAT_MODE = os.environ.get('QUIZ_CHAT_MODE', 'false').lower() in ('true', '1', 'yes')
     STORAGE_BUCKET = os.environ.get('STORAGE_BUCKET', 'images-tilto')
     DATA_BUCKET = os.environ.get('DATA_BUCKET', 'tilto-data')
     CDN_URL = 'https://images.tilto.co'

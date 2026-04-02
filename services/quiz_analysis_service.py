@@ -960,19 +960,31 @@ class QuizAnalysisService:
                 )
 
                 # Construire le texte de la réponse
-                if is_audio_response and q_data['transcription']:
-                    # Utiliser la transcription si disponible
+                answer_text_raw = q_data['answer_text'] or ''
+
+                # Detect conversation mode (from dynamic coach)
+                is_conversation = '[Claire]' in answer_text_raw and '[Réponse]' in answer_text_raw
+
+                if is_conversation:
+                    # Format conversation transcript for the analysis prompt
+                    answer_full_text = f"Transcription de l'entretien de coaching :\n{answer_text_raw}"
+                    # Use conversation as a single prompt block, skip the DB question text
+                    prompt_data.append({
+                        "question": "Entretien de coaching vocal (conversation complète)",
+                        "answer": answer_full_text
+                    })
+                    # Skip remaining questions — the conversation covers everything
+                    break
+                elif is_audio_response and q_data['transcription']:
                     answer_full_text = f"Réponse : {q_data['transcription']}"
                     if q_data['confidence_score']:
                         answer_full_text += f" [Transcription audio, confiance: {q_data['confidence_score']:.2%}]"
                 elif is_audio_response:
-                    # Réponse audio sans transcription
                     answer_full_text = "Réponse : [Réponse audio non transcrite]"
                     logger.warning(f"Question {q_data['question_id']} a une réponse audio sans transcription")
                 else:
-                    # Réponse texte classique
-                    answer_full_text = f"Réponse : {q_data['answer_text'] if q_data['answer_text'] else ''}"
-                    
+                    answer_full_text = f"Réponse : {answer_text_raw}"
+
                     # Ajouter les descriptions des choix sélectionnés
                     if q_data['choice_descriptions'] and answer_values:
                         descriptions = json.loads(q_data['choice_descriptions'])
@@ -983,10 +995,11 @@ class QuizAnalysisService:
                                     answer_full_text += f" – « {desc} »"
                                     break
 
-                prompt_data.append({
-                    "question": question_full_text,
-                    "answer": answer_full_text
-                })
+                if not is_conversation:
+                    prompt_data.append({
+                        "question": question_full_text,
+                        "answer": answer_full_text
+                    })
 
             return prompt_data
 

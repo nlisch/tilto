@@ -14,7 +14,7 @@ from functools import wraps
 import os
 from MySQLdb.cursors import DictCursor
 from datetime import datetime
-from extensions import csrf
+from extensions import csrf, limiter
 
 quiz_bp = Blueprint('quiz', __name__)
 logger = logging.getLogger(__name__)
@@ -1637,3 +1637,113 @@ def update_smart_contact_progress():
         return jsonify({"error": "Server error"}), 500
     finally:
         cursor.close()
+
+
+# ============================================================================
+# QUIZ CONVERSATIONNEL - Évaluation des réponses
+# ============================================================================
+
+@quiz_bp.route('/coach-next', methods=['POST'])
+@csrf.exempt
+@limiter.limit("30 per minute")
+def coach_next():
+    """
+    Coach IA dynamique — génère la prochaine question basée sur la conversation.
+    """
+    from services.conversation_eval_service import ConversationCoachService
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    conversation = data.get('conversation', [])
+    result = ConversationCoachService.next_step(conversation)
+    return jsonify(result)
+
+
+@quiz_bp.route('/coach-results', methods=['POST'])
+@csrf.exempt
+@limiter.limit("10 per minute")
+def coach_results():
+    """Génère 3 pistes rapides à partir de la conversation pour affichage in-conv."""
+    from anthropic import Anthropic
+
+    data = request.get_json()
+    if not data or not data.get('conversation'):
+        return jsonify({"error": "conversation required"}), 400
+
+    conversation = data['conversation']
+
+    try:
+        client = Anthropic(api_key=current_app.config['ANTHROPIC_API_KEY'])
+
+        # Build conversation as text
+        conv_text = '\n'.join(
+            f"{'Coach' if m.get('role') == 'coach' else 'Utilisateur'}: {m.get('text', '')}"
+            for m in conversation
+        )
+
+        response = client.messages.create(
+            model=current_app.config.get('CONVERSATION_EVAL_MODEL', 'claude-haiku-4-5-20251001'),
+            max_tokens=600,
+            temperature=0.5,
+            system="""À partir de cette conversation de coaching carrière, génère exactement 3 pistes métiers pertinentes pour cette personne.
+
+FORMAT JSON strict :
+{"pistes": [
+  {
+    "titre": "Titre du métier concret",
+    "accroche": "Une phrase qui explique pourquoi ce métier correspond, en reprenant les mots de la personne",
+    "pourquoi": ["Force 1 de la personne qui matche", "Force 2", "Élément de son parcours pertinent"],
+    "salaire": "Fourchette salariale indicative (ex: 35-45K€)"
+  },
+  ...
+]}
+
+RÈGLES :
+- Chaque piste = un vrai métier concret (pas "quelque chose de créatif")
+- L'accroche reprend les mots/situations de la personne
+- Les "pourquoi" sont 2-3 raisons courtes et personnalisées (pas génériques)
+- Le salaire est une fourchette réaliste pour la France
+- Professionnel, pas de jargon ni d'argot""",
+            messages=[
+                {"role": "user", "content": conv_text},
+                {"role": "assistant", "content": "{"}
+            ]
+        )
+
+        import json, re
+        raw = "{" + response.content[0].text.strip()
+        json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if json_match:
+            result = json.loads(json_match.group())
+            return jsonify(result)
+
+        return jsonify({"error": "Generation failed"}), 500
+
+    except Exception as e:
+        logger.error(f"[CoachResults] Error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@quiz_bp.route('/tts', methods=['POST'])
+@csrf.exempt
+@limiter.limit("30 per minute")
+def text_to_speech():
+    """Génère un audio TTS à partir de texte (pour les questions du quiz immersif)."""
+    from io import BytesIO
+    from flask import send_file
+    data = request.get_json()
+    if not data or not data.get('text'):
+        return jsonify({"error": "text required"}), 400
+
+    text = data['text'][:500]
+    audio_bytes = AudioService.text_to_speech(text)
+
+    if audio_bytes:
+        buf = BytesIO(audio_bytes)
+        buf.seek(0)
+        return send_file(buf, mimetype='audio/mpeg', download_name='tts.mp3',
+                         max_age=86400)
+    else:
+        return jsonify({"error": "TTS failed"}), 500
