@@ -141,7 +141,7 @@ steps:
       - '80'
       - '--cpu-throttling'
       - '--set-env-vars'
-      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,INIT_DB=True'
+      - 'GOOGLE_CLOUD_PROJECT=$PROJECT_ID,INIT_DB=False'
       - '--set-secrets'
       - 'APP_CONFIG=app-config:latest'
       - '--no-traffic'

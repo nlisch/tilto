@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Perdu·e dans ta vie pro ? 3 pistes concrètes sous 24h | Tilto{% endblock %}
-{% block meta_description %}5-10 min de quiz, puis notre duo IA + expert humain te livre 3 pistes pro qui font tilt sous 24h. Gratuit et confidentiel.{% endblock %}
+{% block meta_description %}5-10 min de quiz, puis notre duo IA + expert humain te livre 3 pistes pro qui font tilt sous quelques minutes. Gratuit et confidentiel.{% endblock %}
 {% block body_class %}tilto-new-homepage{% endblock %}
 
 {% block extra_head %}
@@ -22,8 +22,11 @@
 <section class="hp-hero" id="section-hero">
   <div class="hp-hero__container">
     <div class="hp-hero__text">
-      <h1 class="hp-hero__title" style="text-align:left;">Tu te sens <span class="hp-hero__hl">perdu·e</span> dans ta vie pro&nbsp;?</h1>
-      <p class="hp-hero__sub">Quand on tourne en rond professionnellement, le plus difficile est de savoir par où commencer.<br><strong>Identifie des pistes concrètes</strong> pour y voir plus clair.</p>
+      <h1 class="hp-hero__title" style="text-align:left;">Tes <span class="hp-hero__hl">pistes pro</span> en quelques minutes</h1>
+      <div class="hp-hero__usps">
+        <div class="hp-hero__usp">✓ <strong>3 pistes métiers</strong> basées sur les données du marché</div>
+        <div class="hp-hero__usp">✓ Résultats <strong>sous quelques minutes</strong></div>
+      </div>
       <!-- Hero Q1 intégrée — audio + texte -->
       <h2 class="hero-question-title">{{ hero_question.question if hero_question else "Quand tu penses à ton travail actuel, qu'est-ce qui te vient à l'esprit ?" }}</h2>
       <div class="hero-input-card" id="heroInputCard">
@@ -389,15 +392,20 @@
      border-radius: 2px;
      opacity: 0.5;
  }
- .hp-hero__sub {
-     font-family: 'DM Sans', sans-serif;
-     font-size: 1.15rem;
-     color: #4a5568;
-     line-height: 1.7;
-     margin: 0 0 2rem;
+ .hp-hero__usps {
+     display: flex;
+     flex-direction: column;
+     gap: 0.5rem;
+     margin: 0 0 1.5rem;
      max-width: 520px;
  }
- .hp-hero__sub strong { color: #1A1A2E; }
+ .hp-hero__usp {
+     font-family: 'DM Sans', sans-serif;
+     font-size: 1.05rem;
+     color: #374151;
+     line-height: 1.5;
+ }
+ .hp-hero__usp strong { color: #1A1A2E; }
  .hp-hero__cta {
      display: inline-block;
      background: #A11857;
@@ -955,7 +963,7 @@
     ============================================================================ */
  @media (max-width: 968px) {
      .hp-hero__container { grid-template-columns: 1fr; gap: 3rem; text-align: center; padding: 1.5rem 1.25rem; }
-     .hp-hero__sub { max-width: 100%; margin-left: auto; margin-right: auto; }
+     .hp-hero__usps { max-width: 100%; margin-left: auto; margin-right: auto; align-items: center; }
      .hp-hero__photos { max-width: 560px; margin: 0 auto; min-height: 560px; }
      .hp-steps__ctn { grid-template-columns: 1fr; gap: 3rem; }
      .hp-about__ctn { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -966,7 +974,7 @@
  @media (max-width: 768px) {
      .hp-hero { padding: 6rem 1.25rem 3rem; min-height: auto; }
      .hp-hero__title { padding:0.5rem;padding-top:2rem;font-size: 2rem;text-align: center !important;}
-     .hp-hero__sub { font-size: 1rem; padding:0.5rem;}
+     .hp-hero__usp { font-size: 0.95rem; }
      .hp-hero__cta { font-size: 1.1rem; padding: 1rem 1.8rem; width: 70%; text-align: center; }
      .hero-question-title { text-align: center; font-size: 1.2rem; }
      .hero-input-card { padding: 1rem; }
