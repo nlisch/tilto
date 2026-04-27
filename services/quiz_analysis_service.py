@@ -1,3 +1,56 @@
+"""
+Career Agent — module principal du système agentique de Tilto.
+
+Implémente un agent autonome qui produit des bilans de carrière personnalisés.
+Architecture en 7 traits :
+
+═══════════════════════════════════════════════════════════════════════
+  TRAIT                  IMPLÉMENTATION
+═══════════════════════════════════════════════════════════════════════
+  1. Perception          Chat conversationnel (services/conversation_eval_service.py)
+                         + transcription audio Whisper (services/audio_service.py)
+
+  2. Mémoire courte      État du job en cours : conversation, réponses, audit
+                         trail des prompts (`quiz_user`, `answer_user`,
+                         `prompt_user` avec relations parent ↔ enfant)
+
+  3. Knowledge base      Configuration métier en DB : system prompts, instructions,
+                         knowledge texts, critères de validation
+                         (`quiz_result.prompt_system`, `prompt_instruction`,
+                         `prompt_knowledge`, `validation_criteria`)
+                         → modifiable sans déploiement
+
+  4. Tool use            web_search Anthropic géolocalisé FR
+                         (max 5 invocations par job, ville/région injectées)
+
+  5. Plan d'action       Output JSON structuré : 3 pistes de carrière + welcome
+                         + section conseil — un livrable, pas du texte libre
+
+  6. Auto-correction     Boucle Writer ⇄ Critic cross-modèle :
+                         - Writer (Claude Sonnet) génère avec web_search
+                         - Critic (GPT-4o-mini, prompt anti-hallucination)
+                           évalue contre la checklist en knowledge base
+                         - Si invalide : Writer regénère avec feedback Critic
+                         - Max 2 retries avant publication en draft
+
+  7. Convergence         Publish auto si validation OK,
+                         draft + alerte Slack admin si retries épuisés
+═══════════════════════════════════════════════════════════════════════
+
+  ARCHITECTURE WRITER ↔ CRITIC :
+  - _writer_call               : appel LLM générateur (Claude + web_search)
+  - _writer_retry_with_feedback : régénération ciblée avec issues du critic
+  - _critic_call               : appel LLM critique (OpenAI, cross-modèle)
+  - _critic_evaluate           : orchestration du cycle de validation
+
+  TÉLÉMÉTRIE AGENT :
+  - LLM_PRICING + _track_usage : coût par appel en USD
+  - token_usage (instance)     : aggrégat par job
+  - get_usage_summary()        : exporte le résumé pour monitoring/alerting
+
+Voir README.md → "Agent architecture" pour le détail.
+"""
+
 from typing import Dict, List, Tuple, Optional, Any
 import logging
 import json
@@ -9,7 +62,7 @@ from flask import current_app, g
 import unicodedata
 from services import AnonymizationClient
 import re
-import traceback 
+import traceback
 import requests
 
 logger = logging.getLogger(__name__)
@@ -32,14 +85,69 @@ class PromptData:
         }
 
 class QuizAnalysisService:
-    def __init__(self, cursor, user_id: int, quiz_id: str):
-        self.cursor = cursor
-        self.user_id = user_id
-        self.quiz_id = quiz_id
-        self.client = Anthropic(api_key=current_app.config['ANTHROPIC_API_KEY'])
+    """
+    Career Agent — orchestrateur du cycle Generator → Critic → Retry → Publish.
+
+    Une instance par job. Consomme un AgentContext partagé (services/agent_context.py)
+    qui bundle : user state, knowledge base, tool registry, LLM clients, telemetry.
+    Tout autre agent Tilto (meta-agent, support, etc.) peut consommer le même contexte.
+
+    Cycle d'exécution typique (voir _generate_analysis):
+
+        1. _writer_call(...)              # Claude Sonnet + web_search géoloc (via ctx)
+        2. _validate_json_structure(...)  # check schéma déterministe
+        3. _critic_evaluate(...)          # check sémantique cross-modèle
+              ├─ _critic_call(...)        # OpenAI GPT-4o-mini (via ctx)
+              └─ retourne issues + suggestions
+        4. Si issues critical → _writer_retry_with_feedback(...)
+              ├─ _writer_call(...) à nouveau avec correctifs
+              └─ retour à l'étape 3 (max 2 retries)
+        5. _store_analysis_result(...)    # publish ou draft selon convergence
+
+    Telemetry & coût sont accumulés par self.ctx.track_usage() à chaque appel LLM.
+    À la fin du job, async_analysis_service.process_job lit ctx.get_usage_summary()
+    et alerte Slack si dépassement de seuils.
+    """
+
+    def __init__(self, cursor, user_id: int, quiz_id: str,
+                 ctx: 'Optional[AgentContext]' = None):
+        # AgentContext : couche partagée. Si non fournie, on en crée une (backward compat).
+        # Voir services/agent_context.py pour la rationale du pattern.
+        from services.agent_context import AgentContext
+        self.ctx = ctx if ctx is not None else AgentContext(
+            cursor=cursor, user_id=user_id, quiz_id=quiz_id
+        )
+
+        # Raccourcis pour les accès fréquents (lisibilité du code legacy)
+        self.cursor = self.ctx.cursor
+        self.user_id = self.ctx.user_id
+        self.quiz_id = self.ctx.quiz_id
+
+        # Anthropic client : passe par le ctx (lazy-init partagé)
+        self.client = self.ctx.anthropic_client
+
         self.anonymizer = current_app.anonymization_service
         self._slack_service = None
         self._slack_available = None
+
+    # ─── Backward-compat properties qui délèguent au ctx ───
+    # Les agents lisent self.token_usage, self.openai_client, etc.
+    # mais la SOURCE DE VÉRITÉ est dans ctx — ce qui permet de partager
+    # ces ressources entre plusieurs agents sur un même job.
+
+    @property
+    def token_usage(self) -> Dict:
+        return self.ctx.token_usage
+
+    @property
+    def openai_client(self):
+        return self.ctx.openai_client
+
+    def _track_usage(self, *args, **kwargs):
+        return self.ctx.track_usage(*args, **kwargs)
+
+    def get_usage_summary(self) -> Dict:
+        return self.ctx.get_usage_summary()
 
     @property
     def slack_service(self):
@@ -344,7 +452,9 @@ class QuizAnalysisService:
                                 parent_generation_prompt_id: int,
                                 validation_criteria_source: str = 'database',
                                 custom_criteria: str = None,
-                                attempt_number: int = 1) -> int:
+                                attempt_number: int = 1,
+                                validator_model: str = None,
+                                validator_provider: str = 'anthropic') -> int:
         """
         Stocke le prompt de validation pour traçabilité complète.
         
@@ -413,7 +523,8 @@ class QuizAnalysisService:
                     "human": validation_prompt
                 },
                 "api_params": {
-                    "model": current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+                    "model": validator_model or current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+                    "provider": validator_provider,
                     "temperature": 0.1,
                     "max_tokens": 2000
                 }
@@ -960,19 +1071,31 @@ class QuizAnalysisService:
                 )
 
                 # Construire le texte de la réponse
-                if is_audio_response and q_data['transcription']:
-                    # Utiliser la transcription si disponible
+                answer_text_raw = q_data['answer_text'] or ''
+
+                # Detect conversation mode (from dynamic coach)
+                is_conversation = '[Claire]' in answer_text_raw and '[Réponse]' in answer_text_raw
+
+                if is_conversation:
+                    # Format conversation transcript for the analysis prompt
+                    answer_full_text = f"Transcription de l'entretien de coaching :\n{answer_text_raw}"
+                    # Use conversation as a single prompt block, skip the DB question text
+                    prompt_data.append({
+                        "question": "Entretien de coaching vocal (conversation complète)",
+                        "answer": answer_full_text
+                    })
+                    # Skip remaining questions — the conversation covers everything
+                    break
+                elif is_audio_response and q_data['transcription']:
                     answer_full_text = f"Réponse : {q_data['transcription']}"
                     if q_data['confidence_score']:
                         answer_full_text += f" [Transcription audio, confiance: {q_data['confidence_score']:.2%}]"
                 elif is_audio_response:
-                    # Réponse audio sans transcription
                     answer_full_text = "Réponse : [Réponse audio non transcrite]"
                     logger.warning(f"Question {q_data['question_id']} a une réponse audio sans transcription")
                 else:
-                    # Réponse texte classique
-                    answer_full_text = f"Réponse : {q_data['answer_text'] if q_data['answer_text'] else ''}"
-                    
+                    answer_full_text = f"Réponse : {answer_text_raw}"
+
                     # Ajouter les descriptions des choix sélectionnés
                     if q_data['choice_descriptions'] and answer_values:
                         descriptions = json.loads(q_data['choice_descriptions'])
@@ -983,10 +1106,11 @@ class QuizAnalysisService:
                                     answer_full_text += f" – « {desc} »"
                                     break
 
-                prompt_data.append({
-                    "question": question_full_text,
-                    "answer": answer_full_text
-                })
+                if not is_conversation:
+                    prompt_data.append({
+                        "question": question_full_text,
+                        "answer": answer_full_text
+                    })
 
             return prompt_data
 
@@ -2361,7 +2485,7 @@ class QuizAnalysisService:
             return "No specific validation criteria configured for this step."
             
     # ===== API Anthropic =====
-    def _call_anthropic_api(self, system_prompt: str, human_prompt: str, request_id: str,
+    def _writer_call(self, system_prompt: str, human_prompt: str, request_id: str,
                         anonymized_human_prompt: Optional[str] = None,
                         temperature: float = None,
                         max_tokens: int = None,
@@ -2503,6 +2627,27 @@ class QuizAnalysisService:
 
                 # ===== APPEL API =====
                 message = self.client.messages.create(**api_params)
+
+                # ===== USAGE TRACKING =====
+                try:
+                    usage_obj = getattr(message, 'usage', None)
+                    if usage_obj is not None:
+                        in_tok = getattr(usage_obj, 'input_tokens', 0) or 0
+                        out_tok = getattr(usage_obj, 'output_tokens', 0) or 0
+                        # web_search uses (Anthropic server tool)
+                        web_uses = 0
+                        srv_tool = getattr(usage_obj, 'server_tool_use', None)
+                        if srv_tool is not None:
+                            web_uses = getattr(srv_tool, 'web_search_requests', 0) or 0
+                        self._track_usage(
+                            provider='anthropic',
+                            model=api_params.get('model', current_app.config.get('ANTHROPIC_MODEL', 'unknown')),
+                            input_tokens=in_tok, output_tokens=out_tok,
+                            web_search_uses=web_uses,
+                            label=f'gen[{request_id}]'
+                        )
+                except Exception as usage_err:
+                    logger.warning(f"[{request_id}] Erreur capture usage Anthropic: {usage_err}")
 
                 anonymized_result = message.content[0].text
                 
@@ -2775,7 +2920,69 @@ class QuizAnalysisService:
         
         # Ce point ne devrait jamais être atteint
         raise Exception(f"[Request ID: {request_id}] Échec après {max_retries} tentatives sans exception capturée")
-        
+
+    def _critic_call(self, prompt: str, request_id: str,
+                               temperature: float = 0.1,
+                               max_tokens: int = 2000) -> str:
+        """
+        Appelle OpenAI (chat completions) pour la validation cross-modèle.
+        Force le format JSON via response_format. Retry x3 avec backoff exponentiel.
+        """
+        client = self.openai_client
+        if client is None:
+            raise RuntimeError("OPENAI_API_KEY non configurée - impossible d'utiliser le validator OpenAI")
+
+        model = current_app.config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
+        max_retries = 3
+        base_retry_delay = 5
+
+        logger.info(f"[{request_id}] === OpenAI VALIDATOR CALL (model={model}) ===")
+        logger.info(f"[{request_id}] Prompt length: {len(prompt)} chars")
+
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"[{request_id}] OpenAI validator tentative {attempt + 1}/{max_retries}")
+                api_start = time.time()
+                response = client.chat.completions.create(
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                api_duration = time.time() - api_start
+                content = response.choices[0].message.content or ""
+                logger.info(f"[{request_id}] OpenAI validator réponse en {api_duration:.2f}s ({len(content)} chars)")
+
+                # Usage tracking
+                try:
+                    usage_obj = getattr(response, 'usage', None)
+                    if usage_obj is not None:
+                        in_tok = getattr(usage_obj, 'prompt_tokens', 0) or 0
+                        out_tok = getattr(usage_obj, 'completion_tokens', 0) or 0
+                        self._track_usage(
+                            provider='openai',
+                            model=model,
+                            input_tokens=in_tok, output_tokens=out_tok,
+                            web_search_uses=0,
+                            label=f'critic[{request_id}]'
+                        )
+                except Exception as usage_err:
+                    logger.warning(f"[{request_id}] Erreur capture usage OpenAI: {usage_err}")
+
+                return content
+
+            except Exception as e:
+                last_error = e
+                logger.warning(f"[{request_id}] OpenAI validator erreur (tentative {attempt + 1}): {e}")
+                if attempt < max_retries - 1:
+                    delay = base_retry_delay * (2 ** attempt)
+                    logger.info(f"[{request_id}] Retry OpenAI dans {delay}s")
+                    time.sleep(delay)
+
+        raise RuntimeError(f"OpenAI validator échec après {max_retries} tentatives: {last_error}")
+
     def _send_anthropic_error_alert(self, error_type: str, error_message: str, error_details: dict = None):
         """Envoie une alerte Slack pour toute erreur Anthropic en production."""
         try:
@@ -3150,7 +3357,7 @@ class QuizAnalysisService:
                 # 1.6 Appel API Claude
                 api_start = time.time()
                 
-                response_text = self._call_anthropic_api(
+                response_text = self._writer_call(
                     system_prompt=system_prompt,
                     human_prompt=human_prompt,
                     request_id=gen_request_id,
@@ -3290,7 +3497,7 @@ class QuizAnalysisService:
         validation_start = time.time()
         total_validation_attempts = 1
         
-        validation_result = self._validate_recommendations_only(
+        validation_result = self._critic_evaluate(
             result_json=result_json,
             step_id=step_id,
             request_id=f"{request_id}_val1",
@@ -3360,7 +3567,7 @@ class QuizAnalysisService:
             
             try:
                 # 4.1 Régénérer les recommandations
-                improved_recommendations, retry_prompt_id = self._regenerate_recommendations_only(
+                improved_recommendations, retry_prompt_id = self._writer_retry_with_feedback(
                     original_json=current_json,
                     validation_issues=current_issues,
                     step_id=step_id,
@@ -3398,7 +3605,7 @@ class QuizAnalysisService:
                 
                 revalidation_start = time.time()
                 
-                retry_validation_result = self._validate_recommendations_only(
+                retry_validation_result = self._critic_evaluate(
                     result_json=current_json,
                     step_id=step_id,
                     request_id=f"{retry_request_id}_val",
@@ -3679,7 +3886,7 @@ class QuizAnalysisService:
         else:
             logger.warning(f"[{request_id}] No structure validation configured for step_id: {step_id}")
 
-    def _validate_recommendations_only(self, result_json, step_id, request_id, prompt_id,
+    def _critic_evaluate(self, result_json, step_id, request_id, prompt_id,
                                         custom_validation_criteria: str = None,
                                         result_id: str = None,
                                         attempt_number: int = 1):
@@ -3713,6 +3920,9 @@ class QuizAnalysisService:
         elif step_id in ('career_path_v1', 'career_path_v2', 'career_path_v3'):
             recommendations = result_json.get('voies', [])
             field_name = 'voies'
+        elif step_id == 'career_path_v4':
+            recommendations = result_json.get('pistes', [])
+            field_name = 'pistes'
         else:
             logger.warning(f"[{request_id}] No validation configured for {step_id}")
             return {'is_valid': True, 'issues': [], 'severity': 'none', 'assessment': 'Skipped', 'validation_prompt_id': None}
@@ -3794,6 +4004,18 @@ class QuizAnalysisService:
                     'premiers_moves': voie.get('premiers_moves', []),
                     'salaire': voie.get('salaire', 'N/A')
                 })
+        elif step_id == 'career_path_v4':
+            recommendations_preview = []
+            for idx, piste in enumerate(recommendations):
+                recommendations_preview.append({
+                    'index': idx,
+                    'option_title': piste.get('option_title', 'N/A'),
+                    'job_title': piste.get('job_title', 'N/A'),
+                    'quelques_mots': piste.get('quelques_mots', 'N/A'),
+                    'pourquoi': piste.get('pourquoi', 'N/A'),
+                    'salaire': piste.get('salaire', 'N/A'),
+                    'stat_marche': piste.get('stat_marche', 'N/A')
+                })
         else:
             recommendations_preview = recommendations
         
@@ -3825,50 +4047,94 @@ class QuizAnalysisService:
         logger.warning(f"=== FIN DEBUG ===")
         
         # Construire le prompt de validation
-        validator_prompt = f"""Tu es un expert QA spécialisé dans les reconversions professionnelles.
+        validator_prompt = f"""Tu es un critique senior spécialisé en reconversions professionnelles. Tu valides la qualité d'une analyse générée par une autre IA. Tu es précis, factuel, et tu refuses de signaler des problèmes inventés.
 
-    CONTEXTE UTILISATEUR:
-    {user_context}
+CONTEXTE UTILISATEUR:
+{user_context}
 
-    RECOMMANDATIONS À VALIDER:
-    ```json
-    {json.dumps(recommendations_preview, ensure_ascii=False, indent=2)}
-    ```
+RECOMMANDATIONS À VALIDER:
+```json
+{json.dumps(recommendations_preview, ensure_ascii=False, indent=2)}
+```
 
-    {validation_criteria}
+CRITÈRES À VÉRIFIER:
+{validation_criteria}
 
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    📋 RÉPONSE JSON
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛡️ RÈGLES ANTI-HALLUCINATION (à appliquer AVANT de flagger une issue)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    {{
-        "is_valid": true/false,
-        "issues": [
-            {{
-                "recommendation_index": 0,
-                "field": "hero_title",
-                "severity": "critical",
-                "problem": "Description courte",
-                "suggestion": "Correction en 1 phrase"
-            }}
-        ],
-        "overall_assessment": "Synthèse en 1 phrase"
-    }}
+1. **Ne flagge en `critical` que des violations FACTUELLES, OBJECTIVES, VÉRIFIABLES dans le JSON ci-dessus.** Une opinion subjective n'est pas critical.
+2. **Avant chaque issue, fais ce test : ta `suggestion` est-elle DIFFÉRENTE du contenu actuel ?** Si elle est identique ou quasi-identique, NE FLAGGE PAS — c'est une fausse alerte. Quote textuellement le contenu actuel pour vérifier.
+3. **Pour chaque issue, le champ `quote` doit contenir le TEXTE EXACT du JSON qui pose problème.** Si tu n'arrives pas à citer textuellement, l'issue n'est pas valide.
+4. **Salaires** : ne flagge "non réaliste" que si la fourchette est *clairement* en dehors du marché (ex: 10000€ pour assistant). Une fourchette plausible mais ambitieuse n'est PAS critical.
+5. **Métiers généraux** : un job_title est "trop général" UNIQUEMENT s'il manque le contexte (ex: juste "Consultant" sans secteur). Un titre comme "Chargé de communication dans une asso d'éducation populaire" est PRÉCIS — ne le flagge pas.
+6. **Un critère ambigu, partiellement respecté ou interprétable est `minor`, jamais `critical`.**
+7. **Maximum 2 issues `critical`.** Si tu hésites entre 2 et 3, choisis 2.
+8. **Si tout va bien, dis-le franchement** : `is_valid: true`, `issues: []`. C'est l'issue par défaut, pas l'exception.
 
-    Maximum 2-3 issues. Réponds UNIQUEMENT avec le JSON."""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 RÉPONSE JSON (format strict)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{{
+    "is_valid": true|false,
+    "issues": [
+        {{
+            "recommendation_index": 0,
+            "field": "job_title",
+            "severity": "critical|minor",
+            "quote": "extrait textuel du JSON qui pose problème",
+            "problem": "description factuelle de la violation, 1 phrase",
+            "suggestion": "correction concrète et DIFFÉRENTE du contenu actuel, 1 phrase"
+        }}
+    ],
+    "overall_assessment": "synthèse en 1 phrase"
+}}
+
+Réponds UNIQUEMENT avec le JSON."""
         
-        # Appel API Claude Validator
+        # Appel API Validator (cross-modèle si configuré)
         validation_prompt_id = None
-        
+        validator_provider = current_app.config.get('VALIDATOR_PROVIDER', 'anthropic').lower()
+        anthropic_default_model = current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-5-20250929')
+
         try:
-            validator_response = self._call_anthropic_api(
-                system_prompt="",
-                human_prompt=validator_prompt,
-                request_id=f"{request_id}_validation",
-                temperature=0.1,
-                max_tokens=2000,
-                enable_web_search=False
-            )
+            if validator_provider == 'openai':
+                try:
+                    validator_response = self._critic_call(
+                        prompt=validator_prompt,
+                        request_id=f"{request_id}_validation",
+                        temperature=0.1,
+                        max_tokens=2000,
+                    )
+                    validator_model_used = current_app.config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
+                    validator_provider_used = 'openai'
+                except Exception as openai_err:
+                    logger.warning(
+                        f"[{request_id}] OpenAI validator a échoué, fallback Anthropic: {openai_err}"
+                    )
+                    validator_response = self._writer_call(
+                        system_prompt="",
+                        human_prompt=validator_prompt,
+                        request_id=f"{request_id}_validation_fallback",
+                        temperature=0.1,
+                        max_tokens=2000,
+                        enable_web_search=False,
+                    )
+                    validator_model_used = anthropic_default_model
+                    validator_provider_used = 'anthropic_fallback'
+            else:
+                validator_response = self._writer_call(
+                    system_prompt="",
+                    human_prompt=validator_prompt,
+                    request_id=f"{request_id}_validation",
+                    temperature=0.1,
+                    max_tokens=2000,
+                    enable_web_search=False,
+                )
+                validator_model_used = anthropic_default_model
+                validator_provider_used = 'anthropic'
 
             validator_raw_response = validator_response
 
@@ -3906,7 +4172,9 @@ class QuizAnalysisService:
                         parent_generation_prompt_id=prompt_id,
                         validation_criteria_source=criteria_source,
                         custom_criteria=custom_validation_criteria if criteria_source == 'custom' else None,
-                        attempt_number=attempt_number
+                        attempt_number=attempt_number,
+                        validator_model=validator_model_used,
+                        validator_provider=validator_provider_used,
                     )
 
                     validation_result['validation_prompt_id'] = validation_prompt_id
@@ -3943,7 +4211,7 @@ class QuizAnalysisService:
                 'validation_prompt_id': None
             }
 
-    def _regenerate_recommendations_only(self, original_json, validation_issues, step_id, 
+    def _writer_retry_with_feedback(self, original_json, validation_issues, step_id, 
                                         request_id, prompt_id, result_id,
                                         enable_web_search=None,
                                         attempt_number: int = 1):
@@ -3968,6 +4236,10 @@ class QuizAnalysisService:
             current_recommendations = original_json.get('voies', [])
             field_name = 'voies'
             recommendations_label = 'voies professionnelles'
+        elif step_id == 'career_path_v4':
+            current_recommendations = original_json.get('pistes', [])
+            field_name = 'pistes'
+            recommendations_label = 'pistes professionnelles'
         else:
             logger.error(f"[{request_id}] Unknown step_id for regeneration: {step_id}")
             return None, None
@@ -4077,7 +4349,7 @@ class QuizAnalysisService:
                 {"role": "assistant", "content": "["}  # ✅ PREFILL pour forcer JSON array
             ]
             
-            # ✅ APPEL API DIRECT (pas via _call_anthropic_api car structure différente)
+            # ✅ APPEL API DIRECT (pas via _writer_call car structure différente)
             api_params = {
                 "model": current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
                 "max_tokens": current_app.config.get('ANTHROPIC_MAX_TOKENS', 8000),  # ✅ AJOUTÉ
@@ -4126,6 +4398,26 @@ class QuizAnalysisService:
             message = self.client.messages.create(**api_params)
             regenerated_text = message.content[0].text
             api_duration = time.time() - api_start
+
+            # Usage tracking
+            try:
+                usage_obj = getattr(message, 'usage', None)
+                if usage_obj is not None:
+                    in_tok = getattr(usage_obj, 'input_tokens', 0) or 0
+                    out_tok = getattr(usage_obj, 'output_tokens', 0) or 0
+                    web_uses = 0
+                    srv_tool = getattr(usage_obj, 'server_tool_use', None)
+                    if srv_tool is not None:
+                        web_uses = getattr(srv_tool, 'web_search_requests', 0) or 0
+                    self._track_usage(
+                        provider='anthropic',
+                        model=api_params.get('model', 'unknown'),
+                        input_tokens=in_tok, output_tokens=out_tok,
+                        web_search_uses=web_uses,
+                        label=f'retry[{request_id}]'
+                    )
+            except Exception as usage_err:
+                logger.warning(f"[{request_id}] Erreur capture usage retry: {usage_err}")
             
             # ✅ RECONSTITUER LE JSON ARRAY
             if not regenerated_text.startswith('['):
@@ -4189,7 +4481,10 @@ class QuizAnalysisService:
 
         elif step_id == 'career_path_v3':
             merged_json['voies'] = new_recommendations
-            logger.info("Merged new recommendations into voies (V2)")     
+            logger.info("Merged new recommendations into voies (V2)")
+        elif step_id == 'career_path_v4':
+            merged_json['pistes'] = new_recommendations
+            logger.info("Merged new recommendations into pistes (V4)")
         else:
             logger.warning(f"Unknown step_id for merging: {step_id}")
         
@@ -4467,51 +4762,7 @@ class QuizAnalysisService:
 
     def _extract_location_from_quiz(self) -> tuple:
         """
-        Extrait ville ET région en 1 seule requête depuis question_id=26.
-        
-        Returns:
-            tuple: (city, region) ou (None, None) si non trouvé
-        
-        Exemple:
-            ("Paris", "Île-de-France")
+        Délègue à self.ctx.location (cached_property dans AgentContext).
+        Conservé comme alias pour les call sites legacy.
         """
-        try:
-            # Récupérer la session quiz + answer en 1 requête
-            self.cursor.execute("""
-                SELECT au.answer_value
-                FROM quiz_user qu
-                JOIN answer_user au ON qu.quiz_session_id = au.quiz_session_id
-                WHERE qu.user_id = %s 
-                AND qu.quiz_id = %s
-                AND au.question_id = 26
-                ORDER BY qu.updated_at DESC
-                LIMIT 1
-            """, (self.user_id, self.quiz_id))
-            
-            result = self.cursor.fetchone()
-            
-            if result and result['answer_value']:
-                answer_list = json.loads(result['answer_value'])
-                
-                if answer_list and len(answer_list) > 0:
-                    location_str = answer_list[0]  # "Paris,Île-de-France"
-                    
-                    if ',' in location_str:
-                        city, region = location_str.split(',', 1)
-                        city = city.strip()
-                        region = region.strip()
-                        
-                        logger.info(f"✅ Extracted location from question 26: {city}, {region}")
-                        return (city, region)
-                    else:
-                        # Cas où il n'y a que la ville sans région
-                        city = location_str.strip()
-                        logger.info(f"✅ Extracted city from question 26: {city} (no region)")
-                        return (city, None)
-            
-            logger.warning(f"⚠️ No location found in question 26 for user {self.user_id}")
-            return (None, None)
-            
-        except Exception as e:
-            logger.error(f"❌ Error extracting location from question 26: {str(e)}", exc_info=True)
-            return (None, None)
+        return self.ctx.location

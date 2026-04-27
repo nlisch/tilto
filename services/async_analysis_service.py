@@ -51,7 +51,7 @@ class AsyncAnalysisService:
     @classmethod
     def get_queue_path(cls, queue_name: str = None) -> str:
         """Construit le chemin complet de la queue Cloud Tasks."""
-        project = current_app.config.get('GCP_PROJECT_ID')
+        project = current_app.config.get('GOOGLE_CLOUD_PROJECT') or os.getenv('GOOGLE_CLOUD_PROJECT')
         location = current_app.config.get('GCP_LOCATION', 'europe-west1')
         queue = queue_name or current_app.config.get('CLOUD_TASKS_QUEUE', cls.DEFAULT_QUEUE)
         
@@ -374,15 +374,34 @@ class AsyncAnalysisService:
             ))
             
             cursor.connection.commit()
-            
+
             logger.info(f"[ASYNC] Job {job_uuid} completed successfully in {duration:.2f}s")
-            
+
+            # ============================================================
+            # 💰 OBSERVABILITÉ COÛT/TOKENS + ALERTING
+            # ============================================================
+            try:
+                usage = analysis_service.get_usage_summary()
+                logger.info(
+                    f"[USAGE-SUMMARY] job={job_uuid} | "
+                    f"calls={usage['calls']} | "
+                    f"anthropic_in={usage['anthropic_input_tokens']} "
+                    f"anthropic_out={usage['anthropic_output_tokens']} | "
+                    f"openai_in={usage['openai_input_tokens']} "
+                    f"openai_out={usage['openai_output_tokens']} | "
+                    f"web_search={usage['web_search_uses']} | "
+                    f"cost=${usage['cost_usd']:.4f} | "
+                    f"duration={duration:.1f}s"
+                )
+                cls._maybe_alert_usage(job_uuid, job, usage, duration, timings)
+            except Exception as usage_err:
+                logger.warning(f"[ASYNC] Erreur logging usage pour job {job_uuid}: {usage_err}")
+
             # ============================================================
             # 📧 ENVOYER EMAIL "TON ANALYSE EST PRÊTE" SI PUBLIÉE
             # ============================================================
-            # ✅ DÉSACTIVÉ : L'email est maintenant envoyé par le cron le lendemain entre 13h-16h
-            # if auto_publish:
-            #     cls._send_analysis_ready_email(cursor, job)
+            if auto_publish:
+                cls._send_analysis_ready_email(cursor, job)
             
             # 9. Envoyer notification Slack
             cls._send_completion_notification(cursor, job, auto_publish)
@@ -574,8 +593,7 @@ class AsyncAnalysisService:
         """
         try:
             from services.email_service import send_analysis_ready_email
-            from flask import url_for
-            
+
             # Récupérer les infos utilisateur
             cursor.execute("""
                 SELECT firstname, email
@@ -602,8 +620,10 @@ class AsyncAnalysisService:
                 logger.info(f"[ASYNC] 📧 Email déjà envoyé pour cette analyse, skip")
                 return
             
-            # Générer l'URL du dashboard
-            analysis_url = url_for('dashboard.index', _external=True)
+            # Générer l'URL du dashboard (construite via BASE_URL pour fonctionner
+            # hors contexte de requête — ex: thread DEBUG ou worker Cloud Tasks)
+            base_url = current_app.config.get('BASE_URL', 'https://tilto.co').rstrip('/')
+            analysis_url = f"{base_url}/dashboard"
             
             # Envoyer l'email
             email_sent = send_analysis_ready_email(
@@ -630,6 +650,72 @@ class AsyncAnalysisService:
             # Ne pas faire échouer le job si l'email échoue
             logger.error(f"[ASYNC] ❌ Erreur envoi email notification: {email_error}", exc_info=True)
 
+
+    # Seuils par défaut pour l'agent monitor (override via current_app.config si besoin)
+    USAGE_ALERT_COST_USD = 1.00       # alerte si un job coûte plus que ça
+    USAGE_ALERT_DURATION_S = 180      # alerte si un job met plus que ça
+    USAGE_ALERT_RETRIES = 2           # alerte si on est allé jusqu'au max retries
+
+    @classmethod
+    def _maybe_alert_usage(cls, job_uuid: str, job: Dict, usage: Dict,
+                           duration: float, timings: Dict):
+        """
+        Agent monitor : envoie une alerte Slack si un job dépasse un seuil
+        de coût, durée, ou retries. Sans seuil franchi, simple log et silence.
+        """
+        try:
+            from flask import current_app
+            cost_threshold = current_app.config.get('USAGE_ALERT_COST_USD', cls.USAGE_ALERT_COST_USD)
+            duration_threshold = current_app.config.get('USAGE_ALERT_DURATION_S', cls.USAGE_ALERT_DURATION_S)
+            retries_threshold = current_app.config.get('USAGE_ALERT_RETRIES', cls.USAGE_ALERT_RETRIES)
+        except Exception:
+            cost_threshold = cls.USAGE_ALERT_COST_USD
+            duration_threshold = cls.USAGE_ALERT_DURATION_S
+            retries_threshold = cls.USAGE_ALERT_RETRIES
+
+        attempts = int(timings.get('validation_attempts', 1) or 1)
+        validation_failed = timings.get('validation_status') == 'failed'
+        cost_usd = float(usage.get('cost_usd', 0.0))
+
+        triggers = []
+        if cost_usd > cost_threshold:
+            triggers.append(f"💸 Coût élevé : ${cost_usd:.2f} (seuil ${cost_threshold:.2f})")
+        if duration > duration_threshold:
+            triggers.append(f"⏱️ Durée longue : {duration:.0f}s (seuil {duration_threshold}s)")
+        if attempts - 1 >= retries_threshold or validation_failed:
+            triggers.append(f"🔁 Retries : {attempts - 1} (status={timings.get('validation_status')})")
+
+        if not triggers:
+            return  # rien d'anormal
+
+        try:
+            from services import slack_service, SLACK_AVAILABLE
+            if not SLACK_AVAILABLE or not slack_service:
+                return
+
+            breakdown_lines = []
+            for call in usage.get('per_call', [])[-6:]:  # 6 derniers max
+                breakdown_lines.append(
+                    f"  • {call['label'] or '?'} | {call['provider']}/{call['model']} | "
+                    f"in={call['input_tokens']} out={call['output_tokens']} "
+                    f"web={call['web_search_uses']} | ${call['cost_usd']:.4f}"
+                )
+
+            message = (
+                f"🚨 *Alerte job analyse* `{job_uuid[:8]}`\n"
+                f"User: {job.get('user_id')} | Quiz: {job.get('quiz_id')}\n\n"
+                + "\n".join(triggers) + "\n\n"
+                f"*Détail des appels :*\n" + ("\n".join(breakdown_lines) if breakdown_lines else "  _aucun_")
+            )
+
+            slack_service.send_notification(
+                title="Alerte coût/perf job analyse",
+                message=message,
+                channel="monitoring"
+            )
+            logger.info(f"[USAGE-ALERT] Slack alert envoyée pour job {job_uuid} ({len(triggers)} trigger(s))")
+        except Exception as alert_err:
+            logger.error(f"[USAGE-ALERT] Erreur envoi alerte: {alert_err}")
 
     @classmethod
     def _send_completion_notification(cls, cursor, job: Dict, auto_published: bool = False):

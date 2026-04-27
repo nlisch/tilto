@@ -71,7 +71,7 @@ def create_async_job():
     
     user_id = data.get('user_id')
     quiz_id = data.get('quiz_id')
-    step_id = data.get('step_id', 'career_path_v4')
+    step_id = data.get('step_id', 'career_path_v3')
     
     if not user_id or not quiz_id:
         return jsonify({'success': False, 'error': 'user_id et quiz_id requis'}), 400

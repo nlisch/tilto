@@ -1,108 +1,199 @@
 # Tilto
 
-Tilto is an AI-powered career guidance platform that helps users identify professional development paths through an intelligent quiz and personalized analysis system.
+> AI-powered career reorientation, grounded in your local job market.
 
-## Features
+Career change is paralyzing — generic online tests give vague advice and human coaches are expensive. **Tilto** is a French AI agent platform that interviews you in 5 minutes, queries the live job market in your region, and delivers 3 personalized career paths in under 90 seconds — with an independent cross-model critic loop that gates quality before you see anything.
 
-- **Career Orientation Quiz** — A 5-10 minute quiz that analyzes a user's professional situation and delivers 3 concrete career paths within 24 hours
-- **Hybrid AI + Human Analysis** — Combines Claude AI analysis with expert human review for high-quality, actionable insights
-- **Audio Capsules** — Learning modules with audio transcription support
-- **Coaching Sessions** — Booking integration via YouCanBookMe
-- **Admin Dashboard** — Manage users, orders, bookings, and product deliverables
-- **Multi-language Support** — French and English (Flask-Babel)
-- **Two-Factor Authentication** — TOTP-based 2FA for account security
-- **Stripe Payments** — Full payment and subscription management
+## What you get
 
-## Tech Stack
+A 5-minute conversational interview produces a structured deliverable backed by **real-time market data**:
+
+- **3 career paths**, each with: precise job title, daily reality, "why this fits you", required formation duration, salary range, and a verified market stat for your region.
+- **A diagnostic** that quotes your own words and explains where you stand.
+- **A personalized advice section** explaining your blind spots and what to do next.
+
+<details>
+<summary>Sample output (truncated)</summary>
+
+```json
+{
+  "welcome": {
+    "quote_verbatim": "Je passe mes journées en réunions sans voir l'impact concret de ce que je fais...",
+    "comprends_text": "Tu cherches du <em>sens</em>, de l'<em>impact concret</em> et de la <em>création</em>...",
+    "point_important": "Tu n'es pas blasé du marketing — tu es frustré parce que ton talent..."
+  },
+  "pistes": [
+    {
+      "icon": "💡",
+      "option_title": "L'option Impact Direct",
+      "job_title": "Responsable Communication et Plaidoyer (association santé/éducation)",
+      "quelques_mots": "Tu pilotes la stratégie de communication d'une association à taille humaine...",
+      "pourquoi": "Tu as 8 ans d'expérience en marketing produit et tu sais piloter de A à Z...",
+      "tags": ["Sens immédiat", "Storytelling", "Lien humain"],
+      "formation_duree": "1-2 mois",
+      "salaire": "2800-3800€ net",
+      "stat_marche": "Plus de 120 offres en communication associative publiées en Île-de-France ces 3 derniers mois"
+    }
+  ]
+}
+```
+</details>
+
+**Median performance per analysis:** ~90s end-to-end · 4 LLM calls (Anthropic + OpenAI) · up to 5 geolocated web searches · 1-2 critic passes · ~$0.15 per job.
+
+## Agent capabilities
+
+The career agent is built around 7 traits, each with concrete implementation:
+
+| Trait | Implementation |
+|---|---|
+| **Perception** | Conversational coach (`services/conversation_eval_service.py`) + audio transcribed via Whisper (`services/audio_service.py`) |
+| **Short-term memory** | Audit trail of conversation, answers, prompts and retries (`quiz_user`, `answer_user`, `prompt_user`, `analysis_validation_logs`) |
+| **Knowledge base** | Editable config in DB: system prompts, instructions, knowledge texts, validation checklists (`quiz_result.*`) — tunable without deployment |
+| **Tool use** | Anthropic `web_search_20250305` with FR geolocation injected from the user's city — the agent queries the real job market while writing |
+| **Action** | Structured JSON deliverable: 3 career paths with salary ranges, regional market stats, formation duration, personalized rationale |
+| **Self-correction** | Cross-model **Writer ⇄ Critic** loop. Writer retries with critic feedback up to 2 times. |
+| **Convergence** | Auto-publish if validation succeeds; draft + Slack admin alert if retries exhausted |
+
+## Agent context layer
+
+All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles state, knowledge, tools, LLM clients and telemetry. This is the spine that prevents the "bazaar of disconnected agents" problem as the system grows.
+
+```mermaid
+flowchart LR
+    subgraph CTX["AgentContext (services/agent_context.py)"]
+        US[User state<br/>profile, location,<br/>conversation]
+        KB[Knowledge base<br/>prompts, criteria,<br/>step config]
+        TR[Tool registry<br/>web_search builder,<br/>geoloc injection]
+        LC[LLM clients<br/>Anthropic + OpenAI<br/>lazy-init, shared]
+        TM[Telemetry<br/>tokens, USD cost,<br/>per-call audit]
+    end
+
+    A1[Career Agent<br/>Writer ⇄ Critic loop] --> CTX
+    A2[Future: Cohort<br/>Meta-Agent] -.-> CTX
+    A3[Future: Support<br/>Q&amp;A Agent] -.-> CTX
+
+    classDef ctxbox fill:#FBF1F6,stroke:#A11857,color:#1A1A2E
+    classDef agent fill:#A11857,stroke:#8b1249,color:#fff
+    classDef futureagent fill:#fff,stroke:#A11857,color:#A11857,stroke-dasharray: 5 5
+    class US,KB,TR,LC,TM ctxbox
+    class A1 agent
+    class A2,A3 futureagent
+```
+
+**Why a context layer matters.** Most agentic codebases that started with one agent end up with N agents that:
+- Each fetch user data from DB in their own way (drift in formats)
+- Duplicate token-tracking and cost-logging logic
+- Instantiate their own LLM clients (no shared rate limit awareness)
+- Hardcode prompts instead of reading them from a knowledge base
+
+The `AgentContext` solves this by being the **single source of truth per job**. New agents implement one method (their core logic) and consume the context for everything else. See the docstring at the top of `services/agent_context.py` for the full rationale.
+
+## Agent architecture
+
+The career agent is implemented in `services/quiz_analysis_service.py` as a `QuizAnalysisService` class — one instance per job, consuming an `AgentContext`.
+
+```mermaid
+flowchart TD
+    User([User]) -->|voice + text| Perception[Perception<br/>chat coach + Whisper]
+    Perception --> Memory[(Short-term memory<br/>conversation, answers,<br/>audit trail)]
+    KB[(Knowledge base<br/>prompts, criteria,<br/>templates)] -.config.-> Writer
+    Memory --> Writer
+
+    Writer[Writer<br/>Claude Sonnet + web_search]
+    Writer -->|tool call| WebSearch{{web_search<br/>FR geolocated<br/>max 5 uses}}
+    WebSearch --> Writer
+    Writer --> Output[JSON output<br/>3 career paths]
+
+    Output --> Critic[Critic<br/>GPT-4o-mini cross-model<br/>anti-hallucination prompt]
+    KB -.checklist.-> Critic
+
+    Critic -->|valid| Publish[(Publish + notify user)]
+    Critic -->|critical issues| Retry{Retries<br/>&lt; 2?}
+    Retry -->|yes| Writer
+    Retry -->|no| Draft[(Draft + Slack alert<br/>admin review)]
+
+    Publish -.telemetry.-> Monitor[Monitor<br/>tokens, cost USD,<br/>thresholds]
+    Draft -.telemetry.-> Monitor
+    Monitor -.alert.-> Slack([Slack])
+
+    classDef llm fill:#A11857,stroke:#8b1249,color:#fff
+    classDef store fill:#FBF1F6,stroke:#A11857,color:#1A1A2E
+    classDef tool fill:#fff7e6,stroke:#d4847a,color:#1A1A2E
+    class Writer,Critic llm
+    class Memory,KB,Publish,Draft store
+    class WebSearch,Monitor tool
+```
+
+### Code map (Writer ⇄ Critic)
+
+| Method | Role |
+|---|---|
+| `_writer_call(...)` | Calls Anthropic Claude with `web_search`; tracks token usage |
+| `_writer_retry_with_feedback(...)` | Regenerates targeted parts using the critic's issues |
+| `_critic_call(...)` | Calls OpenAI for cross-model validation (Anthropic fallback) |
+| `_critic_evaluate(...)` | Orchestrates one validation cycle (build prompt → call critic → parse issues) |
+| `_track_usage(...)` | Per-call telemetry: input/output tokens, web_search uses, USD cost |
+| `get_usage_summary()` | Job-level total for monitoring and Slack alerts |
+
+### Telemetry & alerting
+
+Every LLM call captures `input_tokens`, `output_tokens`, web search invocations, and computes USD cost via the `LLM_PRICING` table at the top of `quiz_analysis_service.py`. At job end, `services/async_analysis_service.py` logs a `[USAGE-SUMMARY]` line and emits a Slack alert if any threshold is breached:
+
+| Threshold | Default | Override |
+|---|---|---|
+| Cost per job | $1.00 | `USAGE_ALERT_COST_USD` |
+| Total duration | 180s | `USAGE_ALERT_DURATION_S` |
+| Retries reached max | 2 | `USAGE_ALERT_RETRIES` |
+
+### Switching the critic provider
+
+```bash
+VALIDATOR_PROVIDER=openai             # or "anthropic" to fall back to self-validation
+OPENAI_VALIDATOR_MODEL=gpt-4o-mini    # or "gpt-4o" for stricter validation
+```
+
+The critic provider used is captured per-call in `prompt_user.api_params.provider`, enabling A/B analysis of validator performance over time.
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
+| **Agent — Writer** | Anthropic Claude Sonnet 4.5 + `web_search_20250305` tool |
+| **Agent — Critic** | OpenAI GPT-4o-mini (configurable to `gpt-4o`, or fall back to Anthropic) |
+| **Agent — Audio** | OpenAI Whisper for speech-to-text |
 | Backend | Flask 2.2.5, Python 3.10, Gunicorn |
 | Database | MySQL (Flask-MySQLdb, SQLAlchemy) |
 | Frontend | Jinja2, HTML/CSS/JS, Flask-Assets |
-| AI | Anthropic Claude (analysis), OpenAI Whisper (audio transcription) |
-| Cloud | Google Cloud Platform (Cloud Run, Cloud SQL, Cloud Storage, Cloud Tasks, Secret Manager) |
+| Async runtime | Google Cloud Tasks (prod) / threads (dev) |
+| Cloud | GCP — Cloud Run, Cloud SQL, Cloud Storage, Secret Manager |
 | Payments | Stripe |
-| Email | Brevo (SendGrid) |
-| Monitoring | OpenTelemetry, Google Cloud Logging & Trace |
+| Email | Brevo |
+| Monitoring | OpenTelemetry, Google Cloud Logging, Slack alerts |
 
-## Project Structure
-
-```
-tilto/
-├── app.py                  # Flask application factory & route registration
-├── wsgi.py                 # Gunicorn entry point
-├── config.py               # Configuration (GCP secrets, env vars)
-├── extensions.py           # Flask extension initialization
-├── forms.py                # WTForms definitions
-├── utils.py                # Utility functions
-├── routes/                 # Blueprint modules
-│   ├── auth.py             # Authentication (signup, login, 2FA, OAuth)
-│   ├── quiz.py             # Quiz delivery and progress tracking
-│   ├── quiz_analysis.py    # Analysis result retrieval
-│   ├── dashboard.py        # Admin/user dashboard
-│   ├── audio_capsule.py    # Audio learning modules
-│   ├── tokens.py           # Token management and access control
-│   ├── async_analysis.py   # Background analysis generation
-│   └── ...                 # Other route blueprints
-├── models/                 # Data models
-│   ├── user_model.py       # User ORM model
-│   ├── db_init.py          # Database schema (40+ tables)
-│   └── db_loader.py        # CSV import and data loading
-├── services/               # Business logic
-│   ├── quiz_analysis_service.py   # Core AI analysis logic
-│   ├── email_service.py           # Email sending (Brevo)
-│   ├── anonymization_client.py    # PII anonymization
-│   ├── slack_service.py           # Slack notifications
-│   ├── youcanbook_service.py      # Booking integration
-│   └── ...                        # Other services
-├── templates/              # Jinja2 HTML templates
-│   ├── base.html           # Base layout
-│   ├── pages/              # Main pages
-│   ├── auth/               # Authentication pages
-│   ├── quiz/               # Quiz pages
-│   ├── dashboard/          # Dashboard pages
-│   ├── emails/             # Email templates
-│   └── components/         # Reusable components
-├── static/                 # Client assets (CSS, JS, images)
-├── translations/           # i18n files (FR/EN)
-├── decorators/             # Custom Flask decorators
-├── data/                   # Data files
-├── scripts/                # Utility scripts
-├── Dockerfile              # Docker image definition
-├── cloudbuild.yaml         # Google Cloud Build pipeline
-├── requirements.txt        # Python dependencies
-└── stripe_products.json    # Stripe product catalog
-```
-
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
 - Python 3.10+
 - MySQL database
-- API keys for: Anthropic (Claude), Stripe, and optionally OpenAI, Brevo, Slack
+- API keys: **Anthropic** (writer + tool use), **OpenAI** (critic + audio). Optional: Stripe, Brevo, Slack.
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone <repo-url>
 cd tilto
 
-# Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
 ```
 
 ### Configuration
 
-Create a `.env` file at the project root with the following variables:
-
-**Required:**
+Create a `.env` file with the required keys:
 
 ```env
 # Database
@@ -115,105 +206,98 @@ DB_PASSWORD=your_db_password
 # Flask
 SECRET_KEY=your_secret_key
 
-# AI Analysis
+# Agent — Writer
 ANTHROPIC_API_KEY=your_anthropic_key
-```
+ANTHROPIC_MODEL=claude-sonnet-4-5-20250929
+ENABLE_WEB_SEARCH=true
 
-**Optional (for full features):**
-
-```env
-# Payments
-STRIPE_PUBLIC_KEY=your_stripe_public_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-
-# Audio transcription
+# Agent — Critic & audio
 OPENAI_API_KEY=your_openai_key
-
-# Email (Brevo)
-MAIL_SERVER=smtp-relay.brevo.com
-MAIL_USERNAME=your_brevo_username
-MAIL_PASSWORD=your_brevo_password
-
-# Google Cloud
-GOOGLE_CLOUD_PROJECT=your_gcp_project
-GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
-
-# Slack notifications
-SLACK_WEBHOOK_URL=your_slack_webhook_url
-
-# Booking
-YOUCANBOOK_BASE_URL=your_ycb_url
-YOUCANBOOK_SUBDOMAIN=your_ycb_subdomain
-
-# Anonymization
-ANONYMIZATION_SERVICE_URL=your_anonymization_url
-
-# Analytics (optional)
-GOOGLE_ANALYTICS_ID=your_ga_id
+VALIDATOR_PROVIDER=openai
+OPENAI_VALIDATOR_MODEL=gpt-4o-mini
 ```
 
-### Running Locally
+Optional keys for Stripe, Brevo, Google Cloud, Slack, YouCanBookMe, anonymization and analytics — all listed in `config.py`.
+
+### Run locally
 
 ```bash
-# Development server
-flask run
-
-# Production-like (with Gunicorn)
-gunicorn wsgi:application --workers 2 --threads 4 --bind 0.0.0.0:8080
+flask run                                                      # dev
+gunicorn wsgi:application --workers 2 --threads 4 --bind 0.0.0.0:8080   # prod-like
 ```
 
-The application will be available at `http://localhost:5000` (Flask) or `http://localhost:8080` (Gunicorn).
+### Test the agent end-to-end
 
-### Docker
+In dev only, you can skip the voice flow and inject a known-good 4-turn conversation. Open the homepage chat, then in browser DevTools console:
+
+```js
+QuizChat.devSkip()
+```
+
+Gated on `localhost` / `127.0.0.1`. Triggers the same lead capture → analysis pipeline as a real user. Watch server logs for `[USAGE]`, `[USAGE-SUMMARY]` and validation traces.
+
+### Docker & deploy
 
 ```bash
-# Build
 docker build -t tilto:latest .
+docker run -p 8080:8080 -e ANTHROPIC_API_KEY=... -e OPENAI_API_KEY=... tilto:latest
 
-# Run
-docker run -p 8080:8080 \
-  -e DB_HOST=your_db_host \
-  -e DB_USER=your_db_user \
-  -e DB_PASSWORD=your_db_password \
-  -e ANTHROPIC_API_KEY=your_key \
-  tilto:latest
-```
-
-## Deployment
-
-The project is configured for deployment on **Google Cloud Run** via Cloud Build:
-
-```bash
+# GCP deploy
 gcloud builds submit --config cloudbuild.yaml
 ```
 
-The `cloudbuild.yaml` pipeline builds the Docker image, pushes it to Container Registry, and deploys to Cloud Run. In production, secrets are managed through Google Cloud Secret Manager.
+In production, secrets live in Google Secret Manager (`APP_CONFIG`), and the async analysis runs on Cloud Tasks instead of in-process threads — so the agent can take 60-90s without holding HTTP connections.
 
-## Key Routes
+## Project structure
+
+```
+tilto/
+├── routes/
+│   ├── lead.py                       # Homepage chat → user creation → analysis kickoff
+│   ├── chat.py                       # Coach conversation endpoint
+│   ├── quiz.py                       # Quiz delivery & city autocomplete API
+│   ├── quiz_analysis.py              # Analysis result retrieval
+│   ├── async_analysis.py             # Async job management
+│   ├── dashboard.py                  # User/admin dashboard
+│   └── ...
+├── services/
+│   ├── agent_context.py              # ★ AGENT CONTEXT (shared state, tools, telemetry)
+│   ├── quiz_analysis_service.py      # ★ CAREER AGENT (Writer ⇄ Critic loop on top of AgentContext)
+│   ├── async_analysis_service.py     # Job orchestration + monitoring/alerts
+│   ├── conversation_eval_service.py  # Coach IA (interview)
+│   ├── audio_service.py              # Whisper transcription
+│   ├── anonymization_client.py      # PII anonymization before LLM calls
+│   └── ...
+├── models/
+│   └── db_init.py                    # Schema (40+ tables; agent audit trail)
+├── templates/
+│   ├── pages/homepage.html           # Conversational chat widget
+│   └── pages/dashboard/              # Dashboard + processing loader
+├── static/js/
+│   ├── quiz-chat.js                  # Homepage immersive coach
+│   └── quiz-script-new.js            # Classic quiz flow
+└── ...
+```
+
+## Key routes
 
 | Route | Description |
 |---|---|
-| `/` | Homepage |
-| `/bilan-carriere-express` | Career quiz landing page |
-| `/quiz` | Quiz API endpoint |
-| `/orientation` | Analysis results page |
-| `/coaching-carriere-express` | Coaching services page |
-| `/capsule_audio` | Audio learning modules |
-| `/dashboard` | User/admin dashboard |
-| `/signup`, `/login` | Authentication |
-| `/privacy_policy`, `/terms_of_service` | Legal pages |
+| `/` | Homepage with conversational chat widget |
+| `/coach-next` | Coach interview step (LLM-driven dynamic questions) |
+| `/lead/capture` | Submit lead + kick off async analysis job |
+| `/api/cities` | City autocomplete (Nominatim) for the lead form |
+| `/api/transcribe-whisper` | Audio transcription endpoint |
+| `/dashboard` | User dashboard with live processing state polling |
+| `/dashboard/refresh-status` | Polled by dashboard while analysis runs |
+| `/analysis/view/<quiz_id>` | Final analysis renderer |
 
 ## Security
 
-- CSRF protection (Flask-WTF)
-- Content Security Policy headers (Flask-Talisman)
-- Rate limiting (Flask-Limiter)
-- CORS management (Flask-CORS)
-- Two-factor authentication (PyOTP)
-- PII anonymization via external service
-- Google Cloud DLP integration
+- CSRF protection (Flask-WTF) · Content Security Policy (Flask-Talisman) · Rate limiting (Flask-Limiter)
+- 2FA via PyOTP · Honeypot bot detection on lead capture
+- PII anonymization before LLM calls · Cross-model validation reduces single-vendor hallucination risk
 
 ## License
 
-This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You are free to use, modify, and distribute this code, but any modified version that is deployed as a service must also be open-sourced under the same license.
+Licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). You're free to use, modify and distribute, but any modified version deployed as a service must also be open-sourced under the same license.

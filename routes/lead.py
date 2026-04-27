@@ -115,7 +115,8 @@ def capture():
         # ===== RÉCUPÉRATION DES DONNÉES (SIMPLIFIÉ) =====
         email = request.form.get('email', '').strip().lower()
         firstname = request.form.get('firstname', '').strip()
-        
+        city = request.form.get('city', '').strip()
+
         source = request.form.get('lead_source', request.form.get('source', 'quiz_homepage'))
         quiz_answers = request.form.get('quiz_answers', '').strip()
 
@@ -288,9 +289,12 @@ def capture():
                     quiz_data = json.loads(quiz_answers)
                     
                     if quiz_data and isinstance(quiz_data, dict) and len(quiz_data) > 0:
+                        # Detect conversation mode (dynamic coach) vs classic quiz
+                        is_conversation_mode = '_conversation' in quiz_data or any(k.startswith('turn_') for k in quiz_data)
+
                         # Traiter les fichiers audio s'ils existent
                         audio_urls = {}
-                        
+
                         # Vérifier s'il y a des fichiers audio dans la requête
                         for field_name in request.files:
                             if field_name.startswith('audio_q'):
@@ -346,7 +350,10 @@ def capture():
                         
                         try:
                             quiz_id = request.form.get('quiz_id', 'pack_clarte')
-                            save_homepage_quiz_answers_with_audio(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id)
+                            if is_conversation_mode:
+                                save_conversation_answers(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id, city=city)
+                            else:
+                                save_homepage_quiz_answers_with_audio(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id)
                             quiz_saved = True
                             
                             if audio_saved:
@@ -1292,3 +1299,99 @@ def pro_contact():
         request_id = getattr(g, 'request_id', str(uuid.uuid4()))
         logger.error(f"[{request_id}] Pro contact error: {e}", exc_info=True)
         return jsonify({'success': False, 'message': 'Une erreur est survenue.'}), 500
+
+
+def save_conversation_answers(user_id, quiz_data, audio_urls, cursor, request_id, quiz_id='pack_clarte', city=None):
+    """
+    Sauvegarde les réponses du quiz conversationnel (mode coach IA dynamique).
+    Stocke la conversation complète dans answer_user en mappant sur les question_ids existants.
+
+    Si `city` est fourni, l'enregistre comme réponse à question_id=26 pour que
+    QuizAnalysisService._extract_location_from_quiz puisse géolocaliser le web_search.
+    """
+    try:
+        logger.info(f"[{request_id}] 🎯 Save conversation for user {user_id}, quiz {quiz_id}")
+
+        # Get the full conversation transcript
+        conversation_text = quiz_data.get('_conversation', {}).get('text', '')
+
+        # Get valid question IDs from the quiz (to map turns onto)
+        cursor.execute("""
+            SELECT question_id, question_ranking
+            FROM quiz_questions
+            WHERE quiz_id = %s AND is_active = TRUE
+            ORDER BY question_ranking
+        """, (quiz_id,))
+        valid_questions = [row[0] for row in cursor.fetchall()]
+
+        if not valid_questions:
+            logger.error(f"[{request_id}] No questions found for quiz {quiz_id}")
+            return
+
+        # Create quiz session
+        cursor.execute("""
+            INSERT INTO quiz_user (
+                quiz_id, user_id, start_time, end_time, quiz_status,
+                questions_answered_count, question_history,
+                created_at, updated_at
+            ) VALUES (%s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'completed', %s, %s,
+                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """, (quiz_id, user_id, len(valid_questions), json.dumps(list(range(len(valid_questions))))))
+
+        quiz_session_id = cursor.lastrowid
+        logger.info(f"[{request_id}] Session created: {quiz_session_id}")
+
+        # Extract turn answers (turn_0, turn_1, etc.)
+        turns = sorted(
+            [(k, v) for k, v in quiz_data.items() if k.startswith('turn_')],
+            key=lambda x: int(x[0].split('_')[1])
+        )
+
+        # Map each turn onto a question_id
+        for i, (turn_key, turn_data) in enumerate(turns):
+            # Map to existing question_id (cycle if more turns than questions)
+            qid = valid_questions[min(i, len(valid_questions) - 1)]
+            answer_text = turn_data.get('text', '')
+            answer_value = json.dumps(turn_data.get('value', [answer_text]))
+
+            # Check for audio
+            turn_idx = turn_key.split('_')[1]
+            audio_key = f'turn_{turn_idx}'
+            if audio_key in audio_urls:
+                answer_text += f"\n[AUDIO: {audio_urls[audio_key]}]"
+
+            cursor.execute("""
+                INSERT INTO answer_user
+                (quiz_session_id, question_id, answer_value, answer_text, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE
+                    answer_value = CONCAT(COALESCE(answer_value, ''), '\n', VALUES(answer_value)),
+                    answer_text = CONCAT(COALESCE(answer_text, ''), '\n---\n', VALUES(answer_text)),
+                    updated_at = CURRENT_TIMESTAMP
+            """, (quiz_session_id, qid, answer_value, answer_text))
+
+        # Also store full conversation transcript on the first question
+        if conversation_text and valid_questions:
+            cursor.execute("""
+                UPDATE answer_user
+                SET answer_text = %s
+                WHERE quiz_session_id = %s AND question_id = %s
+            """, (conversation_text, quiz_session_id, valid_questions[0]))
+
+        # Save city as question_id=26 so _extract_location_from_quiz can geolocate web_search
+        if city:
+            cursor.execute("""
+                INSERT INTO answer_user
+                (quiz_session_id, question_id, answer_value, answer_text, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE
+                    answer_value = VALUES(answer_value),
+                    answer_text = VALUES(answer_text),
+                    updated_at = CURRENT_TIMESTAMP
+            """, (quiz_session_id, 26, json.dumps([city]), city))
+            logger.info(f"[{request_id}] 📍 City saved on question_id=26: {city}")
+
+        logger.info(f"[{request_id}] ✅ Saved {len(turns)} turns for session {quiz_session_id}")
+
+    except Exception as e:
+        logger.error(f"[{request_id}] ❌ Error saving conversation: {e}", exc_info=True)

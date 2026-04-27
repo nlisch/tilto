@@ -45,12 +45,12 @@ def home():
             LIMIT 1
         ''')
         hero_question = cursor.fetchone()
-        
+
         return render_template(
             'pages/homepage.html',
             hero_question=hero_question
         )
-        
+
     except Exception as e:
         # Fallback avec valeur par défaut
         return render_template(

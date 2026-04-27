@@ -157,6 +157,7 @@ class BaseConfig:
         'ALLOWED_EXTENSIONS': {'mp4', 'webm', 'mov', 'avi', 'mkv'},
         'MAX_SIZE_MB': 100,
     }
+    QUIZ_CHAT_MODE = os.environ.get('QUIZ_CHAT_MODE', 'false').lower() in ('true', '1', 'yes')
     STORAGE_BUCKET = os.environ.get('STORAGE_BUCKET', 'images-tilto')
     DATA_BUCKET = os.environ.get('DATA_BUCKET', 'tilto-data')
     CDN_URL = 'https://images.tilto.co'
@@ -259,6 +260,10 @@ class DevelopmentConfig(BaseConfig):
         self.ENABLE_WEB_SEARCH = os.getenv('ENABLE_WEB_SEARCH')
 
         self.OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+        # Validator cross-modèle : 'anthropic' (défaut) ou 'openai' pour casser le self-review
+        self.VALIDATOR_PROVIDER = os.getenv('VALIDATOR_PROVIDER', 'anthropic').lower()
+        self.OPENAI_VALIDATOR_MODEL = os.getenv('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
 
         #Cloud Bucket audio
         self.QUIZ_AUDIO_BUCKET = os.getenv('tilto_quiz_audios_dev')
@@ -418,6 +423,10 @@ class ProductionConfig(BaseConfig):
 
         self.ENABLE_WEB_SEARCH = config['ENABLE_WEB_SEARCH']
         self.OPENAI_API_KEY = config['OPENAI_API_KEY']
+
+        # Validator cross-modèle : 'anthropic' (défaut) ou 'openai'
+        self.VALIDATOR_PROVIDER = config.get('VALIDATOR_PROVIDER', 'anthropic').lower()
+        self.OPENAI_VALIDATOR_MODEL = config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
 
         # Cloud Storage Buckets
         self.STORAGE_BUCKET = config.get('STORAGE_BUCKET', self.STORAGE_BUCKET)

@@ -10,6 +10,7 @@ from .youcanbook_service import YouCanBookMeService
 from .analysis_access_service import AnalysisAccessModel
 from .async_analysis_service import AsyncAnalysisService
 from .piste_access_service import PisteAccessService
+from .conversation_eval_service import ConversationCoachService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -99,5 +100,6 @@ __all__ = [
     'init_slack_service',
     'SLACK_AVAILABLE',
     'AsyncAnalysisService',
-    'PisteAccessService'
+    'PisteAccessService',
+    'ConversationCoachService'
 ]
