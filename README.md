@@ -55,9 +55,43 @@ The career agent is built around 7 traits, each with concrete implementation:
 | **Self-correction** | Cross-model **Writer ⇄ Critic** loop. Writer retries with critic feedback up to 2 times. |
 | **Convergence** | Auto-publish if validation succeeds; draft + Slack admin alert if retries exhausted |
 
+## Agent context layer
+
+All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles state, knowledge, tools, LLM clients and telemetry. This is the spine that prevents the "bazaar of disconnected agents" problem as the system grows.
+
+```mermaid
+flowchart LR
+    subgraph CTX["AgentContext (services/agent_context.py)"]
+        US[User state<br/>profile, location,<br/>conversation]
+        KB[Knowledge base<br/>prompts, criteria,<br/>step config]
+        TR[Tool registry<br/>web_search builder,<br/>geoloc injection]
+        LC[LLM clients<br/>Anthropic + OpenAI<br/>lazy-init, shared]
+        TM[Telemetry<br/>tokens, USD cost,<br/>per-call audit]
+    end
+
+    A1[Career Agent<br/>Writer ⇄ Critic loop] --> CTX
+    A2[Future: Cohort<br/>Meta-Agent] -.-> CTX
+    A3[Future: Support<br/>Q&amp;A Agent] -.-> CTX
+
+    classDef ctxbox fill:#FBF1F6,stroke:#A11857,color:#1A1A2E
+    classDef agent fill:#A11857,stroke:#8b1249,color:#fff
+    classDef futureagent fill:#fff,stroke:#A11857,color:#A11857,stroke-dasharray: 5 5
+    class US,KB,TR,LC,TM ctxbox
+    class A1 agent
+    class A2,A3 futureagent
+```
+
+**Why a context layer matters.** Most agentic codebases that started with one agent end up with N agents that:
+- Each fetch user data from DB in their own way (drift in formats)
+- Duplicate token-tracking and cost-logging logic
+- Instantiate their own LLM clients (no shared rate limit awareness)
+- Hardcode prompts instead of reading them from a knowledge base
+
+The `AgentContext` solves this by being the **single source of truth per job**. New agents implement one method (their core logic) and consume the context for everything else. See the docstring at the top of `services/agent_context.py` for the full rationale.
+
 ## Agent architecture
 
-The career agent is implemented in `services/quiz_analysis_service.py` as a `QuizAnalysisService` class — one instance per job.
+The career agent is implemented in `services/quiz_analysis_service.py` as a `QuizAnalysisService` class — one instance per job, consuming an `AgentContext`.
 
 ```mermaid
 flowchart TD
@@ -227,7 +261,8 @@ tilto/
 │   ├── dashboard.py                  # User/admin dashboard
 │   └── ...
 ├── services/
-│   ├── quiz_analysis_service.py      # ★ CAREER AGENT (Writer ⇄ Critic loop)
+│   ├── agent_context.py              # ★ AGENT CONTEXT (shared state, tools, telemetry)
+│   ├── quiz_analysis_service.py      # ★ CAREER AGENT (Writer ⇄ Critic loop on top of AgentContext)
 │   ├── async_analysis_service.py     # Job orchestration + monitoring/alerts
 │   ├── conversation_eval_service.py  # Coach IA (interview)
 │   ├── audio_service.py              # Whisper transcription

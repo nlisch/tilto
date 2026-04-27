@@ -88,113 +88,66 @@ class QuizAnalysisService:
     """
     Career Agent — orchestrateur du cycle Generator → Critic → Retry → Publish.
 
-    Une instance par job (1 user × 1 analyse). L'instance porte la mémoire
-    courte du job (token_usage), tandis que la mémoire longue est en DB.
+    Une instance par job. Consomme un AgentContext partagé (services/agent_context.py)
+    qui bundle : user state, knowledge base, tool registry, LLM clients, telemetry.
+    Tout autre agent Tilto (meta-agent, support, etc.) peut consommer le même contexte.
 
     Cycle d'exécution typique (voir _generate_analysis):
 
-        1. _writer_call(...)              # Claude Sonnet + web_search géoloc
+        1. _writer_call(...)              # Claude Sonnet + web_search géoloc (via ctx)
         2. _validate_json_structure(...)  # check schéma déterministe
         3. _critic_evaluate(...)          # check sémantique cross-modèle
-              ├─ _critic_call(...)        # OpenAI GPT-4o-mini avec checklist
+              ├─ _critic_call(...)        # OpenAI GPT-4o-mini (via ctx)
               └─ retourne issues + suggestions
         4. Si issues critical → _writer_retry_with_feedback(...)
               ├─ _writer_call(...) à nouveau avec correctifs
               └─ retour à l'étape 3 (max 2 retries)
         5. _store_analysis_result(...)    # publish ou draft selon convergence
 
-    Le coût et la latence sont trackés par _track_usage() à chaque appel LLM.
-    À la fin du job, async_analysis_service.process_job lit get_usage_summary()
-    et alerte Slack si dépassement de seuils (coût/durée/retries).
+    Telemetry & coût sont accumulés par self.ctx.track_usage() à chaque appel LLM.
+    À la fin du job, async_analysis_service.process_job lit ctx.get_usage_summary()
+    et alerte Slack si dépassement de seuils.
     """
 
-    # Pricing per 1M tokens (USD). À ajuster si les tarifs changent.
-    # Source: tarifs publics Anthropic / OpenAI au 2026-04.
-    LLM_PRICING = {
-        # Anthropic
-        'claude-sonnet-4-5-20250929':   {'input': 3.00,  'output': 15.00},
-        'claude-sonnet-4-20250514':     {'input': 3.00,  'output': 15.00},
-        'claude-haiku-4-5':             {'input': 1.00,  'output': 5.00},
-        # OpenAI
-        'gpt-4o-mini':                  {'input': 0.15,  'output': 0.60},
-        'gpt-4o':                       {'input': 2.50,  'output': 10.00},
-    }
-    # Tarif outil web_search Anthropic : ~10 USD / 1000 recherches.
-    WEB_SEARCH_COST_PER_USE = 0.01
+    def __init__(self, cursor, user_id: int, quiz_id: str,
+                 ctx: 'Optional[AgentContext]' = None):
+        # AgentContext : couche partagée. Si non fournie, on en crée une (backward compat).
+        # Voir services/agent_context.py pour la rationale du pattern.
+        from services.agent_context import AgentContext
+        self.ctx = ctx if ctx is not None else AgentContext(
+            cursor=cursor, user_id=user_id, quiz_id=quiz_id
+        )
 
-    def __init__(self, cursor, user_id: int, quiz_id: str):
-        self.cursor = cursor
-        self.user_id = user_id
-        self.quiz_id = quiz_id
-        self.client = Anthropic(api_key=current_app.config['ANTHROPIC_API_KEY'])
+        # Raccourcis pour les accès fréquents (lisibilité du code legacy)
+        self.cursor = self.ctx.cursor
+        self.user_id = self.ctx.user_id
+        self.quiz_id = self.ctx.quiz_id
+
+        # Anthropic client : passe par le ctx (lazy-init partagé)
+        self.client = self.ctx.anthropic_client
+
         self.anonymizer = current_app.anonymization_service
         self._slack_service = None
         self._slack_available = None
-        self._openai_client = None
 
-        # Accumulateur d'usage pour observabilité coût (1 instance = 1 job)
-        self.token_usage = {
-            'calls': 0,
-            'anthropic_input_tokens': 0,
-            'anthropic_output_tokens': 0,
-            'openai_input_tokens': 0,
-            'openai_output_tokens': 0,
-            'web_search_uses': 0,
-            'cost_usd': 0.0,
-            'per_call': []  # détail par appel pour debug
-        }
+    # ─── Backward-compat properties qui délèguent au ctx ───
+    # Les agents lisent self.token_usage, self.openai_client, etc.
+    # mais la SOURCE DE VÉRITÉ est dans ctx — ce qui permet de partager
+    # ces ressources entre plusieurs agents sur un même job.
 
-    def _track_usage(self, provider: str, model: str, input_tokens: int, output_tokens: int,
-                     web_search_uses: int = 0, label: str = ''):
-        """
-        Accumule l'usage d'un appel LLM dans token_usage et calcule le coût estimé.
-        """
-        pricing = self.LLM_PRICING.get(model)
-        if not pricing:
-            logger.warning(f"[USAGE] Pas de pricing connu pour {model} — coût estimé à 0")
-            cost = 0.0
-        else:
-            cost = (input_tokens * pricing['input'] + output_tokens * pricing['output']) / 1_000_000
-        cost += web_search_uses * self.WEB_SEARCH_COST_PER_USE
-
-        self.token_usage['calls'] += 1
-        self.token_usage['cost_usd'] = round(self.token_usage['cost_usd'] + cost, 4)
-        if provider == 'anthropic':
-            self.token_usage['anthropic_input_tokens'] += input_tokens
-            self.token_usage['anthropic_output_tokens'] += output_tokens
-        elif provider == 'openai':
-            self.token_usage['openai_input_tokens'] += input_tokens
-            self.token_usage['openai_output_tokens'] += output_tokens
-        self.token_usage['web_search_uses'] += web_search_uses
-
-        self.token_usage['per_call'].append({
-            'label': label,
-            'provider': provider,
-            'model': model,
-            'input_tokens': input_tokens,
-            'output_tokens': output_tokens,
-            'web_search_uses': web_search_uses,
-            'cost_usd': round(cost, 4)
-        })
-
-        logger.info(f"[USAGE] {label or provider} {model} | "
-                    f"in={input_tokens} out={output_tokens} "
-                    f"web={web_search_uses} | ${cost:.4f}")
-
-    def get_usage_summary(self) -> Dict:
-        """Résumé du coût total pour le job en cours."""
-        return dict(self.token_usage)
+    @property
+    def token_usage(self) -> Dict:
+        return self.ctx.token_usage
 
     @property
     def openai_client(self):
-        """Lazy-init du client OpenAI (utilisé pour le validator cross-modèle)."""
-        if self._openai_client is None:
-            api_key = current_app.config.get('OPENAI_API_KEY')
-            if not api_key:
-                return None
-            from openai import OpenAI
-            self._openai_client = OpenAI(api_key=api_key)
-        return self._openai_client
+        return self.ctx.openai_client
+
+    def _track_usage(self, *args, **kwargs):
+        return self.ctx.track_usage(*args, **kwargs)
+
+    def get_usage_summary(self) -> Dict:
+        return self.ctx.get_usage_summary()
 
     @property
     def slack_service(self):
@@ -4809,51 +4762,7 @@ Réponds UNIQUEMENT avec le JSON."""
 
     def _extract_location_from_quiz(self) -> tuple:
         """
-        Extrait ville ET région en 1 seule requête depuis question_id=26.
-        
-        Returns:
-            tuple: (city, region) ou (None, None) si non trouvé
-        
-        Exemple:
-            ("Paris", "Île-de-France")
+        Délègue à self.ctx.location (cached_property dans AgentContext).
+        Conservé comme alias pour les call sites legacy.
         """
-        try:
-            # Récupérer la session quiz + answer en 1 requête
-            self.cursor.execute("""
-                SELECT au.answer_value
-                FROM quiz_user qu
-                JOIN answer_user au ON qu.quiz_session_id = au.quiz_session_id
-                WHERE qu.user_id = %s 
-                AND qu.quiz_id = %s
-                AND au.question_id = 26
-                ORDER BY qu.updated_at DESC
-                LIMIT 1
-            """, (self.user_id, self.quiz_id))
-            
-            result = self.cursor.fetchone()
-            
-            if result and result['answer_value']:
-                answer_list = json.loads(result['answer_value'])
-                
-                if answer_list and len(answer_list) > 0:
-                    location_str = answer_list[0]  # "Paris,Île-de-France"
-                    
-                    if ',' in location_str:
-                        city, region = location_str.split(',', 1)
-                        city = city.strip()
-                        region = region.strip()
-                        
-                        logger.info(f"✅ Extracted location from question 26: {city}, {region}")
-                        return (city, region)
-                    else:
-                        # Cas où il n'y a que la ville sans région
-                        city = location_str.strip()
-                        logger.info(f"✅ Extracted city from question 26: {city} (no region)")
-                        return (city, None)
-            
-            logger.warning(f"⚠️ No location found in question 26 for user {self.user_id}")
-            return (None, None)
-            
-        except Exception as e:
-            logger.error(f"❌ Error extracting location from question 26: {str(e)}", exc_info=True)
-            return (None, None)
+        return self.ctx.location

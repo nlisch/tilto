@@ -18,170 +18,52 @@
 
 {% block content %}
 
-<!-- BLOC 1 : HERO -->
+<!-- BLOC 1 : HERO — design émotionnel + carousel, CTA branche sur le chat ou le modal selon config -->
 <section class="hp-hero" id="section-hero">
   <div class="hp-hero__container">
-    {% if config.QUIZ_CHAT_MODE %}
-    <!-- ═══════════════════════════════════════════════════════════════
-         MODE IMMERSIF — full-width centered hero
-         ═══════════════════════════════════════════════════════════════ -->
-    <div class="imm-hp">
-      <!-- Coach card -->
-      <div class="imm-hp__coach-card">
-        <div class="imm-hp__avatar-wrap">
-          <div class="imm-hp__avatar-ring"></div>
-          <img class="imm-hp__avatar" src="https://images.tilto.co/production/2025/10/d8564b8b_tilto_home_video_poster.webp" alt="Claire">
-        </div>
-        <p class="imm-hp__coach-label">Claire · Coach IA Tilto</p>
-      </div>
-
-      <h1 class="imm-hp__title">Parle-moi de ta situation pro.<br><span class="imm-hp__title-hl">Je te trouve 3 pistes.</span></h1>
-
-      <div class="imm-hp__proof">
-        <div class="imm-hp__proof-item">
-          <span class="imm-hp__proof-icon">🎙️</span>
-          <span>5 min de conversation</span>
-        </div>
-        <div class="imm-hp__proof-item">
-          <span class="imm-hp__proof-icon">🎯</span>
-          <span>3 pistes métiers concrètes</span>
-        </div>
-        <div class="imm-hp__proof-item">
-          <span class="imm-hp__proof-icon">⚡</span>
-          <span>Résultats sous quelques minutes</span>
-        </div>
-      </div>
-
-      <button type="button" class="imm-hp__cta" id="immStartBtn">
-        Démarrer mon entretien
-      </button>
-
-      <div class="imm-hp__trust">
-        <span>Gratuit</span>
-        <span class="imm-hp__trust-dot"></span>
-        <span>Confidentiel</span>
-        <span class="imm-hp__trust-dot"></span>
-        <span>Sans engagement</span>
-      </div>
-
-      <!-- Social proof -->
-      <div class="imm-hp__social">
-        <div class="imm-hp__avatars">
-          <img src="https://images.tilto.co/production/2025/10/d8564b8b_tilto_home_video_poster.webp" alt="">
-          <img src="https://images.tilto.co/production/2026/02/a2434d04_Alexis.webp" alt="">
-          <img src="https://images.tilto.co/production/2026/02/35c53452_Anna.webp" alt="">
-        </div>
-        <p class="imm-hp__social-text">Rejoint par <strong>500+</strong> personnes ce mois</p>
-      </div>
-    </div>
-      {% else %}
-      <!-- MODE CLASSIQUE -->
+    <div class="hp-hero__text">
       <h1 class="hp-hero__title" style="text-align:left;">Tes <span class="hp-hero__hl">pistes pro</span> en quelques minutes</h1>
       <div class="hp-hero__usps">
         <div class="hp-hero__usp">✓ <strong>3 pistes métiers</strong> basées sur les données du marché</div>
         <div class="hp-hero__usp">✓ Résultats <strong>sous quelques minutes</strong></div>
       </div>
-      <h2 class="hero-question-title">{{ hero_question.question if hero_question else "Quand tu penses à ton travail actuel, qu'est-ce qui te vient à l'esprit ?" }}</h2>
-      <div class="hero-input-card" id="heroInputCard">
-        <div class="hero-choice-screen" id="heroChoiceScreen">
-          <div class="hero-placeholder-zone" id="heroPlaceholderZone">
-            <p class="placeholder-text" id="rotatingPlaceholder">Ex : Je m'ennuie dans mon poste, j'ai besoin de changement mais je ne sais pas par où commencer...</p>
-          </div>
-          <div class="hero-actions-bar">
-            <button type="button" class="hero-voice-btn hero-voice-btn--primary" id="heroVoiceBtn">
-              <span class="btn-icon">🎙️</span>
-              <span class="btn-label">Répondre en vocal</span>
-              <span class="btn-badge">Recommandé</span>
-            </button>
-          </div>
-        </div>
-        <div class="hero-audio-mode" id="heroAudioMode" style="display: none;">
-          <div class="hero-recording-state" id="heroRecordingState">
-            <div class="recording-status-header"><span class="recording-dot-pulse">●</span><span>Enregistrement en cours</span></div>
-            <div class="recording-visual"><div class="recording-circle-outer"><div class="recording-circle-inner" id="heroRecordingCircle"></div></div></div>
-            <p class="hero-timer-display" id="heroTimerDisplay">0:00</p>
-            <p class="hero-timer-hint">2:00 max</p>
-            <p class="hero-recording-hint" id="heroRecordingHint">C'est parti ! Parle-moi de ce qui te vient à l'esprit...</p>
-            <button type="button" class="hero-stop-btn" id="heroStopBtn"><span>⏹</span> Terminer</button>
-            <button type="button" class="hero-cancel-link" id="heroCancelRecording">Annuler</button>
-            <button type="button" class="hero-switch-mode-link" id="heroSwitchToTextFromRecording">✍️ Finalement, je préfère écrire</button>
-          </div>
-          <div class="hero-done-state" id="heroDoneState" style="display: none;">
-            <div class="done-status-header"><span>Enregistrement terminé</span></div>
-            <div class="done-visual"><div class="done-circle"><span class="done-check-large">✓</span></div></div>
-            <p class="hero-done-text" id="heroDoneText">0:00 enregistré</p>
-            <div class="hero-done-actions">
-              <button type="button" class="hero-action-btn" id="heroListenBtn" style="display: none;">🎧 Écouter</button>
-              <button type="button" class="hero-action-btn" id="heroRerecordBtn"><span>🔄</span> Réenregistrer</button>
-            </div>
-            <p class="hero-warning-text" id="heroWarningText" style="display: none;">⚠️ Un peu court — parle au moins 15 secondes</p>
-            <div class="hero-done-footer">
-              <button type="button" class="hero-back-btn" id="heroBackFromDone">← Retour</button>
-              <button type="button" class="hero-submit-btn" id="heroSubmitAudio">Continuer <span>→</span></button>
-            </div>
-          </div>
-          <audio id="heroAudioElement" style="display: none;"></audio>
-        </div>
-        <div class="hero-text-mode" id="heroTextMode" style="display: none;">
-          <textarea class="hero-textarea" id="heroTextarea" placeholder="Ex : Je m'ennuie dans mon poste, j'ai besoin de changement mais je ne sais pas par où commencer..." maxlength="2000"></textarea>
-          <div class="hero-text-footer">
-            <div class="hero-text-footer-left">
-              <button type="button" class="hero-back-btn" id="heroBackFromText">← Retour</button>
-              <span class="hero-char-count" id="heroCharCount">0 / 2000</span>
-            </div>
-            <button type="button" class="hero-submit-btn" id="heroSubmitText" disabled>Continuer <span>→</span></button>
-          </div>
-          <div class="hero-switch-suggestion">
-            <span>🎙️</span><span>Tu préfères parler ? </span>
-            <button type="button" class="hero-switch-link" id="heroSwitchToAudio">Passer en mode vocal (recommandé)</button>
-          </div>
-        </div>
-      </div>
-      <div class="hero-bottom-row">
-        <div class="hero-trust-badges" id="heroTrustBadges">
-          <span>⏱ 5 min</span>
-          <span>🔒 Confidentiel</span>
-          <span>🎁 Gratuit</span>
-        </div>
-        <button type="button" class="claire-pill" id="claireToggle">
-          <span class="claire-pill__play">▶</span>
-          <span class="claire-pill__label">Un mot de Claire</span>
-        </button>
-      </div>
-      <div class="claire-overlay" id="claireOverlay" style="display:none;">
-        <div class="claire-overlay__card">
-          <button type="button" class="claire-overlay__close" id="claireClose">&times;</button>
-          <video id="claireVideo" src="https://images.tilto.co/videos/production/2026/02/71d3d8ad_video_claire.mp4" playsinline webkit-playsinline controls preload="none"></video>
-        </div>
-      </div>
+
+      {% if config.QUIZ_CHAT_MODE %}
+        {# Le CTA ouvre le chat immersif #}
+        <button type="button" class="hp-hero__cta" id="immStartBtn">🎙️ Trouver mes pistes avec Claire</button>
+        <p class="hp-hero__re">5 min de conversation · gratuit · confidentiel</p>
+      {% else %}
+        {# Sans QUIZ_CHAT_MODE : redirige vers le modal quiz classique #}
+        <a href="/bilan-carriere-express" class="hp-hero__cta" id="startBilanBtn" style="text-decoration:none;display:inline-block;">👉 Trouver mes premières pistes</a>
+        <button type="button" class="hp-hero__cta" id="startQuizBtn" data-quiz-trigger style="display:none;">👉 Trouver mes premières pistes</button>
+        <p class="hp-hero__re">⏱ 5 minutes — gratuit</p>
       {% endif %}
     </div>
-    {% if not config.QUIZ_CHAT_MODE %}
+
     <div class="hp-hero__photos">
-        <div class="hp-hero__carousel">
-          <div class="hp-hero__track">
-            <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2025/10/d8564b8b_tilto_home_video_poster.webp" alt="Léa" loading="lazy">
-              <div class="hp-hero__lbl"><strong>Léa</strong>, 14 ans en marketing produit — retrouve du sens en explorant une direction plus créative.</div>
-              <span class="hp-hero__bulb">💡</span>
-            </div>
-            <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2026/02/a2434d04_Alexis.webp" alt="Alexis" loading="lazy">
-              <div class="hp-hero__lbl"><strong>Alexis</strong>, ingénieur depuis 20 ans — après une période de transition, se projette dans une nouvelle direction.</div>
-            </div>
-            <div class="hp-hero__slide">
-              <img src="https://images.tilto.co/production/2026/02/35c53452_Anna.webp" alt="Anna" loading="lazy">
-              <div class="hp-hero__lbl"><strong>Anna</strong>, 31 ans, chargée de projet — passe du flou à des pistes concrètes pour la suite de son parcours.</div>
-            </div>
+      <div class="hp-hero__carousel">
+        <div class="hp-hero__track">
+          <div class="hp-hero__slide">
+            <img src="https://images.tilto.co/production/2026/02/c021cec5_Lea.webp" alt="Léa" loading="lazy">
+            <div class="hp-hero__lbl"><strong>Léa</strong>, 14 ans en marketing produit — retrouve du sens en explorant une direction plus créative.</div>
+            <span class="hp-hero__bulb">💡</span>
           </div>
-          <div class="hp-hero__dots">
-            <span class="hp-hero__dot active"></span>
-            <span class="hp-hero__dot"></span>
-            <span class="hp-hero__dot"></span>
+          <div class="hp-hero__slide">
+            <img src="https://images.tilto.co/production/2026/02/a2434d04_Alexis.webp" alt="Alexis" loading="lazy">
+            <div class="hp-hero__lbl"><strong>Alexis</strong>, ingénieur depuis 20 ans — après une période de transition, se projette dans une nouvelle direction.</div>
+          </div>
+          <div class="hp-hero__slide">
+            <img src="https://images.tilto.co/production/2026/02/35c53452_Anna.webp" alt="Anna" loading="lazy">
+            <div class="hp-hero__lbl"><strong>Anna</strong>, 31 ans, chargée de projet — passe du flou à des pistes concrètes pour la suite de son parcours.</div>
           </div>
         </div>
+        <div class="hp-hero__dots">
+          <span class="hp-hero__dot active"></span>
+          <span class="hp-hero__dot"></span>
+          <span class="hp-hero__dot"></span>
+        </div>
       </div>
-    {% endif %}
+    </div>
   </div>
 </section>
 
@@ -1701,13 +1583,17 @@
 .imm-stage.fade-in { opacity: 0; transform: translateY(12px); }
 .imm-stage.fade-visible { opacity: 1; transform: translateY(0); }
 
-/* Question — appears as subtitle */
-.imm-question {
+/* Question + intro text — même typo, légèrement plus gros */
+.imm-question,
+.imm-intro-text {
     font-family: 'Libre Baskerville', Georgia, serif;
-    font-size: clamp(1.05rem, 2.8vw, 1.25rem);
-    font-weight: 400; color: #4a5568;
-    line-height: 1.65; margin: 0;
-    max-width: 460px;
+    font-size: clamp(1.2rem, 3.2vw, 1.45rem);
+    font-weight: 400; color: #1A1A2E;
+    line-height: 1.55; margin: 0;
+    max-width: 540px;
+    text-align: center;
+}
+.imm-question {
     opacity: 0; transition: opacity 0.5s ease;
 }
 .imm-question.imm-subtitle-visible { opacity: 1; }
@@ -1957,11 +1843,11 @@
     text-transform: uppercase;
 }
 
-/* Coach avatar in immersive */
+/* Coach avatar in immersive — taille portrait, plus humain */
 .imm-avatar {
-    width: 64px; height: 64px; border-radius: 50%;
-    overflow: hidden; border: 3px solid #EBD5E3;
-    box-shadow: 0 4px 15px rgba(161,24,87,0.1);
+    width: 120px; height: 120px; border-radius: 50%;
+    overflow: hidden; border: 4px solid #fff;
+    box-shadow: 0 10px 30px rgba(161,24,87,0.18), 0 0 0 1px rgba(161,24,87,0.08);
     transition: all 0.3s ease;
 }
 .imm-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -2073,12 +1959,8 @@
 /* Feedback (confirmation) */
 .imm-feedback { display: flex; align-items: center; justify-content: center; }
 
-/* Intro text (warm, distinct from insights) */
-.imm-intro-text {
-    font-family: 'DM Sans', sans-serif; font-size: 1rem;
-    color: #6b7280; margin: 0; text-align: center;
-    animation: insightIn 0.4s ease-out;
-}
+/* Intro text styling now shared with .imm-question (see above) — only animation kept */
+.imm-intro-text { animation: insightIn 0.4s ease-out; }
 
 /* Inline insight (shown below avatar, no duplicate avatar) */
 .imm-insight-inline {
