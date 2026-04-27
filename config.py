@@ -428,6 +428,11 @@ class ProductionConfig(BaseConfig):
         self.VALIDATOR_PROVIDER = config.get('VALIDATOR_PROVIDER', 'anthropic').lower()
         self.OPENAI_VALIDATOR_MODEL = config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
 
+        # Quiz chat immersif : feature flag lu depuis le JSON APP_CONFIG en prod
+        # (en dev/local, c'est lu via os.environ par BaseConfig)
+        quiz_chat_raw = config.get('QUIZ_CHAT_MODE', 'false')
+        self.QUIZ_CHAT_MODE = str(quiz_chat_raw).strip().lower() in ('true', '1', 'yes')
+
         # Cloud Storage Buckets
         self.STORAGE_BUCKET = config.get('STORAGE_BUCKET', self.STORAGE_BUCKET)
         self.DATA_BUCKET = config.get('DATA_BUCKET', 'tilto-data')
