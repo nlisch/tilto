@@ -40,6 +40,18 @@ class QuizAnalysisService:
         self.anonymizer = current_app.anonymization_service
         self._slack_service = None
         self._slack_available = None
+        self._openai_client = None
+
+    @property
+    def openai_client(self):
+        """Lazy-init du client OpenAI (utilisé pour le validator cross-modèle)."""
+        if self._openai_client is None:
+            api_key = current_app.config.get('OPENAI_API_KEY')
+            if not api_key:
+                return None
+            from openai import OpenAI
+            self._openai_client = OpenAI(api_key=api_key)
+        return self._openai_client
 
     @property
     def slack_service(self):
@@ -344,7 +356,9 @@ class QuizAnalysisService:
                                 parent_generation_prompt_id: int,
                                 validation_criteria_source: str = 'database',
                                 custom_criteria: str = None,
-                                attempt_number: int = 1) -> int:
+                                attempt_number: int = 1,
+                                validator_model: str = None,
+                                validator_provider: str = 'anthropic') -> int:
         """
         Stocke le prompt de validation pour traçabilité complète.
         
@@ -413,7 +427,8 @@ class QuizAnalysisService:
                     "human": validation_prompt
                 },
                 "api_params": {
-                    "model": current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+                    "model": validator_model or current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
+                    "provider": validator_provider,
                     "temperature": 0.1,
                     "max_tokens": 2000
                 }
@@ -2788,7 +2803,52 @@ class QuizAnalysisService:
         
         # Ce point ne devrait jamais être atteint
         raise Exception(f"[Request ID: {request_id}] Échec après {max_retries} tentatives sans exception capturée")
-        
+
+    def _call_openai_validator(self, prompt: str, request_id: str,
+                               temperature: float = 0.1,
+                               max_tokens: int = 2000) -> str:
+        """
+        Appelle OpenAI (chat completions) pour la validation cross-modèle.
+        Force le format JSON via response_format. Retry x3 avec backoff exponentiel.
+        """
+        client = self.openai_client
+        if client is None:
+            raise RuntimeError("OPENAI_API_KEY non configurée - impossible d'utiliser le validator OpenAI")
+
+        model = current_app.config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
+        max_retries = 3
+        base_retry_delay = 5
+
+        logger.info(f"[{request_id}] === OpenAI VALIDATOR CALL (model={model}) ===")
+        logger.info(f"[{request_id}] Prompt length: {len(prompt)} chars")
+
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"[{request_id}] OpenAI validator tentative {attempt + 1}/{max_retries}")
+                api_start = time.time()
+                response = client.chat.completions.create(
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                api_duration = time.time() - api_start
+                content = response.choices[0].message.content or ""
+                logger.info(f"[{request_id}] OpenAI validator réponse en {api_duration:.2f}s ({len(content)} chars)")
+                return content
+
+            except Exception as e:
+                last_error = e
+                logger.warning(f"[{request_id}] OpenAI validator erreur (tentative {attempt + 1}): {e}")
+                if attempt < max_retries - 1:
+                    delay = base_retry_delay * (2 ** attempt)
+                    logger.info(f"[{request_id}] Retry OpenAI dans {delay}s")
+                    time.sleep(delay)
+
+        raise RuntimeError(f"OpenAI validator échec après {max_retries} tentatives: {last_error}")
+
     def _send_anthropic_error_alert(self, error_type: str, error_message: str, error_details: dict = None):
         """Envoie une alerte Slack pour toute erreur Anthropic en production."""
         try:
@@ -3870,18 +3930,47 @@ class QuizAnalysisService:
 
     Maximum 2-3 issues. Réponds UNIQUEMENT avec le JSON."""
         
-        # Appel API Claude Validator
+        # Appel API Validator (cross-modèle si configuré)
         validation_prompt_id = None
-        
+        validator_provider = current_app.config.get('VALIDATOR_PROVIDER', 'anthropic').lower()
+        anthropic_default_model = current_app.config.get('ANTHROPIC_MODEL', 'claude-sonnet-4-5-20250929')
+
         try:
-            validator_response = self._call_anthropic_api(
-                system_prompt="",
-                human_prompt=validator_prompt,
-                request_id=f"{request_id}_validation",
-                temperature=0.1,
-                max_tokens=2000,
-                enable_web_search=False
-            )
+            if validator_provider == 'openai':
+                try:
+                    validator_response = self._call_openai_validator(
+                        prompt=validator_prompt,
+                        request_id=f"{request_id}_validation",
+                        temperature=0.1,
+                        max_tokens=2000,
+                    )
+                    validator_model_used = current_app.config.get('OPENAI_VALIDATOR_MODEL', 'gpt-4o-mini')
+                    validator_provider_used = 'openai'
+                except Exception as openai_err:
+                    logger.warning(
+                        f"[{request_id}] OpenAI validator a échoué, fallback Anthropic: {openai_err}"
+                    )
+                    validator_response = self._call_anthropic_api(
+                        system_prompt="",
+                        human_prompt=validator_prompt,
+                        request_id=f"{request_id}_validation_fallback",
+                        temperature=0.1,
+                        max_tokens=2000,
+                        enable_web_search=False,
+                    )
+                    validator_model_used = anthropic_default_model
+                    validator_provider_used = 'anthropic_fallback'
+            else:
+                validator_response = self._call_anthropic_api(
+                    system_prompt="",
+                    human_prompt=validator_prompt,
+                    request_id=f"{request_id}_validation",
+                    temperature=0.1,
+                    max_tokens=2000,
+                    enable_web_search=False,
+                )
+                validator_model_used = anthropic_default_model
+                validator_provider_used = 'anthropic'
 
             validator_raw_response = validator_response
 
@@ -3919,7 +4008,9 @@ class QuizAnalysisService:
                         parent_generation_prompt_id=prompt_id,
                         validation_criteria_source=criteria_source,
                         custom_criteria=custom_validation_criteria if criteria_source == 'custom' else None,
-                        attempt_number=attempt_number
+                        attempt_number=attempt_number,
+                        validator_model=validator_model_used,
+                        validator_provider=validator_provider_used,
                     )
 
                     validation_result['validation_prompt_id'] = validation_prompt_id

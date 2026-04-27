@@ -115,7 +115,8 @@ def capture():
         # ===== RÉCUPÉRATION DES DONNÉES (SIMPLIFIÉ) =====
         email = request.form.get('email', '').strip().lower()
         firstname = request.form.get('firstname', '').strip()
-        
+        city = request.form.get('city', '').strip()
+
         source = request.form.get('lead_source', request.form.get('source', 'quiz_homepage'))
         quiz_answers = request.form.get('quiz_answers', '').strip()
 
@@ -350,7 +351,7 @@ def capture():
                         try:
                             quiz_id = request.form.get('quiz_id', 'pack_clarte')
                             if is_conversation_mode:
-                                save_conversation_answers(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id)
+                                save_conversation_answers(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id, city=city)
                             else:
                                 save_homepage_quiz_answers_with_audio(user_id, quiz_data, audio_urls, cursor, g.request_id, quiz_id)
                             quiz_saved = True
@@ -1300,10 +1301,13 @@ def pro_contact():
         return jsonify({'success': False, 'message': 'Une erreur est survenue.'}), 500
 
 
-def save_conversation_answers(user_id, quiz_data, audio_urls, cursor, request_id, quiz_id='pack_clarte'):
+def save_conversation_answers(user_id, quiz_data, audio_urls, cursor, request_id, quiz_id='pack_clarte', city=None):
     """
     Sauvegarde les réponses du quiz conversationnel (mode coach IA dynamique).
     Stocke la conversation complète dans answer_user en mappant sur les question_ids existants.
+
+    Si `city` est fourni, l'enregistre comme réponse à question_id=26 pour que
+    QuizAnalysisService._extract_location_from_quiz puisse géolocaliser le web_search.
     """
     try:
         logger.info(f"[{request_id}] 🎯 Save conversation for user {user_id}, quiz {quiz_id}")
@@ -1373,6 +1377,19 @@ def save_conversation_answers(user_id, quiz_data, audio_urls, cursor, request_id
                 SET answer_text = %s
                 WHERE quiz_session_id = %s AND question_id = %s
             """, (conversation_text, quiz_session_id, valid_questions[0]))
+
+        # Save city as question_id=26 so _extract_location_from_quiz can geolocate web_search
+        if city:
+            cursor.execute("""
+                INSERT INTO answer_user
+                (quiz_session_id, question_id, answer_value, answer_text, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE
+                    answer_value = VALUES(answer_value),
+                    answer_text = VALUES(answer_text),
+                    updated_at = CURRENT_TIMESTAMP
+            """, (quiz_session_id, 26, json.dumps([city]), city))
+            logger.info(f"[{request_id}] 📍 City saved on question_id=26: {city}")
 
         logger.info(f"[{request_id}] ✅ Saved {len(turns)} turns for session {quiz_session_id}")
 

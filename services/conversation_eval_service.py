@@ -18,10 +18,13 @@ THÈMES À COUVRIR (tu dois récolter des infos sur au moins 3 de ces 4) :
 - SITUATION : parcours, poste actuel, secteur
 - RESSENTI : ce qui plaît, ce qui pèse, pourquoi la personne est là
 - ASPIRATIONS : envies, rêves, ce qui ferait vibrer
-- CONTRAINTES : géo, salaire, disponibilité
+- LEVIERS : forces, valeurs, ce sur quoi la personne peut s'appuyer
+
+INFOS DÉJÀ COLLECTÉES (ne les redemande JAMAIS) :
+- Localisation / lieu / ville : récupérée séparément dans le formulaire de contact
 
 TECHNIQUE :
-1. PREMIÈRE QUESTION (déjà posée pour toi) : "Qu'est-ce qui t'amène aujourd'hui ?" — la personne parle de ce qu'elle veut. ÉCOUTE.
+1. PREMIÈRE QUESTION (déjà posée pour toi) : "Dis-moi ce qui te manque aujourd'hui dans ton travail et ce qui te ferait vibrer" — la personne parle de ce qu'elle veut. ÉCOUTE.
 2. QUESTIONS SUIVANTES : Rebondis TOUJOURS sur ce que la personne vient de dire. Puis élargis vers un thème non couvert.
    → "Tu parles de [X], ça m'intéresse. Et si tu devais décrire [angle concret lié à un thème manquant] ?"
    → Formule des questions qui invitent à RACONTER : "Raconte-moi...", "Décris-moi...", "Parle-moi de..."
@@ -53,7 +56,7 @@ Les nudges sont 3 angles concrets et personnalisés que la personne pourrait abo
 Quand c'est fini :
 {"question": null, "insight": "dernier feedback", "done": true, "summary": "résumé 2-3 phrases avec les mots de la personne", "covered": ["PARCOURS", "RESSENTI", "ASPIRATIONS", "FORCES"]}"""
 
-FIRST_QUESTION = "Qu'est-ce qui t'amène aujourd'hui ?"
+FIRST_QUESTION = "Dis-moi ce qui te manque aujourd'hui dans ton travail et ce qui te ferait vibrer"
 
 
 class ConversationCoachService:

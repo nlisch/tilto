@@ -27,7 +27,7 @@
     };
 
     const COACH_IMG = 'https://images.tilto.co/production/2025/10/d8564b8b_tilto_home_video_poster.webp';
-    const FIRST_QUESTION = 'Qu\'est-ce qui t\'amène aujourd\'hui ?';
+    const FIRST_QUESTION = 'Dis-moi ce qui te manque aujourd\'hui dans ton travail et ce qui te ferait vibrer';
     const MAX_RECORDING_TIME = 120; // 2 min max per answer
 
     const WHISPER_HALLUCINATIONS = [
@@ -174,46 +174,10 @@
         els.micHint.style.color = '';
     }
 
-    // ── Conversation end → save and redirect to dashboard ──
+    // ── Conversation end → go straight to final lead form ──
     async function showConversationEnd(insight, summary) {
-        // Save full conversation in background
-        try {
-            const fd = new FormData();
-            fd.append('quiz_id', state.quizId);
-            fd.append('quiz_answers', JSON.stringify(formatAnswers()));
-            fd.append('update_only', 'true');
-            Object.entries(state.audioBlobs).forEach(([idx, blob]) => {
-                fd.append(`audio_qturn_${idx}`, blob, `turn_${idx}.${isSafari()?'mp4':'webm'}`);
-            });
-            fetch('/lead/capture', { method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'} });
-        } catch(e) {}
-
-        // Closing message
-        await fadeOut();
-        hideAll();
         if (els.progressFill) els.progressFill.style.width = '100%';
-        els.avatar.style.display = 'block';
-        els.feedback.style.display = 'flex';
-        els.feedback.innerHTML = `
-            <div class="imm-insight-inline">
-                <p class="imm-insight-text">${esc(summary || insight || 'Super échange ! Je te prépare ton bilan.')}</p>
-            </div>`;
-        fadeIn();
-        await pause(2500);
-
-        // Redirect to dashboard (analysis is generating in background)
-        clearSaved();
-        await fadeOut();
-        hideAll();
-        els.feedback.style.display = 'flex';
-        els.feedback.innerHTML = `
-            <div class="imm-success">
-                <div class="imm-success-check">✓</div>
-                <p class="imm-success-title">Ton bilan est en préparation</p>
-                <p class="imm-success-sub">Tu vas le recevoir dans quelques minutes</p>
-            </div>`;
-        fadeIn();
-        setTimeout(() => { window.location.href = '/dashboard'; }, 2500);
+        await showFinalLead();
     }
 
 
@@ -244,7 +208,6 @@
 
             els.micBtn?.classList.remove('imm-mic--invite');
             els.micZone.style.display = 'none';
-            els.textFallback.style.display = 'none';
             els.recZone.style.display = 'flex';
             els.recHint.textContent = 'Appuie pour terminer';
             startTimer();
@@ -395,19 +358,12 @@
     }
 
     // ── Core loop: user answered → ask Claude for next step ──
-    const LEAD_AFTER_TURNS = 3; // Ask for lead info after 3 user answers
 
     async function onUserAnswer(text) {
         state.conversation.push({ role: 'user', text });
         state.turnIndex++;
         updateProgress();
         saveState();
-
-        // After 2 answers → capture lead before continuing
-        if (state.turnIndex === LEAD_AFTER_TURNS && !state.leadCaptured) {
-            await showMidConversationLead();
-            return;
-        }
 
         await fetchNextCoachStep();
     }
@@ -441,43 +397,131 @@
         }
     }
 
-    // ── Mid-conversation lead capture ──
-    async function showMidConversationLead() {
+    // ── Final lead capture (end of conversation) ──
+    async function showFinalLead() {
         await fadeOut();
         hideAll();
 
-        // Show minimal lead form — just name + email
         els.question.style.display = 'none';
         els.leadForm.style.display = 'block';
 
-        // Replace the form content with minimal version
         els.leadForm.innerHTML = `
-            <div class="imm-lead-minimal">
-                <div class="imm-lead-minimal__header">
-                    <img src="${COACH_IMG}" alt="Claire" class="imm-lead-minimal__avi">
-                    <p class="imm-lead-minimal__msg">Crée ton compte pour que je puisse t'envoyer tes résultats après notre échange</p>
+            <div class="imm-lead-final">
+                <div class="imm-lead-final__header">
+                    <img src="${COACH_IMG}" alt="Claire" class="imm-lead-final__avi">
+                    <div>
+                        <h3 class="imm-lead-final__title">On y est presque !</h3>
+                        <p class="imm-lead-final__msg">Dernière étape pour recevoir ton bilan personnalisé</p>
+                    </div>
                 </div>
-                <input type="text" id="immFirstname" class="imm-input" placeholder="Ton prénom" autocomplete="given-name">
-                <input type="email" id="immEmail" class="imm-input" placeholder="Ton email" autocomplete="email">
-                <button type="button" id="immLeadSubmit" class="imm-submit">Continuer</button>
-                <p class="imm-note">Gratuit · confidentiel</p>
+                <label class="imm-field">
+                    <span class="imm-field__label">Prénom</span>
+                    <input type="text" id="immFirstname" class="imm-input imm-input--lg" placeholder="Ex : Camille" autocomplete="given-name">
+                </label>
+                <label class="imm-field">
+                    <span class="imm-field__label">Email</span>
+                    <input type="email" id="immEmail" class="imm-input imm-input--lg" placeholder="ton@email.com" autocomplete="email">
+                </label>
+                <label class="imm-field">
+                    <span class="imm-field__label">Ville</span>
+                    <div class="imm-city-wrap">
+                        <input type="text" id="immCity" class="imm-input imm-input--lg" placeholder="Tape pour rechercher (ex : Lyon)" autocomplete="off">
+                        <input type="hidden" id="immCityData">
+                        <div class="imm-city-suggestions" id="immCitySuggestions"></div>
+                    </div>
+                </label>
+                <div class="imm-form-error" id="immFormError" role="alert"></div>
+                <button type="button" id="immLeadSubmit" class="imm-submit imm-submit--lg">Recevoir mon bilan</button>
+                <p class="imm-note">Gratuit · confidentiel · pas de spam</p>
             </div>`;
 
+        setupCityPicker();
         fadeIn();
+    }
+
+    // ── City picker (Nominatim via /api/cities) ──
+    function setupCityPicker() {
+        const input = document.getElementById('immCity');
+        const dataInput = document.getElementById('immCityData');
+        const suggBox = document.getElementById('immCitySuggestions');
+        if (!input || !suggBox) return;
+
+        let debounceTimer;
+        input.addEventListener('input', () => {
+            // Any free-typing invalidates a previously selected city
+            dataInput.value = '';
+            const term = input.value.trim();
+            clearTimeout(debounceTimer);
+            if (term.length < 3) { suggBox.style.display = 'none'; return; }
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/cities?search=${encodeURIComponent(term)}`, { headers: { Accept: 'application/json' } });
+                    if (!res.ok) { suggBox.style.display = 'none'; return; }
+                    const cities = await res.json();
+                    renderCitySuggestions(cities);
+                } catch (e) { suggBox.style.display = 'none'; }
+            }, 300);
+        });
+
+        function renderCitySuggestions(cities) {
+            suggBox.innerHTML = '';
+            const seen = new Set();
+            const items = (cities || []).filter(c => {
+                if (!c?.name) return false;
+                const k = `${c.name}|${c.region || ''}`;
+                if (seen.has(k)) return false;
+                seen.add(k);
+                return true;
+            });
+            if (!items.length) { suggBox.style.display = 'none'; return; }
+            items.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'imm-city-item';
+                item.innerHTML = `<span class="imm-city-item__name">${esc(c.name)}</span><span class="imm-city-item__region">${esc(c.region || '')}</span>`;
+                item.addEventListener('click', () => {
+                    const display = c.region ? `${c.name}, ${c.region}` : c.name;
+                    input.value = display;
+                    dataInput.value = JSON.stringify({ name: c.name, region: c.region || '', display });
+                    suggBox.style.display = 'none';
+                });
+                suggBox.appendChild(item);
+            });
+            suggBox.style.display = 'block';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!suggBox.contains(e.target) && e.target !== input) suggBox.style.display = 'none';
+        });
+    }
+
+    function showFormError(msg) {
+        const el = document.getElementById('immFormError');
+        if (!el) return;
+        el.textContent = msg || '';
+        el.style.display = msg ? 'block' : 'none';
     }
 
     async function submitLead() {
         const fn = document.getElementById('immFirstname')?.value.trim();
         const em = document.getElementById('immEmail')?.value.trim();
+        const cityDisplay = document.getElementById('immCity')?.value.trim();
+        const cityData = document.getElementById('immCityData')?.value.trim();
         const btn = document.getElementById('immLeadSubmit');
-        if (!fn || !em) return;
-        if (btn) { btn.disabled = true; btn.textContent = 'Un instant...'; }
 
+        showFormError('');
+
+        if (!fn) { showFormError('Indique ton prénom'); return; }
+        if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { showFormError('Indique un email valide'); return; }
+        if (!cityDisplay) { showFormError('Indique ta ville'); return; }
+        if (!cityData) { showFormError('Sélectionne ta ville dans la liste de suggestions'); return; }
+
+        if (btn) { btn.disabled = true; btn.textContent = 'Un instant...'; }
         state.firstname = fn;
 
         const fd = new FormData();
         fd.append('firstname', fn);
         fd.append('email', em);
+        fd.append('city', cityDisplay);
         fd.append('newsletter_consent', 'yes');
         fd.append('partner_consent', 'no');
         fd.append('lead_source', 'quiz_immersive');
@@ -492,39 +536,26 @@
             const data = await res.json();
             if (data.success) {
                 state.leadCaptured = true;
-                saveState();
-
-                if (state.turnIndex < 7) {
-                    // Mid-conversation → Claire uses the name and continues
-                    els.leadForm.style.display = 'none';
-                    const continueMsg = `Merci ${fn} ! On continue.`;
-                    els.avatar.style.display = 'block';
-            
-                    showSubtitle(els.question, continueMsg);
-                    await new Promise(r => setTimeout(r, 1500));
-                                await fetchNextCoachStep();
-                } else {
-                    // End of conversation → redirect
-                    clearSaved();
-                    els.leadForm.innerHTML = `
-                        <div class="imm-success">
-                            <div class="imm-success-check">✓</div>
-                            <p class="imm-success-title">C'est parti !</p>
-                            <p class="imm-success-sub">Ton diagnostic arrive dans quelques minutes...</p>
-                        </div>`;
-                    setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
-                }
+                clearSaved();
+                els.leadForm.innerHTML = `
+                    <div class="imm-success">
+                        <div class="imm-success-check">✓</div>
+                        <p class="imm-success-title">C'est parti !</p>
+                        <p class="imm-success-sub">Ton diagnostic arrive dans quelques minutes...</p>
+                    </div>`;
+                setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
             } else {
-                if (btn) { btn.disabled = false; btn.textContent = state.leadCaptured ? 'Recevoir mes pistes' : 'Continuer l\'entretien'; }
+                if (btn) { btn.disabled = false; btn.textContent = 'Recevoir mon bilan'; }
                 if (data.error_type === 'email_exists') {
-                    // Email exists — treat as "already captured" and continue
-                    state.leadCaptured = true;
-                    els.leadForm.style.display = 'none';
-                    await fetchNextCoachStep();
+                    showFormError('Un compte existe déjà avec cet email. Essaie une autre adresse ou connecte-toi.');
+                    document.getElementById('immEmail')?.focus();
+                } else {
+                    showFormError(data.message || 'Une erreur est survenue, réessaie.');
                 }
             }
         } catch (err) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Continuer l\'entretien'; }
+            if (btn) { btn.disabled = false; btn.textContent = 'Recevoir mon bilan'; }
+            showFormError('Connexion impossible. Vérifie ton réseau et réessaie.');
         }
     }
 
@@ -644,7 +675,7 @@
                     state.isProcessing = false;
 
                     if (result.done) {
-                        showCompletion(result.insight, result.summary);
+                        showConversationEnd(result.insight, result.summary);
                     } else {
                         state.currentNudges = result.nudges || [];
                                 showCoachQuestion(result.question, result.insight);
@@ -708,6 +739,33 @@
     }
 
     window.QuizChat = { init, open, close };
+
+    // Dev-only shortcut to skip voice flow and jump straight to the lead form
+    // with a rich pre-filled conversation. Gated on localhost so it can't be
+    // triggered in production.
+    const __DEV_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
+    if (__DEV_HOSTS.includes(location.hostname)) {
+        const MOCK_CONVERSATION = [
+            { role: 'coach', text: 'Dis-moi ce qui te manque aujourd\'hui dans ton travail et ce qui te ferait vibrer' },
+            { role: 'user', text: "Je suis chef de projet marketing dans une scale-up SaaS depuis 6 ans. Ce qui me manque c'est le sens : je passe mes journées en réunions et reportings sans voir l'impact concret de ce que je fais. Ce qui me ferait vibrer ce serait de bosser sur des sujets utiles — l'éducation, l'environnement, la santé — et de retrouver de la création, pas juste du process." },
+            { role: 'coach', text: 'Tu parles d\'impact et de sens. Quand est-ce que tu t\'es senti le plus aligné dans ton parcours ?' },
+            { role: 'user', text: "Quand j'ai monté un podcast bénévole pour une asso qui aide les jeunes en décrochage scolaire. Pendant un an j'ai géré le brief, les invités, le montage, la diffusion. J'ai vu des ados témoigner et reprendre confiance, ça les a vraiment aidés. C'est là que j'ai compris que j'aimais raconter des histoires utiles et créer du lien — c'était sans budget mais ça avait plus d'effet que mes campagnes à 200k€." },
+            { role: 'coach', text: 'Cette dimension storytelling et lien humain, comment tu pourrais la remettre au centre aujourd\'hui ?' },
+            { role: 'user', text: "Deux pistes en tête. Soit rejoindre une boîte à mission claire dans l'éduc ou la santé sur un poste de comm ou de produit, idéalement une early-stage où on construit. Soit me lancer en indépendant : du conseil en stratégie marketing pour des asso ou des startups à impact, et peut-être monter à terme un truc à moi autour de la pédagogie. Je penche pour la première mais je veux comparer." },
+            { role: 'coach', text: 'Quels leviers concrets tu peux mobiliser pour avancer ?' },
+            { role: 'user', text: "J'ai 8 ans d'expérience en marketing produit, je sais piloter un projet de A à Z et embarquer une équipe. On me dit souvent que je vulgarise bien des sujets complexes — c'est ma force en pitch et en présentation client. J'ai un réseau solide dans la tech parisienne et quelques contacts dans l'ESS. Côté finances j'ai 9 mois de coussin si je dois faire une transition, donc je peux prendre un peu de risque." }
+        ];
+
+        window.QuizChat.devSkip = function (conversation) {
+            const conv = conversation || MOCK_CONVERSATION;
+            state.conversation = conv;
+            state.turnIndex = conv.filter(m => m.role === 'user').length;
+            state.audioBlobs = {};
+            console.info('[QuizChat] devSkip → showFinalLead with', state.turnIndex, 'user turns');
+            showConversationEnd(null, null);
+        };
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => { if (window.QUIZ_CHAT_MODE) init(); });
     } else { if (window.QUIZ_CHAT_MODE) init(); }
