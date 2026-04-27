@@ -57,7 +57,16 @@ The career agent is built around 7 traits, each with concrete implementation:
 
 ## Agent context layer
 
-All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles state, knowledge, tools, LLM clients and telemetry. This is the spine that prevents the "bazaar of disconnected agents" problem as the system grows.
+All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles **session state**, **knowledge base**, **tools**, **LLM clients**, **telemetry**, and a lazy bridge to the **long-term user context**. This is the spine that prevents the "bazaar of disconnected agents" problem as the system grows.
+
+Two complementary layers:
+
+| Layer | Lifetime | Purpose |
+|---|---|---|
+| **`AgentContext`** (per-job) | ~90s, one instance per agent run | Session state (location, conversation), knowledge base, tools, telemetry |
+| **`UserContextService`** (long-term) | Persisted across sessions and agents | 360° view of a user: quizzes, analyses, orders, bookings, capsule listens, chat messages, consent history |
+
+A future agent (support, follow-up, meta-analyser) reads `ctx.get_user_summary()` or `ctx.user_context_service.get_full_context()` and instantly knows *who this user is across their entire journey*. The `UserContextService` powers both the admin user-detail page and any agent that needs durable context.
 
 ```mermaid
 flowchart LR
@@ -98,6 +107,7 @@ flowchart TD
     User([User]) -->|voice + text| Perception[Perception<br/>chat coach + Whisper]
     Perception --> Memory[(Short-term memory<br/>conversation, answers,<br/>audit trail)]
     KB[(Knowledge base<br/>prompts, criteria,<br/>templates)] -.config.-> Writer
+    UCS[(UserContextService<br/>long-term:<br/>quizzes, analyses,<br/>orders, bookings…)] -.optional.-> Writer
     Memory --> Writer
 
     Writer[Writer<br/>Claude Sonnet + web_search]
@@ -121,7 +131,7 @@ flowchart TD
     classDef store fill:#FBF1F6,stroke:#A11857,color:#1A1A2E
     classDef tool fill:#fff7e6,stroke:#d4847a,color:#1A1A2E
     class Writer,Critic llm
-    class Memory,KB,Publish,Draft store
+    class Memory,KB,UCS,Publish,Draft store
     class WebSearch,Monitor tool
 ```
 
@@ -135,6 +145,8 @@ flowchart TD
 | `_critic_evaluate(...)` | Orchestrates one validation cycle (build prompt → call critic → parse issues) |
 | `_track_usage(...)` | Per-call telemetry: input/output tokens, web_search uses, USD cost |
 | `get_usage_summary()` | Job-level total for monitoring and Slack alerts |
+| `ctx.user_context_service` | Lazy access to long-term user context (history, orders, bookings) |
+| `ctx.get_user_summary()` | Condensed snapshot of the user across all sessions |
 
 ### Telemetry & alerting
 
@@ -261,7 +273,8 @@ tilto/
 │   ├── dashboard.py                  # User/admin dashboard
 │   └── ...
 ├── services/
-│   ├── agent_context.py              # ★ AGENT CONTEXT (shared state, tools, telemetry)
+│   ├── agent_context.py              # ★ AGENT CONTEXT (per-job: state, tools, telemetry, LLM clients)
+│   ├── user_context_service.py       # ★ USER CONTEXT (long-term 360° view: history, orders, bookings)
 │   ├── quiz_analysis_service.py      # ★ CAREER AGENT (Writer ⇄ Critic loop on top of AgentContext)
 │   ├── async_analysis_service.py     # Job orchestration + monitoring/alerts
 │   ├── conversation_eval_service.py  # Coach IA (interview)

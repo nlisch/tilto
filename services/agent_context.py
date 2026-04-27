@@ -225,6 +225,27 @@ class AgentContext:
         return self._openai_client
 
     # ─────────────────────────────────────────────────────────────
+    # Long-term user context — vue 360° persistée
+    # ─────────────────────────────────────────────────────────────
+
+    @cached_property
+    def user_context_service(self):
+        """
+        Vue 360° persistée du user (historique bilans, commandes, bookings, etc).
+        À distinguer du contexte court-terme (location, conversation) qui est
+        directement sur ce AgentContext.
+
+        Lazy : le service est instancié seulement si un agent appelle
+        `ctx.user_context_service.get_summary()` ou `.get_full_context()`.
+        """
+        from services.user_context_service import UserContextService
+        return UserContextService(cursor=self.cursor, user_id=self.user_id)
+
+    def get_user_summary(self) -> Dict[str, Any]:
+        """Raccourci : résumé condensé du user (5-6 champs clés)."""
+        return self.user_context_service.get_summary()
+
+    # ─────────────────────────────────────────────────────────────
     # Telemetry — accumulateur de coût/tokens tout au long du job
     # ─────────────────────────────────────────────────────────────
 
