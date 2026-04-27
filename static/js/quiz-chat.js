@@ -431,8 +431,8 @@
                     </div>
                 </label>
                 <div class="imm-form-error" id="immFormError" role="alert"></div>
-                <button type="button" id="immLeadSubmit" class="imm-submit imm-submit--lg">Recevoir mon bilan</button>
-                <p class="imm-note">Gratuit · confidentiel · pas de spam</p>
+                <button type="button" id="immLeadSubmit" class="imm-submit imm-submit--lg">Découvrir mes pistes</button>
+                <p class="imm-note">Gratuit · confidentiel</p>
             </div>`;
 
         setupCityPicker();
@@ -537,15 +537,10 @@
             if (data.success) {
                 state.leadCaptured = true;
                 clearSaved();
-                els.leadForm.innerHTML = `
-                    <div class="imm-success">
-                        <div class="imm-success-check">✓</div>
-                        <p class="imm-success-title">C'est parti !</p>
-                        <p class="imm-success-sub">Ton diagnostic arrive dans quelques minutes...</p>
-                    </div>`;
-                setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
+                // Redirect immediately — the dashboard has the canonical loader
+                window.location.href = '/dashboard';
             } else {
-                if (btn) { btn.disabled = false; btn.textContent = 'Recevoir mon bilan'; }
+                if (btn) { btn.disabled = false; btn.textContent = 'Découvrir mes pistes'; }
                 if (data.error_type === 'email_exists') {
                     showFormError('Un compte existe déjà avec cet email. Essaie une autre adresse ou connecte-toi.');
                     document.getElementById('immEmail')?.focus();
@@ -554,7 +549,7 @@
                 }
             }
         } catch (err) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Recevoir mon bilan'; }
+            if (btn) { btn.disabled = false; btn.textContent = 'Découvrir mes pistes'; }
             showFormError('Connexion impossible. Vérifie ton réseau et réessaie.');
         }
     }

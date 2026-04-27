@@ -313,91 +313,66 @@ body.dashboard-page main {
     animation: fadeInUp 0.5s ease-out;
 }
 
-/* ==================== ORB ==================== */
-.orb-container {
-    width: 120px; height: 120px;
-    margin: 0 auto 2rem;
+/* ==================== AVATAR PULSE (harmonisé avec chat loader) ==================== */
+.processing-avi-wrap {
     position: relative;
+    width: 96px; height: 96px;
+    margin: 0 auto 1.6rem;
+    display: flex; align-items: center; justify-content: center;
 }
 
-.orb-glow {
-    position: absolute; inset: -30px;
-    background: radial-gradient(circle, rgba(161,24,87,0.12) 0%, transparent 70%);
+.processing-avi {
+    width: 96px; height: 96px;
     border-radius: 50%;
-    animation: glow-pulse 3s ease-in-out infinite;
-}
-
-@keyframes glow-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-}
-
-.orb-ring {
-    position: absolute; inset: -12px;
-    border-radius: 50%;
-    border: 2px solid rgba(161,24,87,0.2);
-    animation: ring-rotate 6s linear infinite;
-}
-
-.orb-ring::before {
-    content: '';
-    position: absolute;
-    width: 10px; height: 10px;
-    background: var(--tilto-primary);
-    border-radius: 50%;
-    top: -5px; left: 50%;
-    transform: translateX(-50%);
-    box-shadow: 0 0 12px rgba(161,24,87,0.6);
-}
-
-@keyframes ring-rotate { to { transform: rotate(360deg); } }
-
-.orb {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #A11857 0%, #c92a6e 40%, #d4447a 70%, #c92a6e 100%);
-    background-size: 200% 200%;
-    animation: gradient-shift 4s ease-in-out infinite, orb-breathe 3s ease-in-out infinite;
-    box-shadow: 
-        0 10px 40px rgba(161,24,87,0.35),
-        inset 0 -15px 30px rgba(0,0,0,0.15),
-        inset 0 15px 30px rgba(255,255,255,0.15);
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 8px 28px rgba(161,24,87,0.22);
     position: relative;
-    overflow: hidden;
+    z-index: 2;
 }
 
-.orb::before {
-    content: '';
-    position: absolute;
-    width: 60%; height: 40%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+.processing-pulse {
+    position: absolute; inset: 0;
     border-radius: 50%;
-    top: 8%; left: 20%;
+    border: 2px solid rgba(161,24,87,0.35);
+    animation: processing-pulse-anim 2.2s ease-out infinite;
+    z-index: 1;
 }
 
-@keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
+.processing-pulse--delayed { animation-delay: 1.1s; }
 
-@keyframes orb-breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(0.97); }
+@keyframes processing-pulse-anim {
+    0%   { transform: scale(0.85); opacity: 0.7; }
+    70%  { transform: scale(1.55); opacity: 0; }
+    100% { transform: scale(1.55); opacity: 0; }
 }
 
 .processing-title {
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-size: 1.5rem;
-    font-weight: 700;
     color: var(--tilto-text);
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.55rem;
+    line-height: 1.2;
     text-align: center;
 }
 
 .processing-subtitle {
     color: var(--tilto-text-light);
     font-size: 0.95rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     line-height: 1.5;
+}
+
+.processing-step {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #A11857;
+    text-align: center;
+    margin: 0 0 1.4rem;
+    min-height: 1.4em;
+    transition: opacity 0.3s ease;
+    letter-spacing: 0.005em;
 }
 
 /* ==================== PROGRESS ==================== */
@@ -441,52 +416,6 @@ body.dashboard-page main {
 
 .progress-percent { font-weight: 700; color: var(--tilto-primary); }
 .progress-time { color: var(--tilto-text-muted); }
-
-/* ==================== STEPS DOTS ==================== */
-.steps-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 1.5rem;
-}
-
-.step-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: rgba(161,24,87,0.15);
-    transition: all 0.3s ease;
-}
-
-.step-dot.done { background: var(--tilto-success); }
-.step-dot.active {
-    background: var(--tilto-primary);
-    width: 28px;
-    border-radius: 100px;
-    animation: dot-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes dot-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-
-.current-step {
-    display: inline-block;
-    padding: 0.6rem 1.25rem;
-    background: linear-gradient(135deg, rgba(161,24,87,0.08), rgba(201,42,110,0.08));
-    border-radius: 100px;
-    font-size: 0.85rem;
-    color: var(--tilto-primary);
-    font-weight: 500;
-    margin-bottom: 2rem;
-}
-
-.current-step .arrow { animation: blink 1.5s ease-in-out infinite; }
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
 
 .tip-box {
     background: rgba(161,24,87,0.04);
@@ -752,8 +681,9 @@ body.dashboard-page main {
         border-radius: 24px;
     }
     
-    .orb-container { width: 100px; height: 100px; }
-    .processing-title { font-size: 1.3rem; }
+    .processing-avi-wrap,
+    .processing-avi { width: 80px; height: 80px; }
+    .processing-title { font-size: 1.25rem; }
     .aurora-blob { filter: blur(60px); }
     .aurora-blob-1 { width: 280px; height: 280px; }
     .aurora-blob-2 { width: 240px; height: 240px; }
@@ -965,17 +895,19 @@ body.dashboard-page main {
                     <div class="aurora-blob aurora-blob-3"></div>
                 </div>
                 <div class="processing-card">
-                    <div class="orb-container">
-                        <div class="orb-glow"></div>
-                        <div class="orb-ring"></div>
-                        <div class="orb"></div>
+                    <div class="processing-avi-wrap">
+                        <img src="https://images.tilto.co/production/2025/10/d8564b8b_tilto_home_video_poster.webp"
+                             alt="Claire" class="processing-avi">
+                        <span class="processing-pulse"></span>
+                        <span class="processing-pulse processing-pulse--delayed"></span>
                     </div>
                     <h2 class="processing-title" id="processingTitle">
-                        Recherche de tes meilleures pistes
+                        Ton bilan se prépare
                     </h2>
                     <p class="processing-subtitle" id="processingSubtitle">
-                        On croise ton profil avec les vraies opportunités du marché
+                        On croise ton profil avec les opportunités du marché
                     </p>
+                    <p class="processing-step" id="currentStepText">Claire relit tes réponses…</p>
                     <div class="progress-wrapper">
                         <div class="progress-bar-analysis">
                             <div class="progress-fill" id="progressFill"></div>
@@ -984,16 +916,6 @@ body.dashboard-page main {
                             <span class="progress-percent" id="progressPercent">5%</span>
                             <span class="progress-time" id="progressTime">~3 min restantes</span>
                         </div>
-                    </div>
-                    <div class="steps-dots" id="stepsDots">
-                        <div class="step-dot active" data-step="1"></div>
-                        <div class="step-dot" data-step="2"></div>
-                        <div class="step-dot" data-step="3"></div>
-                        <div class="step-dot" data-step="4"></div>
-                        <div class="step-dot" data-step="5"></div>
-                    </div>
-                    <div class="current-step">
-                        <span class="arrow">→</span> <span id="currentStepText">Analyse de ton parcours</span>
                     </div>
                     <div class="tip-box">
                         <span class="tip-icon" id="tipIcon">💡</span>
@@ -1052,11 +974,11 @@ body.dashboard-page main {
 
     const CONFIG = {
         phases: [
-            { end: 20,  progress: 20,  step: 1, label: "Analyse de ton parcours" },
-            { end: 50,  progress: 45,  step: 2, label: "Identification de tes forces" },
-            { end: 90,  progress: 70,  step: 3, label: "Recherche d'opportunités" },
-            { end: 130, progress: 90,  step: 4, label: "Sélection des meilleures pistes" },
-            { end: 180, progress: 97,  step: 5, label: "Finalisation de ton rapport" }
+            { end: 20,  progress: 20,  step: 1, label: "Claire relit tes réponses…" },
+            { end: 50,  progress: 45,  step: 2, label: "On identifie tes vrais leviers…" },
+            { end: 90,  progress: 70,  step: 3, label: "On consulte le marché autour de chez toi…" },
+            { end: 130, progress: 90,  step: 4, label: "On compare et on sélectionne 3 pistes…" },
+            { end: 180, progress: 97,  step: 5, label: "On peaufine ton bilan…" }
         ],
         pollInterval: 5000,
         tipInterval: 10000
@@ -1081,7 +1003,6 @@ body.dashboard-page main {
         progressTime:      document.getElementById('progressTime'),
         processingTitle:   document.getElementById('processingTitle'),
         processingSubtitle:document.getElementById('processingSubtitle'),
-        stepsDots:         document.getElementById('stepsDots'),
         currentStepText:   document.getElementById('currentStepText'),
         tipIcon:           document.getElementById('tipIcon'),
         tipText:           document.getElementById('tipText'),
@@ -1121,15 +1042,14 @@ body.dashboard-page main {
         els.progressPercent.textContent = `${Math.round(progress)}%`;
         els.progressTime.textContent = formatTimeRemaining(elapsed);
 
-        const dots = els.stepsDots.querySelectorAll('.step-dot');
-        dots.forEach((dot, index) => {
-            const stepNum = index + 1;
-            dot.classList.remove('done', 'active');
-            if (stepNum < step) dot.classList.add('done');
-            else if (stepNum === step) dot.classList.add('active');
-        });
-
-        els.currentStepText.textContent = label;
+        // Fade smooth on label change (only swap if text actually changes)
+        if (els.currentStepText && els.currentStepText.textContent !== label) {
+            els.currentStepText.style.opacity = '0';
+            setTimeout(() => {
+                els.currentStepText.textContent = label;
+                els.currentStepText.style.opacity = '1';
+            }, 300);
+        }
 
         if (elapsed > 180) {
             els.processingTitle.textContent = "On affine la sélection...";
@@ -1162,9 +1082,7 @@ body.dashboard-page main {
         els.progressFill.style.width = '100%';
         els.progressPercent.textContent = '100%';
         els.progressTime.textContent = 'Terminé !';
-        const dots = els.stepsDots.querySelectorAll('.step-dot');
-        dots.forEach(dot => { dot.classList.remove('active'); dot.classList.add('done'); });
-        els.currentStepText.textContent = "C'est prêt !";
+        if (els.currentStepText) els.currentStepText.textContent = "C'est prêt !";
         els.processingTitle.textContent = "Tes pistes sont prêtes 🎉";
         els.processingSubtitle.textContent = "Redirection...";
         els.statusMessage.style.display = 'none';
