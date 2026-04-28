@@ -1,18 +1,21 @@
-# robots.txt pour phase de pré-lancement
+# robots.txt — Tilto
+
 User-agent: *
 
-# Permettre l'indexation des pages de présentation
+# Pages publiques indexables
 Allow: /
 Allow: /about
 Allow: /early
+Allow: /reconversion/
+Allow: /orientation/
 Allow: /static/
 
-# Permettre les pages légales (importantes pour confiance)
+# Pages légales (importantes pour signal de confiance Google)
 Allow: /politique-de-confidentialite
 Allow: /cookie-policy
 Allow: /mentions-legales
 
-# Bloquer les pages fonctionnelles pas encore prêtes
+# Pages fonctionnelles non indexables
 Disallow: /dashboard/
 Disallow: /quiz/
 Disallow: /tokens/
@@ -28,17 +31,44 @@ Disallow: /health
 Disallow: /set-language/
 Disallow: /analysis/
 
-# Bloquer les paramètres sensibles
+# Bloquer paramètres sensibles
 Disallow: /*?*
 Disallow: /*session*
 Disallow: /*token*
 Disallow: /*csrf*
 
-# Permettre le sitemap
-Allow: /sitemap.xml
-
 # Sitemap
+Allow: /sitemap.xml
 Sitemap: https://tilto.co/sitemap.xml
 
-# Délai d'exploration (optionnel, pour éviter la surcharge)
+# Délai d'exploration
 Crawl-delay: 1
+
+
+# ─── Crawlers IA / LLMs (generative SEO) ───
+# Autoriser les LLMs à indexer le contenu public — augmente la probabilité
+# que Tilto soit cité par ChatGPT / Claude / Perplexity.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/

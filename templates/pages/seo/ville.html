@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ville.h1 }} | Tilto{% endblock %}
+{% block meta_description %}{{ ville.meta_description }}{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+  {"@type":"ListItem","position":1,"name":"Tilto","item":"https://tilto.co"},
+  {"@type":"ListItem","position":2,"name":"Orientation","item":"https://tilto.co/orientation"},
+  {"@type":"ListItem","position":3,"name":"{{ ville.name }}","item":"https://tilto.co/orientation/{{ ville.slug }}"}
+]}
+</script>
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"Article","headline":"{{ ville.h1|e }}","description":"{{ ville.meta_description|e }}","author":{"@type":"Organization","name":"Tilto"},"publisher":{"@type":"Organization","name":"Tilto","logo":{"@type":"ImageObject","url":"https://tilto.co/static/image/tilto_favicon.png"}},"about":{"@type":"Place","name":"{{ ville.name }}","address":{"@type":"PostalAddress","addressLocality":"{{ ville.name }}","addressRegion":"{{ ville.region }}","addressCountry":"FR"}}}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.seo-page { max-width: 920px; margin: 0 auto; padding: 5rem 1.5rem 3rem; font-family: 'DM Sans', sans-serif; color: #1A1A2E; }
+.seo-page h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0 0 1rem; color: #1A1A2E; }
+.seo-page h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 2.5rem 0 1rem; color: #1A1A2E; }
+.seo-page p, .seo-page li { font-size: 1.05rem; line-height: 1.7; color: #4a5568; }
+.seo-page .seo-intro { background: #FAF7F2; border-left: 4px solid #A11857; padding: 1.5rem 1.75rem; border-radius: 0 14px 14px 0; margin: 1.5rem 0 2rem; }
+.seo-page .seo-context { background: #FBF1F6; border: 1px solid rgba(161,24,87,0.15); padding: 1.25rem 1.5rem; border-radius: 14px; margin: 1.5rem 0; font-size: 1rem; color: #1A1A2E; }
+.seo-page .seo-secteurs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; margin: 1.5rem 0; }
+.seo-page .seo-secteur-pill { background: #fff; border: 1px solid #EBD5E3; border-radius: 12px; padding: 1rem 1.2rem; font-weight: 600; color: #1A1A2E; text-align: center; }
+.seo-page .seo-cta-block { background: linear-gradient(135deg, #A11857 0%, #8b1249 100%); color: #fff; border-radius: 22px; padding: 2.5rem 2rem; text-align: center; margin: 3rem 0; }
+.seo-page .seo-cta-block h2 { color: #fff; font-size: 1.5rem; margin: 0 0 0.5rem; }
+.seo-page .seo-cta-block p { color: rgba(255,255,255,0.92); margin: 0 0 1.5rem; }
+.seo-page .seo-cta-block .seo-cta-btn { display: inline-block; background: #fff; color: #A11857; text-decoration: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.seo-page .seo-related { margin: 3rem 0 2rem; }
+.seo-page .seo-related h2 { font-size: 1.3rem; }
+.seo-page .seo-related-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; list-style: none; padding: 0; }
+.seo-page .seo-related-list a { display: block; padding: 0.85rem 1rem; background: #fff; border: 1px solid #EBD5E3; border-radius: 12px; text-decoration: none; color: #1A1A2E; font-weight: 500; transition: all 0.2s; }
+.seo-page .seo-related-list a:hover { border-color: #A11857; color: #A11857; transform: translateY(-1px); }
+.seo-breadcrumb { font-size: 0.85rem; color: #888; margin-bottom: 1.5rem; }
+.seo-breadcrumb a { color: #A11857; text-decoration: none; }
+.seo-breadcrumb a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="seo-page">
+  <nav class="seo-breadcrumb" aria-label="Fil d'ariane">
+    <a href="/">Tilto</a> &rsaquo; Orientation &rsaquo; <span>{{ ville.name }}</span>
+  </nav>
+
+  <h1>{{ ville.h1 }}</h1>
+
+  <div class="seo-intro">
+    <p>{{ ville.intro }}</p>
+  </div>
+
+  <h2>Les secteurs qui recrutent à {{ ville.name }}</h2>
+  <div class="seo-secteurs">
+    {% for sect in ville.top_secteurs %}
+    <div class="seo-secteur-pill">{{ sect }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="seo-context">
+    <strong>📍 Contexte local :</strong> {{ ville.context }}
+  </div>
+
+  <div class="seo-cta-block">
+    <h2>Trouve tes pistes adaptées au marché de {{ ville.name }}</h2>
+    <p>5 minutes de conversation avec Claire. Le diagnostic croise ton profil avec les vraies opportunités du marché de {{ ville.region }}.</p>
+    <a href="/" class="seo-cta-btn">💬 Discuter avec Claire (5 min)</a>
+  </div>
+
+  <h2>Comment ça marche concrètement</h2>
+  <p>Quand tu démarres ta conversation avec Claire, l'analyse Tilto utilise ta localisation à {{ ville.name }} pour rechercher en temps réel les vraies offres d'emploi récentes dans la région {{ ville.region }}. Chaque piste proposée intègre :</p>
+  <ul>
+    <li>Une <strong>fourchette de salaire</strong> cohérente avec le marché local</li>
+    <li>Le <strong>nombre d'offres récentes</strong> dans ta région</li>
+    <li>La <strong>durée de formation</strong> nécessaire</li>
+    <li>Le <strong>lien clair</strong> avec ton parcours actuel</li>
+  </ul>
+
+  <p>C'est gratuit, confidentiel, et tu peux fermer à tout moment.</p>
+
+  <section class="seo-related" aria-label="Reconversion par métier">
+    <h2>Reconversion par métier</h2>
+    <ul class="seo-related-list">
+      {% for m in featured_metiers %}
+      <li><a href="/reconversion/{{ m.slug }}">Reconversion {{ m.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="seo-related" aria-label="Autres villes">
+    <h2>Reconversion dans d'autres villes</h2>
+    <ul class="seo-related-list">
+      {% for v in related_villes %}
+      <li><a href="/orientation/{{ v.slug }}">Reconversion à {{ v.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+</article>
+{% endblock %}

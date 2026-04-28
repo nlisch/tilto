@@ -57,7 +57,7 @@ The career agent is built around 7 traits, each with concrete implementation:
 
 ## Agent context layer
 
-All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles **session state**, **knowledge base**, **tools**, **LLM clients**, **telemetry**, and a lazy bridge to the **long-term user context**. This is the spine that prevents the "bazaar of disconnected agents" problem as the system grows.
+All agents in Tilto consume a shared `AgentContext` (`services/agent_context.py`) — a single entry point that bundles **session state**, **knowledge base**, **tools**, **LLM clients**, **telemetry**, and a lazy bridge to the **long-term user context**.
 
 Two complementary layers:
 
@@ -89,14 +89,6 @@ flowchart LR
     class A1 agent
     class A2,A3 futureagent
 ```
-
-**Why a context layer matters.** Most agentic codebases that started with one agent end up with N agents that:
-- Each fetch user data from DB in their own way (drift in formats)
-- Duplicate token-tracking and cost-logging logic
-- Instantiate their own LLM clients (no shared rate limit awareness)
-- Hardcode prompts instead of reading them from a knowledge base
-
-The `AgentContext` solves this by being the **single source of truth per job**. New agents implement one method (their core logic) and consume the context for everything else. See the docstring at the top of `services/agent_context.py` for the full rationale.
 
 ## Agent architecture
 

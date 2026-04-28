@@ -265,7 +265,6 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                       <a href="{{ url_for('auth.signup') }}" class="nav-link cta">{{ _('M\'inscrire') }}</a>
                   {% else %}
                   <a href="{{ url_for('tilto_pro') }}" class="nav-link">Tilto Pro</a>
-                  <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="nav-link">Smart Contact</a>
                   <a href="{{ url_for('auth.login') }}" class="nav-link">{{ _('Me connecter') }}</a>
                   {% endif %}
               </nav>
@@ -320,10 +319,6 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
             <a href="{{ url_for('tilto_pro') }}" class="mobile-nav-link">
                 <i class="fas fa-briefcase" style="margin-right: 10px;"></i>
                 Tilto Pro
-            </a>
-            <a href="{{ url_for('tilto_smart_contacts', slug_id='8793') }}" class="mobile-nav-link">
-                <i class="fas fa-address-card" style="margin-right: 10px;"></i>
-                Smart Contact
             </a>
             <a href="{{ url_for('auth.login') }}" class="mobile-nav-link">
                 <i class="fas fa-sign-in-alt" style="margin-right: 10px;"></i>
