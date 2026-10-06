@@ -183,3 +183,4 @@ templates/quiz_analysis/static_analysis/user_*.html
 # Pages with real PII (emails, phone numbers, addresses)
 templates/pages/analysis_temp.html
 templates/pages/demo_smart_contact_nicolas.html
+logs_errors.txt
