@@ -46,6 +46,11 @@ class AudioService:
                         files=files,
                         timeout=60
                     )
+                    if not response.ok:
+                        # Le corps contient le code d'erreur OpenAI (ex : insufficient_quota, rate_limit_exceeded)
+                        logger.error(
+                            f"Whisper API {response.status_code} : {response.text[:1000]}"
+                        )
                     response.raise_for_status()
                     result = response.json()
                     transcript = result.get('text', '')
