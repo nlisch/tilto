@@ -1,15 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Perdu·e dans ta vie pro ? 3 pistes concrètes sous 24h | Tilto{% endblock %}
-{% block meta_description %}5-10 min de quiz, puis notre duo IA + expert humain te livre 3 pistes pro qui font tilt sous quelques minutes. Gratuit et confidentiel.{% endblock %}
+{% block title %}3 pistes carrière en 5 min, basées sur le marché — Tilto{% endblock %}
+{% block meta_description %}Discute 5 min avec Claire, reçois 3 pistes carrière concrètes adaptées à ton profil et au marché de l'emploi de ta région. Gratuit et confidentiel.{% endblock %}
 {% block body_class %}tilto-new-homepage{% endblock %}
 
 {% block extra_head %}
 <script type="application/ld+json" nonce="{{ g.nonce }}">
-{"@context":"https://schema.org","@type":"Organization","name":"Tilto","url":"https://tilto.co","description":"Service d'orientation professionnelle par IA.","areaServed":{"@type":"Country","name":"France"}}
+{"@context":"https://schema.org","@type":"Organization","name":"Tilto","url":"https://tilto.co","logo":"https://tilto.co/static/image/tilto_favicon.png","description":"Service d'orientation professionnelle par IA, basé sur les données du marché de l'emploi français.","areaServed":{"@type":"Country","name":"France"},"sameAs":["https://www.linkedin.com/company/tilto-ai"]}
 </script>
 <script type="application/ld+json" nonce="{{ g.nonce }}">
-    {"@context":"https://schema.org","@type":"Service","name":"Diagnostic Tilto","provider":{"@type":"Organization","name":"Tilto"},"description":"5-10 minutes de quiz analysées par IA + expert humain pour recevoir sous 24h 3 pistes professionnelles personnalisées","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}
+{"@context":"https://schema.org","@type":"Service","name":"Diagnostic Tilto","provider":{"@type":"Organization","name":"Tilto"},"serviceType":"Career orientation","areaServed":{"@type":"Country","name":"France"},"description":"5 minutes de conversation pour recevoir 3 pistes carrière personnalisées, croisées avec les opportunités du marché de l'emploi en France.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","availability":"https://schema.org/InStock"}}
+</script>
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Combien de temps prend le diagnostic Tilto ?","acceptedAnswer":{"@type":"Answer","text":"Environ 5 minutes de conversation avec Claire. Le bilan personnalisé arrive dans les minutes qui suivent par email et sur ton tableau de bord."}},
+  {"@type":"Question","name":"Le diagnostic est-il vraiment gratuit ?","acceptedAnswer":{"@type":"Answer","text":"Oui, totalement gratuit et sans engagement. Aucune carte bancaire demandée. Tu reçois 3 pistes carrière concrètes à la fin."}},
+  {"@type":"Question","name":"Comment Tilto choisit les pistes proposées ?","acceptedAnswer":{"@type":"Answer","text":"L'analyse croise tes réponses avec les vraies offres d'emploi récentes dans ta région. Chaque piste indique le marché actuel, une fourchette de salaire et la durée de formation nécessaire."}},
+  {"@type":"Question","name":"Mes données sont-elles confidentielles ?","acceptedAnswer":{"@type":"Answer","text":"Oui. Aucune information n'est partagée avec des tiers. Tu peux supprimer ton compte et tes données à tout moment depuis ton espace personnel."}},
+  {"@type":"Question","name":"À qui s'adresse Tilto ?","acceptedAnswer":{"@type":"Answer","text":"Tilto s'adresse à toute personne qui se questionne sur sa vie professionnelle : reconversion, premier doute, envie de changement. Quel que soit ton âge, ton secteur ou ton expérience."}}
+]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,8 +39,8 @@
 
       {% if config.QUIZ_CHAT_MODE %}
         {# Le CTA ouvre le chat immersif #}
-        <button type="button" class="hp-hero__cta" id="immStartBtn">🎙️ Trouver mes pistes avec Claire</button>
-        <p class="hp-hero__re">5 min de conversation · gratuit · confidentiel</p>
+        <button type="button" class="hp-hero__cta" id="immStartBtn">💬 Trouver mes pistes avec Claire</button>
+        <p class="hp-hero__re">🎙️ 5 min de conversation · gratuit · confidentiel</p>
       {% else %}
         {# Sans QUIZ_CHAT_MODE : redirige vers le modal quiz classique #}
         <a href="/bilan-carriere-express" class="hp-hero__cta" id="startBilanBtn" style="text-decoration:none;display:inline-block;">👉 Trouver mes premières pistes</a>
@@ -1524,8 +1533,10 @@
 
     <!-- Recording (same zone, button changes state) -->
     <div class="imm-rec-zone" id="immRecZone" style="display:none;">
-      <button type="button" class="imm-mic imm-mic--recording" id="immStopBtn">
-        <span>⏹</span>
+      <button type="button" class="imm-mic imm-mic--recording" id="immStopBtn" aria-label="Terminer l'enregistrement">
+        <svg class="imm-stop-icon" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="6" y="6" width="16" height="16" rx="3" fill="currentColor"/>
+        </svg>
       </button>
       <canvas class="imm-waveform" id="immWaveform" style="display:none;"></canvas>
       <p class="imm-rec-time" id="immRecTimer">0:00</p>
@@ -1616,6 +1627,7 @@
     box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
     animation: micRecPulse 1.5s ease-in-out infinite;
 }
+.imm-stop-icon { color: #fff; display: block; }
 @keyframes micRecPulse {
     0%,100% { box-shadow: 0 8px 35px rgba(239,68,68,0.3); }
     50% { box-shadow: 0 8px 35px rgba(239,68,68,0.3), 0 0 0 12px rgba(239,68,68,0); }

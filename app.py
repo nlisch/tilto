@@ -3,7 +3,7 @@ from flask_limiter.errors import RateLimitExceeded
 from flask_login import current_user
 from config import get_config, get_csp_policy
 from models import User, init_db, update_database
-from routes import auth_bp, quiz_bp, quiz_analysis_bp, user_bp, image_bp, video_bp, token_bp, coupons_bp, cookie_bp, audio_bp, lead_bp, dashboard_bp, audio_capsule_bp, admin_bp, chat_bp, async_analysis_bp, help_requests_bp
+from routes import auth_bp, quiz_bp, quiz_analysis_bp, user_bp, image_bp, video_bp, token_bp, coupons_bp, cookie_bp, audio_bp, lead_bp, dashboard_bp, audio_capsule_bp, admin_bp, chat_bp, async_analysis_bp, help_requests_bp, seo_bp
 import logging
 import google.cloud.logging
 from opentelemetry import trace
@@ -575,12 +575,13 @@ def create_app():
                     '/set-language',
                     '/cookie',
                     '/robots.txt',
-                    '/sitemap.xml', 
+                    '/sitemap.xml',
                     '/politique-de-confidentialite',
-                    '/cookie-policy', 
+                    '/cookie-policy',
                     '/mentions-legales',
                     '/about',
                     '/orientation',
+                    '/reconversion',
                     '/get_questions_homepage/',
                     '/startup-metrics'
                 ]
@@ -778,8 +779,9 @@ def create_app():
     app.register_blueprint(chat_bp)
     app.register_blueprint(async_analysis_bp)
     app.register_blueprint(help_requests_bp)
-    
-    
+    app.register_blueprint(seo_bp)
+
+
     @app.template_filter('status_badge_class')
     def status_badge_class(status):
         """Retourne la classe CSS pour les badges de statut de lead"""
@@ -1757,7 +1759,7 @@ def create_app():
         ]
         
         urls.extend(legal_urls)
-        
+
         if not app.config.get('PRELAUNCH_MODE', False):
             urls.extend([
                 {
@@ -1767,6 +1769,20 @@ def create_app():
                     'lastmod': datetime.now().strftime('%Y-%m-%d')
                 }
             ])
+
+        # ─── Pages SEO programmatiques (métiers + villes) ───
+        try:
+            from routes.seo import get_all_seo_urls
+            base_url = app.config.get('BASE_URL', 'https://tilto.co').rstrip('/')
+            for seo_url in get_all_seo_urls(base_url=base_url):
+                urls.append({
+                    'loc': seo_url['loc'],
+                    'priority': seo_url['priority'],
+                    'changefreq': seo_url['changefreq'],
+                    'lastmod': datetime.now().strftime('%Y-%m-%d'),
+                })
+        except Exception as seo_err:
+            app.logger.warning(f"Sitemap : erreur ajout pages SEO : {seo_err}")
         
         xml_content = '''<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'''

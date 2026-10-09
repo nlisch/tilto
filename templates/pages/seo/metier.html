@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ metier.h1 }} | Tilto{% endblock %}
+{% block meta_description %}{{ metier.meta_description }}{% endblock %}
+
+{% block extra_head %}
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+  {"@type":"ListItem","position":1,"name":"Tilto","item":"https://tilto.co"},
+  {"@type":"ListItem","position":2,"name":"Reconversion","item":"https://tilto.co/reconversion"},
+  {"@type":"ListItem","position":3,"name":"{{ metier.name }}","item":"https://tilto.co/reconversion/{{ metier.slug }}"}
+]}
+</script>
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"Article","headline":"{{ metier.h1|e }}","description":"{{ metier.meta_description|e }}","author":{"@type":"Organization","name":"Tilto"},"publisher":{"@type":"Organization","name":"Tilto","logo":{"@type":"ImageObject","url":"https://tilto.co/static/image/tilto_favicon.png"}}}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.seo-page { max-width: 920px; margin: 0 auto; padding: 5rem 1.5rem 3rem; font-family: 'DM Sans', sans-serif; color: #1A1A2E; }
+.seo-page h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0 0 1rem; color: #1A1A2E; }
+.seo-page h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 700; margin: 2.5rem 0 1rem; color: #1A1A2E; }
+.seo-page p, .seo-page li { font-size: 1.05rem; line-height: 1.7; color: #4a5568; }
+.seo-page .seo-intro { background: #FAF7F2; border-left: 4px solid #A11857; padding: 1.5rem 1.75rem; border-radius: 0 14px 14px 0; margin: 1.5rem 0 2rem; }
+.seo-page ul { padding-left: 1.5rem; }
+.seo-page .seo-stat { background: #FBF1F6; border: 1px solid rgba(161,24,87,0.15); padding: 1.25rem 1.5rem; border-radius: 14px; margin: 2rem 0; font-size: 1rem; color: #1A1A2E; }
+.seo-page .seo-stat strong { color: #A11857; }
+.seo-page .seo-paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.seo-page .seo-path-card { background: #fff; border: 1px solid #EBD5E3; border-radius: 14px; padding: 1.25rem; }
+.seo-page .seo-path-card h3 { font-family: 'DM Sans'; font-size: 1.05rem; color: #A11857; margin: 0 0 0.4rem; font-weight: 700; }
+.seo-page .seo-path-card p { font-size: 0.95rem; margin: 0; }
+.seo-page .seo-cta-block { background: linear-gradient(135deg, #A11857 0%, #8b1249 100%); color: #fff; border-radius: 22px; padding: 2.5rem 2rem; text-align: center; margin: 3rem 0; }
+.seo-page .seo-cta-block h2 { color: #fff; font-size: 1.5rem; margin: 0 0 0.5rem; }
+.seo-page .seo-cta-block p { color: rgba(255,255,255,0.92); margin: 0 0 1.5rem; }
+.seo-page .seo-cta-block .seo-cta-btn { display: inline-block; background: #fff; color: #A11857; text-decoration: none; padding: 1rem 2rem; border-radius: 14px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.seo-page .seo-related { margin: 3rem 0 2rem; }
+.seo-page .seo-related h2 { font-size: 1.3rem; }
+.seo-page .seo-related-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; list-style: none; padding: 0; }
+.seo-page .seo-related-list a { display: block; padding: 0.85rem 1rem; background: #fff; border: 1px solid #EBD5E3; border-radius: 12px; text-decoration: none; color: #1A1A2E; font-weight: 500; transition: all 0.2s; }
+.seo-page .seo-related-list a:hover { border-color: #A11857; color: #A11857; transform: translateY(-1px); }
+.seo-page .seo-pain-points { background: #fff; border: 1px solid #EBD5E3; border-radius: 14px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
+.seo-page .seo-pain-points h3 { margin: 0 0 0.75rem; font-size: 1rem; color: #1A1A2E; font-family: 'DM Sans'; font-weight: 700; }
+.seo-page .seo-pain-points ul { margin: 0; padding-left: 1.25rem; }
+.seo-page .seo-pain-points li { font-size: 0.95rem; padding: 0.2rem 0; }
+.seo-breadcrumb { font-size: 0.85rem; color: #888; margin-bottom: 1.5rem; }
+.seo-breadcrumb a { color: #A11857; text-decoration: none; }
+.seo-breadcrumb a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="seo-page">
+  <nav class="seo-breadcrumb" aria-label="Fil d'ariane">
+    <a href="/">Tilto</a> &rsaquo; Reconversion &rsaquo; <span>{{ metier.name }}</span>
+  </nav>
+
+  <h1>{{ metier.h1 }}</h1>
+
+  <div class="seo-intro">
+    <p>{{ metier.intro }}</p>
+  </div>
+
+  <div class="seo-pain-points">
+    <h3>Ce que beaucoup de {{ metier.name }} ressentent</h3>
+    <ul>
+      {% for pain in metier.pain_points %}
+      <li>{{ pain }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <h2>3 directions concrètes à explorer</h2>
+  <p>Voici les pistes les plus naturelles pour {{ metier.name_singulier_h }} qui veut bouger sans repartir de zéro :</p>
+  <div class="seo-paths">
+    {% for path in metier.alt_paths %}
+    <div class="seo-path-card">
+      <h3>{{ path.name }}</h3>
+      <p>{{ path.why }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="seo-stat">
+    <strong>📊 Tu n'es pas seul·e :</strong> {{ metier.stat }}
+  </div>
+
+  <div class="seo-cta-block">
+    <h2>Trouve les pistes qui te correspondent vraiment</h2>
+    <p>{{ metier.cta_hook }}</p>
+    <a href="/" class="seo-cta-btn">💬 Discuter avec Claire (5 min)</a>
+  </div>
+
+  <h2>Comment Tilto identifie tes pistes</h2>
+  <p>Tilto n'est pas un test générique de personnalité. C'est un diagnostic IA qui croise tes réponses avec les vraies offres d'emploi récentes dans ta région. Chaque piste proposée indique le marché actuel, la fourchette de salaire et la durée de formation nécessaire — adapté à ton profil de {{ metier.name }}.</p>
+
+  <ul>
+    <li><strong>5 minutes</strong> de conversation avec Claire (vocal ou texte)</li>
+    <li><strong>3 pistes carrière</strong> personnalisées avec contexte marché</li>
+    <li><strong>Gratuit, confidentiel, sans engagement</strong></li>
+  </ul>
+
+  <section class="seo-related" aria-label="Autres reconversions courantes">
+    <h2>D'autres reconversions courantes</h2>
+    <ul class="seo-related-list">
+      {% for m in related_metiers %}
+      <li><a href="/reconversion/{{ m.slug }}">Reconversion {{ m.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="seo-related" aria-label="Reconversion par ville">
+    <h2>Reconversion par ville</h2>
+    <ul class="seo-related-list">
+      {% for v in featured_villes %}
+      <li><a href="/orientation/{{ v.slug }}">Reconversion à {{ v.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+</article>
+{% endblock %}

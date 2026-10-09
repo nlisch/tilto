@@ -15,9 +15,10 @@ from .admin import admin_bp
 from .chat import chat_bp
 from .async_analysis import async_analysis_bp
 from .help_requests import help_requests_bp
+from .seo import seo_bp
 
 
 # Si vous voulez contrôler ce qui est disponible lors de l'utilisation de "from routes import *"
-__all__ = ['auth_bp', 'quiz_bp', 'quiz_analysis_bp', 'user_bp', 'image_bp', 'video_bp', 'token_bp', 'coupons_bp', 'cookie_bp', 'audio_bp', 'lead_bp', 'audio_capsule_bp', 'admin_bp', 'chat_bp', 'async_analysis_bp', 'help_requests_bp']
+__all__ = ['auth_bp', 'quiz_bp', 'quiz_analysis_bp', 'user_bp', 'image_bp', 'video_bp', 'token_bp', 'coupons_bp', 'cookie_bp', 'audio_bp', 'lead_bp', 'audio_capsule_bp', 'admin_bp', 'chat_bp', 'async_analysis_bp', 'help_requests_bp', 'seo_bp']
 
 # Vous pouvez également ajouter des variables ou des configurations spécifiques aux routes ici si nécessaire

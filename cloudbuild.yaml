@@ -13,14 +13,19 @@ steps:
       '.'
     ]
 
-# Step 0b: Cache longue durée sur les images GCS
+# Step 0b: Cache longue durée sur les images GCS — skippé si _STORAGE_BUCKET est vide
   - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
     args:
-      - '-m'
-      - 'setmeta'
-      - '-h'
-      - 'Cache-Control:public, max-age=31536000, immutable'
-      - 'gs://${_STORAGE_BUCKET}/production/**'
+      - '-c'
+      - |
+        if [ -z "${_STORAGE_BUCKET}" ]; then
+          echo "⏭️  _STORAGE_BUCKET non défini — skip cache headers GCS"
+          exit 0
+        fi
+        gsutil -m setmeta \
+          -h 'Cache-Control:public, max-age=31536000, immutable' \
+          "gs://${_STORAGE_BUCKET}/production/**"
       
   # Step 1: Test de l'image
   - name: 'gcr.io/$PROJECT_ID/quiz-app:$BUILD_ID'
