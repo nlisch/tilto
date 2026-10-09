@@ -1193,8 +1193,7 @@ def pro_contact():
         logger.info(f"[{g.request_id}] Pro lead: {firstname} {lastname} <{email}> — {activite}")
 
         # ===== VALIDATIONS =====
-        if not firstname or not lastname:
-            return jsonify({'success': False, 'message': 'Merci de renseigner votre prénom et nom.'}), 400
+        # Prénom facultatif : la landing /pro ne demande que l'email
 
         if not email:
             return jsonify({'success': False, 'message': 'Merci de renseigner votre email.'}), 400
@@ -1231,7 +1230,7 @@ def pro_contact():
                 cursor.close()
                 return jsonify({
                     'success': False,
-                    'message': 'Vous êtes déjà inscrit·e ! On vous recontacte très vite.'
+                    'message': 'Vous êtes déjà inscrit·e ! On revient vers vous très vite par email.'
                 }), 409
             else:
                 # Nouveau lead
@@ -1285,7 +1284,7 @@ def pro_contact():
 
             return jsonify({
                 'success': True,
-                'message': 'Merci ! On vous recontacte sous 24h pour planifier votre démo.'
+                'message': 'Merci ! On vous envoie la marche à suivre par email sous 24h.'
             }), 200
 
         except Exception as db_err:

@@ -1,26 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Tilto Pro — Le livrable de fin de coaching qui donne de la consistance à votre accompagnement{% endblock %}
+{% block title %}Tilto Pro — Signez plus de clients avec un dossier de reconversion offert{% endblock %}
 
-{% block meta_description %}Offrez à vos clients un livrable concret en fin de coaching : pistes métier localisées, plan d'action personnalisé, entreprises à contacter. 1ère analyse offerte.{% endblock %}
+{% block meta_description %}Offrez à votre prospect qui hésite un dossier de reconversion de 20 pages : pistes métier, salaires, entreprises à contacter. Prêt en 48 h. 1er dossier gratuit, puis 49 € HT.{% endblock %}
 
 {% block body_class %}tilto-pro-page{% endblock %}
 
 {% block extra_head %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Caveat:wght@600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 <script type="application/ld+json" nonce="{{ g.nonce }}">
 {
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Tilto Pro",
     "provider": { "@type": "Organization", "name": "Tilto" },
-    "description": "Livrable de fin de coaching personnalisé : portrait identitaire, compétences, pistes métier localisées, plan d'action concret. Livré en 48h.",
-    "serviceType": "Outil de clôture de coaching professionnel",
+    "description": "Dossier de reconversion de 20 pages pour les prospects et clients des coachs : pistes métier chiffrées, entreprises à contacter, plan d'action. Livré en 48 h.",
+    "serviceType": "Outil pour coachs en reconversion professionnelle",
     "areaServed": { "@type": "Country", "name": "France" },
-    "offers": { "@type": "Offer", "price": "149.00", "priceCurrency": "EUR", "availability": "https://schema.org/InStock", "description": "Par analyse — Première analyse offerte" }
+    "offers": { "@type": "Offer", "price": "49.00", "priceCurrency": "EUR", "availability": "https://schema.org/InStock", "description": "Par dossier — Premier dossier gratuit" }
 }
+</script>
+<script type="application/ld+json" nonce="{{ g.nonce }}">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"Combien ça coûte après le dossier gratuit ?","acceptedAnswer":{"@type":"Answer","text":"49 € HT par dossier, à l'unité. Pas d'abonnement, pas d'engagement : vous l'utilisez pour les clients que vous choisissez."}},
+  {"@type":"Question","name":"Mes clients vont-ils croire que c'est automatique ?","acceptedAnswer":{"@type":"Answer","text":"Le dossier reprend leurs propres phrases et leur parcours. Ce qu'ils lisent, c'est eux, pas un profil type."}},
+  {"@type":"Question","name":"Je fais déjà mes synthèses avec ChatGPT.","acceptedAnswer":{"@type":"Answer","text":"Tilto croise l'entretien avec les données emploi de la région et des entreprises réelles, dans un dossier structuré de 20 pages. Et contrairement à un outil grand public, tout est anonymisé et rien n'est stocké."}},
+  {"@type":"Question","name":"Que deviennent les données de mon client ?","acceptedAnswer":{"@type":"Answer","text":"Elles sont anonymisées pour l'analyse et ne sont pas stockées. Rien n'est revendu ni partagé."}},
+  {"@type":"Question","name":"Je ne suis pas à l'aise avec la tech.","acceptedAnswer":{"@type":"Answer","text":"Vous envoyez un audio et un CV. Rien à installer, rien à paramétrer."}}
+]}
 </script>
 {% endblock %}
 
@@ -31,37 +40,99 @@
 .tilto-pro-page main > * { max-width: none !important; }
 
 .tilto-pro-page {
-    --tp-primary: #A11857; --tp-primary-dark: #7a1142; --tp-primary-light: #FDF2F8;
-    --tp-cream: #FAF7F2; --tp-rose-pale: #EBD5E3;
-    --tp-text: #1A1A1A; --tp-text-medium: #4A4A4A; --tp-text-light: #777;
-    --tp-white: #FFFFFF; --tp-gold: #FFB400; --tp-gold-light: #FFD54F;
+    --tp-primary: #A11857; --tp-primary-dark: #7a1142; --tp-primary-deep: #4A0B27;
+    --tp-primary-light: #FDF2F8; --tp-rose-pale: #EBD5E3;
+    --tp-ink: #2A1220; --tp-text: #3B3036; --tp-muted: #6B5F66;
+    --tp-text-medium: #4A4A4A; --tp-text-light: #777;
+    --tp-cream: #FAF7F2; --tp-line: #EDE4E8; --tp-white: #FFFFFF;
+    --tp-gold: #FFB400; --tp-gold-light: #FFD54F; --tp-gold-pale: #FFF4D6;
+    --tp-ok: #1F7A4D;
+}
+.tilto-pro-page .tp { font-family: 'DM Sans', system-ui, sans-serif; color: var(--tp-text); }
+.tilto-pro-page .tp h1, .tilto-pro-page .tp h2, .tilto-pro-page .tp h3 { text-align: left; }
+.tilto-pro-page .tp h1, .tilto-pro-page .tp h2 { font-family: 'Fraunces', Georgia, serif; color: var(--tp-ink); letter-spacing: -0.02em; overflow-wrap: break-word; }
+.tilto-pro-page .tp h3 { color: var(--tp-ink); }
+.tilto-pro-page .tp a { color: var(--tp-primary); }
+.tilto-pro-page .tp section { padding: 0; }
+/* Aligné sur .header-container de base.html (max 1400px, 40px de marge) */
+.tilto-pro-page .tp-wrap { max-width: 1400px; margin: 0 auto; padding-left: 40px; padding-right: 40px; box-sizing: border-box; }
+.tilto-pro-page .tp-alt { background: var(--tp-cream); }
+.tilto-pro-page .tp-h2 { margin: 0 0 16px; font-size: clamp(1.9rem, 3.4vw, 2.75rem); line-height: 1.06; font-weight: 800; }
+.tilto-pro-page .tp-center { text-align: center !important; }
+.tilto-pro-page .tp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tilto-pro-page .tp-hp { position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important; }
+
+/* ═══ NAV : CTA « Mon dossier gratuit » (visiteurs, base.html) ═══ */
+.tilto-pro-page .nav-link.cta[href="#essai"] { margin-right: 0; }
+@media (max-width: 768px) {
+    .tilto-pro-page .nav-links:has(> a[href="#essai"]) { display: flex !important; }
+    .tilto-pro-page .nav-link.cta[href="#essai"] { padding: 12px 16px; min-height: 44px; box-sizing: border-box; display: inline-flex; align-items: center; font-size: 0.9rem; white-space: nowrap; }
 }
 
-/* ═══ BUTTONS (scoped) ═══ */
-.tilto-pro-page .tp-btn-primary { background: var(--tp-primary); color: var(--tp-white); padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.25s; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; }
-.tilto-pro-page .tp-btn-primary:hover { background: var(--tp-primary-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(161,24,87,0.25); }
-.tilto-pro-page .tp-btn-outline { background: transparent; color: var(--tp-primary); padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.95rem; border: 2px solid var(--tp-rose-pale); cursor: pointer; transition: all 0.25s; box-sizing: border-box; }
-.tilto-pro-page .tp-btn-outline:hover { border-color: var(--tp-primary); background: var(--tp-primary-light); }
-.tilto-pro-page .tp-btn-gold { background: linear-gradient(135deg, var(--tp-gold-light), var(--tp-gold)); color: #5A3800; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.25s; width: 100%; box-sizing: border-box; }
-.tilto-pro-page .tp-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,180,0,0.4); }
+/* ═══ LEAD FORM (hero + CTA final) ═══ */
+.tilto-pro-page .tp-lead-form { width: 100%; max-width: 580px; display: flex; flex-wrap: wrap; gap: 10px; box-sizing: border-box; }
+.tilto-pro-page .tp-lead-form input[type="email"] { flex: 1 1 220px; min-width: 0; font: inherit; font-size: 17px; color: var(--tp-ink); padding: 12px 14px; border: 0; border-radius: 10px; min-height: 54px; box-sizing: border-box; background: var(--tp-white); }
+.tilto-pro-page .tp-lead-form input[type="email"]:focus { outline: 2px solid var(--tp-primary); outline-offset: 1px; }
+.tilto-pro-page .tp-lead-form button { flex: 1 0 auto; font: inherit; font-size: 17px; font-weight: 800; border: 0; border-radius: 10px; min-height: 54px; padding: 0 22px; cursor: pointer; transition: background 0.2s; }
+.tilto-pro-page .tp-lead-form button:disabled { opacity: 0.7; cursor: wait; }
+.tilto-pro-page .tp-lead-form--hero { margin-top: 36px; background: var(--tp-white); border: 1px solid var(--tp-line); border-radius: 16px; padding: 8px; box-shadow: 0 16px 36px rgba(74,11,39,0.08); }
+.tilto-pro-page .tp-lead-form--hero button { color: var(--tp-white); background: var(--tp-primary); }
+.tilto-pro-page .tp-lead-form--hero button:hover { background: var(--tp-primary-dark); }
+.tilto-pro-page .tp-lead-form--final button { color: #4A2E00; background: var(--tp-gold-light); }
+.tilto-pro-page .tp-lead-form--final button:hover { background: var(--tp-gold); }
+.tilto-pro-page .tp-form-msg { display: none; width: 100%; max-width: 580px; margin-top: 12px; padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; box-sizing: border-box; }
+.tilto-pro-page .tp-form-ok { display: none; width: 100%; max-width: 580px; margin-top: 36px; padding: 18px 20px; border-radius: 14px; background: var(--tp-white); border: 1px solid var(--tp-line); font-size: 1rem; line-height: 1.55; color: var(--tp-ink); box-sizing: border-box; }
+.tilto-pro-page .tp-form-ok strong { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; margin-bottom: 4px; }
+.tilto-pro-page .tp-final .tp-form-ok { margin-top: 0; }
 
 /* ═══ HERO ═══ */
-.tilto-pro-page .tp-hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 100px 32px 60px; position: relative; overflow: hidden; }
-.tilto-pro-page .tp-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(161,24,87,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(255,180,0,0.05) 0%, transparent 50%); }
-.tilto-pro-page .tp-hero-inner { max-width: 1100px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; position: relative; z-index: 1; }
-.tilto-pro-page .tp-hero-text h1 { font-family: 'Libre Baskerville', serif; font-size: clamp(1.85rem, 3.6vw, 2.5rem); line-height: 1.28; color: var(--tp-text); margin-bottom: 16px; }
-.tilto-pro-page .tp-hero-text h1 span { color: var(--tp-primary); font-family: 'Caveat', cursive; font-size: 1.15em; }
-.tilto-pro-page .tp-hero-text .tp-tagline { font-size: 1rem; color: var(--tp-text-medium); margin-bottom: 10px; max-width: 460px; line-height: 1.7; }
-.tilto-pro-page .tp-hero-text .tp-hook { font-size: 0.85rem; color: var(--tp-text-light); margin-bottom: 28px; max-width: 440px; line-height: 1.6; padding-left: 14px; border-left: 3px solid var(--tp-rose-pale); }
-.tilto-pro-page .tp-hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+.tilto-pro-page .tp-hero { background: var(--tp-cream); }
+.tilto-pro-page .tp-hero-inner { max-width: 900px; margin: 0 auto; padding: 128px 24px 72px; display: flex; flex-direction: column; align-items: center; text-align: center; box-sizing: border-box; scroll-margin-top: 80px; }
+.tilto-pro-page .tp-eyebrow { margin: 0 0 20px; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tp-primary); }
+.tilto-pro-page .tp-hero h1 { margin: 0; text-align: center !important; font-size: clamp(2.6rem, 6.4vw, 4.75rem); line-height: 0.98; font-weight: 800; letter-spacing: -0.03em; }
+.tilto-pro-page .tp-mark { background: linear-gradient(transparent 60%, var(--tp-gold-light) 60%); }
+.tilto-pro-page .tp-lead { margin: 28px 0 0; font-size: 1.25rem; line-height: 1.55; max-width: 640px; }
+.tilto-pro-page .tp-reassure { margin: 16px 0 0; font-size: 0.95rem; font-weight: 600; color: var(--tp-text); }
 
+/* ═══ KEY FIGURES ═══ */
+.tilto-pro-page .tp-figures .tp-wrap { padding-top: 64px; padding-bottom: 24px; }
+.tilto-pro-page .tp-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.tilto-pro-page .tp-figure { border: 1px solid var(--tp-line); border-radius: 16px; padding: 28px; box-shadow: 0 10px 24px rgba(74,11,39,0.05); }
+.tilto-pro-page .tp-figure-num { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 4rem; line-height: 1; color: var(--tp-primary); }
+.tilto-pro-page .tp-figure p { margin: 12px 0 0; font-size: 1rem; line-height: 1.5; }
+
+/* ═══ BENEFITS (texte + visuel) ═══ */
+.tilto-pro-page .tp-benefit .tp-wrap { padding-top: 72px; padding-bottom: 72px; display: flex; flex-wrap: wrap; gap: 56px; align-items: center; }
+.tilto-pro-page .tp-benefit--rev .tp-wrap { flex-wrap: wrap-reverse; }
+.tilto-pro-page .tp-benefit-text { flex: 1 1 400px; min-width: 0; }
+.tilto-pro-page .tp-benefit-text > p { margin: 0 0 20px; font-size: 1.06rem; line-height: 1.6; }
+.tilto-pro-page .tp-checks { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 1rem; }
+.tilto-pro-page .tp-checks li { display: flex; gap: 10px; align-items: flex-start; }
+.tilto-pro-page .tp-checks svg { flex: 0 0 18px; margin-top: 3px; }
+.tilto-pro-page .tp-btn-outline { display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border: 1.5px solid var(--tp-primary); border-radius: 10px; font-size: 0.95rem; font-weight: 700; text-decoration: none; color: var(--tp-primary) !important; transition: background 0.2s; }
+.tilto-pro-page .tp-btn-outline:hover { background: var(--tp-primary-light); }
+.tilto-pro-page .tp-visual { flex: 1 1 380px; min-width: 0; max-width: 480px; border-radius: 20px; padding: 28px; box-sizing: border-box; }
+.tilto-pro-page .tp-visual--soft { background: var(--tp-cream); }
+.tilto-pro-page .tp-visual--card { background: var(--tp-white); box-shadow: 0 16px 36px rgba(74,11,39,0.08); }
+.tilto-pro-page .tp-visual-label { margin: 0 0 16px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--tp-muted); }
+.tilto-pro-page .tp-rows { display: flex; flex-direction: column; gap: 12px; font-size: 0.95rem; }
+.tilto-pro-page .tp-row { display: flex; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--tp-line); border-radius: 12px; background: var(--tp-white); }
+.tilto-pro-page .tp-row span:last-child { font-weight: 700; color: var(--tp-muted); text-align: right; }
+.tilto-pro-page .tp-row--hl { background: var(--tp-primary-deep); border-color: var(--tp-primary-deep); color: var(--tp-white); }
+.tilto-pro-page .tp-row--hl span:last-child { color: var(--tp-gold-light); font-weight: 800; }
+.tilto-pro-page .tp-visual--flow { display: flex; flex-direction: column; gap: 12px; }
+.tilto-pro-page .tp-flow-arrow { text-align: center; font-family: 'Fraunces', Georgia, serif; font-size: 1.75rem; font-weight: 800; color: var(--tp-primary); line-height: 1; }
+.tilto-pro-page .tp-row strong { color: var(--tp-ink); }
+.tilto-pro-page .tp-row.tp-row--hl strong { color: var(--tp-white); }
+
+/* ═══ APERÇU DU LIVRABLE (repris de l'ancienne page) ═══ */
 /* ═══ MOCKUP ═══ */
 .tilto-pro-page .tp-hero-visual { position: relative; }
 .tilto-pro-page .tp-mockup { background: var(--tp-white); border-radius: 18px; box-shadow: 0 28px 72px rgba(0,0,0,0.12), 0 0 0 1px rgba(161,24,87,0.06); overflow: visible; transform: perspective(800px) rotateY(-3deg); transition: transform 0.5s; position: relative; }
 .tilto-pro-page .tp-mockup:hover { transform: perspective(800px) rotateY(0deg); }
 .tilto-pro-page .tp-mockup-head { background: var(--tp-cream); padding: 12px 16px; border-bottom: 2px solid var(--tp-primary); display: flex; align-items: center; gap: 8px; }
 .tilto-pro-page .tp-mockup-logo { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 0.85rem; color: var(--tp-primary); }
-.tilto-pro-page .tp-badge { background: var(--tp-gold); color: #5A3800; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; vertical-align: middle; }
+.tilto-pro-page .tp-mockup-badge { background: var(--tp-gold); color: #5A3800; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; vertical-align: middle; }
 .tilto-pro-page .tp-mockup-tabs { display: flex; gap: 0; margin-left: auto; }
 .tilto-pro-page .tp-mockup-tab { font-size: 0.54rem; padding: 4px 7px; font-weight: 600; color: var(--tp-text-light); border-bottom: 2px solid transparent; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
 .tilto-pro-page .tp-mockup-tab.tp-active { color: var(--tp-primary); border-color: var(--tp-primary); }
@@ -96,122 +167,13 @@
     transform: rotate(0deg);
 }
 
-/* ═══ SECTIONS ═══ */
-.tilto-pro-page section { padding: 80px 32px; box-sizing: border-box; }
-.tilto-pro-page .tp-si { max-width: 1000px; margin: 0 auto; }
-.tilto-pro-page .tp-sl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--tp-primary); margin-bottom: 10px; }
-.tilto-pro-page .tp-st { font-family: 'Libre Baskerville', serif; font-size: clamp(1.4rem, 2.8vw, 1.85rem); color: var(--tp-text); margin-bottom: 12px; line-height: 1.3; }
-.tilto-pro-page .tp-ss { font-size: 0.93rem; color: var(--tp-text-medium); max-width: 580px; margin-bottom: 36px; line-height: 1.7; }
-
-/* ═══ WHY ═══ */
-.tilto-pro-page .tp-why { background: var(--tp-white); }
-.tilto-pro-page .tp-why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.tilto-pro-page .tp-why-card { padding: 24px; border-radius: 16px; background: var(--tp-cream); border: 1px solid var(--tp-rose-pale); transition: all 0.3s; }
-.tilto-pro-page .tp-why-card:hover { border-color: var(--tp-primary); transform: translateY(-3px); box-shadow: 0 10px 28px rgba(161,24,87,0.07); }
-.tilto-pro-page .tp-why-emoji { font-size: 1.5rem; margin-bottom: 10px; display: block; }
-.tilto-pro-page .tp-why-card h3 { font-family: 'Libre Baskerville', serif; font-size: 0.9rem; margin-bottom: 6px; }
-.tilto-pro-page .tp-why-card p { font-size: 0.84rem; color: var(--tp-text-medium); line-height: 1.6; }
-
-/* ═══ FLOW ═══ */
-.tilto-pro-page .tp-how { background: var(--tp-cream); }
-.tilto-pro-page .tp-flow {
-    display: flex; align-items: center; justify-content: center; gap: 14px;
-    margin-top: 32px; flex-wrap: wrap;
-}
-.tilto-pro-page .tp-flow-item, .tilto-pro-page .tp-flow-result {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 18px 22px; border-radius: 14px; background: var(--tp-white);
-    border: 1px solid var(--tp-rose-pale);
-}
-.tilto-pro-page .tp-flow-item svg, .tilto-pro-page .tp-flow-result svg {
-    width: 22px; height: 22px; stroke: var(--tp-primary); stroke-width: 2;
-    fill: none; stroke-linecap: round; stroke-linejoin: round;
-}
-.tilto-pro-page .tp-flow-item span, .tilto-pro-page .tp-flow-result span { font-size: 0.82rem; font-weight: 600; color: var(--tp-text); }
-.tilto-pro-page .tp-flow-item small { font-size: 0.68rem; color: var(--tp-text-light); font-weight: 400; }
-.tilto-pro-page .tp-flow-result {
-    border-color: var(--tp-primary); background: var(--tp-primary-light);
-}
-.tilto-pro-page .tp-flow-result em {
-    font-family: 'Caveat', cursive; font-size: 1rem; color: var(--tp-primary);
-    font-style: normal; font-weight: 600;
-}
-.tilto-pro-page .tp-flow-plus { font-size: 1.1rem; font-weight: 700; color: var(--tp-text-light); }
-.tilto-pro-page .tp-flow-arrow svg {
-    width: 24px; height: 24px; stroke: var(--tp-primary); stroke-width: 2;
-    fill: none; stroke-linecap: round; stroke-linejoin: round;
-}
-
-/* ═══ OUTPUT ═══ */
-.tilto-pro-page .tp-output { background: var(--tp-white); }
-.tilto-pro-page .tp-output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.tilto-pro-page .tp-oc { padding: 22px; border-radius: 14px; border: 1px solid var(--tp-rose-pale); background: var(--tp-cream); transition: all 0.3s; }
-.tilto-pro-page .tp-oc:hover { border-color: var(--tp-primary); box-shadow: 0 8px 24px rgba(161,24,87,0.07); }
-.tilto-pro-page .tp-oc .tp-oic { width: 42px; height: 42px; border-radius: 11px; background: var(--tp-primary-light); display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 10px; }
-.tilto-pro-page .tp-oc .tp-oic svg, .tilto-pro-page .tp-mp-title .tp-ic svg, .tilto-pro-page .tp-mockup-hint svg { width: 20px; height: 20px; stroke: var(--tp-primary); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.tilto-pro-page .tp-mp-title .tp-ic { width: 24px; height: 24px; background: var(--tp-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.tilto-pro-page .tp-mp-title .tp-ic svg { width: 13px; height: 13px; }
-.tilto-pro-page .tp-oc h3 { font-family: 'Libre Baskerville', serif; font-size: 0.86rem; margin-bottom: 4px; }
-.tilto-pro-page .tp-oc > p { font-size: 0.8rem; color: var(--tp-text-medium); line-height: 1.55; }
-
-.tilto-pro-page .tp-output-bar { margin-top: 24px; padding: 16px 20px; background: var(--tp-primary-light); border-radius: 12px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-.tilto-pro-page .tp-output-bar-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: var(--tp-text-medium); }
-.tilto-pro-page .tp-output-bar-item span { font-size: 1rem; }
-
-/* ═══ PRICING + TESTIMONIAL ═══ */
-.tilto-pro-page .tp-pricing { background: var(--tp-cream); }
-.tilto-pro-page .tp-pricing-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
-.tilto-pro-page .tp-pc { background: var(--tp-white); border: 2px solid var(--tp-rose-pale); border-radius: 22px; padding: 32px 28px; transition: all 0.3s; }
-.tilto-pro-page .tp-pc:hover { border-color: var(--tp-primary); box-shadow: 0 14px 44px rgba(161,24,87,0.1); }
-.tilto-pro-page .tp-pc-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--tp-primary); margin-bottom: 6px; }
-.tilto-pro-page .tp-pc-price { font-family: 'Libre Baskerville', serif; font-size: 2.3rem; font-weight: 700; color: var(--tp-text); margin-bottom: 3px; }
-.tilto-pro-page .tp-pc-price sub { font-size: 0.95rem; font-weight: 400; color: var(--tp-text-light); }
-.tilto-pro-page .tp-pc-desc { font-size: 0.84rem; color: var(--tp-text-medium); margin-bottom: 10px; }
-.tilto-pro-page .tp-pc-free { background: linear-gradient(135deg, var(--tp-gold-light), var(--tp-gold)); color: #5A3800; font-weight: 700; font-size: 0.8rem; padding: 8px 14px; border-radius: 9px; margin-bottom: 18px; text-align: center; }
-.tilto-pro-page .tp-pc-list { list-style: none; padding: 0; margin-bottom: 20px; }
-.tilto-pro-page .tp-pc-list li { padding: 6px 0; font-size: 0.82rem; color: var(--tp-text-medium); display: flex; align-items: flex-start; gap: 8px; border-bottom: 1px solid rgba(161,24,87,0.06); }
-.tilto-pro-page .tp-pc-list li:last-child { border: none; }
-.tilto-pro-page .tp-pc-list .tp-ck { color: var(--tp-primary); font-weight: 700; flex-shrink: 0; }
-.tilto-pro-page .tp-ts { background: var(--tp-white); border-radius: 18px; padding: 28px; box-shadow: 0 8px 28px rgba(0,0,0,0.04); position: relative; }
-.tilto-pro-page .tp-ts::before { content: '«'; position: absolute; left: 18px; top: 8px; font-family: 'Libre Baskerville', serif; font-size: 3rem; color: var(--tp-primary); opacity: 0.08; }
-.tilto-pro-page .tp-ts-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--tp-rose-pale); margin-bottom: 14px; }
-.tilto-pro-page .tp-ts p { font-family: 'Libre Baskerville', serif; font-size: 0.88rem; font-style: italic; color: var(--tp-text-medium); line-height: 1.75; margin-bottom: 14px; }
-.tilto-pro-page .tp-ts-author { font-weight: 700; font-size: 0.82rem; color: var(--tp-text); }
-.tilto-pro-page .tp-ts-author span { font-weight: 400; color: var(--tp-text-light); }
-
-/* ═══ CONTACT ═══ */
-.tilto-pro-page .tp-contact { background: var(--tp-primary); color: var(--tp-white); overflow: hidden; }
-.tilto-pro-page .tp-contact .tp-sl { color: var(--tp-gold-light); }
-.tilto-pro-page .tp-contact .tp-st { color: var(--tp-white); }
-.tilto-pro-page .tp-contact .tp-ss { color: rgba(255,255,255,0.75); }
-.tilto-pro-page .tp-fc { max-width: 480px; background: transparent; border: none; border-radius: 0; padding: 0; }
-.tilto-pro-page .tp-fc-card { background: white; border-radius: 18px; padding: 28px 24px; box-shadow: 0 24px 64px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1); }
-.tilto-pro-page .tp-fc-free { text-align: center; background: linear-gradient(135deg, #FFF8E7, #FFF1CC); border: 1px solid rgba(255,180,0,0.2); border-radius: 10px; padding: 10px; margin-bottom: 18px; font-size: 0.82rem; font-weight: 700; color: #7A5400; }
-.tilto-pro-page .tp-fg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.tilto-pro-page .tp-fi { display: flex; flex-direction: column; }
-.tilto-pro-page .tp-fi.tp-full { grid-column: 1 / -1; }
-.tilto-pro-page .tp-fi label { font-size: 0.72rem; font-weight: 700; margin-bottom: 5px; color: var(--tp-primary); text-transform: uppercase; letter-spacing: 0.5px; }
-.tilto-pro-page .tp-fi input,
-.tilto-pro-page .tp-fi select,
-.tilto-pro-page .tp-fi textarea { padding: 12px 14px; border-radius: 10px; border: 2px solid #f0e8e0; background: #fdfcfb; color: var(--tp-text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; transition: all 0.2s; outline: none; box-sizing: border-box; width: 100%; }
-.tilto-pro-page .tp-fi input::placeholder,
-.tilto-pro-page .tp-fi textarea::placeholder { color: #c4b5a8; }
-.tilto-pro-page .tp-fi input:focus,
-.tilto-pro-page .tp-fi select:focus,
-.tilto-pro-page .tp-fi textarea:focus { border-color: var(--tp-primary); background: white; box-shadow: 0 0 0 3px rgba(161,24,87,0.06); }
-.tilto-pro-page .tp-fi textarea { resize: vertical; min-height: 60px; }
-.tilto-pro-page .tp-fs { margin-top: 12px; }
-.tilto-pro-page .tp-fn { font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-top: 8px; text-align: center; }
-
-
-/* ═══════════════════════════════════════════════════════ */
-/* RESPONSIVE — TABLET (769px → 1024px)                   */
-/* ═══════════════════════════════════════════════════════ */
+.tilto-pro-page .tp-mp-title .tp-ic svg, .tilto-pro-page .tp-mockup-hint svg { width: 13px; height: 13px; stroke: var(--tp-primary); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* onglets en <button> : on neutralise le style natif */
+.tilto-pro-page button.tp-mockup-tab { background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; box-shadow: none; margin: 0; min-height: 0; line-height: 1.4; font-family: inherit; }
+.tilto-pro-page button.tp-mockup-tab.tp-active { border-bottom-color: var(--tp-primary); }
+.tilto-pro-page button.tp-mockup-tab:focus-visible { outline: 2px solid var(--tp-primary); outline-offset: 1px; }
+.tilto-pro-page .tp-mockup-wrap { flex: 1 1 500px; min-width: 0; max-width: 560px; padding-top: 56px; }
 @media (min-width: 769px) and (max-width: 1024px) {
-    .tilto-pro-page .tp-hero { padding: 100px 24px 60px; min-height: auto; }
-    .tilto-pro-page .tp-hero-inner { grid-template-columns: 1fr 1fr; gap: 28px; }
-    .tilto-pro-page .tp-hero-text h1 { font-size: clamp(1.45rem, 2.8vw, 1.9rem); }
-
     .tilto-pro-page .tp-mockup-tab { font-size: 0.48rem; padding: 3px 5px; }
     .tilto-pro-page .tp-mockup-body { padding: 14px; min-height: 240px; }
     .tilto-pro-page .tp-mp-block, .tilto-pro-page .tp-mp-block-gold { padding: 9px 11px; }
@@ -220,50 +182,9 @@
     .tilto-pro-page .tp-tab-hint { top: -48px; right: 16px; }
     .tilto-pro-page .tp-tab-hint-text { font-size: 1rem; }
     .tilto-pro-page .tp-tab-hint img { width: 40px; }
-
-    .tilto-pro-page .tp-why-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .tilto-pro-page .tp-why-card { padding: 18px; }
-    .tilto-pro-page .tp-why-card h3 { font-size: 0.82rem; }
-    .tilto-pro-page .tp-why-card p { font-size: 0.78rem; }
-
-    .tilto-pro-page .tp-flow { gap: 10px; }
-    .tilto-pro-page .tp-flow-item, .tilto-pro-page .tp-flow-result { padding: 14px 16px; }
-    .tilto-pro-page .tp-flow-item span, .tilto-pro-page .tp-flow-result span { font-size: 0.76rem; }
-
-    .tilto-pro-page .tp-output-grid { gap: 12px; }
-    .tilto-pro-page .tp-oc { padding: 18px; }
-
-    .tilto-pro-page .tp-pricing-layout { gap: 24px; }
-    .tilto-pro-page .tp-pc { padding: 24px 20px; }
-    .tilto-pro-page .tp-pc-price { font-size: 1.9rem; }
-
-    .tilto-pro-page section { padding: 60px 24px; }
-
-    /* Social proof tablet */
-    .tilto-pro-page .tp-proof-main { padding: 24px 24px !important; gap: 20px !important; }
-    .tilto-pro-page .tp-proof-main img { width: 80px !important; height: 80px !important; }
 }
-
-/* ═══════════════════════════════════════════════════════ */
-/* RESPONSIVE — MOBILE (≤768px)                           */
-/* ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-    /* Hero mobile — texte en premier, mockup en dessous */
-    .tilto-pro-page main { margin: 1.1rem!important;}
-    .tilto-pro-page .tp-hero { padding: 88px 20px 36px; min-height: auto; }
-    .tilto-pro-page .tp-hero-inner {
-        grid-template-columns: 1fr; gap: 28px; text-align: center;
-    }
-    .tilto-pro-page .tp-hero-text { order: 1; }
-    .tilto-pro-page .tp-hero-visual { order: 2; max-width: 420px; margin: 0 auto; }
-    .tilto-pro-page .tp-hero-text h1 { font-size: 1.55rem; line-height: 1.32; margin-bottom: 12px; }
-    .tilto-pro-page .tp-hero-text .tp-tagline { margin-left: auto; margin-right: auto; font-size: 0.92rem; }
-    .tilto-pro-page .tp-hero-text .tp-hook { margin-left: auto; margin-right: auto; text-align: left; }
-    .tilto-pro-page .tp-hero-ctas { justify-content: center; flex-direction: column; align-items: stretch; gap: 10px; }
-    .tilto-pro-page .tp-hero-ctas .tp-btn-primary,
-    .tilto-pro-page .tp-hero-ctas .tp-btn-outline { width: 100%; justify-content: center; text-align: center; padding: 14px 24px; }
-
-    /* Mockup mobile */
+    .tilto-pro-page .tp-mockup-wrap { max-width: none; padding-top: 48px; }
     .tilto-pro-page .tp-mockup { transform: none !important; border-radius: 14px; }
     .tilto-pro-page .tp-mockup:hover { transform: none !important; }
     .tilto-pro-page .tp-mockup-head { padding: 10px 12px; flex-wrap: wrap; gap: 6px; }
@@ -281,381 +202,329 @@
     .tilto-pro-page .tp-tab-hint { top: -44px; right: 10px; }
     .tilto-pro-page .tp-tab-hint-text { font-size: 0.95rem; margin-bottom: 8px; }
     .tilto-pro-page .tp-tab-hint img { width: 36px; }
-
-    /* Sections mobile */
-    .tilto-pro-page section { padding: 48px 20px; }
-    .tilto-pro-page .tp-sl { font-size: 0.65rem; letter-spacing: 1.5px; }
-    .tilto-pro-page .tp-st { font-size: 1.25rem; margin-bottom: 10px; }
-    .tilto-pro-page .tp-ss { font-size: 0.88rem; margin-bottom: 28px; }
-
-    /* Social proof mobile */
-    .tilto-pro-page .tp-proof-section { padding: 28px 20px !important; }
-    .tilto-pro-page .tp-proof-main {
-        flex-direction: column !important; text-align: center !important;
-        padding: 24px 20px !important; gap: 16px !important;
-    }
-    .tilto-pro-page .tp-proof-main img {
-        width: 72px !important; height: 72px !important; margin: 0 auto !important;
-    }
-    .tilto-pro-page .tp-proof-main p { font-size: 0.88rem !important; }
-    .tilto-pro-page .tp-proof-secondary {
-        flex-direction: column !important; text-align: center !important;
-        padding: 20px !important; gap: 12px !important;
-    }
-
-    /* Why grid mobile */
-    .tilto-pro-page .tp-why-grid { grid-template-columns: 1fr; gap: 12px; }
-    .tilto-pro-page .tp-why-card { padding: 20px; }
-
-    /* Flow mobile — vertical */
-    .tilto-pro-page .tp-flow { flex-direction: column; gap: 8px; align-items: stretch; }
-    .tilto-pro-page .tp-flow-item, .tilto-pro-page .tp-flow-result { flex-direction: row; padding: 14px 18px; gap: 12px; }
-    .tilto-pro-page .tp-flow-item svg, .tilto-pro-page .tp-flow-result svg { width: 20px; height: 20px; flex-shrink: 0; }
-    .tilto-pro-page .tp-flow-item span, .tilto-pro-page .tp-flow-result span { font-size: 0.82rem; }
-    .tilto-pro-page .tp-flow-item small { font-size: 0.68rem; }
-    .tilto-pro-page .tp-flow-plus { font-size: 0.9rem; text-align: center; margin: -2px 0; }
-    .tilto-pro-page .tp-flow-arrow { text-align: center; }
-    .tilto-pro-page .tp-flow-arrow svg { transform: rotate(90deg); }
-    .tilto-pro-page .tp-flow-result em { font-size: 0.88rem; }
-
-    /* Output mobile */
-    .tilto-pro-page .tp-output-grid { grid-template-columns: 1fr; gap: 12px; }
-    .tilto-pro-page .tp-oc { padding: 18px; }
-    .tilto-pro-page .tp-output-bar { flex-direction: column; gap: 10px; padding: 14px 16px; }
-    .tilto-pro-page .tp-output-bar-item { font-size: 0.74rem; }
-
-    /* Pricing mobile */
-    .tilto-pro-page .tp-pricing-layout { grid-template-columns: 1fr; gap: 20px; }
-    .tilto-pro-page .tp-pc { padding: 24px 20px; }
-    .tilto-pro-page .tp-pc-price { font-size: 2rem; }
-    .tilto-pro-page .tp-ts { padding: 22px; }
-    .tilto-pro-page .tp-ts p { font-size: 0.82rem; }
-
-    /* Contact form mobile */
-    .tilto-pro-page .tp-contact { padding: 48px 20px !important; overflow: hidden; border-radius:5px;}
-    .tilto-pro-page .tp-fade-up.tp-visible { margin-bottom:1rem;}
-    .tilto-pro-page .tp-fg { grid-template-columns: 1fr; }
-    .tilto-pro-page .tp-fc { max-width: 100%; width: 100%; box-sizing: border-box; }
-    .tilto-pro-page .tp-fc-card { padding: 22px 16px; border-radius: 14px; box-sizing: border-box; max-width: 100%; overflow: hidden; }
-    /* font-size 16px prevents iOS auto-zoom on input focus */
-    .tilto-pro-page .tp-fi input,
-    .tilto-pro-page .tp-fi select,
-    .tilto-pro-page .tp-fi textarea { padding: 12px; font-size: 1rem; max-width: 100%; }
-    .tilto-pro-page .tp-fi { max-width: 100%; }
-    .tilto-pro-page .tp-contact .tp-btn-primary { box-sizing: border-box; max-width: 100%; }
 }
-
-/* ═══════════════════════════════════════════════════════ */
-/* RESPONSIVE — SMALL MOBILE (≤420px)                     */
-/* ═══════════════════════════════════════════════════════ */
 @media (max-width: 420px) {
-    .tilto-pro-page .tp-hero { padding: 76px 16px 28px; }
-    .tilto-pro-page .tp-hero-text h1 { font-size: 1.35rem; }
-    .tilto-pro-page .tp-hero-text .tp-tagline { font-size: 0.85rem; }
-
-    .tilto-pro-page section { padding: 40px 16px; }
-
+    .tilto-pro-page .tp-mockup-wrap { padding-top: 0; }
     .tilto-pro-page .tp-mockup-head { padding: 8px 10px; }
     .tilto-pro-page .tp-mockup-logo { font-size: 0.75rem; }
     .tilto-pro-page .tp-mockup-tab { font-size: 0.46rem; padding: 3px 4px; }
     .tilto-pro-page .tp-mockup-body { padding: 10px; min-height: 200px; }
 
     .tilto-pro-page .tp-tab-hint { display: none; }
-
-    .tilto-pro-page .tp-why-card { padding: 16px; }
-    .tilto-pro-page .tp-why-card h3 { font-size: 0.82rem; }
-    .tilto-pro-page .tp-why-card p { font-size: 0.78rem; }
-
-    .tilto-pro-page .tp-pc { padding: 20px 16px; border-radius: 16px; }
-    .tilto-pro-page .tp-pc-price { font-size: 1.75rem; }
-
-    .tilto-pro-page .tp-fc-card { padding: 18px 14px; }
-    .tilto-pro-page .tp-fc-free { font-size: 0.76rem; padding: 8px; }
-
-    .tilto-pro-page .tp-proof-main { padding: 20px 16px !important; border-radius: 14px !important; }
-    .tilto-pro-page .tp-proof-main p { font-size: 0.82rem !important; line-height: 1.6 !important; }
-    .tilto-pro-page .tp-proof-secondary { padding: 16px !important; border-radius: 14px !important; }
 }
 
-/* ═══ ANIMATIONS ═══ */
-.tilto-pro-page .tp-fade-up { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.tilto-pro-page .tp-fade-up.tp-visible { opacity: 1; transform: translateY(0); }
-.tilto-pro-page .tp-d1 { transition-delay: 0.1s; }
-.tilto-pro-page .tp-d2 { transition-delay: 0.2s; }
-.tilto-pro-page .tp-d3 { transition-delay: 0.3s; }
-.tilto-pro-page .tp-d4 { transition-delay: 0.4s; }
+/* ═══ STEPS ═══ */
+.tilto-pro-page .tp-steps .tp-wrap { padding-top: 72px; padding-bottom: 72px; }
+.tilto-pro-page .tp-steps-sub { margin: 0 0 40px; font-size: 1.06rem; color: var(--tp-muted); }
+.tilto-pro-page .tp-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.tilto-pro-page .tp-steps li { background: var(--tp-white); border-radius: 16px; padding: 26px; }
+.tilto-pro-page .tp-step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--tp-gold-light); color: #4A2E00; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.tilto-pro-page .tp-steps h3 { margin: 14px 0 6px; font-size: 1.12rem; }
+.tilto-pro-page .tp-steps p { margin: 0; font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ TESTIMONIALS ═══ */
+.tilto-pro-page .tp-testi .tp-wrap { padding-top: 72px; padding-bottom: 72px; }
+.tilto-pro-page .tp-testi .tp-h2 { margin-bottom: 32px; }
+.tilto-pro-page .tp-quote { margin: 0; border: 1px solid var(--tp-line); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; gap: 20px; }
+.tilto-pro-page .tp-quote blockquote { margin: 0; font-size: 1.06rem; line-height: 1.55; color: var(--tp-ink); }
+.tilto-pro-page .tp-quote blockquote strong { color: var(--tp-primary); }
+.tilto-pro-page .tp-quote figcaption { display: flex; gap: 12px; align-items: center; font-size: 0.95rem; }
+.tilto-pro-page .tp-quote figcaption strong { color: var(--tp-ink); }
+.tilto-pro-page .tp-avatar { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.tilto-pro-page .tp-avatar--initial { background: var(--tp-gold-light); color: #4A2E00; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-page .tp-avatar--dark { background: var(--tp-primary-deep); color: var(--tp-white); }
+
+/* ═══ FAQ ═══ */
+.tilto-pro-page .tp-faq .tp-wrap { padding-top: 72px; padding-bottom: 72px; display: flex; flex-wrap: wrap; gap: 40px; }
+.tilto-pro-page .tp-faq .tp-h2 { flex: 1 1 280px; margin: 0; }
+.tilto-pro-page .tp-faq-list { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.tilto-pro-page .tp-faq-item { background: var(--tp-white); border-radius: 14px; padding: 20px 22px; }
+.tilto-pro-page .tp-faq-item h3 { margin: 0 0 6px; font-size: 1.06rem; }
+.tilto-pro-page .tp-faq-item p { margin: 0; font-size: 0.95rem; line-height: 1.6; }
+.tilto-pro-page .tp-faq-item .tp-faq-quote { margin-top: 10px; font-style: italic; color: var(--tp-text); }
+
+/* ═══ FINAL CTA ═══ */
+.tilto-pro-page .tp-final .tp-wrap { padding-top: 72px; padding-bottom: 72px; }
+.tilto-pro-page .tp-final-box { background: var(--tp-primary-deep); border-radius: 22px; padding: 48px 32px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.tilto-pro-page .tp-final-box h2 { margin: 0 0 12px; color: var(--tp-white); text-align: center !important; }
+.tilto-pro-page .tp-final-box h2 span { color: var(--tp-gold-light); }
+.tilto-pro-page .tp-final-box > p { margin: 0 0 28px; font-size: 1.06rem; line-height: 1.6; color: var(--tp-rose-pale); }
+.tilto-pro-page .tp-final-note { margin: 14px 0 0 !important; font-size: 0.88rem !important; color: var(--tp-rose-pale); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .tilto-pro-page .tp-wrap { padding-left: 16px; padding-right: 16px; }
+    .tilto-pro-page .tp-hero-inner { padding: 112px 16px 48px; }
+    .tilto-pro-page .tp-eyebrow { font-size: 0.75rem; }
+    .tilto-pro-page .tp-lead { font-size: 1.06rem; margin-top: 20px; }
+    .tilto-pro-page .tp-lead-form--hero { margin-top: 28px; }
+    .tilto-pro-page .tp-lead-form button { flex: 1 1 100%; }
+    .tilto-pro-page .tp-reassure { font-size: 0.88rem; }
+    .tilto-pro-page .tp-figures .tp-wrap { padding-top: 40px; }
+    .tilto-pro-page .tp-figure { padding: 22px; }
+    .tilto-pro-page .tp-figure-num { font-size: 3rem; }
+    .tilto-pro-page .tp-benefit .tp-wrap { padding-top: 48px; padding-bottom: 48px; gap: 32px; }
+    .tilto-pro-page .tp-visual { max-width: none; padding: 18px; }
+    .tilto-pro-page .tp-btn-outline { width: 100%; justify-content: center; box-sizing: border-box; }
+    .tilto-pro-page .tp-steps .tp-wrap, .tilto-pro-page .tp-testi .tp-wrap, .tilto-pro-page .tp-faq .tp-wrap, .tilto-pro-page .tp-final .tp-wrap { padding-top: 48px; padding-bottom: 48px; }
+    .tilto-pro-page .tp-faq .tp-wrap { gap: 24px; }
+    .tilto-pro-page .tp-quote { padding: 22px; }
+    .tilto-pro-page .tp-final-box { padding: 32px 18px; border-radius: 18px; }
+}
+@media (max-width: 380px) {
+    .tilto-pro-page .tp-hero h1 { font-size: 2.3rem; }
+    .tilto-pro-page .tp-h2 { font-size: 1.65rem; }
+    .tilto-pro-page .tp-row { flex-direction: column; gap: 4px; }
+    .tilto-pro-page .tp-row span:last-child { text-align: left; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
+{% macro lead_form(variant, suffix) %}
+<form class="tp-lead-form tp-lead-form--{{ variant }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="source" value="tilto_pro_landing_{{ variant }}">
+    <div class="tp-hp" aria-hidden="true">
+        <label for="tp-website-{{ suffix }}">Site web</label>
+        <input type="text" id="tp-website-{{ suffix }}" name="website" tabindex="-1" autocomplete="off">
+    </div>
+    <label for="tp-email-{{ suffix }}" class="tp-sr">Votre email</label>
+    <input id="tp-email-{{ suffix }}" name="email" type="email" autocomplete="email" placeholder="Votre email" required>
+    <button type="submit">Recevoir mon dossier gratuit</button>
+</form>
+<div class="tp-form-msg" role="alert"></div>
+<div class="tp-form-ok" role="status"><strong>C'est noté&nbsp;!</strong>On vous envoie par email, sous 24&nbsp;h ouvrées, la marche à suivre pour votre premier dossier gratuit.</div>
+{% endmacro %}
+
+{% set check %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F7A4D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>{% endset %}
+
+<div class="tp">
 
 <!-- ═══ HERO ═══ -->
 <section class="tp-hero">
-    <div class="tp-hero-inner">
-        <div class="tp-hero-text tp-fade-up">
-            <h1>Votre coaching se termine.<br>Votre client repart <span>avec quoi ?</span></h1>
-            <p style="font-family:'Caveat',cursive;font-size:1.15rem;color:var(--tp-primary);margin:0 0 1.2rem;opacity:0.85;">« Chère Marie, voici ce que j'ai retenu de notre échange… »</p>
-            <p class="tp-tagline">Tilto génère un livrable de 20+ pages en fin d'accompagnement : pistes métier avec entreprises à contacter, plan d'action semaine par semaine — basé sur les propres mots de votre client.</p>
-            <div class="tp-hero-ctas">
-                <a href="#tp-contact" class="tp-btn-primary">Tester gratuitement →</a>
-                <a href="#tp-how" class="tp-btn-outline">Comment ça marche</a>
+    <div class="tp-hero-inner" id="essai">
+        <p class="tp-eyebrow">Coachs en reconversion · Consultants en bilan de compétences</p>
+        <h1>Signez plus<br><span class="tp-mark">de clients.</span></h1>
+        <p class="tp-lead">Offrez à votre prospect qui hésite un dossier de reconversion de 20&nbsp;pages&nbsp;: ses pistes métier, les salaires, les entreprises à contacter. Il voit ce qu'il va obtenir avec vous, et il signe.</p>
+        {{ lead_form('hero', 'hero') }}
+        <p class="tp-reassure">1er dossier 100&nbsp;% gratuit · Données anonymisées, non stockées · Sans carte bancaire</p>
+    </div>
+</section>
+
+<!-- ═══ KEY FIGURES ═══ -->
+<section class="tp-figures">
+    <div class="tp-wrap">
+        <div class="tp-grid-3">
+            <div class="tp-figure">
+                <div class="tp-figure-num">0&nbsp;€</div>
+                <p>pour votre 1er dossier. Testez sur un vrai prospect, sans rien payer.</p>
             </div>
-            <p style="font-size:0.78rem;color:var(--tp-text-light);margin-top:10px;font-weight:500;">Première analyse offerte · Sans engagement</p>
+            <div class="tp-figure">
+                <div class="tp-figure-num">48&nbsp;h</div>
+                <p>pour recevoir le dossier. Prêt à remettre avant que votre prospect ne refroidisse.</p>
+            </div>
+            <div class="tp-figure">
+                <div class="tp-figure-num">100&nbsp;%</div>
+                <p>anonymisé et confidentiel. Les données de votre client ne sont pas stockées.</p>
+            </div>
         </div>
-        <div class="tp-hero-visual tp-fade-up tp-d2">
-            <div class="tp-mockup">
-                <div class="tp-mockup-head">
-                    <span class="tp-mockup-logo">Tilto</span><span class="tp-badge" style="font-size:0.48rem;">Pro</span>
-                    <div class="tp-mockup-tabs">
-                        <span class="tp-mockup-tab" data-p="identity">Identité</span>
-                        <span class="tp-mockup-tab" data-p="skills">Compétences</span>
-                        <span class="tp-mockup-tab tp-active" data-p="tracks">Pistes</span>
-                        <span class="tp-mockup-tab" data-p="plan">Plan</span>
-                    </div>
-                </div>
-                <div class="tp-tab-hint">
-                    <span class="tp-tab-hint-text">Clique et explore un aperçu du livrable</span>
-                    <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" alt="">
-                </div>
-                <div class="tp-mockup-body">
-                    <div class="tp-mp" id="p-identity">
-                        <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span> Ce que j'ai compris</div>
-                        <div class="tp-mp-block"><div class="tp-mp-bt">🧭 Ce qu'elle cherche</div><div class="tp-mp-txt">Un environnement qui valorise sa créativité et son besoin de stimulation intellectuelle avec impact tangible.</div></div>
-                        <div class="tp-mp-quote">J'aimerais retrouver un sens, et me sentir à ma place. J'aimerais être stimulée intellectuellement et créativement…</div>
-                        <div class="tp-mp-coach"><span>💡</span><span><strong>Moment coachable :</strong> La difficulté à entrer dans l'événementiel ne vient pas d'elle — marché très fermé. Levier : rediriger l'énergie.</span></div>
-                    </div>
-                    <div class="tp-mp" id="p-skills">
-                        <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Compétences transférables</div>
-                        <div class="tp-mp-block"><div class="tp-mp-bt">Identifiées depuis CV + audio</div><div class="tp-mp-txt">Coordination d'événements · Gestion de partenaires · Plannings complexes · Interface multi-acteurs</div></div>
-                        <div style="margin-top:7px;"><span class="tp-mp-tag">🎯 Organisation</span><span class="tp-mp-tag">🎨 Créativité</span><span class="tp-mp-tag">🤝 Coordination</span><span class="tp-mp-tag">💡 Recherche de solutions</span></div>
-                        <div class="tp-mp-quote">Le côté organisation et recherche de solutions, d'idées, l'aspect créatif, c'est ce qui me plaît le plus.</div>
-                    </div>
-                    <div class="tp-mp tp-active" id="p-tracks">
-                        <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Pistes professionnelles</div>
-                        <div class="tp-mp-block">
-                            <div class="tp-mp-bt">💡 Coordinatrice Admin. en Crèche</div>
-                            <div class="tp-mp-txt">Organisation, événementiel, interface CAF/mairies — pas de soins d'enfants.</div>
-                            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                                <span class="tp-mp-stat">1 900–2 400€ net</span>
-                                <span class="tp-mp-stat">6 mois formation</span>
-                                <span class="tp-mp-stat">48% offres région</span>
-                            </div>
-                        </div>
-                        <div class="tp-mp-block" style="opacity:0.6;">
-                            <div class="tp-mp-bt">🏠 Coord. Habitat Social</div>
-                            <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
-                                <span class="tp-mp-stat">2 200–2 800€ net</span>
-                                <span class="tp-mp-stat">2-3 mois</span>
-                                <span class="tp-mp-stat">CDI stable</span>
-                            </div>
-                        </div>
-                        <div class="tp-mp-block" style="opacity:0.35;">
-                            <div class="tp-mp-bt">🏥 Assistante Gestion EHPAD</div>
-                            <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
-                                <span class="tp-mp-stat">1 900–2 400€ net</span>
-                                <span class="tp-mp-stat">1-2 mois</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tp-mp" id="p-plan">
-                        <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span> Plan d'action</div>
-                        <div class="tp-mp-block-gold"><div class="tp-mp-bt">Phase 1 — Comprendre le terrain</div><div class="tp-mp-txt">✓ Cartographier les structures locales<br>✓ Échanger avec 2-3 professionnels en poste<br>✓ Identifier les compétences transférables</div></div>
-                        <div class="tp-mp-block-gold" style="opacity:0.55;"><div class="tp-mp-bt">Phase 2 — Acquisition de compétences</div><div class="tp-mp-txt">✓ Formations utiles + financements possibles</div></div>
-                        <div class="tp-mp-block-gold" style="opacity:0.3;"><div class="tp-mp-bt">Phase 3 — Positionnement</div><div class="tp-mp-txt">✓ CV adapté · Pitch · Profil LinkedIn</div></div>
-                    </div>
+    </div>
+</section>
+
+<!-- ═══ BENEFIT 1 : RDV découverte → signature (aperçu interactif) ═══ -->
+<section class="tp-benefit">
+    <div class="tp-wrap">
+        <div class="tp-benefit-text">
+            <h2 class="tp-h2">Transformez le rendez-vous découverte en signature</h2>
+            <p>Un prospect qui hésite n'achète pas une promesse. Montrez-lui un dossier concret, construit à partir de ce qu'il vous a dit.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Il voit ce qu'il achète au lieu de l'imaginer</li>
+                <li>{{ check }}Il repart avec un document à son nom, qu'il relit chez lui</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Recevoir mon dossier gratuit</a>
+        </div>
+        <div class="tp-mockup-wrap">
+        <div class="tp-mockup">
+            <div class="tp-mockup-head">
+                <span class="tp-mockup-logo">Tilto</span><span class="tp-mockup-badge" style="font-size:0.48rem;">Pro</span>
+                <div class="tp-mockup-tabs">
+                    <button type="button" class="tp-mockup-tab" data-p="identity" aria-pressed="false">Identité</button>
+                    <button type="button" class="tp-mockup-tab" data-p="skills" aria-pressed="false">Compétences</button>
+                    <button type="button" class="tp-mockup-tab tp-active" data-p="tracks" aria-pressed="true">Pistes</button>
+                    <button type="button" class="tp-mockup-tab" data-p="plan" aria-pressed="false">Plan</button>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ SOCIAL PROOF ═══ -->
-<section class="tp-proof-section" style="padding:40px 20px;background:linear-gradient(135deg, var(--tp-primary-light), #FFF5F9);border-bottom:1px solid var(--tp-rose-pale);">
-    <div class="tp-si">
-        <div class="tp-fade-up tp-proof-main" style="display:flex;align-items:center;gap:28px;max-width:780px;margin:0 auto;background:var(--tp-white);border-radius:20px;padding:32px 36px;box-shadow:0 8px 32px rgba(161,24,87,0.08);border:1px solid var(--tp-rose-pale);">
-            <img src="https://images.tilto.co/production/2026/02/42d86f91_anne-gobled-28-768x1152.webp" alt="Anne" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--tp-rose-pale);flex-shrink:0;box-shadow:0 4px 16px rgba(161,24,87,0.12);">
-            <div>
-                <div style="font-size:1.4rem;margin-bottom:8px;">⭐⭐⭐⭐⭐</div>
-                <p style="font-size:0.95rem;color:var(--tp-text);line-height:1.7;margin:0;font-style:italic;">« Suite à un RDV avec un prospect, j'ai vu comme cet élément supplémentaire à mon offre est une <strong>réelle valeur ajoutée</strong>. Ma cliente est très impressionnée par la pertinence et la complétude du dossier. J'aimerais vraiment Tilto dans mes offres — vous avez créé un outil très complet ! »</p>
-                <div style="font-size:0.85rem;margin-top:10px;font-weight:600;"><strong>Anne</strong> <span style="color:var(--tp-text-light);font-weight:400;">— Coach en reconversion professionnelle</span></div>
+            <div class="tp-tab-hint">
+                <span class="tp-tab-hint-text">Clique et explore un aperçu du livrable</span>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" alt="">
             </div>
-        </div>
-        <div class="tp-fade-up tp-proof-secondary" style="display:flex;align-items:center;gap:28px;max-width:780px;margin:16px auto 0;background:var(--tp-white);border-radius:20px;padding:28px 36px;box-shadow:0 4px 20px rgba(161,24,87,0.05);border:1px solid var(--tp-rose-pale);">
-            <div style="width:52px;height:52px;border-radius:50%;background:var(--tp-primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem;">👤</div>
-            <div>
-                <p style="font-size:0.88rem;color:var(--tp-text);line-height:1.7;margin:0;font-style:italic;">« Les entreprises ciblées étaient vraiment celles que j'avais en tête. C'est <strong>comme une bible</strong> — les formations, les phases, le timing… c'est très précis. Ça m'a donné une carte de visite spécifique par rapport à mes expériences. »</p>
-                <div style="font-size:0.82rem;margin-top:8px;font-weight:600;"><strong>Sa cliente</strong> <span style="color:var(--tp-text-light);font-weight:400;">— En reconversion, accompagnée par Anne</span></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ WHY ═══ -->
-<section class="tp-why" id="tp-why">
-    <div class="tp-si">
-        <div class="tp-sl tp-fade-up">Pourquoi Tilto Pro</div>
-        <h2 class="tp-st tp-fade-up">Ce que ça change pour votre activité</h2>
-        <div class="tp-why-grid">
-            <div class="tp-why-card tp-fade-up tp-d1">
-                <span class="tp-why-emoji">💰</span>
-                <h3>Justifiez votre tarif</h3>
-                <p>Un bilan de compétences livre un dossier. Avec Tilto, votre coaching aussi. Votre client repart avec 20+ pages personnalisées — la valeur devient tangible.</p>
-            </div>
-            <div class="tp-why-card tp-fade-up tp-d2">
-                <span class="tp-why-emoji">🗣️</span>
-                <h3>Bouche-à-oreille intégré</h3>
-                <p>Votre client montre le livrable à son conjoint, un ami, son conseiller. Chaque livrable est un ambassadeur silencieux qui vous ramène des clients.</p>
-            </div>
-            <div class="tp-why-card tp-fade-up tp-d3">
-                <span class="tp-why-emoji">⏱️</span>
-                <h3>48h, zéro rédaction</h3>
-                <p>Vous envoyez un audio + CV + questionnaire. En 48h on vous livre l'analyse complète prête à remettre. Rien à écrire de votre côté.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ HOW ═══ -->
-<section class="tp-how" id="tp-how">
-    <div class="tp-si" style="text-align:center;">
-        <div class="tp-sl tp-fade-up">Fonctionnement</div>
-        <h2 class="tp-st tp-fade-up" style="max-width:500px;margin-left:auto;margin-right:auto;">Vous envoyez, on livre</h2>
-        <div class="tp-flow tp-fade-up">
-            <div class="tp-flow-item">
-                <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                <span>Audio 5-15 min</span>
-                <small>On fournit la trame d'entretien</small>
-            </div>
-            <div class="tp-flow-plus">+</div>
-            <div class="tp-flow-item">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>CV + questionnaire</span>
-                <small>On fournit le questionnaire</small>
-            </div>
-            <div class="tp-flow-arrow">
-                <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </div>
-            <div class="tp-flow-result">
-                <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                <span>Livrable 20+ pages</span>
-                <em>en 48h</em>
-            </div>
-        </div>
-        <p class="tp-fade-up" style="font-size:0.82rem;color:var(--tp-text-light);margin-top:16px;">Vous n'avez rien à rédiger — on s'occupe de tout.</p>
-    </div>
-</section>
-
-<!-- ═══ OUTPUT with mini-previews ═══ -->
-<section class="tp-output" id="tp-output">
-    <div class="tp-si">
-        <div class="tp-sl tp-fade-up">Ce que votre client reçoit</div>
-        <h2 class="tp-st tp-fade-up">Votre client se projette dès le lendemain</h2>
-        <p class="tp-ss tp-fade-up">Pas un bilan figé. Un outil concret qui aide votre client à se voir dans sa prochaine étape — avec des pistes réalistes, des noms, des actions à lancer.</p>
-        <div class="tp-output-grid">
-
-            <!-- PORTRAIT -->
-            <div class="tp-oc tp-fade-up tp-d1">
-                <div class="tp-oic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div>
-                <h3>Portrait identitaire</h3>
-                <p>Valeurs, moteurs, freins — structurés à partir des propres mots de votre client.</p>
-            </div>
-
-            <!-- COMPÉTENCES -->
-            <div class="tp-oc tp-fade-up tp-d2">
-                <div class="tp-oic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-                <h3>Compétences transférables</h3>
-                <p>Savoir-faire du CV et de l'audio, mappés vers des métiers concrets.</p>
-            </div>
-
-            <!-- PISTES -->
-            <div class="tp-oc tp-fade-up tp-d3">
-                <div class="tp-oic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-                <h3>Pistes métier chiffrées</h3>
-                <p>Salaire, formation, % d'offres dans la région, structures à contacter.</p>
-            </div>
-
-            <!-- PLAN -->
-            <div class="tp-oc tp-fade-up tp-d4">
-                <div class="tp-oic"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
-                <h3>Plan d'action concret</h3>
-                <p>Qui contacter, quoi préparer, financements possibles — phase par phase.</p>
-            </div>
-
-        </div>
-        <div class="tp-output-bar tp-fade-up">
-            <div class="tp-output-bar-item"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--tp-primary);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Livrable interactif navigable</div>
-            <div class="tp-output-bar-item"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--tp-primary);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF imprimable</div>
-            <div class="tp-output-bar-item"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--tp-primary);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Moments coachables identifiés</div>
-            <div class="tp-output-bar-item"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--tp-primary);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Données confidentielles — jamais revendues ni partagées</div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ PRICING + TESTIMONIAL ═══ -->
-<section class="tp-pricing" id="tp-pricing">
-    <div class="tp-si">
-        <div class="tp-sl tp-fade-up">Tarif</div>
-        <h2 class="tp-st tp-fade-up">Un prix clair, sans abonnement</h2>
-        <div class="tp-pricing-layout">
-            <div class="tp-pc tp-fade-up">
-                <div class="tp-pc-label">Par analyse</div>
-                <div class="tp-pc-price">149€ <sub>HT</sub></div>
-                <div class="tp-pc-desc">48h · Sans engagement · À l'unité</div>
-                <div class="tp-pc-free">🎁 Première analyse offerte</div>
-                <ul class="tp-pc-list">
-                    <li><span class="tp-ck">✓</span> 20+ pages, 5 dimensions</li>
-                    <li><span class="tp-ck">✓</span> Pistes métier + entreprises locales</li>
-                    <li><span class="tp-ck">✓</span> Plan d'action semaine par semaine</li>
-                    <li><span class="tp-ck">✓</span> Livrable interactif + PDF imprimable</li>
-                    <li><span class="tp-ck">✓</span> Moments coachables pour vous</li>
-                </ul>
-                <a href="#tp-contact" class="tp-btn-primary" style="width:100%;justify-content:center;">Tester gratuitement →</a>
-            </div>
-            <div class="tp-ts tp-fade-up tp-d2" style="background:var(--tp-primary-light);border:none;padding:24px;">
-                <img src="https://images.tilto.co/production/2026/02/42d86f91_anne-gobled-28-768x1152.webp" alt="Anne" class="tp-ts-photo" onerror="this.style.display='none'">
-                <p style="font-size:0.82rem;">Suite à un RDV avec un prospect, j'ai vu comme cet élément supplémentaire à mon offre est une réelle valeur ajoutée. Vous avez créé un outil très complet !</p>
-                <div class="tp-ts-author">Anne <span>— Coach en reconversion</span></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ CONTACT ═══ -->
-<section class="tp-contact" id="tp-contact">
-    <div class="tp-si">
-        <div class="tp-sl tp-fade-up">Essai gratuit</div>
-        <h2 class="tp-st tp-fade-up">Envie de voir ce que ça donne sur un vrai client ?</h2>
-        <p class="tp-ss tp-fade-up">On vous rappelle sous 24h pour une démo rapide et planifier votre premier essai gratuit.</p>
-        <div class="tp-fc tp-fade-up">
-            <div class="tp-fc-card">
-                <div class="tp-fc-free">🎁 Première analyse offerte — sans engagement</div>
-                <form class="tp-fg" id="tpContactForm">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="source" value="tilto_pro_landing">
-                    <div style="position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;" aria-hidden="true">
-                        <label for="tp-website">Site web</label>
-                        <input type="text" id="tp-website" name="website" tabindex="-1" autocomplete="off">
+            <div class="tp-mockup-body">
+                <div class="tp-mp" id="p-identity">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span> Ce que j'ai compris</div>
+                    <div class="tp-mp-block"><div class="tp-mp-bt">🧭 Ce qu'elle cherche</div><div class="tp-mp-txt">Un environnement qui valorise sa créativité et son besoin de stimulation intellectuelle avec impact tangible.</div></div>
+                    <div class="tp-mp-quote">J'aimerais retrouver un sens, et me sentir à ma place. J'aimerais être stimulée intellectuellement et créativement…</div>
+                    <div class="tp-mp-coach"><span>💡</span><span><strong>Moment coachable :</strong> La difficulté à entrer dans l'événementiel ne vient pas d'elle — marché très fermé. Levier : rediriger l'énergie.</span></div>
+                </div>
+                <div class="tp-mp" id="p-skills">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Compétences transférables</div>
+                    <div class="tp-mp-block"><div class="tp-mp-bt">Identifiées depuis CV + audio</div><div class="tp-mp-txt">Coordination d'événements · Gestion de partenaires · Plannings complexes · Interface multi-acteurs</div></div>
+                    <div style="margin-top:7px;"><span class="tp-mp-tag">🎯 Organisation</span><span class="tp-mp-tag">🎨 Créativité</span><span class="tp-mp-tag">🤝 Coordination</span><span class="tp-mp-tag">💡 Recherche de solutions</span></div>
+                    <div class="tp-mp-quote">Le côté organisation et recherche de solutions, d'idées, l'aspect créatif, c'est ce qui me plaît le plus.</div>
+                </div>
+                <div class="tp-mp tp-active" id="p-tracks">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Pistes professionnelles</div>
+                    <div class="tp-mp-block">
+                        <div class="tp-mp-bt">💡 Coordinatrice Admin. en Crèche</div>
+                        <div class="tp-mp-txt">Organisation, événementiel, interface CAF/mairies — pas de soins d'enfants.</div>
+                        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">1 900–2 400€ net</span>
+                            <span class="tp-mp-stat">6 mois formation</span>
+                            <span class="tp-mp-stat">48% offres région</span>
+                        </div>
                     </div>
-                    <div class="tp-fi"><label>Prénom</label><input type="text" name="firstname" placeholder="Marie" required></div>
-                    <div class="tp-fi"><label>Nom</label><input type="text" name="lastname" placeholder="Dupont" required></div>
-                    <div class="tp-fi tp-full"><label>Email</label><input type="email" name="email" placeholder="marie@coaching.fr" required></div>
-                    <div class="tp-fi tp-full">
-                        <label>Votre activité</label>
-                        <select name="activite" required><option value="">Sélectionnez...</option><option value="coach_independant">Coach indépendant·e</option><option value="coach_transition">Coach transition / reconversion</option><option value="bilan">Bilan de compétences</option><option value="cep">CEP</option><option value="cabinet">Cabinet</option><option value="autre">Autre</option></select>
+                    <div class="tp-mp-block" style="opacity:0.6;">
+                        <div class="tp-mp-bt">🏠 Coord. Habitat Social</div>
+                        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">2 200–2 800€ net</span>
+                            <span class="tp-mp-stat">2-3 mois</span>
+                            <span class="tp-mp-stat">CDI stable</span>
+                        </div>
                     </div>
-                    <div id="tpFormMessage" style="display:none;padding:12px 16px;border-radius:10px;font-size:0.85rem;margin-top:8px;"></div>
-                    <div class="tp-fi tp-full tp-fs"><button type="submit" class="tp-btn-primary" style="width:100%;justify-content:center;">Planifier ma démo gratuite →</button></div>
-                </form>
+                    <div class="tp-mp-block" style="opacity:0.35;">
+                        <div class="tp-mp-bt">🏥 Assistante Gestion EHPAD</div>
+                        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">1 900–2 400€ net</span>
+                            <span class="tp-mp-stat">1-2 mois</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tp-mp" id="p-plan">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span> Plan d'action</div>
+                    <div class="tp-mp-block-gold"><div class="tp-mp-bt">Phase 1 — Comprendre le terrain</div><div class="tp-mp-txt">✓ Cartographier les structures locales<br>✓ Échanger avec 2-3 professionnels en poste<br>✓ Identifier les compétences transférables</div></div>
+                    <div class="tp-mp-block-gold" style="opacity:0.55;"><div class="tp-mp-bt">Phase 2 — Acquisition de compétences</div><div class="tp-mp-txt">✓ Formations utiles + financements possibles</div></div>
+                    <div class="tp-mp-block-gold" style="opacity:0.3;"><div class="tp-mp-bt">Phase 3 — Positionnement</div><div class="tp-mp-txt">✓ CV adapté · Pitch · Profil LinkedIn</div></div>
+                </div>
             </div>
-            <p class="tp-fn">Aucune carte bancaire requise</p>
         </div>
-        <div id="tpFormSuccess" style="display:none;text-align:left;padding:36px 0;">
-            <div style="font-family:'Libre Baskerville',serif;font-size:1.2rem;font-weight:700;margin-bottom:6px;">C'est noté !</div>
-            <div style="color:rgba(255,255,255,0.7);font-size:0.9rem;">Un membre de l'équipe Tilto vous recontacte sous 24h ouvrées.</div>
         </div>
     </div>
 </section>
 
+<!-- ═══ BENEFIT 2 : défendre son tarif ═══ -->
+<section class="tp-benefit tp-benefit--rev tp-alt">
+    <div class="tp-wrap">
+        <div class="tp-visual tp-visual--card">
+            <p class="tp-visual-label">Ce que votre client a en main à la fin</p>
+            <div class="tp-rows">
+                <div class="tp-row"><span>Coaching seul</span><span>Ses notes de séance</span></div>
+                <div class="tp-row"><span>Bilan de compétences</span><span>Un document de synthèse</span></div>
+                <div class="tp-row tp-row--hl"><span>Votre coaching + Tilto</span><span>Dossier de 20+ pages</span></div>
+            </div>
+        </div>
+        <div class="tp-benefit-text">
+            <h2 class="tp-h2">Défendez votre tarif face au bilan de compétences</h2>
+            <p>Vos prospects paient de plus en plus de leur poche, alors ils comparent. Avec Tilto, ce que vous remettez se voit et se compare.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Pistes métier chiffrées et entreprises à contacter</li>
+                <li>{{ check }}Plan d'action semaine par semaine, financements possibles</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Recevoir mon dossier gratuit</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BENEFIT 3 : gagner du temps ═══ -->
+<section class="tp-benefit">
+    <div class="tp-wrap">
+        <div class="tp-benefit-text">
+            <h2 class="tp-h2">Plus de clients, pas plus de soirées</h2>
+            <p>Vous enregistrez l'échange, Tilto rédige. Le temps gagné, vous le passez en séance avec vos clients.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Trame d'entretien et questionnaire fournis</li>
+                <li>{{ check }}Rien à installer, rien à paramétrer</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Recevoir mon dossier gratuit</a>
+        </div>
+        <div class="tp-visual tp-visual--soft tp-visual--flow">
+            <div class="tp-row"><strong>Audio de l'échange</strong><span>5 à 15 min</span></div>
+            <div class="tp-row"><strong>CV + questionnaire</strong><span>Fournis par le client</span></div>
+            <div class="tp-flow-arrow" aria-hidden="true">↓</div>
+            <div class="tp-row tp-row--hl"><strong>Dossier de reconversion</strong><span>en 48&nbsp;h</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ STEPS ═══ -->
+<section class="tp-steps tp-alt">
+    <div class="tp-wrap">
+        <h2 class="tp-h2 tp-center">Signez votre prochain client cette semaine</h2>
+        <p class="tp-steps-sub tp-center">Trois étapes, et le premier dossier est gratuit.</p>
+        <ol>
+            <li><div class="tp-step-num">1</div><h3>Entrez votre email</h3><p>C'est tout ce qu'on vous demande. Gratuit, sans carte bancaire.</p></li>
+            <li><div class="tp-step-num">2</div><h3>Envoyez l'audio et le CV</h3><p>De votre prochain prospect ou client, avec la trame fournie.</p></li>
+            <li><div class="tp-step-num">3</div><h3>Offrez le dossier, signez</h3><p>Vous le recevez en 48&nbsp;h et le remettez quand vous le décidez.</p></li>
+        </ol>
+    </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="tp-testi">
+    <div class="tp-wrap">
+        <h2 class="tp-h2">Ce que disent les coachs</h2>
+        <div class="tp-grid-3">
+            <figure class="tp-quote">
+                <blockquote>« Suite à un RDV avec un prospect, j'ai vu comme cet élément supplémentaire à mon offre est une <strong>réelle valeur ajoutée</strong>. Ma cliente est très impressionnée par la pertinence et la complétude du dossier. »</blockquote>
+                <figcaption>
+                    <img class="tp-avatar" src="https://images.tilto.co/production/2026/02/42d86f91_anne-gobled-28-768x1152.webp" alt="" loading="lazy">
+                    <span><strong>Anne</strong><br>Coach en reconversion professionnelle</span>
+                </figcaption>
+            </figure>
+            <figure class="tp-quote">
+                <blockquote>« Les entreprises ciblées étaient vraiment celles que j'avais en tête. C'est <strong>comme une bible</strong>&nbsp;: les formations, les phases, le timing. »</blockquote>
+                <figcaption>
+                    <span class="tp-avatar tp-avatar--initial" aria-hidden="true">M</span>
+                    <span><strong>Marie, sa cliente</strong><br>En reconversion, accompagnée par Anne</span>
+                </figcaption>
+            </figure>
+            <figure class="tp-quote">
+                <blockquote>« On ne paie pas un package flou&nbsp;: on sait où on va. C'est cadré, ça va me servir à avancer. <strong>Pour moi, ça se valorise clairement.</strong> »</blockquote>
+                <figcaption>
+                    <span class="tp-avatar tp-avatar--initial tp-avatar--dark" aria-hidden="true">A</span>
+                    <span><strong>Amélie</strong><br>En reconversion, cliente en coaching</span>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="tp-faq tp-alt">
+    <div class="tp-wrap">
+        <h2 class="tp-h2">Vos questions</h2>
+        <div class="tp-faq-list">
+            <div class="tp-faq-item"><h3>Combien ça coûte après le dossier gratuit&nbsp;?</h3><p>49&nbsp;€ HT par dossier, à l'unité. Pas d'abonnement, pas d'engagement&nbsp;: vous l'utilisez pour les clients que vous choisissez.</p></div>
+            <div class="tp-faq-item"><h3>Mes clients vont-ils croire que c'est automatique&nbsp;?</h3><p>Le dossier reprend leurs propres phrases et leur parcours. Ce qu'ils lisent, c'est eux, pas un profil type.</p><p class="tp-faq-quote">« On sentait que c'était complètement personnalisé. J'avais vraiment l'impression qu'on discutait. » Benjamin, en reconversion</p></div>
+            <div class="tp-faq-item"><h3>Je fais déjà mes synthèses avec ChatGPT.</h3><p>Tilto croise l'entretien avec les données emploi de la région et des entreprises réelles, dans un dossier structuré de 20 pages. Et contrairement à un outil grand public, tout est anonymisé et rien n'est stocké.</p></div>
+            <div class="tp-faq-item"><h3>Que deviennent les données de mon client&nbsp;?</h3><p>Elles sont anonymisées pour l'analyse et ne sont pas stockées. Rien n'est revendu ni partagé.</p></div>
+            <div class="tp-faq-item"><h3>Je ne suis pas à l'aise avec la tech.</h3><p>Vous envoyez un audio et un CV. Rien à installer, rien à paramétrer.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FINAL CTA ═══ -->
+<section class="tp-final">
+    <div class="tp-wrap">
+        <div class="tp-final-box">
+            <h2 class="tp-h2">Votre prochain client est peut-être <span>celui qui hésite.</span></h2>
+            <p>Offrez-lui son dossier. Le premier est gratuit.</p>
+            {{ lead_form('final', 'final') }}
+            <p class="tp-final-note">Sans carte bancaire · Sans appel · Données anonymisées, non stockées</p>
+        </div>
+    </div>
+</section>
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -663,129 +532,82 @@
 (function() {
     'use strict';
 
-    // Scroll animations
-    var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) entry.target.classList.add('tp-visible');
-        });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.tp-fade-up').forEach(function(el) { observer.observe(el); });
-
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#tp-"]').forEach(function(a) {
-        a.addEventListener('click', function(e) {
-            e.preventDefault();
-            var target = document.querySelector(a.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    });
-
-    // Mockup tab switching
-    document.querySelectorAll('.tp-mockup-tab').forEach(function(t) {
+    // Aperçu du livrable : onglets
+    var mockTabs = [].slice.call(document.querySelectorAll('.tp-mockup-tab'));
+    mockTabs.forEach(function(t) {
         t.addEventListener('click', function() {
-            document.querySelectorAll('.tp-mockup-tab').forEach(function(x) { x.classList.remove('tp-active'); });
+            mockTabs.forEach(function(x) { x.classList.remove('tp-active'); x.setAttribute('aria-pressed', 'false'); });
             document.querySelectorAll('.tp-mp').forEach(function(x) { x.classList.remove('tp-active'); });
             t.classList.add('tp-active');
-            var p = document.getElementById('p-' + t.dataset.p);
-            if (p) p.classList.add('tp-active');
+            t.setAttribute('aria-pressed', 'true');
+            var panel = document.getElementById('p-' + t.dataset.p);
+            if (panel) panel.classList.add('tp-active');
         });
     });
 
-    // Form handling
-    var form = document.getElementById('tpContactForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Honeypot
-    var honeypot = document.getElementById('tp-website');
-    if (honeypot && honeypot.value) {
-        form.closest('.tp-fc').style.display = 'none';
-        document.getElementById('tpFormSuccess').style.display = 'block';
-        return;
-    }
-    
-    var msg = document.getElementById('tpFormMessage');
-    if (msg) msg.style.display = 'none';
-    
-    // Validation client
-    var firstname = form.querySelector('[name="firstname"]').value.trim();
-    var lastname = form.querySelector('[name="lastname"]').value.trim();
-    var email = form.querySelector('[name="email"]').value.trim();
-    
-    if (!firstname || !lastname) {
-        showTpMsg('error', 'Merci de renseigner votre prénom et nom.');
-        return;
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showTpMsg('error', 'Merci de renseigner un email valide.');
-        return;
-    }
-
-    var activite = form.querySelector('[name="activite"]').value;
-if (!activite) {
-    showTpMsg('error', 'Merci de sélectionner votre activité.');
-    return;
-}
-    
-    var btn = form.querySelector('button[type="submit"]');
-    var originalText = btn.textContent;
-    btn.textContent = 'Envoi en cours...';
-    btn.disabled = true;
-    
-    var formData = new FormData(form);
-
-    fetch('/lead/pro-contact', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': formData.get('csrf_token') },
-        body: formData
-    })
-    .then(function(response) { return response.json(); })
-    .then(function(data) {
-        if (data.success) {
-            form.closest('.tp-fc').style.display = 'none';
-            document.getElementById('tpFormSuccess').style.display = 'block';
-            if (typeof gtag === 'function') {
-                gtag('event', 'pro_lead_submitted', {
-                    'event_category': 'tilto_pro',
-                    'event_label': formData.get('activite') || 'unknown',
-                    'value': 1
-                });
-            }
-        } else {
-            showTpMsg('error', data.message || 'Une erreur est survenue.');
-            btn.textContent = originalText;
-            btn.disabled = false;
-        }
-    })
-    .catch(function(err) {
-        showTpMsg('error', 'Erreur réseau. Veuillez réessayer.');
-        btn.textContent = originalText;
-        btn.disabled = false;
+    // Liens internes vers le formulaire : scroll doux + focus sur l'email
+    document.querySelectorAll('a[href="#essai"]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+            var target = document.getElementById('essai');
+            if (!target) return;
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(function() { document.getElementById('tp-email-hero').focus({ preventScroll: true }); }, 500);
+        });
     });
-});
 
-function showTpMsg(type, text) {
-    var msg = document.getElementById('tpFormMessage');
-    if (!msg) return;
-    msg.style.display = 'block';
-    if (type === 'error') {
-        msg.style.background = '#FEF2F2';
-        msg.style.color = '#991B1B';
-        msg.style.border = '1px solid #FECACA';
-    } else {
-        msg.style.background = '#F0FDF4';
-        msg.style.color = '#166534';
-        msg.style.border = '1px solid #BBF7D0';
-    }
-    msg.style.borderRadius = '10px';
-    msg.style.padding = '12px 16px';
-    msg.style.fontSize = '0.85rem';
-    msg.style.fontWeight = '600';
-    msg.textContent = text;
-    msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-    }
+    // Formulaires lead (hero + CTA final), email seul
+    document.querySelectorAll('.tp-lead-form').forEach(function(form) {
+        var msg = form.nextElementSibling;
+        var ok = msg.nextElementSibling;
+
+        function showMsg(text) { msg.textContent = text; msg.style.display = 'block'; }
+        function showOk() { form.style.display = 'none'; msg.style.display = 'none'; ok.style.display = 'block'; }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var honeypot = form.querySelector('[name="website"]');
+            if (honeypot && honeypot.value) { showOk(); return; }
+            msg.style.display = 'none';
+
+            var email = form.querySelector('[name="email"]').value.trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg('Merci de renseigner un email valide.'); return; }
+
+            var btn = form.querySelector('button[type="submit"]');
+            var originalText = btn.textContent;
+            btn.textContent = 'Envoi en cours…';
+            btn.disabled = true;
+
+            var formData = new FormData(form);
+            fetch('/lead/pro-contact', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': formData.get('csrf_token') },
+                body: formData
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showOk();
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'pro_lead_submitted', {
+                            'event_category': 'tilto_pro',
+                            'event_label': formData.get('source') || 'unknown',
+                            'value': 1
+                        });
+                    }
+                } else {
+                    showMsg(data.message || 'Une erreur est survenue.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(function() {
+                showMsg('Erreur réseau. Veuillez réessayer.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
+        });
+    });
 })();
 </script>
 {% endblock %}

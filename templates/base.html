@@ -263,6 +263,9 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                   {% elif session.get('prelaunch_bypass') %}
                       <a href="{{ url_for('tokens.shop') }}" class="nav-link">{{ _('Boutique') }}</a>
                       <a href="{{ url_for('auth.signup') }}" class="nav-link cta">{{ _('M\'inscrire') }}</a>
+                  {% elif request.endpoint == 'tilto_pro' %}
+                  {# Landing /pro : un seul CTA vers le formulaire #}
+                  <a href="#essai" class="nav-link cta">Mon dossier gratuit</a>
                   {% else %}
                   <a href="{{ url_for('tilto_pro') }}" class="nav-link">Tilto Pro</a>
                   <a href="{{ url_for('auth.login') }}" class="nav-link">{{ _('Me connecter') }}</a>
@@ -270,11 +273,13 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
               </nav>
               {% endif %}
               
+              {% if request.endpoint != 'tilto_pro' %}
               <div class="language-selector">
                   <a href="{{ url_for('set_language', lang_code='fr') }}" class="lang-link {% if g.lang_code == 'fr' %}active{% endif %}">FR</a>
               </div>
+              {% endif %}
               
-              {% if not config.PRELAUNCH_MODE %}
+              {% if not config.PRELAUNCH_MODE and (current_user.is_authenticated or request.endpoint != 'tilto_pro') %}
                   <button class="mobile-menu-btn" aria-label="Ouvrir le menu">
                       <i class="fas fa-bars"></i>
                   </button>
@@ -315,7 +320,7 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                 <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
                 {{ _('DÃ©connexion') }}
             </a>
-            {% else %}
+            {% elif request.endpoint != 'tilto_pro' %}
             <a href="{{ url_for('tilto_pro') }}" class="mobile-nav-link">
                 <i class="fas fa-briefcase" style="margin-right: 10px;"></i>
                 Tilto Pro
