@@ -109,7 +109,13 @@
     </section>
 
     <div class="tpg-actions">
-      <a class="tpa-btn tpa-btn--primary" href="{{ back_url }}">J'ai mon enregistrement, je le dépose</a>
+      {% if not dossier %}
+      <a class="tpa-btn tpa-btn--primary" href="{{ back_url }}">Retour à mes dossiers</a>
+      {% elif dossier.kind == 'enregistrement' %}
+      <a class="tpa-btn tpa-btn--primary" href="{{ back_url }}">Déposer l'enregistrement</a>
+      {% else %}
+      <a class="tpa-btn tpa-btn--primary" href="{{ back_url }}">Je suis prêt, j'enregistre</a>
+      {% endif %}
       <button type="button" class="tpa-btn tpa-btn--ghost js-print">Télécharger le guide en PDF</button>
     </div>
   </div>
