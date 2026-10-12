@@ -265,9 +265,9 @@
 {% macro upload_zone() %}
 <label class="tpc-drop js-drop" for="f-files">
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A11857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg>
-  <strong>{{ "Déposez l'enregistrement et le CV" if not live else "Déposez un fichier" }}</strong>
-  <span>Glissez-les ici ou <em>choisissez des fichiers</em></span>
-  <span class="tpc-drop-formats">Audio ou vidéo (Zoom, Teams, Meet, Loom, téléphone…) jusqu'à 2&nbsp;Go · Transcription acceptée · CV facultatif</span>
+  <strong>{{ "Glissez le fichier ici" if not live else "Déposez un fichier" }}</strong>
+  <span>ou <em>choisissez-le sur votre appareil</em></span>
+  <span class="tpc-drop-formats">Audio ou vidéo (Zoom, Teams, Meet, Loom, téléphone…) jusqu'à 2&nbsp;Go · ou sa transcription</span>
   <input id="f-files" name="files" type="file" multiple accept="{{ accept }}" data-rules="{{ upload_rules|tojson|forceescape }}">
 </label>
 <div class="tpc-link">
@@ -281,14 +281,14 @@
 <ul class="tpc-files js-files" aria-live="polite">
   <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not (dossier.recording_url and not dossier.audio_path) }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
   <li class="is-ok" data-kind="transcript" {{ 'hidden' if not dossier.transcript_path }}><span aria-hidden="true">✓</span><span>Transcription&nbsp;: <span class="js-name">{{ dossier.transcript_filename or '' }}</span></span></li>
-  <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" {{ 'hidden' if live }}><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
+  <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" hidden><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
 </ul>
 {% endmacro %}
 
 {% macro consent_box() %}
 {# Déjà enregistré dans la page : l'accord a été coché avant d'enregistrer #}
 <label class="tpa-check"><input type="checkbox" class="js-consent" name="consent" value="1" required {{ 'checked' if request.form.get('consent') == '1' or (live and dossier.audio_path) }}>
-  {{ "Mon client a accepté que l'échange soit enregistré et analysé" if kind == 'enregistrement' else "La personne enregistrée est d'accord" }}</label>
+  La personne enregistrée est d'accord</label>
 {% endmacro %}
 
 {% macro submit_button() %}
@@ -315,19 +315,25 @@
           data-start-url="{{ url_for('pro.upload_start', client_id=dossier.id) }}" data-finish-url="{{ url_for('pro.upload_finish', client_id=dossier.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+      {% set has_rec = dossier.audio_path or dossier.recording_url or dossier.transcript_path %}
+      {# Sans JavaScript, tout est affiché d'emblée #}
+      <noscript><style>.tilto-pro-app .js-alt { display: block; } .tilto-pro-app .js-after { display: block !important; }</style></noscript>
       {% if kind == 'enregistrement' %}
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
-        <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-fichiers">L'enregistrement</h2></div>
+        <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-fichiers">Votre enregistrement</h2></div>
         <p class="tpa-lead">Tel quel, vidéo comprise. L'idéal&nbsp;: 5 à 15 minutes où la personne parle de son parcours.</p>
+        <div class="tpc-consent">{{ consent_box() }}</div>
+        <p class="tpc-privacy">Confidentiel · supprimé 30 jours après la livraison</p>
         {{ upload_zone() }}
         {{ files_list() }}
-        {{ consent_box() }}
       </section>
-      {{ fiche_block(2, 'La personne') }}
-      <div>{{ submit_button() }}</div>
+      {# Même principe que « Enregistrer maintenant » : la suite s'ouvre une fois le fichier reçu #}
+      <div class="js-after" {{ 'hidden' if not has_rec and not errors }}>
+        {{ fiche_block(2, 'Dernière étape', with_cv=True) }}
+        <div>{{ submit_button() }}</div>
+      </div>
 
       {% else %}
-      {% set has_rec = dossier.audio_path or dossier.recording_url or dossier.transcript_path %}
       <section class="tpa-card tpa-block js-prep" aria-labelledby="bloc-prep">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
         <p class="tpa-lead">5 questions pour lancer l'échange. Laissez parler, relancez si besoin.</p>
@@ -346,7 +352,6 @@
           <summary>J'ai déjà un fichier ou un lien</summary>
           {{ upload_zone() }}
         </details>
-        <noscript><style>.tilto-pro-app .js-alt { display: block; } .tilto-pro-app .js-after { display: block !important; }</style></noscript>
       </section>
       <div class="js-after" {{ 'hidden' if not has_rec and not errors }}>
         {{ fiche_block(3, 'Dernière étape', with_cv=True) }}
@@ -524,6 +529,12 @@
     function applyState(res) {
         ['audio', 'transcript', 'cv'].forEach(function (k) { if (res[k]) setRow(k, 'ok', res[k]); });
         if (res.audio && onAudioSaved) { row('audio').hidden = true; onAudioSaved(res); }
+        var cvStateEl = form.querySelector('.js-cv-state');
+        if (res.cv && cvStateEl) {  // CV déposé par la zone : affiché dans « Dernière étape »
+            row('cv').hidden = true;
+            cvStateEl.classList.add('is-ok'); cvStateEl.textContent = '✓ ' + res.cv;
+            form.querySelector('.tpc-cv-btn').textContent = 'Remplacer le CV';
+        }
         if (res.audio || res.transcript) revealAfter();
     }
     function showError(message) {
