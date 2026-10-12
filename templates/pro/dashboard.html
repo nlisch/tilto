@@ -60,7 +60,7 @@
         </div>
         <p class="tpd-next">
           {% if c.status in ('fiche', 'audio') and not c.kind %}Prochaine étape : <strong>choisir comment commencer</strong>
-          {% elif c.status in ('fiche', 'audio') and not c.audio_path %}Prochaine étape : <strong>déposer l'enregistrement</strong>
+          {% elif c.status in ('fiche', 'audio') and not (c.audio_path or c.recording_url or c.transcript_path) %}Prochaine étape : <strong>{{ "déposer l'enregistrement" if c.kind == 'enregistrement' else 'enregistrer la séance' }}</strong>
           {% elif c.status in ('fiche', 'audio') %}Prochaine étape : <strong>envoyer en analyse</strong>
           {% elif c.status == 'analyse' %}Dossier attendu sous 48&nbsp;h
           {% else %}<strong>Dossier disponible</strong>{% endif %}

@@ -58,6 +58,12 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-privacy { margin: 2px 0 0 !important; text-align: center; font-size: 0.82rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-cv { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.tilto-pro-app .tpc-cv input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.tilto-pro-app .tpc-cv-btn { min-height: 44px; cursor: pointer; }
+.tilto-pro-app .tpc-cv-state { font-size: 0.9rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-cv-state.is-ok { color: var(--tp-ok); font-weight: 600; }
 .tilto-pro-app .tpc-rec-done { margin-top: 8px; border-radius: 14px; background: var(--tp-ok-pale); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
 .tilto-pro-app .tpc-rec-done[hidden] { display: none; }
 .tilto-pro-app .tpc-done-line { display: flex; gap: 10px; align-items: center; font-weight: 700; color: var(--tp-ok); margin: 0 !important; }
@@ -117,7 +123,7 @@
 </style>
 {% endblock %}
 
-{% macro fiche_block(num, title=None) %}
+{% macro fiche_block(num, title=None, with_cv=False) %}
 <section class="tpa-card tpa-block" aria-labelledby="bloc-fiche">
   <div class="tpa-block-head"><span class="tpa-num">{{ num }}</span><h2 id="bloc-fiche">{{ title or ('Vous' if kind == 'moi' else 'Votre client') }}</h2></div>
   <div class="tpc-fields">
@@ -158,6 +164,14 @@
       {% endif %}
     </div>
   </details>
+  {% if with_cv %}
+  {# Parcours « en direct » : le CV n'a pas d'autre place visible #}
+  <div class="tpc-cv">
+    <label class="tpa-btn tpa-btn--ghost tpc-cv-btn" for="f-cv">{{ 'Remplacer le CV' if dossier.cv_path else 'Ajouter son CV' }}</label>
+    <input id="f-cv" class="js-cv" name="files" type="file" accept="{{ upload_rules.cv|join(',') }}">
+    <span class="tpc-cv-state js-cv-state">{% if dossier.cv_path %}✓ {{ dossier.cv_filename }}{% else %}Facultatif, mais il affine les pistes{% endif %}</span>
+  </div>
+  {% endif %}
   <p class="tpc-saved js-saved" aria-live="polite">Enregistré automatiquement.</p>
 </section>
 {% endmacro %}
@@ -244,7 +258,7 @@
 <ul class="tpc-files js-files" aria-live="polite">
   <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not (dossier.recording_url and not dossier.audio_path) }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
   <li class="is-ok" data-kind="transcript" {{ 'hidden' if not dossier.transcript_path }}><span aria-hidden="true">✓</span><span>Transcription&nbsp;: <span class="js-name">{{ dossier.transcript_filename or '' }}</span></span></li>
-  <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" {{ 'hidden' if live and not dossier.cv_path }}><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
+  <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" {{ 'hidden' if live }}><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
 </ul>
 {% endmacro %}
 
@@ -300,6 +314,7 @@
         <div class="tpa-block-head"><span class="tpa-num">2</span><h2 id="bloc-fichiers">Enregistrez</h2></div>
         {% if live %}
         <div class="tpc-consent">{{ consent_box() }}</div>
+        <p class="tpc-privacy">Confidentiel · supprimé 30 jours après la livraison</p>
         {% endif %}
         {{ rec_zone() }}
         {{ files_list() }}
@@ -310,7 +325,7 @@
         <noscript><style>.tilto-pro-app .js-alt { display: block; } .tilto-pro-app .js-after { display: block !important; }</style></noscript>
       </section>
       <div class="js-after" {{ 'hidden' if not has_rec and not errors }}>
-        {{ fiche_block(3, 'Dernière étape') }}
+        {{ fiche_block(3, 'Dernière étape', with_cv=True) }}
         <div>{{ submit_button() }}</div>
       </div>
       {% endif %}
@@ -359,6 +374,20 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" name="action" value="disable" class="tpc-link-btn">Désactiver le lien</button>
       </form>
+      {% endif %}
+    </section>
+
+    {# Le bon moment pour proposer le dossier suivant : le coach vient de voir le résultat #}
+    <section class="tpa-card tpa-block tpc-next">
+      <h2>Un autre client&nbsp;?</h2>
+      <p class="tpa-lead">Préparez son dossier de la même façon&nbsp;: 10 minutes d'échange, livré sous 48&nbsp;h.</p>
+      {% if g.pro_account.credits > 0 %}
+      <form method="post" action="{{ url_for('pro.new_client') }}" style="margin-top:16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="tpa-btn tpa-btn--primary" data-track="pro_next_dossier">Préparer un nouveau dossier</button>
+      </form>
+      {% else %}
+      <p style="margin-top:16px;"><a class="tpa-btn tpa-btn--primary" href="{{ url_for('pro.dashboard') }}#debloquer" data-track="pro_next_dossier">Débloquer un dossier · 49&nbsp;€&nbsp;HT</a></p>
       {% endif %}
     </section>
     {% endif %}
@@ -557,6 +586,26 @@
     drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) handle(e.dataTransfer.files); });
     // Une vidéo peut prendre plusieurs minutes : on prévient avant de quitter la page
     window.addEventListener('beforeunload', function (e) { if (pending > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+    // ── CV (parcours « en direct ») ──
+    var cvInput = form.querySelector('.js-cv');
+    if (cvInput) {
+        var cvState = form.querySelector('.js-cv-state');
+        cvInput.addEventListener('change', function () {
+            var file = cvInput.files[0];
+            if (!file) return;
+            if (kindOf(file.name) !== 'cv') { cvState.textContent = 'Format non accepté : PDF ou Word.'; cvInput.value = ''; return; }
+            cvState.classList.remove('is-ok');
+            cvState.textContent = 'Envoi…';
+            upload(file, 'cv').then(function (ok) {
+                row('cv').hidden = true;  // affiché ici plutôt que dans la liste
+                cvState.classList.toggle('is-ok', ok);
+                cvState.textContent = ok ? '✓ ' + file.name : 'Envoi impossible, réessayez.';
+                if (ok) form.querySelector('.tpc-cv-btn').textContent = 'Remplacer le CV';
+            });
+            cvInput.value = '';
+        });
+    }
 
     // ── Lien de partage : enregistré dès qu'il est collé ──
     var link = form.querySelector('.js-link');
