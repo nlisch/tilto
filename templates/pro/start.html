@@ -14,6 +14,9 @@
 .tilto-pro-app .tps-how { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .tilto-pro-app .tps-how li { display: flex; gap: 14px; align-items: center; font-size: 1.05rem; font-weight: 600; color: var(--tp-ink); line-height: 1.4; }
 .tilto-pro-app .tps-how-n { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tps-cta { margin: 28px 0 0; }
+.tilto-pro-app .tps-cta-btn { min-height: 56px; padding: 0 30px; font-size: 1.08rem; border-radius: 12px; box-shadow: 0 10px 24px rgba(161, 24, 87, 0.22); }
+.tilto-pro-app .tps-cta-hint { margin-top: 10px !important; font-size: 0.95rem; color: var(--tp-muted); }
 .tilto-pro-app .tps-example { margin-top: 18px !important; font-weight: 700; }
 .tilto-pro-app .tps-example a { text-decoration: none; }
 .tilto-pro-app .tps-preview { margin: 0; }
@@ -61,6 +64,16 @@
           <li><span class="tps-how-n">2</span><span>Nous préparons son dossier sur mesure&nbsp;: pistes chiffrées, entreprises à contacter, plan d'action</span></li>
           <li><span class="tps-how-n">3</span><span>Vous le recevez sous 48&nbsp;h et le remettez à votre client</span></li>
         </ol>
+        {% if dossier.is_free %}
+        {# Premier dossier : un seul chemin. Le dépôt d'un fichier reste possible, replié, sur la page suivante. #}
+        <form class="tps-cta" method="post" action="{{ url_for('pro.start', client_id=dossier.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" name="kind" value="client" class="tpa-btn tpa-btn--primary tps-cta-btn" data-track="pro_start_choice" data-track-kind="direct">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg> Enregistrer maintenant
+          </button>
+          <p class="tps-cta-hint">2 minutes de préparation, on vous guide pas à pas.</p>
+        </form>
+        {% endif %}
         {% if has_example %}<p class="tps-example"><a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Voir un dossier complet →</a></p>{% endif %}
       </div>
       <figure class="tps-preview tilto-pro-page">
@@ -70,6 +83,7 @@
       </figure>
     </div>
 
+    {% if not dossier.is_free %}
     <h2 class="tps-question">Comment voulez-vous commencer&nbsp;?</h2>
     <div class="tps-choices">
       <form method="post" action="{{ url_for('pro.start', client_id=dossier.id) }}">
@@ -77,7 +91,7 @@
         <button type="submit" name="kind" value="client" class="tps-card tps-card--main" data-track="pro_start_choice" data-track-kind="direct">
           <span class="tps-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></span>
           <span class="tps-title">Enregistrer maintenant</span>
-          <span class="tps-desc">En rendez-vous, en séance{{ ' ou sur vous-même' if dossier.is_free }}. On vous guide pas à pas.</span>
+          <span class="tps-desc">En rendez-vous ou en séance. On vous guide pas à pas.</span>
           <span class="tps-go">Commencer →</span>
         </button>
       </form>
@@ -91,6 +105,7 @@
         </button>
       </form>
     </div>
+    {% endif %}
 
     {% if has_example %}
     <div class="tps-prospect">
