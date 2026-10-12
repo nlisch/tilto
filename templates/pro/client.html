@@ -58,6 +58,20 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-prep { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.tilto-pro-app .tpc-prep > li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; background: var(--tp-cream); }
+.tilto-pro-app .tpc-prep-n { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: var(--tp-white); border: 1.5px solid var(--tp-rose-pale); box-sizing: border-box; color: var(--tp-primary); font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.tilto-pro-app .tpc-prep-body { min-width: 0; flex: 1; }
+.tilto-pro-app .tpc-prep-t { margin: 0 !important; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-q { margin: 4px 0 0 !important; font-family: 'Fraunces', Georgia, serif; font-size: 1.08rem; font-weight: 600; line-height: 1.35; color: var(--tp-ink); }
+.tilto-pro-app .tpc-prep-q::before { content: '« '; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-q::after { content: ' »'; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-more { margin-top: 6px; }
+.tilto-pro-app .tpc-prep-more summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; min-height: 32px; font-size: 0.88rem; font-weight: 600; color: var(--tp-muted); }
+.tilto-pro-app .tpc-prep-more summary::-webkit-details-marker { display: none; }
+.tilto-pro-app .tpc-prep-more summary::before { content: '+'; display: inline-block; width: 1.1em; font-weight: 700; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-more[open] summary::before { content: '–'; }
+.tilto-pro-app .tpc-prep-more ul { margin: 4px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; font-size: 0.93rem; color: var(--tp-text); }
 .tilto-pro-app .tpc-ctx { border: 0; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .tilto-pro-app .tpc-ctx legend { width: 100%; margin-bottom: 8px; padding: 0; font-size: 0.92rem; font-weight: 600; color: var(--tp-ink); }
 .tilto-pro-app .tpc-chip { cursor: pointer; }
@@ -81,16 +95,6 @@
 .tilto-pro-app .tpc-dot { width: 10px; height: 10px; border-radius: 50%; background: #E0242B; }
 .tilto-pro-app .tpc-consent { margin-top: 12px; display: flex; justify-content: center; }
 .tilto-pro-app .tpc-consent .tpa-check { font-weight: 600; color: var(--tp-ink); }
-.tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--tp-line); text-align: left; }
-.tilto-pro-app .tpc-prep li { border-bottom: 1px solid var(--tp-line); }
-.tilto-pro-app .tpc-prep summary { list-style: none; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
-.tilto-pro-app .tpc-prep summary::-webkit-details-marker { display: none; }
-.tilto-pro-app .tpc-prep summary::after { content: '+'; margin-left: auto; padding-left: 12px; font-size: 1.2rem; font-weight: 700; line-height: 1.2; color: var(--tp-primary); }
-.tilto-pro-app .tpc-prep details[open] summary::after { content: '–'; }
-.tilto-pro-app .tpc-prep-n { flex: 0 0 auto; min-width: 1.1em; font-weight: 800; color: var(--tp-primary); line-height: 1.45; }
-.tilto-pro-app .tpc-prep-t strong { display: block; color: var(--tp-ink); line-height: 1.45; }
-.tilto-pro-app .tpc-prep-t small { display: block; margin-top: 2px; font-size: 0.9rem; color: var(--tp-muted); line-height: 1.4; }
-.tilto-pro-app .tpc-prep-ex { margin: -4px 0 12px 1.9em !important; padding: 10px 14px; border-radius: 10px; background: var(--tp-primary-light); color: var(--tp-ink); font-size: 0.93rem; font-style: italic; }
 /* Pendant l'enregistrement : seul le micro reste */
 .tilto-pro-app #tpc-form.is-recording .js-prep, .tilto-pro-app #tpc-form.is-recording .tpc-consent, .tilto-pro-app #tpc-form.is-recording .js-alt, .tilto-pro-app #tpc-form.is-recording .js-files { display: none; }
 .tilto-pro-app .tpc-h2-note { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--tp-muted); letter-spacing: 0; }
@@ -192,22 +196,32 @@
 
 {# Les 5 sujets du guide, affichés pendant l'enregistrement #}
 {% set topics = [
-  ("Le point de départ", "Ce qui ne va plus dans son travail actuel.", "Qu'est-ce qui coince aujourd'hui dans ton travail ?"),
-  ("Les pistes déjà explorées", "Les idées envisagées, celle qui l'attire le plus.", "Quelles pistes as-tu déjà explorées ? Laquelle te parle le plus ?"),
-  ("Le cadre idéal", "Lieu, salaire, statut : le non négociable et le reste.", "Qu'est-ce qui est non négociable pour toi ? Qu'est-ce que tu pourrais assouplir ?"),
-  ("L'envie de changement", "Changer de métier, ou garder un pied dans le sien.", "Prêt à changer complètement de métier, ou tu veux garder un pied dans le tien ?"),
-  ("Le calendrier et les moyens", "Le délai, le temps et le budget disponibles.", "En combien de temps veux-tu changer ? Avec quel budget et quel temps ?"),
+  ("Le point de départ", "Comment ça se passe pour vous aujourd'hui dans votre travail ?",
+   ["Qu'est-ce qui vous plaît encore, et qu'est-ce qui vous pèse ?", "Qu'est-ce qui vous donne envie de bouger maintenant ?"]),
+  ("Les pistes déjà explorées", "Quelles idées avez-vous déjà en tête, même floues ?",
+   ["Laquelle vous attire le plus, et pourquoi ?", "Qu'avez-vous déjà écarté, et pour quelle raison ?"]),
+  ("Le cadre idéal", "À quoi ressemblerait une semaine de travail idéale pour vous ?",
+   ["Lieu, salaire, statut, rythme : qu'est-ce qui est non négociable ?", "Sur quoi pourriez-vous faire des compromis ?"]),
+  ("L'envie de changement", "Jusqu'où êtes-vous prêt à changer : de poste, de secteur, de métier ?",
+   ["Une formation, même longue, est-ce envisageable ?"]),
+  ("Le calendrier et les moyens", "En combien de temps aimeriez-vous que ça bouge ?",
+   ["Combien de temps et de budget pouvez-vous y consacrer ?"]),
 ] %}
 
 
 {% macro prep_list() %}
 <ol class="tpc-prep">
-  {% for t, why, example in topics %}
+  {% for t, question, more in topics %}
   <li>
-    <details>
-      <summary><span class="tpc-prep-n">{{ loop.index }}</span><span class="tpc-prep-t"><strong>{{ t }}</strong><small>{{ why }}</small></span></summary>
-      <p class="tpc-prep-ex">Par exemple&nbsp;: «&nbsp;{{ example }}&nbsp;»</p>
-    </details>
+    <span class="tpc-prep-n" aria-hidden="true">{{ loop.index }}</span>
+    <div class="tpc-prep-body">
+      <p class="tpc-prep-t">{{ t }}</p>
+      <p class="tpc-prep-q">{{ question }}</p>
+      <details class="tpc-prep-more">
+        <summary>Autres questions</summary>
+        <ul>{% for q in more %}<li>{{ q }}</li>{% endfor %}</ul>
+      </details>
+    </div>
   </li>
   {% endfor %}
 </ol>
@@ -321,7 +335,7 @@
       {% set has_rec = dossier.audio_path or dossier.recording_url or dossier.transcript_path %}
       <section class="tpa-card tpa-block js-prep" aria-labelledby="bloc-prep">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
-        <p class="tpa-lead">À aborder dans l'ordre qui vous va. Touchez un sujet pour un exemple de question.</p>
+        <p class="tpa-lead">Une question pour lancer chaque sujet, dans l'ordre qui vous va. Laissez parler, relancez si besoin.</p>
         {{ prep_list() }}
       </section>
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
