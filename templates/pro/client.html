@@ -73,8 +73,19 @@
     .tilto-pro-app .tpc-dialog-foot .tpa-btn { width: 100%; }
 }
 .tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 4px 0; text-align: left; counter-reset: none; }
-.tilto-pro-app .tpc-prep li { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; color: var(--tp-ink); line-height: 1.45; }
-.tilto-pro-app .tpc-prep-n { flex: 0 0 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--tp-primary); align-self: center; }
+.tilto-pro-app .tpc-prep li { display: flex; gap: 14px; align-items: flex-start; padding: 8px 0; color: var(--tp-ink); line-height: 1.45; }
+.tilto-pro-app .tpc-prep-n { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 10px; background: var(--tp-primary-light); color: var(--tp-primary); display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; }
+.tilto-pro-app .tpc-prep-txt strong { display: block; font-weight: 700; color: var(--tp-ink); }
+.tilto-pro-app .tpc-prep-q { display: block; font-size: 0.92rem; color: var(--tp-muted); font-style: italic; }
+.tilto-pro-app .tpc-cover { width: 100%; margin-top: 10px; text-align: center; }
+.tilto-pro-app .tpc-cover-title { margin: 0 0 8px !important; font-size: 0.85rem; font-weight: 700; color: var(--tp-ink); }
+.tilto-pro-app .tpc-cover-title span { font-weight: 400; color: var(--tp-muted); }
+.tilto-pro-app .tpc-cover-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tilto-pro-app .tpc-cover-chip { all: unset; cursor: pointer; min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1.5px solid #D9CCD2; background: var(--tp-white); font-size: 0.88rem; font-weight: 600; color: var(--tp-text); }
+.tilto-pro-app .tpc-cover-chip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #D9CCD2; }
+.tilto-pro-app .tpc-cover-chip[aria-pressed="true"] { border-color: var(--tp-ok); background: var(--tp-ok-pale); color: var(--tp-ok); }
+.tilto-pro-app .tpc-cover-chip[aria-pressed="true"]::before { content: '✓'; width: auto; height: auto; background: none; font-weight: 800; }
+.tilto-pro-app .tpc-cover-chip:focus-visible { outline: 2px solid var(--tp-primary); outline-offset: 2px; }
 .tilto-pro-app .tpc-prep-guide { margin: 8px 0 0 !important; font-size: 0.88rem; }
 .tilto-pro-app .tpc-prep-guide a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
 .tilto-pro-app .tpc-ctx { border: 0; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -121,7 +132,6 @@
 .tilto-pro-app #tpc-form.is-recording .js-prep, .tilto-pro-app #tpc-form.is-recording .tpc-consent, .tilto-pro-app #tpc-form.is-recording .js-alt, .tilto-pro-app #tpc-form.is-recording .js-files { display: none; }
 .tilto-pro-app .tpc-h2-note { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--tp-muted); letter-spacing: 0; }
 .tilto-pro-app .tpc-intro { margin: 10px 0 24px !important; max-width: 600px; }
-.tilto-pro-app .tpc-review { width: 100%; margin-top: 4px; text-align: left; }
 .tilto-pro-app .js-after[hidden] { display: none; }
 .tilto-pro-app .tpc-link { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
 .tilto-pro-app .tpc-link label { font-size: 0.92rem; font-weight: 600; color: var(--tp-muted); }
@@ -231,10 +241,19 @@
 ] %}
 
 
+{# Une icône par point : boussole, ampoule, maison, flèches, calendrier #}
+{% set topic_icons = [
+  '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  '<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/>',
+  '<path d="M7 7h11l-3-3"/><path d="M17 17H6l3 3"/>',
+  '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/><path d="M9 3v4"/><path d="M15 3v4"/>',
+] %}
+
 {% macro prep_list() %}
 <ol class="tpc-prep">
   {% for t, question, more in topics %}
-  <li><span class="tpc-prep-n" aria-hidden="true"></span><span>{{ question }}</span></li>
+  <li><span class="tpc-prep-n" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">{{ topic_icons[loop.index0]|safe }}</svg></span><span class="tpc-prep-txt"><strong>{{ t }}</strong><span class="tpc-prep-q">{{ question }}</span></span></li>
   {% endfor %}
 </ol>
 {% endmacro %}
@@ -264,10 +283,15 @@
     <canvas class="tpc-wave js-rec-wave" aria-hidden="true"></canvas>
     <p class="tpc-rec-time js-rec-time">0:00</p>
     <p class="tpc-mic-hint">Appuyez pour terminer et envoyer</p>
-    <details class="tpc-more tpc-review">
-      <summary>Revoir les sujets</summary>
-      {{ prep_list() }}
-    </details>
+    {# Repère facultatif : le coach coche les points abordés, rien n'est bloquant ni enregistré #}
+    <div class="tpc-cover">
+      <p class="tpc-cover-title">Points abordés <span>(facultatif)</span></p>
+      <div class="tpc-cover-chips">
+        {% for t, question, more in topics %}
+        <button type="button" class="tpc-cover-chip js-cover" aria-pressed="false" title="{{ question }}">{{ t }}</button>
+        {% endfor %}
+      </div>
+    </div>
   </div>
   <div class="tpc-rec-recover js-rec-recover" hidden role="alert">
     <p class="js-rec-recover-text"></p>
@@ -320,7 +344,7 @@
   {% if not locked %}
     <a class="tpa-back" href="{{ url_for('pro.start', client_id=dossier.id) }}">← Retour</a>
     <h1>{{ page_title }}</h1>
-    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}L'échange devient un dossier de reconversion de 20 pages.{% endif %}</p>
+    <p class="tpc-intro">{% if kind == 'enregistrement' %}À partir de cet enregistrement, nous préparons un dossier de reconversion sur mesure, prêt sous 48&nbsp;h.{% else %}À partir de cet échange, nous préparons un dossier de reconversion sur mesure, prêt sous 48&nbsp;h.{% endif %}</p>
 
     {% if errors %}
     <div class="tpa-errors tpc-errors" role="alert"><strong>Il manque quelques éléments pour envoyer le dossier&nbsp;:</strong>
@@ -353,7 +377,7 @@
       {% else %}
       <section class="tpa-card tpa-block js-prep" aria-labelledby="bloc-prep">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
-        <p class="tpa-lead">5 questions pour lancer l'échange. Laissez parler, relancez si besoin.</p>
+        <p class="tpa-lead">Pour un dossier complet, abordez ces 5 points, dans l'ordre et avec les mots qui vous vont.</p>
         {{ prep_list() }}
         <p class="tpc-prep-guide"><a href="{{ url_for('pro.guide', dossier=dossier.id) }}" class="js-guide-open">Plus de questions de relance dans le guide →</a></p>
       </section>
@@ -666,6 +690,13 @@
         guide.querySelectorAll('.js-guide-close').forEach(function (b) { b.addEventListener('click', function () { guide.close(); }); });
         guide.addEventListener('click', function (e) { if (e.target === guide) guide.close(); });  // clic à côté
     }
+
+    // ── Points abordés pendant l'enregistrement (repère facultatif) ──
+    form.querySelectorAll('.js-cover').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        });
+    });
 
     // ── CV (parcours « en direct ») ──
     var cvInput = form.querySelector('.js-cv');
