@@ -74,7 +74,7 @@
 }
 .tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 4px 0; text-align: left; counter-reset: none; }
 .tilto-pro-app .tpc-prep li { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; color: var(--tp-ink); line-height: 1.45; }
-.tilto-pro-app .tpc-prep-n { flex: 0 0 1.2em; font-family: 'Fraunces', Georgia, serif; font-weight: 800; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-n { flex: 0 0 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--tp-primary); align-self: center; }
 .tilto-pro-app .tpc-prep-guide { margin: 8px 0 0 !important; font-size: 0.88rem; }
 .tilto-pro-app .tpc-prep-guide a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
 .tilto-pro-app .tpc-ctx { border: 0; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -98,8 +98,25 @@
 .tilto-pro-app .tpc-done-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
 .tilto-pro-app .tpc-done-actions .tpa-btn { gap: 10px; }
 .tilto-pro-app .tpc-dot { width: 10px; height: 10px; border-radius: 50%; background: #E0242B; }
-.tilto-pro-app .tpc-consent { margin-top: 12px; display: flex; justify-content: center; }
-.tilto-pro-app .tpc-consent .tpa-check { font-weight: 600; color: var(--tp-ink); }
+.tilto-pro-app .tpc-mic-hint.is-alert { color: var(--tp-primary); font-weight: 700; }
+.tilto-pro-app .tpc-consent { margin: 14px auto 0; width: fit-content; max-width: 100%; padding: 2px 10px; border-radius: 10px; font-size: 0.88rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-consent .tpa-check { font-weight: 500; color: var(--tp-text); align-items: center; padding-top: 0; font-size: 0.88rem; }
+.tilto-pro-app .tpc-consent .tpa-check input { width: 18px; height: 18px; }
+.tilto-pro-app .tpc-consent-note { color: var(--tp-muted); font-weight: 400; }
+.tilto-pro-app .tpc-consent.is-needed { background: var(--tp-primary-light); color: var(--tp-primary); animation: tpcShake 0.45s ease-in-out; }
+.tilto-pro-app .tpc-consent.is-needed .tpa-check { color: var(--tp-primary); font-weight: 700; }
+@keyframes tpcShake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-consent.is-needed { animation: none; } }
+/* Bouton « Démarrer l'enregistrement » : grand micro avec halo + texte, tout est cliquable */
+.tilto-pro-app .tpc-mic-btn { all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 14px; -webkit-tap-highlight-color: transparent; }
+.tilto-pro-app .tpc-mic--start { width: 112px; height: 112px; animation: tpcHalo 2.2s ease-out infinite; }
+.tilto-pro-app .tpc-mic-btn:hover .tpc-mic--start { transform: scale(1.06); }
+.tilto-pro-app .tpc-mic-btn:active .tpc-mic--start { transform: scale(0.95); }
+.tilto-pro-app .tpc-mic-btn:focus-visible .tpc-mic--start { outline: 3px solid var(--tp-gold); outline-offset: 4px; }
+.tilto-pro-app .tpc-mic-label { font-size: 1.15rem; font-weight: 800; color: var(--tp-ink); }
+.tilto-pro-app .tpc-mic-btn:hover .tpc-mic-label { color: var(--tp-primary); }
+@keyframes tpcHalo { 0% { box-shadow: 0 10px 35px rgba(161,24,87,0.35), 0 0 0 0 rgba(161,24,87,0.35); } 70% { box-shadow: 0 10px 35px rgba(161,24,87,0.35), 0 0 0 22px rgba(161,24,87,0); } 100% { box-shadow: 0 10px 35px rgba(161,24,87,0.35), 0 0 0 0 rgba(161,24,87,0); } }
+@media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic--start { animation: none; } }
 /* Pendant l'enregistrement : seul le micro reste */
 .tilto-pro-app #tpc-form.is-recording .js-prep, .tilto-pro-app #tpc-form.is-recording .tpc-consent, .tilto-pro-app #tpc-form.is-recording .js-alt, .tilto-pro-app #tpc-form.is-recording .js-files { display: none; }
 .tilto-pro-app .tpc-h2-note { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--tp-muted); letter-spacing: 0; }
@@ -217,7 +234,7 @@
 {% macro prep_list() %}
 <ol class="tpc-prep">
   {% for t, question, more in topics %}
-  <li><span class="tpc-prep-n" aria-hidden="true">{{ loop.index }}</span><span>{{ question }}</span></li>
+  <li><span class="tpc-prep-n" aria-hidden="true"></span><span>{{ question }}</span></li>
   {% endfor %}
 </ol>
 {% endmacro %}
@@ -234,10 +251,11 @@
     </div>
   </div>
   <div class="tpc-mic-zone js-rec-idle">
-    <button type="button" class="tpc-mic js-rec-start" aria-label="Enregistrer maintenant" data-track="pro_recording_started">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+    <button type="button" class="tpc-mic-btn js-rec-start" data-track="pro_recording_started">
+      <span class="tpc-mic tpc-mic--start" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></span>
+      <span class="tpc-mic-label">Démarrer l'enregistrement</span>
     </button>
-    <p class="tpc-mic-hint js-rec-hint" data-ready="Appuyez pour enregistrer · 10 min suffisent" data-locked="Cochez l'accord pour commencer">Cochez l'accord pour commencer</p>
+    <p class="tpc-mic-hint js-rec-hint" data-ready="Idéalement 10 à 15 min : plus de matière, plus le dossier est précis" data-locked="Cochez d'abord l'accord ci-dessous ↓">Idéalement 10 à 15 min&nbsp;: plus de matière, plus le dossier est précis</p>
   </div>
   <div class="tpc-mic-zone js-rec-live" hidden role="status">
     <button type="button" class="tpc-mic tpc-mic--recording js-rec-stop" aria-label="Arrêter et envoyer">
@@ -288,7 +306,7 @@
 {% macro consent_box() %}
 {# Déjà enregistré dans la page : l'accord a été coché avant d'enregistrer #}
 <label class="tpa-check"><input type="checkbox" class="js-consent" name="consent" value="1" required {{ 'checked' if request.form.get('consent') == '1' or (live and dossier.audio_path) }}>
-  La personne enregistrée est d'accord</label>
+  <span>La personne enregistrée est d'accord <span class="tpc-consent-note">· confidentiel, supprimé 30 jours après la livraison</span></span></label>
 {% endmacro %}
 
 {% macro submit_button() %}
@@ -302,7 +320,7 @@
   {% if not locked %}
     <a class="tpa-back" href="{{ url_for('pro.start', client_id=dossier.id) }}">← Retour</a>
     <h1>{{ page_title }}</h1>
-    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages.{% endif %}</p>
+    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}L'échange devient un dossier de reconversion de 20 pages.{% endif %}</p>
 
     {% if errors %}
     <div class="tpa-errors tpc-errors" role="alert"><strong>Il manque quelques éléments pour envoyer le dossier&nbsp;:</strong>
@@ -322,9 +340,8 @@
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-fichiers">Votre enregistrement</h2></div>
         <p class="tpa-lead">Tel quel, vidéo comprise. L'idéal&nbsp;: 5 à 15 minutes où la personne parle de son parcours.</p>
-        <div class="tpc-consent">{{ consent_box() }}</div>
-        <p class="tpc-privacy">Confidentiel · supprimé 30 jours après la livraison</p>
         {{ upload_zone() }}
+        <div class="tpc-consent">{{ consent_box() }}</div>
         {{ files_list() }}
       </section>
       {# Même principe que « Enregistrer maintenant » : la suite s'ouvre une fois le fichier reçu #}
@@ -342,11 +359,8 @@
       </section>
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
         <div class="tpa-block-head"><span class="tpa-num">2</span><h2 id="bloc-fichiers">Enregistrez</h2></div>
-        {% if live %}
-        <div class="tpc-consent">{{ consent_box() }}</div>
-        <p class="tpc-privacy">Confidentiel · supprimé 30 jours après la livraison</p>
-        {% endif %}
         {{ rec_zone() }}
+        <div class="tpc-consent">{{ consent_box() }}</div>
         {{ files_list() }}
         <details class="tpc-more tpc-alt js-alt" {{ 'open' if not has_rec and (errors or request.args.get('fichier')) }}>
           <summary>J'ai déjà un fichier ou un lien</summary>
@@ -825,10 +839,24 @@
 
         var startBtn = rec.querySelector('.js-rec-start'), hint = rec.querySelector('.js-rec-hint');
         var consent = form.querySelector('.js-consent');
+        // Le micro reste « actif » visuellement : un bouton grisé ne dit pas pourquoi.
+        // Sans l'accord, le clic met la case en évidence au lieu d'enregistrer.
+        var consentBox = form.querySelector('.tpc-consent');
         function syncConsent() {
             var ok = !consent || consent.checked;
-            startBtn.disabled = !ok;
-            hint.textContent = ok ? hint.dataset.ready : hint.dataset.locked;
+            hint.textContent = hint.dataset.ready;
+            hint.classList.remove('is-alert');
+            if (ok && consentBox) consentBox.classList.remove('is-needed');
+        }
+        function needConsent() {
+            if (!consent || consent.checked) return false;
+            consentBox.classList.remove('is-needed'); void consentBox.offsetWidth;  // rejoue l'animation
+            consentBox.classList.add('is-needed');
+            hint.textContent = hint.dataset.locked;
+            hint.classList.add('is-alert');
+            consentBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            consent.focus({ preventScroll: true });
+            return true;
         }
         if (consent) consent.addEventListener('change', syncConsent);
         syncConsent();
@@ -866,15 +894,15 @@
         }
 
         rec.querySelector('.js-rec-continue').addEventListener('click', function () {
-            if (consent && !consent.checked) { consent.focus(); showError("Cochez « La personne enregistrée est d'accord » pour continuer."); return; }
+            if (needConsent()) return;
             startRecording(true);
         });
         rec.querySelector('.js-rec-restart').addEventListener('click', function () {
             if (!window.confirm('Recommencer ? L’enregistrement déjà envoyé sera remplacé.')) return;
-            if (consent && !consent.checked) { consent.focus(); showError("Cochez « La personne enregistrée est d'accord » pour recommencer."); return; }
+            if (needConsent()) return;
             startRecording(false);
         });
-        startBtn.addEventListener('click', function () { startRecording(false); });
+        startBtn.addEventListener('click', function () { if (!needConsent()) startRecording(false); });
 
         function startRecording(append) {
             appendMode = append;
