@@ -65,8 +65,9 @@
 .tilto-pro-app .tpa-gift { display: inline-flex; align-items: center; gap: 10px; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 700; border-radius: 12px; padding: 12px 18px; }
 .tilto-pro-app .tpa-gift svg { flex: 0 0 auto; }
 .tilto-pro-app .tpa-block { margin-top: 18px; }
-.tilto-pro-app .tpa-block-head { display: flex; gap: 12px; align-items: center; }
-.tilto-pro-app .tpa-num { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpa-block-head { display: flex; gap: 14px; align-items: center; }
+/* Numéro d'étape : chiffre éditorial, sans fond, pour ne ressembler ni aux icônes ni à un bouton */
+.tilto-pro-app .tpa-num { flex: 0 0 auto; font-family: 'Fraunces', Georgia, serif; font-size: 2rem; font-weight: 700; line-height: 1; color: var(--tp-primary); padding-right: 14px; border-right: 1.5px solid var(--tp-line); font-variant-numeric: lining-nums; }
 .tilto-pro-app .tpa-block-head h2 { font-size: 1.5rem; }
 .tilto-pro-app .tpa-lead { margin-top: 12px !important; font-size: 1rem; color: var(--tp-muted); }
 .tilto-pro-app .tpa-check { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding-top: 10px; font-size: 0.97rem; cursor: pointer; }

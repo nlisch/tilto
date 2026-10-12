@@ -57,7 +57,17 @@
 .tilto-pro-app .tpc-rec-recover p { margin: 0 !important; font-weight: 600; color: var(--tp-ink); }
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
-.tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-alt { margin-top: 22px; border-top: 0; padding-top: 0; }
+.tilto-pro-app .tpc-alt summary.tpc-alt-sum { display: flex; gap: 14px; align-items: center; width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid var(--tp-line); border-radius: 14px; background: var(--tp-white); color: var(--tp-ink); font-weight: 400; transition: border-color 0.2s, background 0.2s; }
+.tilto-pro-app .tpc-alt summary.tpc-alt-sum::before { content: none; }
+.tilto-pro-app .tpc-alt summary.tpc-alt-sum:hover { border-color: var(--tp-primary); }
+.tilto-pro-app .tpc-alt[open] summary.tpc-alt-sum { margin-bottom: 14px; }
+.tilto-pro-app .tpc-alt-ico { flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--tp-primary); color: var(--tp-primary); display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpc-alt-txt { flex: 1; min-width: 0; line-height: 1.35; }
+.tilto-pro-app .tpc-alt-txt strong { display: block; font-weight: 700; }
+.tilto-pro-app .tpc-alt-txt small { display: block; margin-top: 2px; font-size: 0.9rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-alt-chev { flex: 0 0 auto; font-size: 1.6rem; line-height: 1; color: var(--tp-primary); transition: transform 0.2s; }
+.tilto-pro-app .tpc-alt[open] .tpc-alt-chev { transform: rotate(90deg); }
 .tilto-pro-app .tpc-dialog { position: fixed; inset: 0; margin: auto; width: min(760px, calc(100% - 32px)); height: fit-content; max-height: 86vh; padding: 0; border: 0; border-radius: 20px; background: var(--tp-cream); color: var(--tp-text); box-shadow: 0 30px 80px rgba(42, 18, 32, 0.3); overflow: hidden; }
 .tilto-pro-app .tpc-dialog[open] { display: flex; flex-direction: column; }
 .tilto-pro-app .tpc-dialog::backdrop { background: rgba(42, 18, 32, 0.45); }
@@ -387,7 +397,11 @@
         <div class="tpc-consent">{{ consent_box() }}</div>
         {{ files_list() }}
         <details class="tpc-more tpc-alt js-alt" {{ 'open' if not has_rec and (errors or request.args.get('fichier')) }}>
-          <summary>J'ai déjà un fichier ou un lien</summary>
+          <summary class="tpc-alt-sum">
+            <span class="tpc-alt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></span>
+            <span class="tpc-alt-txt"><strong>L'échange est déjà enregistré&nbsp;?</strong><small>Déposez le fichier audio ou vidéo, ou collez le lien Zoom, Teams, Meet, Loom.</small></span>
+            <span class="tpc-alt-chev" aria-hidden="true">›</span>
+          </summary>
           {{ upload_zone() }}
         </details>
       </section>

@@ -16,6 +16,7 @@
 .tilto-pro-app .tps-how-n { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 .tilto-pro-app .tps-cta { margin: 28px 0 0; }
 .tilto-pro-app .tps-cta-btn { min-height: 56px; padding: 0 30px; font-size: 1.08rem; border-radius: 12px; box-shadow: 0 10px 24px rgba(161, 24, 87, 0.22); }
+@media (max-width: 480px) { .tilto-pro-app .tps-cta-btn { padding: 0 16px; font-size: 1rem; } }
 .tilto-pro-app .tps-cta-hint { margin-top: 10px !important; font-size: 0.95rem; color: var(--tp-muted); }
 .tilto-pro-app .tps-example { margin-top: 18px !important; font-weight: 700; }
 .tilto-pro-app .tps-example a { text-decoration: none; }
@@ -69,9 +70,9 @@
         <form class="tps-cta" method="post" action="{{ url_for('pro.start', client_id=dossier.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" name="kind" value="client" class="tpa-btn tpa-btn--primary tps-cta-btn" data-track="pro_start_choice" data-track-kind="direct">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg> Enregistrer maintenant
+            Commencer mon premier dossier <span aria-hidden="true">→</span>
           </button>
-          <p class="tps-cta-hint">2 minutes de préparation, on vous guide pas à pas.</p>
+          <p class="tps-cta-hint">On vous guide&nbsp;: 2 min de préparation, puis l'enregistrement.</p>
         </form>
         {% endif %}
         {% if has_example %}<p class="tps-example"><a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Voir un dossier complet →</a></p>{% endif %}
