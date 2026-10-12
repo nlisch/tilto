@@ -67,6 +67,7 @@
 .tilto-pro-app .tpc-alt-txt strong { display: block; font-weight: 700; }
 .tilto-pro-app .tpc-alt-txt small { display: block; margin-top: 2px; font-size: 0.9rem; color: var(--tp-muted); }
 .tilto-pro-app .tpc-alt-chev { flex: 0 0 auto; font-size: 1.6rem; line-height: 1; color: var(--tp-primary); transition: transform 0.2s; }
+.tilto-pro-app .tpc-alt-note { margin: 0 0 12px !important; font-size: 0.92rem; color: var(--tp-muted); }
 .tilto-pro-app .tpc-alt[open] .tpc-alt-chev { transform: rotate(90deg); }
 .tilto-pro-app .tpc-dialog { position: fixed; inset: 0; margin: auto; width: min(760px, calc(100% - 32px)); height: fit-content; max-height: 86vh; padding: 0; border: 0; border-radius: 20px; background: var(--tp-cream); color: var(--tp-text); box-shadow: 0 30px 80px rgba(42, 18, 32, 0.3); overflow: hidden; }
 .tilto-pro-app .tpc-dialog[open] { display: flex; flex-direction: column; }
@@ -399,9 +400,10 @@
         <details class="tpc-more tpc-alt js-alt" {{ 'open' if not has_rec and (errors or request.args.get('fichier')) }}>
           <summary class="tpc-alt-sum">
             <span class="tpc-alt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></span>
-            <span class="tpc-alt-txt"><strong>L'échange est déjà enregistré&nbsp;?</strong><small>Déposez le fichier audio ou vidéo, ou collez le lien Zoom, Teams, Meet, Loom.</small></span>
+            <span class="tpc-alt-txt"><strong>Vous avez déjà enregistré une séance&nbsp;?</strong><small>Déposez le fichier audio ou vidéo, ou collez son lien (Zoom, Teams, Meet, Loom).</small></span>
             <span class="tpc-alt-chev" aria-hidden="true">›</span>
           </summary>
+          <p class="tpc-alt-note">Idéal si elle aborde les 5 points ci-dessus&nbsp;: plus il y a de matière, plus le dossier est précis.</p>
           {{ upload_zone() }}
         </details>
       </section>
