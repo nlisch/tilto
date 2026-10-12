@@ -293,7 +293,7 @@
   {% if not locked %}
     <a class="tpa-back" href="{{ url_for('pro.start', client_id=dossier.id) }}">← Retour</a>
     <h1>{{ page_title }}</h1>
-    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages. Pour tester, enregistrez-vous vous-même.{% endif %}</p>
+    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages.{% endif %}</p>
 
     {% if errors %}
     <div class="tpa-errors tpc-errors" role="alert"><strong>Il manque quelques éléments pour envoyer le dossier&nbsp;:</strong>
