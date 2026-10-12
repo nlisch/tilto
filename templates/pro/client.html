@@ -58,20 +58,11 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
-.tilto-pro-app .tpc-prep { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
-.tilto-pro-app .tpc-prep > li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; background: var(--tp-cream); }
-.tilto-pro-app .tpc-prep-n { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: var(--tp-white); border: 1.5px solid var(--tp-rose-pale); box-sizing: border-box; color: var(--tp-primary); font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
-.tilto-pro-app .tpc-prep-body { min-width: 0; flex: 1; }
-.tilto-pro-app .tpc-prep-t { margin: 0 !important; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tp-primary); }
-.tilto-pro-app .tpc-prep-q { margin: 4px 0 0 !important; font-family: 'Fraunces', Georgia, serif; font-size: 1.08rem; font-weight: 600; line-height: 1.35; color: var(--tp-ink); }
-.tilto-pro-app .tpc-prep-q::before { content: '« '; color: var(--tp-primary); }
-.tilto-pro-app .tpc-prep-q::after { content: ' »'; color: var(--tp-primary); }
-.tilto-pro-app .tpc-prep-more { margin-top: 6px; }
-.tilto-pro-app .tpc-prep-more summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; min-height: 32px; font-size: 0.88rem; font-weight: 600; color: var(--tp-muted); }
-.tilto-pro-app .tpc-prep-more summary::-webkit-details-marker { display: none; }
-.tilto-pro-app .tpc-prep-more summary::before { content: '+'; display: inline-block; width: 1.1em; font-weight: 700; color: var(--tp-primary); }
-.tilto-pro-app .tpc-prep-more[open] summary::before { content: '–'; }
-.tilto-pro-app .tpc-prep-more ul { margin: 4px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; font-size: 0.93rem; color: var(--tp-text); }
+.tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 4px 0; text-align: left; counter-reset: none; }
+.tilto-pro-app .tpc-prep li { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; color: var(--tp-ink); line-height: 1.45; }
+.tilto-pro-app .tpc-prep-n { flex: 0 0 1.2em; font-family: 'Fraunces', Georgia, serif; font-weight: 800; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep-guide { margin: 8px 0 0 !important; font-size: 0.88rem; }
+.tilto-pro-app .tpc-prep-guide a { font-weight: 600; text-decoration: none; }
 .tilto-pro-app .tpc-ctx { border: 0; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .tilto-pro-app .tpc-ctx legend { width: 100%; margin-bottom: 8px; padding: 0; font-size: 0.92rem; font-weight: 600; color: var(--tp-ink); }
 .tilto-pro-app .tpc-chip { cursor: pointer; }
@@ -212,17 +203,7 @@
 {% macro prep_list() %}
 <ol class="tpc-prep">
   {% for t, question, more in topics %}
-  <li>
-    <span class="tpc-prep-n" aria-hidden="true">{{ loop.index }}</span>
-    <div class="tpc-prep-body">
-      <p class="tpc-prep-t">{{ t }}</p>
-      <p class="tpc-prep-q">{{ question }}</p>
-      <details class="tpc-prep-more">
-        <summary>Autres questions</summary>
-        <ul>{% for q in more %}<li>{{ q }}</li>{% endfor %}</ul>
-      </details>
-    </div>
-  </li>
+  <li><span class="tpc-prep-n" aria-hidden="true">{{ loop.index }}</span><span>{{ question }}</span></li>
   {% endfor %}
 </ol>
 {% endmacro %}
@@ -335,8 +316,9 @@
       {% set has_rec = dossier.audio_path or dossier.recording_url or dossier.transcript_path %}
       <section class="tpa-card tpa-block js-prep" aria-labelledby="bloc-prep">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
-        <p class="tpa-lead">Une question pour lancer chaque sujet, dans l'ordre qui vous va. Laissez parler, relancez si besoin.</p>
+        <p class="tpa-lead">5 questions pour lancer l'échange. Laissez parler, relancez si besoin.</p>
         {{ prep_list() }}
+        <p class="tpc-prep-guide"><a href="{{ url_for('pro.guide', dossier=dossier.id) }}">Plus de questions de relance dans le guide →</a></p>
       </section>
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
         <div class="tpa-block-head"><span class="tpa-num">2</span><h2 id="bloc-fichiers">Enregistrez</h2></div>
