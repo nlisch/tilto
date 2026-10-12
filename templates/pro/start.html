@@ -57,7 +57,7 @@
         <h1>Nouveau dossier</h1>
         {% endif %}
         <ol class="tps-how" aria-label="Comment ça marche">
-          <li><span class="tps-how-n">1</span><span>Vous enregistrez une séance, ou vous-même pour tester</span></li>
+          <li><span class="tps-how-n">1</span><span>Vous enregistrez un échange avec un prospect ou un client, ou vous-même pour tester</span></li>
           <li><span class="tps-how-n">2</span><span>Tilto rédige le dossier&nbsp;: pistes chiffrées, entreprises à contacter, plan d'action</span></li>
           <li><span class="tps-how-n">3</span><span>Vous le recevez sous 48&nbsp;h et le remettez à votre client</span></li>
         </ol>
@@ -77,7 +77,7 @@
         <button type="submit" name="kind" value="client" class="tps-card tps-card--main" data-track="pro_start_choice" data-track-kind="direct">
           <span class="tps-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></span>
           <span class="tps-title">Enregistrer maintenant</span>
-          <span class="tps-desc">En séance{{ ' ou sur vous-même' if dossier.is_free }}. On vous guide pas à pas.</span>
+          <span class="tps-desc">En rendez-vous, en séance{{ ' ou sur vous-même' if dossier.is_free }}. On vous guide pas à pas.</span>
           <span class="tps-go">Commencer →</span>
         </button>
       </form>
@@ -86,7 +86,7 @@
         <button type="submit" name="kind" value="enregistrement" class="tps-card" data-track="pro_start_choice" data-track-kind="enregistrement">
           <span class="tps-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></span>
           <span class="tps-title">J'ai déjà un enregistrement</span>
-          <span class="tps-desc">Le fichier audio de votre séance, ou le lien de sa vidéo (Zoom, Teams, Meet, Loom).</span>
+          <span class="tps-desc">Le fichier audio ou vidéo d'un échange, ou son lien (Zoom, Teams, Meet, Loom).</span>
           <span class="tps-go">Commencer →</span>
         </button>
       </form>

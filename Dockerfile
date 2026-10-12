@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     curl \
     bc \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copie et installation des dépendances Python

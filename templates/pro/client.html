@@ -4,7 +4,7 @@
 {% set kind = dossier.kind or 'client' %}
 {% set is_default_label = dossier.label in ('Mon premier client', 'Mon dossier test') or (dossier.label.startswith('Client ') and dossier.label[7:].isdigit()) %}
 {% set live = kind in ('client', 'moi') %}
-{% if not locked and live %}{% set page_title = 'Enregistrez la séance' %}
+{% if not locked and live %}{% set page_title = "Enregistrez l'échange" %}
 {% elif not locked %}{% set page_title = "Déposez l'enregistrement" %}
 {% elif kind == 'moi' %}{% set page_title = 'Mon dossier test' %}
 {% elif dossier.is_free and (is_default_label or not locked) %}{% set page_title = 'Mon premier client' %}
@@ -58,6 +58,13 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-ctx { border: 0; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.tilto-pro-app .tpc-ctx legend { width: 100%; margin-bottom: 8px; padding: 0; font-size: 0.92rem; font-weight: 600; color: var(--tp-ink); }
+.tilto-pro-app .tpc-chip { cursor: pointer; }
+.tilto-pro-app .tpc-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tilto-pro-app .tpc-chip span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1.5px solid #D9CCD2; border-radius: 10px; background: var(--tp-white); font-weight: 600; color: var(--tp-text); }
+.tilto-pro-app .tpc-chip input:checked + span { border-color: var(--tp-primary); background: var(--tp-primary-light); color: var(--tp-primary); }
+.tilto-pro-app .tpc-chip input:focus-visible + span { outline: 2px solid var(--tp-primary); outline-offset: 2px; }
 .tilto-pro-app .tpc-privacy { margin: 2px 0 0 !important; text-align: center; font-size: 0.82rem; color: var(--tp-muted); }
 .tilto-pro-app .tpc-cv { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .tilto-pro-app .tpc-cv input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -126,6 +133,13 @@
 {% macro fiche_block(num, title=None, with_cv=False) %}
 <section class="tpa-card tpa-block" aria-labelledby="bloc-fiche">
   <div class="tpa-block-head"><span class="tpa-num">{{ num }}</span><h2 id="bloc-fiche">{{ title or ('Vous' if kind == 'moi' else 'Votre client') }}</h2></div>
+  {# Pour savoir quel usage les coachs font du dossier (avant ou après signature) #}
+  <fieldset class="tpc-ctx">
+    <legend>Cette personne est</legend>
+    {% for v in ['Un prospect', 'Un client accompagné', 'Moi (test)'] %}
+    <label class="tpc-chip"><input type="radio" class="js-fiche" name="contexte" value="{{ v }}" {{ 'checked' if dossier.fiche.contexte == v }}><span>{{ v }}</span></label>
+    {% endfor %}
+  </fieldset>
   <div class="tpc-fields">
     <div class="tpa-field">
       <label for="f-label">{{ 'Prénom' if kind == 'moi' else 'Prénom ou initiales' }}</label>
@@ -279,7 +293,7 @@
   {% if not locked %}
     <a class="tpa-back" href="{{ url_for('pro.start', client_id=dossier.id) }}">← Retour</a>
     <h1>{{ page_title }}</h1>
-    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre séance en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages. Pour tester, enregistrez-vous vous-même.{% endif %}</p>
+    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre enregistrement en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages. Pour tester, enregistrez-vous vous-même.{% endif %}</p>
 
     {% if errors %}
     <div class="tpa-errors tpc-errors" role="alert"><strong>Il manque quelques éléments pour envoyer le dossier&nbsp;:</strong>
@@ -295,12 +309,12 @@
       {% if kind == 'enregistrement' %}
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-fichiers">L'enregistrement</h2></div>
-        <p class="tpa-lead">Telle quelle, vidéo comprise. L'idéal&nbsp;: 5 à 15 minutes où votre client parle de son parcours.</p>
+        <p class="tpa-lead">Tel quel, vidéo comprise. L'idéal&nbsp;: 5 à 15 minutes où la personne parle de son parcours.</p>
         {{ upload_zone() }}
         {{ files_list() }}
         {{ consent_box() }}
       </section>
-      {{ fiche_block(2, 'Votre client') }}
+      {{ fiche_block(2, 'La personne') }}
       <div>{{ submit_button() }}</div>
 
       {% else %}
@@ -426,7 +440,10 @@
     function autosave() {
         var data = new FormData();
         data.append('csrf_token', csrf);
-        form.querySelectorAll('.js-fiche').forEach(function (el) { data.append(el.name, el.value); });
+        form.querySelectorAll('.js-fiche').forEach(function (el) {
+            if (el.type === 'radio' && !el.checked) return;
+            data.append(el.name, el.value);
+        });
         saved.classList.remove('is-error');
         saved.textContent = 'Enregistrement…';
         fetch(form.dataset.autosaveUrl, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })

@@ -62,8 +62,8 @@ STATUS_LABELS = {
 KINDS = ('moi', 'client', 'enregistrement')
 KIND_LABELS = {
     'moi': 'Dossier test (moi-même)',
-    'client': 'Client en fin d\'accompagnement',
-    'enregistrement': 'Enregistrement existant',
+    'client': 'Enregistré dans la page',
+    'enregistrement': 'Fichier ou lien déposé',
 }
 DEFAULT_LABELS = ("Mon premier client", "Mon dossier test")
 
@@ -75,6 +75,7 @@ FICHE_FIELDS = [
     ('salaire_souhaite', "Salaire souhaité", False),
     ('statut', "Statut recherché", False),
     ('remarques', "Remarques", False),
+    ('contexte', "Cette personne est", False),
 ]
 
 
@@ -709,6 +710,32 @@ def read_example():
     return _bucket().blob(EXAMPLE_PATH).download_as_bytes().decode('utf-8', errors='replace')
 
 
+# ─── Transcription automatique (admin) ──────────────────────────────────────
+
+def set_transcript_status(client_id, status, error=None):
+    cur = _cursor()
+    try:
+        cur.execute("""
+            UPDATE pro_clients SET auto_transcript_status = %s, auto_transcript_error = %s,
+                   auto_transcript_at = NOW() WHERE id = %s
+        """, (status, error, client_id))
+        _commit()
+    finally:
+        cur.close()
+
+
+def save_transcript(client_id, text):
+    cur = _cursor()
+    try:
+        cur.execute("""
+            UPDATE pro_clients SET auto_transcript = %s, auto_transcript_status = 'pret',
+                   auto_transcript_error = NULL, auto_transcript_at = NOW() WHERE id = %s
+        """, (text, client_id))
+        _commit()
+    finally:
+        cur.close()
+
+
 # ─── Lien de lecture pour le client du coach ────────────────────────────────
 
 def create_share_link(client):
@@ -875,6 +902,7 @@ def purge_expired_files():
                     _delete_blob(path)
             cur.execute("""
                 UPDATE pro_clients SET audio_path = NULL, audio_extra_json = NULL, cv_path = NULL, transcript_path = NULL,
+                       auto_transcript = NULL, auto_transcript_status = NULL,
                        recording_url = NULL, files_purged_at = NOW()
                 WHERE id = %s
             """, (row['id'],))

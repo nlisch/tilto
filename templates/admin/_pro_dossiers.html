@@ -15,6 +15,10 @@
 .tilto-pro-app .tpx-actions input[type="file"] { font-size: 0.82rem; max-width: 220px; }
 .tilto-pro-app .tpx-btn { min-height: 36px; padding: 0 12px; font-size: 0.85rem; border-radius: 8px; }
 .tilto-pro-app .tpx-links { min-width: 170px; }
+.tilto-pro-app .tpx-transcript { margin: 4px 0 8px; font-size: 0.85rem; }
+.tilto-pro-app .tpx-transcript form { margin: 2px 0 0; }
+.tilto-pro-app .tpx-mini { all: unset; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--tp-primary); text-decoration: underline; }
+.tilto-pro-app .tpx-error { color: #991B1B; font-weight: 600; }
 .tilto-pro-app .tpx-nudge { display: inline-block; font-size: 0.85rem; font-weight: 600; }
 .tilto-pro-app .tpx-nudge--active { color: var(--tp-primary); }
 .tilto-pro-app .tpx-nudge--stopped { color: #8A5A00; }
@@ -85,7 +89,17 @@
                 {% else %}
                   {% if c.audio_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio') }}">⬇ Enregistrement{{ ' (partie 1)' if c.audio_extra }}<br><span class="tpx-muted">{{ c.audio_filename }}</span></a>
                   {% for e in c.audio_extra %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio', partie=loop.index + 1) }}">⬇ Enregistrement (partie {{ loop.index + 1 }})<br><span class="tpx-muted">{{ e.f }}</span></a>{% endfor %}
-                  {% if c.audio_seconds %}<span class="tpx-muted">Durée enregistrée dans la page : {{ (c.audio_seconds / 60)|round|int }} min</span>{% endif %}{% endif %}
+                  {% if c.audio_seconds %}<span class="tpx-muted">Durée enregistrée dans la page : {{ (c.audio_seconds / 60)|round|int }} min</span>{% endif %}
+                  <div class="tpx-transcript">
+                    {% if c.auto_transcript_status == 'pret' %}<a href="{{ url_for('pro.admin_transcript', client_id=c.id) }}">📝 Transcription (.txt)</a>
+                    {% elif c.auto_transcript_status == 'en_cours' %}<span class="tpx-muted">📝 Transcription en cours depuis {{ c.auto_transcript_at.strftime('%H:%M') }}…</span>
+                    {% elif c.auto_transcript_status == 'erreur' %}<span class="tpx-error">📝 Transcription échouée : {{ c.auto_transcript_error }}</span>{% endif %}
+                    <form method="post" action="{{ url_for('pro.admin_transcribe', client_id=c.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="next" value="{{ next_url }}">
+                      <button type="submit" class="tpc-link-btn tpx-mini">{{ 'Relancer la transcription' if c.auto_transcript_status else 'Transcrire' }}</button>
+                    </form>
+                  </div>{% endif %}
                   {% if c.recording_url %}<a href="{{ c.recording_url }}" target="_blank" rel="noopener noreferrer">↗ Lien de l'enregistrement<br><span class="tpx-muted">{{ c.recording_url|truncate(48, True, '…') }}</span></a>{% endif %}
                   {% if c.transcript_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='transcript') }}">⬇ Transcription<br><span class="tpx-muted">{{ c.transcript_filename }}</span></a>{% endif %}
                   {% if c.cv_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='cv') }}">⬇ CV<br><span class="tpx-muted">{{ c.cv_filename }}</span></a>{% endif %}

@@ -2,7 +2,7 @@
 Tilto Pro : inscription depuis la landing, espace coach et back-office.
 
 Le coach s'inscrit avec son email et choisit comment commencer son dossier offert :
-sur lui-même, pour un client en fin d'accompagnement ou à partir d'un enregistrement
+en enregistrant un échange dans la page (prospect, client ou lui-même) ou à partir d'un enregistrement
 existant. Une page courte (fiche + dépôt des fichiers) mène à « Envoyer en analyse ».
 L'analyse (fichier HTML) est déposée à la main depuis /admin/pro.
 """
@@ -35,13 +35,54 @@ BLOCKED_DOMAINS = {
 }
 
 
-def _notify_slack(message):
+def _notify_slack(message, channel='leads'):
     try:
         from services import slack_service, SLACK_AVAILABLE
         if SLACK_AVAILABLE and slack_service:
-            slack_service.send_notification(message, channel='leads')
+            slack_service.send_notification(message, channel=channel)
     except Exception as e:
         logger.error(f"Slack Tilto Pro (non bloquant): {e}")
+
+
+def _alert_tech(context, error):
+    """Souci technique côté coach : log + Slack #monitoring (pour réagir vite)."""
+    logger.error(f"Tilto Pro · {context} : {error}")
+    detail = str(error)[:400]
+    who = getattr(current_user, 'email', None) if current_user and current_user.is_authenticated else None
+    _notify_slack(f"🚨 *Tilto Pro · {context}*{chr(10) + '📧 ' + who if who else ''}\n```{detail}```", channel='monitoring')
+
+
+def _alert_email(subject, lines, link=None):
+    """Copie par email des alertes importantes (PRO_ALERT_EMAIL, contact@tilto.ai par défaut)."""
+    try:
+        from markupsafe import escape
+        from services.email_service import send_email
+        to = current_app.config.get('PRO_ALERT_EMAIL') or 'contact@tilto.ai'
+        body = ''.join(f'<p style="margin:0 0 8px;font-size:15px;color:#333;">{escape(l)}</p>' for l in lines)
+        if link:
+            body += f'<p style="margin:16px 0 0;"><a href="{escape(link)}" style="color:#A11857;font-weight:700;">Ouvrir dans l\'admin</a></p>'
+        result = send_email(to_email=to, subject=f"[Tilto Pro] {subject}", html_content=body)
+        if not result.get('success', False):
+            logger.error(f"Email d'alerte Tilto Pro non envoyé : {result.get('message')}")
+    except Exception as e:
+        logger.error(f"Email d'alerte Tilto Pro impossible (non bloquant): {e}")
+
+
+def _alert_recording(dossier, what):
+    """Un enregistrement vient d'arriver : Slack + email, pour réagir vite."""
+    link = url_for('pro.admin_account', account_id=dossier['pro_account_id'], _external=True)
+    coach = pro_service.get_coach_email(dossier['pro_account_id'])
+    label = dossier['label'] if dossier['label'] not in pro_service.DEFAULT_LABELS else f"dossier {dossier['id']}"
+    _notify_slack(f"🎙️ *Enregistrement reçu* : {what}\n📧 {coach}\n👤 {label} (pas encore envoyé en analyse)\n🔗 {link}")
+    _alert_email(f"Enregistrement reçu de {coach}", [f"{what}", f"Coach : {coach}", f"Dossier : {label} (pas encore envoyé en analyse)"], link)
+
+
+@pro_bp.errorhandler(500)
+def _pro_server_error(e):
+    """Erreur inattendue dans l'espace Pro : alerte #monitoring, puis la page d'erreur du site."""
+    original = getattr(e, 'original_exception', None) or e
+    _alert_tech(f"erreur serveur sur {request.method} {request.path}", repr(original))
+    return render_template('errors/500.html'), 500
 
 
 def pro_required(view):
@@ -146,6 +187,7 @@ def signup():
         return _register(email, source)
     except Exception as e:
         logger.error(f"Inscription Tilto Pro impossible pour {email}: {e}", exc_info=True)
+        _alert_tech(f"inscription impossible ({email})", repr(e))
         return jsonify({'success': False, 'message': 'Une erreur est survenue. Réessayez dans un instant.'}), 500
 
 
@@ -194,6 +236,7 @@ def pilot_request():
         return response
     except Exception as e:
         logger.error(f"Demande de pilote impossible pour {email}: {e}", exc_info=True)
+        _alert_tech(f"demande de pilote impossible ({email})", repr(e))
         return jsonify({'success': False, 'message': 'Une erreur est survenue. Réessayez dans un instant.'}), 500
 
 
@@ -202,7 +245,8 @@ def _send_access_email(email, user_id, is_new, source=None):
     token = pro_service.make_access_token(user_id, validity)
     access_url = url_for('pro.access', token=token, source=source, _external=True)
     from services.email_service import send_pro_access_email
-    send_pro_access_email(email, access_url, is_new=is_new)
+    if not send_pro_access_email(email, access_url, is_new=is_new):
+        _alert_tech("email d'accès non envoyé", f"{email} : le coach ne recevra pas son lien de connexion")
 
 
 def _coach_link(account_id, next_path):
@@ -350,6 +394,8 @@ def autosave(client_id):
         if error:
             return jsonify({'success': False, 'field': 'recording_url', 'message': error}), 400
         pro_service.save_recording_url(dossier, url)
+        if url and url != dossier.get('recording_url'):
+            _alert_recording(dossier, f"lien de l'enregistrement : {url}")
         return jsonify({'success': True, 'recording_url': url})
     return jsonify({'success': True})
 
@@ -371,15 +417,26 @@ def _save_files(dossier, files, append=False, seconds=None):
         if not file or not file.filename:
             continue
         try:
-            _, error = pro_service.save_upload(dossier, file, append=append, seconds=seconds)
+            kind, error = pro_service.save_upload(dossier, file, append=append, seconds=seconds)
         except Exception as e:
             logger.error(f"Upload Tilto Pro impossible (dossier {dossier['id']}): {e}", exc_info=True)
-            error = f"{file.filename} : l'envoi a échoué. Réessayez dans un instant."
+            _alert_tech(f"dépôt de fichier impossible (dossier {dossier['id']})", repr(e))
+            kind, error = None, f"{file.filename} : l'envoi a échoué. Réessayez dans un instant."
         if error:
             errors.append(error)
         else:
             dossier = pro_service.get_client(dossier['id'])
+            if kind in ('audio', 'transcript'):
+                _alert_recording(dossier, _recording_what(dossier, kind, file.filename, append, seconds))
     return errors
+
+
+def _recording_what(dossier, kind, filename, append, seconds):
+    if kind == 'transcript':
+        return f"transcription déposée ({filename})"
+    duration = f", {round(seconds / 60)} min" if seconds and seconds >= 60 else (", moins d'1 min" if seconds else '')
+    part = f"partie {dossier['audio_parts']}" if append and dossier['audio_parts'] > 1 else 'enregistrement'
+    return f"{part} : {filename}{duration}"
 
 
 @pro_bp.route('/pro/clients/<int:client_id>/fichiers', methods=['POST'])
@@ -425,6 +482,7 @@ def upload_start(client_id):
             dossier, request.form.get('filename'), size, request.form.get('content_type'), **_upload_options())
     except Exception as e:
         logger.error(f"URL d'envoi Tilto Pro impossible (dossier {client_id}): {e}", exc_info=True)
+        _alert_tech(f"envoi direct impossible à démarrer (dossier {client_id})", repr(e))
         info, error = None, "L'envoi n'a pas pu démarrer. Réessayez dans un instant."
     if error:
         return jsonify({'success': False, 'errors': [error]}), 400
@@ -436,12 +494,18 @@ def upload_start(client_id):
 def upload_finish(client_id):
     dossier = _get_dossier(client_id)
     try:
-        _, _, error = pro_service.finish_direct_upload(dossier, request.form.get('token') or '')
+        kind, filename, error = pro_service.finish_direct_upload(dossier, request.form.get('token') or '')
     except Exception as e:
         logger.error(f"Fin d'envoi Tilto Pro impossible (dossier {client_id}): {e}", exc_info=True)
-        error = "L'envoi a échoué. Réessayez dans un instant."
+        _alert_tech(f"fin d'envoi direct impossible (dossier {client_id})", repr(e))
+        kind, filename, error = None, None, "L'envoi a échoué. Réessayez dans un instant."
     if error:
+        if "n'est pas arrivé" in error or 'trop lourd' in error:
+            _alert_tech(f"envoi direct non abouti (dossier {client_id})", error)
         return jsonify({'success': False, 'errors': [error]}), 400
+    if kind in ('audio', 'transcript'):
+        dossier = pro_service.get_client(client_id)
+        _alert_recording(dossier, _recording_what(dossier, kind, filename, dossier['audio_parts'] > 1, dossier.get('audio_seconds')))
     return jsonify(dict(_files_state(client_id), success=True, errors=[]))
 
 
@@ -480,9 +544,21 @@ def submit(client_id):
     _notify_slack(
         f"🎧 *Dossier Tilto Pro à analyser*\n📧 {current_user.email}\n👤 {dossier['label']} (dossier {dossier['id']})"
         f" · {KIND_LABELS.get(dossier['kind'], '')}{' · offert' if dossier['is_free'] else ''}"
+        f"{' · ' + dossier['fiche']['contexte'] if dossier['fiche'].get('contexte') else ''}"
         f"\n🎬 {recording}"
         f"\n🔗 {url_for('pro.admin_account', account_id=dossier['pro_account_id'], _external=True)}"
     )
+    _alert_email(f"Dossier à analyser : {dossier['label']}", [
+        f"Coach : {current_user.email}", f"Dossier : {dossier['label']} ({KIND_LABELS.get(dossier['kind'], '')})",
+        f"Enregistrement : {recording}", "À livrer sous 48 h."],
+        url_for('pro.admin_account', account_id=dossier['pro_account_id'], _external=True))
+    if dossier.get('audio_path'):
+        # Transcription Whisper en arrière-plan, pour préparer l'analyse
+        try:
+            from services import pro_transcription
+            pro_transcription.start(client_id)
+        except Exception as e:
+            logger.error(f"Transcription non lancée (dossier {client_id}): {e}", exc_info=True)
     return redirect(url_for('pro.sent', client_id=client_id))
 
 
@@ -669,6 +745,34 @@ def admin_file(client_id, kind):
     return redirect(pro_service.signed_url(path, download_name=f"{dossier['label']} - {name}"))
 
 
+@pro_bp.route('/admin/pro/clients/<int:client_id>/transcrire', methods=['POST'])
+@login_required
+@admin_required
+def admin_transcribe(client_id):
+    dossier = pro_service.get_client(client_id)
+    if not dossier or not dossier.get('audio_path'):
+        abort(404)
+    from services import pro_transcription
+    pro_transcription.start(client_id)
+    flash(f"Transcription lancée pour « {dossier['label']} » : rechargez la page dans quelques minutes.", 'success')
+    return redirect(_admin_back())
+
+
+@pro_bp.route('/admin/pro/clients/<int:client_id>/transcription.txt')
+@login_required
+@admin_required
+def admin_transcript(client_id):
+    dossier = pro_service.get_client(client_id)
+    if not dossier or not dossier.get('auto_transcript'):
+        abort(404)
+    from urllib.parse import quote
+    name = f"{dossier['label']} - transcription.txt"
+    response = current_app.response_class(dossier['auto_transcript'], mimetype='text/plain; charset=utf-8')
+    response.headers['Content-Disposition'] = f"attachment; filename*=UTF-8''{quote(name)}"
+    response.headers['Cache-Control'] = 'private, no-store'
+    return response
+
+
 @pro_bp.route('/admin/pro/clients/<int:client_id>/analyse', methods=['POST'])
 @login_required
 @admin_required
@@ -742,6 +846,8 @@ def _send_nudges():
         except Exception as e:
             logger.error(f"Relance Tilto Pro impossible (compte {row['account_id']}): {e}", exc_info=True)
             ok = False
+        if not ok:
+            _alert_tech("relance non envoyée", f"{row['email']} (compte {row['account_id']})")
         if ok:
             pro_service.mark_nudge_sent(row['account_id'])
             sent_count += 1
