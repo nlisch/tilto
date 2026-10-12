@@ -58,6 +58,20 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-dialog { position: fixed; inset: 0; margin: auto; width: min(760px, calc(100% - 32px)); height: fit-content; max-height: 86vh; padding: 0; border: 0; border-radius: 20px; background: var(--tp-cream); color: var(--tp-text); box-shadow: 0 30px 80px rgba(42, 18, 32, 0.3); overflow: hidden; }
+.tilto-pro-app .tpc-dialog[open] { display: flex; flex-direction: column; }
+.tilto-pro-app .tpc-dialog::backdrop { background: rgba(42, 18, 32, 0.45); }
+.tilto-pro-app .tpc-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; background: var(--tp-white); border-bottom: 1px solid var(--tp-line); }
+.tilto-pro-app .tpc-dialog-head h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.35rem; color: var(--tp-ink); margin: 0; }
+.tilto-pro-app .tpc-dialog-x { all: unset; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-dialog-x:hover, .tilto-pro-app .tpc-dialog-x:focus-visible { background: var(--tp-primary-light); color: var(--tp-primary); }
+.tilto-pro-app .tpc-dialog-body { overflow-y: auto; padding: 20px 22px; font-family: 'DM Sans', system-ui, sans-serif; }
+.tilto-pro-app .tpc-dialog-body .tpg-list { margin-top: 16px; }
+.tilto-pro-app .tpc-dialog-foot { padding: 14px 22px; background: var(--tp-white); border-top: 1px solid var(--tp-line); display: flex; justify-content: flex-end; }
+@media (max-width: 768px) {
+    .tilto-pro-app .tpc-dialog { width: 100%; max-width: none; max-height: 90vh; margin: auto 0 0; border-radius: 20px 20px 0 0; }
+    .tilto-pro-app .tpc-dialog-foot .tpa-btn { width: 100%; }
+}
 .tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 4px 0; text-align: left; counter-reset: none; }
 .tilto-pro-app .tpc-prep li { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; color: var(--tp-ink); line-height: 1.45; }
 .tilto-pro-app .tpc-prep-n { flex: 0 0 1.2em; font-family: 'Fraunces', Georgia, serif; font-weight: 800; color: var(--tp-primary); }
@@ -318,7 +332,7 @@
         <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
         <p class="tpa-lead">5 questions pour lancer l'échange. Laissez parler, relancez si besoin.</p>
         {{ prep_list() }}
-        <p class="tpc-prep-guide"><a href="{{ url_for('pro.guide', dossier=dossier.id) }}">Plus de questions de relance dans le guide →</a></p>
+        <p class="tpc-prep-guide"><a href="{{ url_for('pro.guide', dossier=dossier.id) }}" class="js-guide-open">Plus de questions de relance dans le guide →</a></p>
       </section>
       <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
         <div class="tpa-block-head"><span class="tpa-num">2</span><h2 id="bloc-fichiers">Enregistrez</h2></div>
@@ -341,6 +355,20 @@
       {% endif %}
     </form>
 
+    {% if live %}
+    {# Le guide s'ouvre par-dessus la page : on ne la quitte pas (enregistrement en cours, saisie) #}
+    <dialog class="tpc-dialog js-guide" aria-labelledby="tpc-guide-title">
+      <div class="tpc-dialog-head">
+        <h2 id="tpc-guide-title">Les 5 sujets à aborder</h2>
+        <button type="button" class="tpc-dialog-x js-guide-close" aria-label="Fermer le guide">✕</button>
+      </div>
+      <div class="tpc-dialog-body">
+        <p class="tpa-lead">Une trame, pas un questionnaire&nbsp;: laissez la personne parler, piochez les relances si besoin.</p>
+        {% include "pro/_guide_content.html" %}
+      </div>
+      <div class="tpc-dialog-foot"><button type="button" class="tpa-btn tpa-btn--primary js-guide-close">C'est noté</button></div>
+    </dialog>
+    {% endif %}
 
   {% else %}
     <a class="tpa-back" href="{{ url_for('pro.dashboard') }}">← Mes dossiers</a>
@@ -599,6 +627,20 @@
     drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) handle(e.dataTransfer.files); });
     // Une vidéo peut prendre plusieurs minutes : on prévient avant de quitter la page
     window.addEventListener('beforeunload', function (e) { if (pending > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+    // ── Guide en fenêtre (sans quitter la page) ──
+    var guide = document.querySelector('.js-guide');
+    if (guide && guide.showModal) {
+        document.querySelectorAll('.js-guide-open').forEach(function (a) {
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                guide.showModal();
+                window.tpTrack('pro_guide_opened', {});
+            });
+        });
+        guide.querySelectorAll('.js-guide-close').forEach(function (b) { b.addEventListener('click', function () { guide.close(); }); });
+        guide.addEventListener('click', function (e) { if (e.target === guide) guide.close(); });  // clic à côté
+    }
 
     // ── CV (parcours « en direct ») ──
     var cvInput = form.querySelector('.js-cv');

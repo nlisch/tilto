@@ -11,23 +11,8 @@
 .tilto-pro-app .tpg-meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
 .tilto-pro-app .tpg-meta span { background: var(--tp-white); border: 1px solid var(--tp-line); border-radius: 999px; padding: 8px 16px; font-size: 0.95rem; font-weight: 700; color: var(--tp-ink); }
 .tilto-pro-app .tpg-self { margin-top: 16px !important; font-size: 0.95rem; color: var(--tp-muted); }
-.tilto-pro-app .tpg-list { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
-.tilto-pro-app .tpg-head { display: flex; gap: 14px; align-items: center; }
-.tilto-pro-app .tpg-head h2 { flex: 1; font-size: 1.45rem; }
-.tilto-pro-app .tpg-num { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
-.tilto-pro-app .tpg-time { font-size: 0.9rem; color: var(--tp-muted); white-space: nowrap; }
-.tilto-pro-app .tpg-item ul { margin: 16px 0 0 50px; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 1.05rem; line-height: 1.5; color: var(--tp-ink); }
-.tilto-pro-app .tpg-intro { margin: 16px 0 0 50px !important; color: var(--tp-muted); }
-.tilto-pro-app .tpg-intro + ul { margin-top: 10px; }
-.tilto-pro-app .tpg-why { margin: 14px 0 0 50px !important; font-size: 0.9rem; color: var(--tp-muted); }
-.tilto-pro-app .tpg-tips { margin-top: 24px; background: var(--tp-cream); border: 1px solid var(--tp-line); border-radius: 18px; padding: 26px 28px; }
-.tilto-pro-app .tpg-tips ul { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; line-height: 1.55; color: var(--tp-text); }
 .tilto-pro-app .tpg-actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 14px; }
 .tilto-pro-app .tpg-actions .tpa-btn { min-height: 56px; padding: 0 26px; font-size: 1.05rem; }
-@media (max-width: 768px) {
-    .tilto-pro-app .tpg-item ul, .tilto-pro-app .tpg-intro, .tilto-pro-app .tpg-why { margin-left: 0 !important; }
-    .tilto-pro-app .tpg-head { flex-wrap: wrap; }
-}
 @media print {
     .tilto-pro-app header, .tilto-pro-app footer, .tilto-pro-app .tpa-back, .tilto-pro-app .tpg-actions, .tilto-pro-app .flash-messages, .tilto-pro-app .chat-widget-container, .tilto-pro-app [class*="chat-bubble"] { display: none !important; }
     .tilto-pro-app .tpa-wrap { padding: 0; }
@@ -53,60 +38,7 @@
     </div>
     <p class="tpg-self">Vous testez sur vous-même&nbsp;? Répondez à ces questions comme si vous changiez de voie.</p>
 
-    <ol class="tpg-list">
-      <li class="tpa-card tpg-item">
-        <div class="tpg-head"><span class="tpg-num">1</span><h2>Le point de départ</h2><span class="tpg-time">2 min</span></div>
-        <ul>
-          <li>Comment ça se passe pour vous aujourd'hui dans votre travail&nbsp;?</li>
-          <li>Qu'est-ce qui vous plaît encore, et qu'est-ce qui vous pèse&nbsp;?</li>
-          <li>Qu'est-ce qui vous donne envie de bouger maintenant&nbsp;?</li>
-        </ul>
-        <p class="tpg-why">Pour comprendre d'où la personne part, ce qui la motive et ce qui la freine.</p>
-      </li>
-      <li class="tpa-card tpg-item">
-        <div class="tpg-head"><span class="tpg-num">2</span><h2>Les pistes déjà explorées</h2><span class="tpg-time">3 min</span></div>
-        <ul>
-          <li>Quelles idées avez-vous déjà en tête, même floues&nbsp;?</li>
-          <li>Laquelle vous attire le plus, et pourquoi&nbsp;?</li>
-          <li>Qu'avez-vous déjà écarté, et pour quelle raison&nbsp;?</li>
-        </ul>
-        <p class="tpg-why">Pour partir des orientations déjà explorées, et non de zéro.</p>
-      </li>
-      <li class="tpa-card tpg-item">
-        <div class="tpg-head"><span class="tpg-num">3</span><h2>Le cadre idéal</h2><span class="tpg-time">2 min</span></div>
-        <ul>
-          <li>À quoi ressemblerait une semaine de travail idéale pour vous&nbsp;?</li>
-          <li>Lieu, salaire, statut, rythme&nbsp;: qu'est-ce qui est non négociable&nbsp;?</li>
-          <li>Sur quoi pourriez-vous faire des compromis&nbsp;?</li>
-        </ul>
-        <p class="tpg-why">Pour écarter les pistes irréalistes et chiffrer celles qui restent.</p>
-      </li>
-      <li class="tpa-card tpg-item">
-        <div class="tpg-head"><span class="tpg-num">4</span><h2>L'envie de changement</h2><span class="tpg-time">1 min</span></div>
-        <ul>
-          <li>Jusqu'où êtes-vous prêt à changer&nbsp;: de poste, de secteur, de métier&nbsp;?</li>
-          <li>Une formation, même longue, est-ce envisageable&nbsp;?</li>
-        </ul>
-        <p class="tpg-why">Pour doser l'écart entre les pistes proposées et son métier actuel.</p>
-      </li>
-      <li class="tpa-card tpg-item">
-        <div class="tpg-head"><span class="tpg-num">5</span><h2>Le calendrier et les moyens</h2><span class="tpg-time">2 min</span></div>
-        <ul>
-          <li>En combien de temps aimeriez-vous que ça bouge&nbsp;?</li>
-          <li>Combien de temps et de budget pouvez-vous y consacrer&nbsp;?</li>
-        </ul>
-        <p class="tpg-why">Pour caler le rythme du plan d'action sur sa réalité.</p>
-      </li>
-    </ol>
-
-    <section class="tpg-tips">
-      <h2>Avant d'appuyer sur «&nbsp;enregistrer&nbsp;»</h2>
-      <ul>
-        <li>Demandez l'accord de votre client avant d'enregistrer.</li>
-        <li>Choisissez un endroit calme et posez le téléphone entre vous deux.</li>
-        <li>Posez des questions ouvertes et laissez des silences&nbsp;: c'est souvent là que viennent les réponses les plus utiles.</li>
-      </ul>
-    </section>
+    {% include "pro/_guide_content.html" %}
 
     <div class="tpg-actions">
       {% if not dossier %}
