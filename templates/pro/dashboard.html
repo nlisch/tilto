@@ -51,7 +51,7 @@
       {% for c in clients %}
       <a class="tpa-card tpd-client" href="{{ url_for('pro.client', client_id=c.id) }}">
         <div class="tpd-client-top">
-          <span class="tpa-badge tpa-badge--{{ c.status }}">{{ c.status_label }}</span>
+          {% if c.status in ('analyse', 'pret') %}<span class="tpa-badge tpa-badge--{{ c.status }}">{{ c.status_label }}</span>{% endif %}
           {% if c.is_free %}<span class="tpa-badge tpa-badge--free">Offert</span>{% endif %}
         </div>
         <h2>{{ 'Mon dossier test' if c.kind == 'moi' and c.label in ('Mon dossier test', 'Mon premier client') else c.label }}</h2>

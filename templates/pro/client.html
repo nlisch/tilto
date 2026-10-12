@@ -279,7 +279,7 @@
 
 {% macro files_list() %}
 <ul class="tpc-files js-files" aria-live="polite">
-  <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not (dossier.recording_url and not dossier.audio_path) }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
+  <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if (live and dossier.audio_path) or not (dossier.audio_path or dossier.recording_url) }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
   <li class="is-ok" data-kind="transcript" {{ 'hidden' if not dossier.transcript_path }}><span aria-hidden="true">✓</span><span>Transcription&nbsp;: <span class="js-name">{{ dossier.transcript_filename or '' }}</span></span></li>
   <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" hidden><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
 </ul>
@@ -688,7 +688,8 @@
                 if (r.ok && r.json.recording_url !== undefined && document.activeElement !== link) link.value = r.json.recording_url;
                 if (r.ok && link.value.trim()) { window.tpTrack('pro_link_pasted', {}); revealAfter(); }
                 if (r.ok && !row('audio').classList.contains('is-ok') && !row('audio').classList.contains('is-busy')) {
-                    row('audio').querySelector('.js-name').textContent = link.value.trim() ? 'lien ci-dessus' : 'à déposer';
+                    row('audio').querySelector('.js-name').textContent = 'lien ci-dessus';
+                    row('audio').hidden = !link.value.trim();  // la ligne n'apparaît qu'avec un lien
                 }
             })
             .catch(function () { linkMsg.className = 'tpc-link-msg js-link-msg is-error'; linkMsg.textContent = "Pas encore enregistré : vérifiez votre connexion."; });
