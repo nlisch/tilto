@@ -28,7 +28,7 @@
         </p>
         
         <!-- Formulaire de confirmation -->
-        <form method="POST" action="{{ url_for('auth.magic_login', token=token, next=next_url) }}">
+        <form method="POST" action="{{ url_for('auth.magic_login', token=token, next=next_url) }}" id="js-autologin">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="confirm" value="yes">
             
@@ -197,4 +197,19 @@
     }
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+// Validation automatique : l'utilisateur est connecté sans clic. Les robots de messagerie
+// qui ouvrent les liens pour les analyser n'exécutent pas ce script : le lien n'est pas
+// consommé à sa place. Le bouton reste disponible si le JavaScript est bloqué.
+(function () {
+    var form = document.getElementById('js-autologin');
+    if (!form) return;
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Connexion en cours…'; }
+    form.submit();
+})();
+</script>
 {% endblock %}

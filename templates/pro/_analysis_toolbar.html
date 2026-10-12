@@ -1,0 +1,13 @@
+<div id="tilto-pro-toolbar" role="toolbar" aria-label="Actions du dossier">
+  {% if back_url %}<a href="{{ back_url }}">← {{ back_label or 'Retour à mon espace' }}</a>{% endif %}
+  <button type="button" onclick="window.print()">Télécharger en PDF</button>
+</div>
+<style>
+#tilto-pro-toolbar { position: fixed; top: 16px; right: 16px; z-index: 2147483647; display: flex; gap: 8px; align-items: center; padding: 8px; background: rgba(255,255,255,0.96); border: 1px solid #EDE4E8; border-radius: 14px; box-shadow: 0 10px 30px rgba(74,11,39,0.15); font: 600 15px/1.2 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+#tilto-pro-toolbar a, #tilto-pro-toolbar button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; text-decoration: none; cursor: pointer; font: inherit; }
+#tilto-pro-toolbar a { color: #A11857; }
+#tilto-pro-toolbar button { border: 0; background: #A11857; color: #fff; }
+#tilto-pro-toolbar button:hover { background: #7a1142; }
+@media (max-width: 600px) { #tilto-pro-toolbar { top: auto; bottom: 12px; left: 12px; right: 12px; justify-content: space-between; } }
+@media print { #tilto-pro-toolbar { display: none !important; } }
+</style>

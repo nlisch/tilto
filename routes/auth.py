@@ -73,6 +73,11 @@ def dashboard():
             flash(_('Veuillez compléter l\'authentification à deux facteurs.'), 'warning')
             return redirect(url_for('auth.two_factor'))
 
+    # Compte Tilto Pro → espace coach
+    from services import pro_service
+    if pro_service.is_pro_user(current_user.id):
+        return redirect(url_for('pro.dashboard'))
+
     # Rediriger vers le dashboard blueprint qui gère toute la logique
     return redirect(url_for('dashboard.index'))
 
@@ -384,12 +389,13 @@ def magic_login(token):
                 
                 # Redirection : paramètre next > session > dashboard
                 next_url = request.args.get('next')
-                if next_url and next_url.startswith('/'):
+                # Chemin interne uniquement : « //domaine » mènerait vers un autre site
+                if next_url and next_url.startswith('/') and not next_url.startswith(('//', '/\\')):
                     return redirect(next_url)
                 after_login = session.pop('after_login_redirect', None)
                 if after_login:
                     return redirect(after_login)
-                return redirect(url_for('dashboard.index'))
+                return redirect(url_for('auth.dashboard'))
             
             flash('Erreur lors de la connexion.', 'error')
             return redirect(url_for('auth.login'))

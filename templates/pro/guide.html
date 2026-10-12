@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Les 5 sujets à aborder · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+<style>
+.tilto-pro-app .tpg-wrap { max-width: 860px; }
+.tilto-pro-app .tpg-sub { margin-top: 16px !important; font-size: 1.1rem; color: var(--tp-muted); }
+.tilto-pro-app .tpg-meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+.tilto-pro-app .tpg-meta span { background: var(--tp-white); border: 1px solid var(--tp-line); border-radius: 999px; padding: 8px 16px; font-size: 0.95rem; font-weight: 700; color: var(--tp-ink); }
+.tilto-pro-app .tpg-self { margin-top: 16px !important; font-size: 0.95rem; color: var(--tp-muted); }
+.tilto-pro-app .tpg-list { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.tilto-pro-app .tpg-head { display: flex; gap: 14px; align-items: center; }
+.tilto-pro-app .tpg-head h2 { flex: 1; font-size: 1.45rem; }
+.tilto-pro-app .tpg-num { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpg-time { font-size: 0.9rem; color: var(--tp-muted); white-space: nowrap; }
+.tilto-pro-app .tpg-item ul { margin: 16px 0 0 50px; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 1.05rem; line-height: 1.5; color: var(--tp-ink); }
+.tilto-pro-app .tpg-intro { margin: 16px 0 0 50px !important; color: var(--tp-muted); }
+.tilto-pro-app .tpg-intro + ul { margin-top: 10px; }
+.tilto-pro-app .tpg-why { margin: 14px 0 0 50px !important; font-size: 0.9rem; color: var(--tp-muted); }
+.tilto-pro-app .tpg-tips { margin-top: 24px; background: var(--tp-cream); border: 1px solid var(--tp-line); border-radius: 18px; padding: 26px 28px; }
+.tilto-pro-app .tpg-tips ul { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; line-height: 1.55; color: var(--tp-text); }
+.tilto-pro-app .tpg-actions { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 14px; }
+.tilto-pro-app .tpg-actions .tpa-btn { min-height: 56px; padding: 0 26px; font-size: 1.05rem; }
+@media (max-width: 768px) {
+    .tilto-pro-app .tpg-item ul, .tilto-pro-app .tpg-intro, .tilto-pro-app .tpg-why { margin-left: 0 !important; }
+    .tilto-pro-app .tpg-head { flex-wrap: wrap; }
+}
+@media print {
+    .tilto-pro-app header, .tilto-pro-app footer, .tilto-pro-app .tpa-back, .tilto-pro-app .tpg-actions, .tilto-pro-app .flash-messages, .tilto-pro-app .chat-widget-container, .tilto-pro-app [class*="chat-bubble"] { display: none !important; }
+    .tilto-pro-app .tpa-wrap { padding: 0; }
+    .tilto-pro-app .tpa { background: #fff; }
+    .tilto-pro-app .tpa-card, .tilto-pro-app .tpg-tips { break-inside: avoid; }
+}
+</style>
+{% endblock %}
+
+{% set back_url = url_for('pro.client', client_id=dossier.id) ~ '#fichiers' if dossier else url_for('pro.dashboard') %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpg-wrap">
+    <a class="tpa-back" href="{{ back_url }}">← {{ 'Retour au dossier' if dossier else 'Mes dossiers' }}</a>
+    <p class="tpa-eyebrow">Guide d'écoute · Séance de clôture</p>
+    <h1>Les 5 sujets à aborder</h1>
+    <p class="tpg-sub">Le dossier s'appuie sur les mots de votre client. Ces sujets servent de trame&nbsp;: inutile de tout cocher, laissez-le s'exprimer dans ses mots et à son rythme.</p>
+    <div class="tpg-meta">
+      <span>5 à 15 minutes</span>
+      <span>Un téléphone suffit</span>
+      <span>Le client parle, vous relancez</span>
+    </div>
+    <p class="tpg-self">Vous testez sur vous-même&nbsp;? Répondez à ces questions comme si vous arriviez au bout d'un accompagnement.</p>
+
+    <ol class="tpg-list">
+      <li class="tpa-card tpg-item">
+        <div class="tpg-head"><span class="tpg-num">1</span><h2>Le défi principal</h2><span class="tpg-time">2 min</span></div>
+        <ul>
+          <li>Quelle était votre situation au début de l'accompagnement, et dans quel état d'esprit étiez-vous&nbsp;?</li>
+          <li>Et aujourd'hui, qu'est-ce qui coince encore&nbsp;?</li>
+        </ul>
+        <p class="tpg-why">Pour comprendre d'où il part et ce qui le freine encore.</p>
+      </li>
+      <li class="tpa-card tpg-item">
+        <div class="tpg-head"><span class="tpg-num">2</span><h2>Le cap actuel</h2><span class="tpg-time">3 min</span></div>
+        <ul>
+          <li>Quelles pistes avez-vous explorées&nbsp;?</li>
+          <li>Avez-vous validé un projet ou une voie&nbsp;? Pourquoi celle-là&nbsp;?</li>
+          <li>Si c'est encore flou&nbsp;: où en êtes-vous&nbsp;?</li>
+        </ul>
+        <p class="tpg-why">Pour partir des orientations déjà explorées, et non de zéro.</p>
+      </li>
+      <li class="tpa-card tpg-item">
+        <div class="tpg-head"><span class="tpg-num">3</span><h2>Son cadre de travail idéal</h2><span class="tpg-time">2 min</span></div>
+        <p class="tpg-intro">Reformulez à l'oral le cadre de travail qu'il souhaite, puis demandez&nbsp;:</p>
+        <ul>
+          <li>Y a-t-il d'autres contraintes personnelles ou pratiques à prendre en compte&nbsp;?</li>
+          <li>Quels critères pourriez-vous assouplir si une offre vous correspond vraiment&nbsp;?</li>
+        </ul>
+        <p class="tpg-why">Pour écarter les pistes irréalistes et chiffrer celles qui restent.</p>
+      </li>
+      <li class="tpa-card tpg-item">
+        <div class="tpg-head"><span class="tpg-num">4</span><h2>Son niveau d'ouverture</h2><span class="tpg-time">1 min</span></div>
+        <ul>
+          <li>Êtes-vous prêt à explorer des métiers éloignés de votre expertise, ou voulez-vous garder un pied dans votre domaine&nbsp;?</li>
+        </ul>
+        <p class="tpg-why">Pour doser l'écart entre les pistes proposées et son métier actuel.</p>
+      </li>
+      <li class="tpa-card tpg-item">
+        <div class="tpg-head"><span class="tpg-num">5</span><h2>Son calendrier et ses moyens</h2><span class="tpg-time">2 min</span></div>
+        <ul>
+          <li>Combien de temps vous donnez-vous pour faire votre transition&nbsp;?</li>
+          <li>Quel effort êtes-vous prêt à y consacrer&nbsp;: temps, argent, énergie&nbsp;?</li>
+        </ul>
+        <p class="tpg-why">Pour caler le rythme du plan d'action sur sa réalité.</p>
+      </li>
+    </ol>
+
+    <section class="tpg-tips">
+      <h2>Avant d'appuyer sur «&nbsp;enregistrer&nbsp;»</h2>
+      <ul>
+        <li>Demandez l'accord de votre client avant d'enregistrer.</li>
+        <li>Choisissez un endroit calme et posez le téléphone entre vous deux.</li>
+        <li>Posez des questions ouvertes et laissez des silences&nbsp;: c'est souvent là que viennent les réponses les plus utiles.</li>
+      </ul>
+    </section>
+
+    <div class="tpg-actions">
+      <a class="tpa-btn tpa-btn--primary" href="{{ back_url }}">J'ai mon enregistrement, je le dépose</a>
+      <button type="button" class="tpa-btn tpa-btn--ghost js-print">Télécharger le guide en PDF</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+document.querySelector('.js-print').addEventListener('click', function () { window.print(); });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}L'analyse de {{ client_label }} est prête{% endblock %}
+
+{% block header_title %}Le dossier est prêt{% endblock %}
+
+{% block content %}
+<p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #333333;">Bonjour,</p>
+<p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #333333;">Le dossier de reconversion de <strong>{{ client_label }}</strong> est disponible dans votre espace. Relisez-le, téléchargez-le en PDF et remettez-le à votre client quand vous le souhaitez.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td align="center" style="padding: 8px 0 28px;">
+            <a href="{{ client_url }}" style="display: inline-block; background-color: #A11857; color: #ffffff; padding: 16px 36px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px;">Voir le dossier</a>
+        </td>
+    </tr>
+</table>
+
+<p style="margin: 0; font-size: 14px; line-height: 1.6; color: #666666;">L'audio et le CV seront supprimés automatiquement dans 30&nbsp;jours. Le dossier reste disponible dans votre espace.</p>
+{% endblock %}
+
+{% block footer_legal %}Vous recevez cet email car vous utilisez Tilto Pro.<br>{% endblock %}

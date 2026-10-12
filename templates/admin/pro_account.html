@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "admin/_pro_dossiers.html" import admin_css, dossier_table, nudge_cell with context %}
+
+{% block title %}{{ account.company or account.email }} · Admin Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+{{ admin_css() }}
+{% endblock %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpx-wrap">
+    <a class="tpa-back" href="{{ url_for('pro.admin') }}">← Tous les dossiers</a>
+    <p class="tpa-eyebrow">Coach Tilto Pro{% if account.company %} · cabinet{% endif %}</p>
+    <h1>{{ account.company or account.email }}</h1>
+    <p class="tpa-sub">{{ clients|length }} dossier(s) · {{ clients|selectattr('status', 'equalto', 'analyse')|list|length }} à analyser · {{ account.credits }} crédit(s) restant(s)</p>
+
+    <section class="tpx-section">
+      <h2>Contact</h2>
+      <div class="tpa-card">
+        <dl class="tpx-kv">
+          <div><dt>Email</dt><dd><a href="mailto:{{ account.email }}">{{ account.email }}</a></dd></div>
+          {% if account.firstname or account.lastname %}<div><dt>Nom</dt><dd>{{ account.firstname or '' }} {{ account.lastname or '' }}</dd></div>{% endif %}
+          {% if account.company %}<div><dt>Cabinet</dt><dd>{{ account.company }}</dd></div>{% endif %}
+          <div><dt>Compte Pro créé le</dt><dd>{{ account.created_at.strftime('%d/%m/%Y à %H:%M') }}</dd></div>
+          <div><dt>Origine</dt><dd>{{ account.source or '—' }}</dd></div>
+          <div><dt>Dernière connexion</dt><dd>{{ account.last_login.strftime('%d/%m/%Y à %H:%M') if account.last_login else 'Jamais (lien pas encore cliqué)' }}</dd></div>
+          <div><dt>Compte Tilto</dt><dd>créé le {{ account.user_created_at.strftime('%d/%m/%Y') }}{% if account.has_personal_analysis %} · a aussi une analyse perso{% endif %}</dd></div>
+          {% if account.credit_requested_at %}<div><dt>Demande de dossier</dt><dd style="color: var(--tp-primary);">en attente depuis le {{ account.credit_requested_at.strftime('%d/%m à %H:%M') }}</dd></div>{% endif %}
+          <div><dt>Relances automatiques du dossier offert</dt><dd>{{ nudge_cell(account, request.path) }}</dd></div>
+          <div><dt>Crédits restants</dt><dd>
+            <form class="tpx-credit" method="post" action="{{ url_for('pro.admin_add_credit', account_id=account.id) }}">
+              {{ account.credits }} ·
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <input type="number" name="amount" value="{{ 5 if account.company else 1 }}" min="1" max="50" aria-label="Nombre de dossiers à ajouter">
+              <button type="submit" class="tpa-btn tpa-btn--ghost tpx-btn">Ajouter</button>
+            </form>
+          </dd></div>
+        </dl>
+        {% if account.leads %}
+        <h3 style="margin-top: 20px;">Historique commercial</h3>
+        <ul style="margin: 8px 0 0; padding-left: 18px; line-height: 1.7;">
+          {% for l in account.leads %}
+          <li><span class="tpx-muted">{{ l.created_at.strftime('%d/%m/%Y') }} · {{ l.source }}{% if l.activite %} · {{ l.activite }}{% endif %}</span>
+            {% if l.notes %}<br>{{ l.notes|replace('\n', ' · ') }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="tpx-section">
+      <h2>Dossiers</h2>
+      {{ dossier_table(clients, show_coach=False, next_url=request.path) }}
+    </section>
+  </div>
+</div>
+{% endblock %}

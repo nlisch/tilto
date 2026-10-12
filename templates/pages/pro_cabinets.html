@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Tilto Pro pour les cabinets d'outplacement — Gagnez et renouvelez plus de contrats{% endblock %}
+
+{% block meta_description %}Chaque candidat repart avec un dossier de 20 pages signé par votre consultant : pistes métier chiffrées, entreprises à contacter, plan d'action. Pilote : {{ pilot.dossiers }} dossiers pour {{ pilot.price }} € HT.{% endblock %}
+
+{% block body_class %}tilto-pro-page{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_css %}
+{% include "pages/_pro_landing_css.html" %}
+<style>
+/* ═══ Spécifique cabinets ═══ */
+.tilto-pro-page .tpk-ctas { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.tilto-pro-page .tpk-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 28px; border-radius: 12px; font-size: 1.06rem; font-weight: 800; text-decoration: none; box-sizing: border-box; transition: background 0.2s; }
+.tilto-pro-page .tpk-btn--primary { background: var(--tp-primary); color: var(--tp-white) !important; box-shadow: 0 12px 28px rgba(161, 24, 87, 0.22); }
+.tilto-pro-page .tpk-btn--primary:hover { background: var(--tp-primary-dark); }
+.tilto-pro-page .tpk-btn--gold { background: var(--tp-gold-light); color: #4A2E00 !important; }
+.tilto-pro-page .tpk-btn--gold:hover { background: var(--tp-gold); }
+.tilto-pro-page .tpk-btn--outline { border: 1.5px solid var(--tp-primary); color: var(--tp-primary) !important; background: var(--tp-white); font-weight: 700; }
+.tilto-pro-page .tpk-btn--outline:hover { background: var(--tp-primary-light); }
+.tilto-pro-page .tpk-why { margin: 0 0 24px; font-size: clamp(1.5rem, 2.6vw, 2rem); line-height: 1.15; font-weight: 800; }
+.tilto-pro-page .tpk-figure-num { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 3.2rem; line-height: 1; color: var(--tp-primary); }
+.tilto-pro-page .tpk-source { margin: 10px 0 0 !important; font-size: 0.82rem !important; color: var(--tp-muted); }
+.tilto-pro-page .tpk-sign { margin: 0 0 8px; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 2rem; line-height: 1; color: var(--tp-primary); }
+.tilto-pro-page .tpk-flow-hl { text-align: center; font-weight: 800; color: #4A2E00; background: var(--tp-gold-light); border-radius: 10px; padding: 10px; }
+.tilto-pro-page .tp-row--hl .tpk-up { color: var(--tp-gold-light); }
+.tilto-pro-page .tp-row .tpk-arrow { color: var(--tp-primary); font-weight: 800; font-size: 1.1rem; }
+
+/* Pilote */
+.tilto-pro-page .tpk-pilot { background: var(--tp-primary-deep); color: var(--tp-white); scroll-margin-top: 80px; }
+.tilto-pro-page .tpk-pilot .tp-wrap { padding-top: 80px; padding-bottom: 80px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; }
+.tilto-pro-page .tpk-pilot-text { flex: 999 1 440px; min-width: 0; }
+.tilto-pro-page .tpk-pilot .tp-eyebrow { color: var(--tp-gold-light); margin-bottom: 12px; }
+.tilto-pro-page .tpk-pilot h2 { color: var(--tp-white); }
+.tilto-pro-page .tpk-pilot-text > p { margin: 0 0 22px; font-size: 1.06rem; line-height: 1.6; color: var(--tp-rose-pale); }
+.tilto-pro-page .tpk-pilot-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 1rem; }
+.tilto-pro-page .tpk-pilot-list li { display: flex; gap: 10px; align-items: flex-start; }
+.tilto-pro-page .tpk-pilot-list svg { flex: 0 0 18px; margin-top: 3px; }
+.tilto-pro-page .tpk-form-box { flex: 1 1 340px; min-width: 0; max-width: 420px; }
+.tilto-pro-page .tpk-form { background: var(--tp-white); color: var(--tp-ink); border-radius: 18px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; }
+.tilto-pro-page .tpk-field { display: flex; flex-direction: column; gap: 6px; }
+.tilto-pro-page .tpk-field label { font-size: 0.9rem; font-weight: 700; }
+.tilto-pro-page .tpk-field input { font: inherit; font-size: 16px; color: var(--tp-ink); padding: 12px 14px; border: 1px solid #D9CCD2; border-radius: 10px; min-height: 52px; box-sizing: border-box; width: 100%; }
+.tilto-pro-page .tpk-field input:focus { outline: 2px solid var(--tp-primary); outline-offset: 1px; border-color: var(--tp-primary); }
+.tilto-pro-page .tpk-form button { font: inherit; font-size: 1.06rem; font-weight: 800; color: #4A2E00; background: var(--tp-gold-light); border: 0; border-radius: 12px; min-height: 56px; cursor: pointer; transition: background 0.2s; }
+.tilto-pro-page .tpk-form button:hover { background: var(--tp-gold); }
+.tilto-pro-page .tpk-form button:disabled { opacity: 0.7; cursor: wait; }
+.tilto-pro-page .tpk-form-note { margin: 0 !important; font-size: 0.85rem !important; line-height: 1.5; color: var(--tp-muted); }
+.tilto-pro-page .tpk-form-box .tp-form-msg { margin-top: 12px; }
+.tilto-pro-page .tpk-form-box .tp-form-ok { margin-top: 0; }
+
+.tilto-pro-page .tpk-about .tp-wrap { padding-top: 64px; padding-bottom: 64px; }
+.tilto-pro-page .tpk-about-text { max-width: 760px; }
+.tilto-pro-page .tpk-about h2 { margin: 0 0 14px; font-size: 1.75rem; }
+.tilto-pro-page .tpk-about p { margin: 0; font-size: 1rem; line-height: 1.7; }
+.tilto-pro-page .tpk-final-cta { margin-top: 4px; }
+
+@media (max-width: 768px) {
+    .tilto-pro-page .tpk-btn { width: 100%; }
+    .tilto-pro-page .tpk-figure-num { font-size: 2.6rem; }
+    .tilto-pro-page .tpk-pilot .tp-wrap { padding-top: 56px; padding-bottom: 56px; gap: 32px; }
+    .tilto-pro-page .tpk-form-box { max-width: none; }
+    .tilto-pro-page .tpk-form { padding: 20px; }
+    .tilto-pro-page .tpk-about .tp-wrap { padding-top: 48px; padding-bottom: 48px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% set check %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F7A4D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>{% endset %}
+{% set check_gold %}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD54F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>{% endset %}
+{% set pilot_label %}{{ pilot.dossiers }} dossiers pour {{ pilot.price }}&nbsp;€&nbsp;HT{% endset %}
+
+<div class="tp">
+
+<!-- ═══ HERO ═══ -->
+<section class="tp-hero">
+    <div class="tp-hero-inner">
+        <p class="tp-eyebrow">Cabinets d'outplacement et de transition de carrière</p>
+        <h1>Gagnez et renouvelez<br><span class="tp-mark">plus de contrats.</span></h1>
+        <p class="tp-lead">Chaque candidat repart avec un dossier de 20&nbsp;pages signé par votre consultant&nbsp;: pistes métier chiffrées, entreprises à contacter, plan d'action. La preuve concrète de votre méthode, à montrer à vos clients DRH.</p>
+        <div class="tpk-ctas">
+            <a href="#essai" class="tpk-btn tpk-btn--primary">Lancer un pilote&nbsp;: {{ pilot_label }}</a>
+            {% if has_example %}<a href="{{ url_for('pro.example') }}" class="tpk-btn tpk-btn--outline" target="_blank" rel="noopener">Voir un dossier de cadre</a>{% endif %}
+        </div>
+        <p class="tp-reassure">Facture au nom du cabinet · Déduit si vous continuez · Contrat RGPD prêt à signer</p>
+    </div>
+</section>
+
+<!-- ═══ POURQUOI MAINTENANT ═══ -->
+<section class="tp-figures">
+    <div class="tp-wrap">
+        <h2 class="tpk-why">Plus de missions, des candidats plus longs à replacer, des concurrents plus gros</h2>
+        <div class="tp-grid-3">
+            <div class="tp-figure">
+                <div class="tpk-figure-num">37&nbsp;700</div>
+                <p>défaillances d'entreprises au 1er semestre 2026, un record. Les restructurations se multiplient.</p>
+                <p class="tpk-source">Source&nbsp;: Altares</p>
+            </div>
+            <div class="tp-figure">
+                <div class="tpk-figure-num">+4&nbsp;%</div>
+                <p>seulement de recrutements de cadres prévus en 2026, après −3&nbsp;% en 2025. Une reprise jugée fragile.</p>
+                <p class="tpk-source">Source&nbsp;: Apec</p>
+            </div>
+            <div class="tp-figure">
+                <div class="tpk-figure-num">3</div>
+                <p>fronts de concurrence&nbsp;: grands groupes RH, offres en ligne, cabinets de recrutement. Vos clients comparent.</p>
+                <p class="tpk-source">Source&nbsp;: Xerfi</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BÉNÉFICE 1 : contrats ═══ -->
+<section class="tp-benefit">
+    <div class="tp-wrap">
+        <div class="tp-benefit-text">
+            <p class="tpk-sign" aria-hidden="true">↑</p>
+            <h2 class="tp-h2">Plus de contrats signés et renouvelés</h2>
+            <p>Face aux grands groupes, le DRH veut une preuve, pas une promesse. Joignez un exemple de dossier à vos propositions, et présentez le dossier de chaque candidat en fin de mission.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Un livrable concret pour chaque collaborateur accompagné</li>
+                <li>{{ check }}Signé par votre consultant&nbsp;: le DRH voit votre méthode, pas un outil</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Lancer un pilote</a>
+        </div>
+        <div class="tp-visual tp-visual--soft">
+            <div class="tp-visual--card" style="border-radius:14px;padding:22px;">
+                <p class="tp-visual-label">Proposition d'accompagnement · Votre cabinet</p>
+                <div class="tp-rows">
+                    <div class="tp-row"><span>Bilan et phase projet</span><span>Inclus</span></div>
+                    <div class="tp-row"><span>Recherche active et suivi</span><span>Inclus</span></div>
+                    <div class="tp-row tp-row--hl"><span>Dossier de repositionnement de 20&nbsp;pages par collaborateur</span><span>Inclus</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BÉNÉFICE 2 : capacité ═══ -->
+<section class="tp-benefit tp-benefit--rev tp-alt">
+    <div class="tp-wrap">
+        <div class="tp-visual tp-visual--card">
+            <p class="tp-visual-label">Ce qu'on mesure pendant votre pilote</p>
+            <div class="tp-rows">
+                <div class="tp-row"><span>Séances de phase projet par candidat</span><span class="tpk-arrow" aria-label="en baisse">↓</span></div>
+                <div class="tp-row"><span>Candidats suivis par consultant</span><span class="tpk-arrow" aria-label="en hausse">↑</span></div>
+                <div class="tp-row"><span>Dossiers montrés à un client ou prospect</span><span class="tpk-arrow" aria-label="en hausse">↑</span></div>
+            </div>
+        </div>
+        <div class="tp-benefit-text">
+            <p class="tpk-sign" aria-hidden="true">↑</p>
+            <h2 class="tp-h2">Plus de candidats suivis, sans recruter</h2>
+            <p>Votre forfait est fixe&nbsp;: chaque séance gagnée sur la phase projet améliore votre marge et libère du temps pour une nouvelle mission.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Un entretien de 10 minutes, aucune rédaction</li>
+                <li>{{ check }}Le même niveau de dossier, quel que soit le consultant</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Lancer un pilote</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BÉNÉFICE 3 : retour à l'emploi ═══ -->
+<section class="tp-benefit">
+    <div class="tp-wrap">
+        <div class="tp-benefit-text">
+            <p class="tpk-sign" aria-hidden="true">↓</p>
+            <h2 class="tp-h2">Un retour à l'emploi plus rapide</h2>
+            <p>À la fin de la phase projet, le candidat a ses pistes chiffrées, les entreprises à contacter et son plan. Sa recherche active démarre plus tôt.</p>
+            <ul class="tp-checks">
+                <li>{{ check }}Des cadres sceptiques qui se mettent en mouvement</li>
+                <li>{{ check }}Le chiffre que vos clients DRH regardent en premier</li>
+            </ul>
+            <a href="#essai" class="tp-btn-outline">Lancer un pilote</a>
+        </div>
+        <div class="tp-visual tp-visual--soft tp-visual--flow">
+            <div class="tp-row"><strong>Phase projet</strong><span>Bilan, cible, pistes</span></div>
+            <div class="tpk-flow-hl">Dossier Tilto, signé par votre consultant</div>
+            <div class="tp-row tp-row--hl"><strong>Recherche active</strong><span>démarre plus tôt</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ PILOTE (formulaire) ═══ -->
+<section class="tpk-pilot" id="essai">
+    <div class="tp-wrap">
+        <div class="tpk-pilot-text">
+            <p class="tp-eyebrow">Pilote équipe</p>
+            <h2 class="tp-h2">{{ pilot_label }}</h2>
+            <p>Soit environ 30&nbsp;€ le dossier au lieu de 49&nbsp;€. Testez sur vos propres candidats, avec vos consultants.</p>
+            <ul class="tpk-pilot-list">
+                <li>{{ check_gold }}Un ou deux consultants désignés pour le pilote</li>
+                <li>{{ check_gold }}Dossiers valables 2 mois</li>
+                <li>{{ check_gold }}Un bilan de 30 minutes à la fin, sur vos résultats</li>
+                <li>{{ check_gold }}{{ pilot.price }}&nbsp;€ déduits de votre première commande si vous continuez</li>
+            </ul>
+        </div>
+        <div class="tpk-form-box">
+            <form class="tpk-form js-pilot-form" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="source" value="tilto_pro_cabinets">
+                <div class="tp-hp" aria-hidden="true">
+                    <label for="tpk-website">Site web</label>
+                    <input type="text" id="tpk-website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+                <div class="tpk-field">
+                    <label for="tpk-cabinet">Nom du cabinet</label>
+                    <input id="tpk-cabinet" name="cabinet" type="text" maxlength="120" autocomplete="organization" placeholder="Ex : Cabinet Martin Conseil" required>
+                </div>
+                <div class="tpk-field">
+                    <label for="tpk-email">Votre email</label>
+                    <input id="tpk-email" name="email" type="email" autocomplete="email" placeholder="vous@cabinet.fr" required>
+                </div>
+                <button type="submit">Lancer le pilote</button>
+                <p class="tpk-form-note">Votre espace est ouvert tout de suite. La facture au nom du cabinet et le contrat RGPD vous sont envoyés par email.</p>
+            </form>
+            <div class="tp-form-msg" role="alert"></div>
+            <div class="tp-form-ok" role="status"><strong>Demande reçue&nbsp;!</strong>Un lien d'accès à votre espace vient de vous être envoyé par email. La facture et le contrat RGPD suivent.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ COMMENT ÇA SE PASSE ═══ -->
+<section class="tp-steps tp-alt">
+    <div class="tp-wrap">
+        <h2 class="tp-h2">Comment ça se passe</h2>
+        <ol style="margin-top:32px;">
+            <li><div class="tp-step-num">1</div><h3>Lancez le pilote</h3><p>Le nom du cabinet et votre email suffisent&nbsp;: votre espace est ouvert tout de suite. La facture et le contrat RGPD suivent par email.</p></li>
+            <li><div class="tp-step-num">2</div><h3>Vos consultants enregistrent</h3><p>10 minutes en fin de phase projet, avec le guide d'écoute fourni, plus le CV du candidat.</p></li>
+            <li><div class="tp-step-num">3</div><h3>Le dossier arrive en 48&nbsp;h</h3><p>Le consultant le relit, le signe et le remet au candidat.</p></li>
+        </ol>
+    </div>
+</section>
+
+<!-- ═══ TÉMOIGNAGES ═══ -->
+<section class="tp-testi">
+    <div class="tp-wrap">
+        <h2 class="tp-h2">Ce qu'en disent les personnes accompagnées</h2>
+        <div class="tp-grid-3">
+            <figure class="tp-quote">
+                <blockquote>« T'es en noir et blanc, ça te met la couleur. La fourchette de salaire, les perspectives, où appeler&nbsp;: <strong>il y a tout.</strong> »</blockquote>
+                <figcaption>
+                    <span class="tp-avatar tp-avatar--initial" aria-hidden="true">M</span>
+                    <span><strong>Mathieu</strong><br>En transition professionnelle</span>
+                </figcaption>
+            </figure>
+            <figure class="tp-quote">
+                <blockquote>« À partir de deux heures d'échange, une synthèse très bien faite et <strong>des propositions très concrètes.</strong> »</blockquote>
+                <figcaption>
+                    <span class="tp-avatar tp-avatar--initial tp-avatar--dark" aria-hidden="true">B</span>
+                    <span><strong>Benjamin</strong><br>Cadre en reconversion</span>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="tp-faq tp-alt">
+    <div class="tp-wrap">
+        <h2 class="tp-h2">Vos questions</h2>
+        <div class="tp-faq-list">
+            <div class="tp-faq-item"><h3>Nos clients exigent la confidentialité des données.</h3><p>Un contrat de sous-traitance RGPD est prêt à signer, et les données restent confidentielles&nbsp;: vos consultants n'indiquent que le prénom ou les initiales du candidat, et l'audio et le CV sont supprimés 30&nbsp;jours après la livraison du dossier.</p></div>
+            <div class="tp-faq-item"><h3>Nous avons déjà notre méthode.</h3><p>Tilto ne la remplace pas. Il intervient à la fin de la phase projet pour transformer le travail fait en séance en pistes chiffrées et en plan d'action, signés par votre consultant.</p></div>
+            <div class="tp-faq-item"><h3>C'est pertinent pour des cadres et des dirigeants&nbsp;?</h3><p>Oui&nbsp;: le dossier met en avant les entreprises à contacter et les pistes de réseau, pas seulement les offres publiées.{% if has_example %} <a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener" style="font-weight:700;">Voir un dossier de cadre</a>.{% endif %}</p></div>
+            <div class="tp-faq-item"><h3>Et si le dossier contient une erreur&nbsp;?</h3><p>Votre consultant le relit avant de le remettre. Rien ne part au candidat sans sa validation.</p></div>
+            <div class="tp-faq-item"><h3>Et après le pilote&nbsp;?</h3><p>Un tarif au volume adapté à votre nombre de candidats, sans engagement de durée. Vos dossiers restent exportables en PDF.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ QUI SOMMES-NOUS ═══ -->
+<section class="tpk-about">
+    <div class="tp-wrap">
+        <div class="tpk-about-text">
+            <h2>Qui sommes-nous</h2>
+            <p><strong style="color: var(--tp-ink);">Claire et Nicolas.</strong> Nous avons créé Tilto à deux. Claire, 8 ans de marketing digital, a choisi d'entreprendre après avoir elle-même cherché un travail qui ait plus de sens. Nicolas, spécialiste de la data et de la tech, veut mettre l'IA au service de l'humain. Chaque année, environ 5 millions d'actifs se déclarent bloqués dans leur vie professionnelle. Même accompagnés, plus de la moitié restent bloqués au moment de choisir une voie. Tilto est né de cet écart&nbsp;: donner à chacun, avec son consultant, des pistes assez concrètes pour oser bouger.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CTA FINAL ═══ -->
+<section class="tp-final">
+    <div class="tp-wrap">
+        <div class="tp-final-box">
+            <h2 class="tp-h2">Votre prochain appel d'offres se gagne <span>avec une preuve.</span></h2>
+            <p>{{ pilot_label }}, déduits si vous continuez.</p>
+            <a href="#essai" class="tpk-btn tpk-btn--gold tpk-final-cta">Lancer le pilote</a>
+        </div>
+    </div>
+</section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function () {
+    'use strict';
+
+    // Liens vers le formulaire : scroll doux + focus sur le nom du cabinet
+    document.querySelectorAll('a[href="#essai"]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            var target = document.getElementById('essai');
+            if (!target) return;
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(function () { document.getElementById('tpk-cabinet').focus({ preventScroll: true }); }, 500);
+        });
+    });
+
+    var form = document.querySelector('.js-pilot-form');
+    var msg = form.nextElementSibling;
+    var ok = msg.nextElementSibling;
+    function showMsg(text) { msg.textContent = text; msg.style.display = 'block'; }
+    function showOk() { form.style.display = 'none'; msg.style.display = 'none'; ok.style.display = 'block'; }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var honeypot = form.querySelector('[name="website"]');
+        if (honeypot && honeypot.value) { showOk(); return; }
+        msg.style.display = 'none';
+
+        var cabinet = form.querySelector('[name="cabinet"]').value.trim();
+        var email = form.querySelector('[name="email"]').value.trim();
+        if (!cabinet) { showMsg('Indiquez le nom de votre cabinet.'); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg('Merci de renseigner un email valide.'); return; }
+
+        var btn = form.querySelector('button[type="submit"]');
+        var originalText = btn.textContent;
+        btn.textContent = 'Envoi en cours…';
+        btn.disabled = true;
+
+        var formData = new FormData(form);
+        fetch('{{ url_for('pro.pilot_request') }}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': formData.get('csrf_token') },
+            body: formData
+        })
+        .then(function (response) {
+            return response.json().catch(function () {
+                return { success: false, message: response.status === 429
+                    ? 'Trop de tentatives. Réessayez dans une minute.'
+                    : 'Une erreur est survenue. Réessayez dans un instant.' };
+            });
+        })
+        .then(function (data) {
+            if (data.success) {
+                var go = data.mode === 'redirect' && data.redirect
+                    ? function () { window.location.href = data.redirect; }
+                    : showOk;
+                if (typeof gtag === 'function') {
+                    // On attend l'envoi de l'événement avant de quitter la page (1 s max)
+                    var done = false, finish = function () { if (!done) { done = true; go(); } };
+                    gtag('event', 'pro_pilot_requested', {
+                        'event_category': 'tilto_pro_cabinets',
+                        'event_label': formData.get('source') || 'unknown',
+                        'value': {{ pilot.price }},
+                        'event_callback': finish
+                    });
+                    setTimeout(finish, 1000);
+                } else {
+                    go();
+                }
+            } else {
+                showMsg(data.message || 'Une erreur est survenue.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(function () {
+            showMsg('Erreur réseau. Veuillez réessayer.');
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+    });
+})();
+</script>
+{% endblock %}

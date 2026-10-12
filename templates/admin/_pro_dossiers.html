@@ -1,0 +1,114 @@
+{# Back-office Tilto Pro : styles et tableau des dossiers (liste générale et fiche coach) #}
+{% macro admin_css() %}
+<style>
+.tilto-pro-app .tpx-wrap { max-width: 1280px; }
+.tilto-pro-app .tpx-section { margin-top: 36px; }
+.tilto-pro-app .tpx-section > h2 { margin-bottom: 14px; }
+.tilto-pro-app .tpx-table-box { overflow-x: auto; background: var(--tp-white); border: 1px solid var(--tp-line); border-radius: 14px; }
+.tilto-pro-app .tpx-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.tilto-pro-app .tpx-table th, .tilto-pro-app .tpx-table td { padding: 12px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--tp-line); }
+.tilto-pro-app .tpx-table th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--tp-muted); background: var(--tp-cream); white-space: nowrap; }
+.tilto-pro-app .tpx-table tr:last-child td { border-bottom: 0; }
+.tilto-pro-app .tpx-table tr.is-todo td { background: #FFFBF0; }
+.tilto-pro-app .tpx-actions { display: flex; flex-direction: column; gap: 8px; min-width: 230px; }
+.tilto-pro-app .tpx-actions form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0; }
+.tilto-pro-app .tpx-actions input[type="file"] { font-size: 0.82rem; max-width: 220px; }
+.tilto-pro-app .tpx-btn { min-height: 36px; padding: 0 12px; font-size: 0.85rem; border-radius: 8px; }
+.tilto-pro-app .tpx-links { min-width: 170px; }
+.tilto-pro-app .tpx-nudge { display: inline-block; font-size: 0.85rem; font-weight: 600; }
+.tilto-pro-app .tpx-nudge--active { color: var(--tp-primary); }
+.tilto-pro-app .tpx-nudge--stopped { color: #8A5A00; }
+.tilto-pro-app .tpx-nudge--done { color: var(--tp-muted); font-weight: 400; }
+.tilto-pro-app .tpx-links a { display: block; margin: 0 0 6px; font-weight: 600; overflow-wrap: anywhere; }
+.tilto-pro-app .tpx-head-links { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 12px; }
+.tilto-pro-app .tpx-head-links a { font-weight: 600; }
+.tilto-pro-app .tpx-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 24px; margin: 0; }
+.tilto-pro-app .tpx-kv dt { font-size: 0.8rem; color: var(--tp-muted); }
+.tilto-pro-app .tpx-kv dd { margin: 2px 0 0; font-weight: 600; color: var(--tp-ink); overflow-wrap: anywhere; }
+.tilto-pro-app .tpx-fiche summary { cursor: pointer; font-weight: 600; color: var(--tp-primary); }
+.tilto-pro-app .tpx-fiche dl { margin: 8px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.85rem; }
+.tilto-pro-app .tpx-fiche dt { color: var(--tp-muted); }
+.tilto-pro-app .tpx-fiche dd { margin: 0; }
+.tilto-pro-app .tpx-credit { display: flex; gap: 6px; align-items: center; margin: 0; }
+.tilto-pro-app .tpx-credit input { width: 64px; min-height: 36px; padding: 4px 8px; border: 1px solid #D9CCD2; border-radius: 8px; font: inherit; }
+.tilto-pro-app .tpx-muted { color: var(--tp-muted); font-size: 0.85rem; }
+</style>
+{% endmacro %}
+
+{% macro nudge_cell(a, next_url='') %}
+<span class="tpx-nudge tpx-nudge--{{ a.nudge.state }}">{{ a.nudge.label }}</span>
+{% if a.nudge.state in ('active', 'stopped') %}
+<form method="post" action="{{ url_for('pro.admin_toggle_nudges', account_id=a.id) }}" style="margin-top:6px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="next" value="{{ next_url }}">
+  {% if a.nudge.state == 'stopped' %}
+  <button type="submit" name="action" value="resume" class="tpa-btn tpa-btn--ghost tpx-btn">Réactiver</button>
+  {% else %}
+  <button type="submit" name="action" value="stop" class="tpa-btn tpa-btn--ghost tpx-btn">Stopper</button>
+  {% endif %}
+</form>
+{% endif %}
+{% endmacro %}
+
+{% macro dossier_table(clients, show_coach=True, next_url='') %}
+<div class="tpx-table-box">
+  <table class="tpx-table">
+    <thead>
+      <tr><th>Dossier</th>{% if show_coach %}<th>Coach</th>{% endif %}<th>Statut</th><th>Fiche</th><th>Enregistrement et fichiers</th><th>Analyse</th></tr>
+    </thead>
+    <tbody>
+            {% for c in clients %}
+            <tr class="{{ 'is-todo' if c.status == 'analyse' }}">
+              <td><strong>{{ c.label }}</strong><br><span class="tpx-muted">#{{ c.id }}{{ ' · offert' if c.is_free }}<br>{{ kind_labels.get(c.kind, 'Point de départ non choisi') }}<br>créé le {{ c.created_at.strftime('%d/%m/%Y') }}</span></td>
+              {% if show_coach %}<td><a href="{{ url_for('pro.admin_account', account_id=c.pro_account_id) }}"><strong>{{ c.coach_email }}</strong></a>{% if c.coach_company %}<br><span class="tpx-muted">{{ c.coach_company }}</span>{% endif %}</td>{% endif %}
+              <td>
+                <span class="tpa-badge tpa-badge--{{ c.status }}">{{ c.status_label }}</span>
+                {% if c.submitted_at %}<br><span class="tpx-muted">envoyé le {{ c.submitted_at.strftime('%d/%m %H:%M') }}</span>{% endif %}
+                {% if c.consent_at %}<br><span class="tpx-muted">accord du client coché</span>{% endif %}
+                {% if c.delivered_at %}<br><span class="tpx-muted">livré le {{ c.delivered_at.strftime('%d/%m %H:%M') }}</span>{% endif %}
+              </td>
+              <td>
+                {% if c.fiche %}
+                <details class="tpx-fiche">
+                  <summary>Voir la fiche</summary>
+                  <dl>
+                    {% for key, title, required in fiche_fields %}
+                    {% set v = c.fiche.get(key) %}
+                    {% if v %}<dt>{{ title }}</dt><dd>{{ v if v is string else v|join(', ') }}</dd>{% endif %}
+                    {% endfor %}
+                  </dl>
+                </details>
+                {% else %}<span class="tpx-muted">Non remplie</span>{% endif %}
+              </td>
+              <td class="tpx-links">
+                {% if c.files_purged_at %}<span class="tpx-muted">Supprimés le {{ c.files_purged_at.strftime('%d/%m/%Y') }}</span>
+                {% else %}
+                  {% if c.audio_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio') }}">⬇ Enregistrement<br><span class="tpx-muted">{{ c.audio_filename }}</span></a>{% endif %}
+                  {% if c.recording_url %}<a href="{{ c.recording_url }}" target="_blank" rel="noopener noreferrer">↗ Lien de l'enregistrement<br><span class="tpx-muted">{{ c.recording_url|truncate(48, True, '…') }}</span></a>{% endif %}
+                  {% if c.transcript_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='transcript') }}">⬇ Transcription<br><span class="tpx-muted">{{ c.transcript_filename }}</span></a>{% endif %}
+                  {% if c.cv_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='cv') }}">⬇ CV<br><span class="tpx-muted">{{ c.cv_filename }}</span></a>{% endif %}
+                  {% if not (c.audio_path or c.recording_url or c.transcript_path or c.cv_path) %}<span class="tpx-muted">Aucun</span>{% endif %}
+                {% endif %}
+              </td>
+              <td>
+                <div class="tpx-actions">
+                  {% if c.analysis_path %}<a href="{{ url_for('pro.analysis', client_id=c.id) }}" target="_blank" rel="noopener">Voir l'analyse</a>{% endif %}
+                  {% if c.share_token %}<span class="tpx-muted">Lien client : ouvert {{ c.share_views }} fois{% if c.share_last_view_at %}, dernière fois le {{ c.share_last_view_at.strftime('%d/%m') }}{% endif %}</span>{% endif %}
+                  {% if c.status in ('analyse', 'pret') %}
+                  <form method="post" action="{{ url_for('pro.admin_upload_analysis', client_id=c.id) }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ next_url }}">
+                    <input type="file" name="file" accept=".html,.htm,text/html" required aria-label="Fichier HTML de l'analyse">
+                    <button type="submit" class="tpa-btn tpa-btn--primary tpx-btn">{{ 'Remplacer' if c.analysis_path else 'Livrer' }}</button>
+                  </form>
+                  {% else %}<span class="tpx-muted">En attente du coach</span>{% endif %}
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="{{ 6 if show_coach else 5 }}" class="tpx-muted">Aucun dossier pour l'instant.</td></tr>
+            {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}

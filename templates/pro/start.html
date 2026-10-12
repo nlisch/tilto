@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Votre premier dossier' if dossier.is_free else 'Nouveau dossier' }} · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+.tilto-pro-app .tps-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 40px; align-items: center; }
+.tilto-pro-app .tps-usp { font-size: clamp(1.9rem, 3.1vw, 2.5rem) !important; line-height: 1.12 !important; }
+@media (min-width: 901px) { .tilto-pro-app .tps-line { white-space: nowrap; } }
+.tilto-pro-app .tps-mark { color: var(--tp-primary); background: linear-gradient(transparent 62%, var(--tp-rose-pale) 62%); }
+.tilto-pro-app .tps-how { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.tilto-pro-app .tps-how li { display: flex; gap: 14px; align-items: center; font-size: 1.05rem; font-weight: 600; color: var(--tp-ink); line-height: 1.4; }
+.tilto-pro-app .tps-how-n { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tps-example { margin-top: 18px !important; font-weight: 700; }
+.tilto-pro-app .tps-example a { text-decoration: none; }
+.tilto-pro-app .tps-preview { margin: 0; }
+.tilto-pro-app .tps-preview .tp-mockup-wrap { max-width: none; }
+.tilto-pro-app .tps-preview figcaption { margin-top: 12px; text-align: center; font-size: 0.85rem; font-style: italic; color: var(--tp-muted); }
+@media (max-width: 900px) {
+    .tilto-pro-app .tps-top { grid-template-columns: 1fr; gap: 24px; }
+}
+.tilto-pro-app .tps-question { margin: 40px 0 18px !important; font-family: 'DM Sans', sans-serif !important; font-size: 1.35rem !important; letter-spacing: 0 !important; }
+.tilto-pro-app .tps-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.tilto-pro-app .tps-choices form { margin: 0; display: flex; }
+.tilto-pro-app .tps-card { all: unset; box-sizing: border-box; width: 100%; display: flex; flex-direction: column; gap: 10px; cursor: pointer; background: var(--tp-white); border: 2px solid var(--tp-line); border-radius: 18px; padding: 26px; color: var(--tp-ink); font-family: 'DM Sans', system-ui, sans-serif; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.tilto-pro-app .tps-card:hover { border-color: var(--tp-primary); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(161, 24, 87, 0.12); }
+.tilto-pro-app .tps-card:focus { outline: none; }
+.tilto-pro-app .tps-card:focus-visible { border-color: var(--tp-primary); box-shadow: 0 0 0 4px var(--tp-rose-pale); }
+.tilto-pro-app .tps-card--main { border-color: var(--tp-primary); box-shadow: 0 12px 28px rgba(161, 24, 87, 0.12); }
+.tilto-pro-app .tps-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--tp-primary-light); color: var(--tp-primary); display: inline-flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tps-card--main .tps-icon { background: var(--tp-primary); color: var(--tp-white); }
+.tilto-pro-app .tps-title { font-size: 1.25rem; font-weight: 700; line-height: 1.3; }
+.tilto-pro-app .tps-desc { font-size: 0.97rem; line-height: 1.5; color: var(--tp-muted); }
+.tilto-pro-app .tps-go { margin-top: auto; padding-top: 8px; font-weight: 700; color: var(--tp-primary); }
+.tilto-pro-app .tps-prospect { margin-top: 24px; background: var(--tp-primary-light); border-radius: 18px; padding: 22px 26px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.tilto-pro-app .tps-prospect > div { flex: 999 1 380px; min-width: 0; }
+.tilto-pro-app .tps-prospect strong { display: block; font-size: 1.1rem; color: var(--tp-ink); }
+.tilto-pro-app .tps-prospect p { margin-top: 4px !important; color: var(--tp-text); font-size: 0.97rem; }
+.tilto-pro-app .tps-prospect .tpa-btn { flex: 0 0 auto; background: var(--tp-ink); color: var(--tp-white) !important; }
+.tilto-pro-app .tps-prospect .tpa-btn:hover { background: #000; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap">
+    <div class="tps-top">
+      <div class="tps-intro">
+        {% if dossier.is_free %}
+        <p class="tpa-eyebrow">Bienvenue · votre premier dossier est offert</p>
+        <h1 class="tps-usp"><span class="tps-line">10 minutes d'échange.</span><br><span class="tps-line tps-mark">Un dossier de 20 pages.</span></h1>
+        {% else %}
+        <a class="tpa-back" href="{{ url_for('pro.dashboard') }}">← Mes dossiers</a>
+        <h1>Nouveau dossier</h1>
+        {% endif %}
+        <ol class="tps-how" aria-label="Comment ça marche">
+          <li><span class="tps-how-n">1</span><span>Vous enregistrez une séance, ou vous-même pour tester</span></li>
+          <li><span class="tps-how-n">2</span><span>Tilto rédige le dossier&nbsp;: pistes chiffrées, entreprises à contacter, plan d'action</span></li>
+          <li><span class="tps-how-n">3</span><span>Vous le recevez sous 48&nbsp;h et le remettez à votre client</span></li>
+        </ol>
+        {% if has_example %}<p class="tps-example"><a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Voir un dossier complet →</a></p>{% endif %}
+      </div>
+      <figure class="tps-preview tilto-pro-page">
+        {% set mockup_hint = "Cliquez pour explorer" %}
+        {% include "pages/_pro_mockup.html" %}
+        <figcaption>Exemple de dossier</figcaption>
+      </figure>
+    </div>
+
+    <h2 class="tps-question">Comment voulez-vous commencer&nbsp;?</h2>
+    <div class="tps-choices">
+      <form method="post" action="{{ url_for('pro.start', client_id=dossier.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" name="kind" value="client" class="tps-card tps-card--main" data-track="pro_start_choice" data-track-kind="direct">
+          <span class="tps-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></span>
+          <span class="tps-title">Enregistrer maintenant</span>
+          <span class="tps-desc">En séance{{ ' ou sur vous-même' if dossier.is_free }}. On vous guide pas à pas.</span>
+          <span class="tps-go">Commencer →</span>
+        </button>
+      </form>
+      <form method="post" action="{{ url_for('pro.start', client_id=dossier.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" name="kind" value="enregistrement" class="tps-card" data-track="pro_start_choice" data-track-kind="enregistrement">
+          <span class="tps-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></span>
+          <span class="tps-title">J'ai déjà un enregistrement</span>
+          <span class="tps-desc">Le fichier audio de votre séance, ou le lien de sa vidéo (Zoom, Teams, Meet, Loom).</span>
+          <span class="tps-go">Commencer →</span>
+        </button>
+      </form>
+    </div>
+
+    {% if has_example %}
+    <div class="tps-prospect">
+      <div>
+        <strong>Pour convaincre vos prospects qui hésitent</strong>
+        <p>Ajoutez un exemple de dossier à votre plaquette&nbsp;: votre prospect voit ce qu'il aura en main à la fin de l'accompagnement.</p>
+      </div>
+      <a class="tpa-btn" href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Voir et télécharger l'exemple</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

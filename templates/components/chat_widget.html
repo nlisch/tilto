@@ -566,7 +566,7 @@
         <span class="chat-bubble-icon">💬</span>
         <span class="chat-bubble-label">
             <span class="chat-bubble-title">Une question ?</span>
-            <span class="chat-bubble-sub">Écris-nous !</span>
+            <span class="chat-bubble-sub">{{ 'Écrivez-nous !' if request.path.startswith('/pro') else 'Écris-nous !' }}</span>
         </span>
         <span class="chat-notification-dot"></span>
     </button>
@@ -581,7 +581,7 @@
                 </div>
                 <div>
                     <h3 class="chat-title">Une question ?</h3>
-                    <p class="chat-subtitle">Écris-nous !</p>
+                    <p class="chat-subtitle">{{ 'Écrivez-nous !' if request.path.startswith('/pro') else 'Écris-nous !' }}</p>
                 </div>
             </div>
             <button class="chat-close-btn" aria-label="Fermer le chat" id="chatCloseBtn">
@@ -606,7 +606,7 @@
                     </div>
 
                     <div class="chat-form-group">
-                        <label for="chatEmail" class="chat-label">Ton email</label>
+                        <label for="chatEmail" class="chat-label">{{ 'Votre email' if request.path.startswith('/pro') else 'Ton email' }}</label>
                         <input
                             type="email"
                             id="chatEmail"
@@ -627,7 +627,7 @@
                             id="chatMessage"
                             name="message"
                             class="chat-textarea"
-                            placeholder="Ex: Comment fonctionne l'analyse IA ?"
+                            placeholder="{{ 'Ex : Quand vais-je recevoir le dossier ?' if request.path.startswith('/pro') else "Ex: Comment fonctionne l'analyse IA ?" }}"
                             rows="4"
                             required
                             minlength="10"

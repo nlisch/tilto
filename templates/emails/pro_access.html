@@ -1,0 +1,43 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}{% if is_new %}Bienvenue sur Tilto Pro{% else %}Votre accès Tilto Pro{% endif %}{% endblock %}
+
+{% block header_title %}{% if is_new %}Bienvenue sur Tilto Pro{% else %}Votre espace Tilto Pro{% endif %}{% endblock %}
+
+{% block content %}
+{% if is_new %}
+<p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #333333;">Bonjour,</p>
+<p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #333333;">Votre espace Tilto Pro est prêt, avec <strong>un premier dossier offert</strong>. Trois étapes suffisent&nbsp;:</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 28px;">
+    <tr>
+        <td width="36" valign="top" style="padding: 0 0 16px;"><div style="width: 28px; height: 28px; border-radius: 14px; background: #FFD54F; color: #4A2E00; font-weight: 700; text-align: center; line-height: 28px;">1</div></td>
+        <td style="padding: 0 0 16px; font-size: 15px; line-height: 1.5; color: #333333;"><strong>Remplissez la fiche</strong> de votre client&nbsp;: âge, localisation, salaires, statut recherché.</td>
+    </tr>
+    <tr>
+        <td width="36" valign="top" style="padding: 0 0 16px;"><div style="width: 28px; height: 28px; border-radius: 14px; background: #FFD54F; color: #4A2E00; font-weight: 700; text-align: center; line-height: 28px;">2</div></td>
+        <td style="padding: 0 0 16px; font-size: 15px; line-height: 1.5; color: #333333;"><strong>Enregistrez l'entretien</strong> (5 à 15 min) en suivant le guide fourni.</td>
+    </tr>
+    <tr>
+        <td width="36" valign="top"><div style="width: 28px; height: 28px; border-radius: 14px; background: #FFD54F; color: #4A2E00; font-weight: 700; text-align: center; line-height: 28px;">3</div></td>
+        <td style="font-size: 15px; line-height: 1.5; color: #333333;"><strong>Déposez l'audio et le CV</strong>&nbsp;: vous recevez le dossier sous 48&nbsp;h.</td>
+    </tr>
+</table>
+{% else %}
+<p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #333333;">Bonjour,</p>
+<p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #333333;">Voici votre lien pour accéder à votre espace Tilto Pro.</p>
+{% endif %}
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td align="center" style="padding: 8px 0 28px;">
+            <a href="{{ magic_url }}" style="display: inline-block; background-color: #A11857; color: #ffffff; padding: 16px 36px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px;">Accéder à mon espace</a>
+        </td>
+    </tr>
+</table>
+
+<p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #666666;">Ce lien est personnel et valable {{ validity_label }}. Pour revenir plus tard, entrez simplement votre email sur la page de connexion&nbsp;: vous recevrez un nouveau lien.</p>
+<p style="margin: 0; font-size: 14px; line-height: 1.6; color: #666666;">Une question&nbsp;? Répondez à cet email ou écrivez à <a href="mailto:contact@tilto.ai" style="color: #A11857;">contact@tilto.ai</a>.</p>
+{% endblock %}
+
+{% block footer_legal %}Vous recevez cet email suite à votre inscription sur Tilto Pro.<br>{% endblock %}

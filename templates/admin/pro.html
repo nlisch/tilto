@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "admin/_pro_dossiers.html" import admin_css, dossier_table, nudge_cell with context %}
+
+{% block title %}Admin · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+{{ admin_css() }}
+{% endblock %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpx-wrap">
+    <p class="tpa-eyebrow">Admin</p>
+    <h1>Tilto Pro</h1>
+    <p class="tpa-sub">{{ clients|selectattr('status', 'equalto', 'analyse')|list|length }} dossier(s) à analyser · {{ accounts|length }} compte(s) coach{% set pending = accounts|selectattr('credit_requested_at')|list %}{% if pending %} · <a href="#comptes"><strong>{{ pending|length }} demande(s) de dossier à facturer</strong></a>{% endif %}</p>
+    <nav class="tpx-head-links" aria-label="Admin">
+      <a href="{{ url_for('admin.dashboard') }}">← Admin</a>
+      <a href="#comptes">Comptes coach</a>
+      <a href="#exemple">Exemple de dossier</a>
+    </nav>
+    <form method="post" action="{{ url_for('pro.admin_send_nudges') }}" style="margin-top:14px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="tpa-btn tpa-btn--ghost tpx-btn">Envoyer les relances dues</button>
+      <span class="tpx-muted">À lancer une fois par jour : relances à 3 et 10 jours des dossiers offerts non envoyés. La suppression des fichiers à 30 jours se fait à chaque ouverture de cette page.</span>
+    </form>
+
+    <section class="tpx-section">
+      <h2>Dossiers clients</h2>
+      {{ dossier_table(clients) }}
+    </section>
+
+    <section class="tpx-section" id="exemple">
+      <h2>Exemple de dossier</h2>
+      <p class="tpx-muted" style="margin:0 0 12px;">Montré aux coachs pour convaincre leurs prospects (page de départ, tableau de bord, confirmation d'envoi).
+        {% if has_example %}<a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Voir l'exemple en ligne</a>{% else %}Aucun exemple pour l'instant : les liens restent masqués.{% endif %}</p>
+      <form class="tpx-credit" method="post" action="{{ url_for('pro.admin_upload_example') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="file" name="file" accept=".html,.htm,text/html" required aria-label="Fichier HTML de l'exemple" style="width:auto;border:0;">
+        <button type="submit" class="tpa-btn tpa-btn--primary tpx-btn">{{ 'Remplacer' if has_example else 'Mettre en ligne' }}</button>
+      </form>
+    </section>
+
+    <section class="tpx-section" id="comptes">
+      <h2>Comptes coach</h2>
+      <div class="tpx-table-box">
+        <table class="tpx-table">
+          <thead><tr><th>Email</th><th>Inscription</th><th>Source</th><th>Dossiers</th><th>Relances auto</th><th>Crédits restants</th><th>Ajouter</th></tr></thead>
+          <tbody>
+            {% for a in accounts %}
+            <tr>
+              <td><a href="{{ url_for('pro.admin_account', account_id=a.id) }}"><strong>{{ a.email }}</strong></a>{% if a.company %}<br><strong>{{ a.company }}</strong> <span class="tpx-muted">· cabinet</span>{% endif %}</td>
+              <td>{{ a.created_at.strftime('%d/%m/%Y') }}</td>
+              <td class="tpx-muted">{{ a.source or '—' }}</td>
+              <td>{{ a.nb_clients }}</td>
+              <td>{{ nudge_cell(a) }}</td>
+              <td>{{ a.credits }}{% if a.credit_requested_at %}<br><strong style="color: var(--tp-primary);">Demande en attente</strong><br><span class="tpx-muted">depuis le {{ a.credit_requested_at.strftime('%d/%m %H:%M') }}</span>{% endif %}</td>
+              <td>
+                <form class="tpx-credit" method="post" action="{{ url_for('pro.admin_add_credit', account_id=a.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="number" name="amount" value="1" min="1" max="50" aria-label="Nombre de dossiers à ajouter">
+                  <button type="submit" class="tpa-btn tpa-btn--ghost tpx-btn">Ajouter</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="tpx-muted">Aucun compte pour l'instant.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

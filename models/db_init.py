@@ -1140,6 +1140,56 @@ def init_db(force_init=False):
             INDEX idx_activite (activite)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         COMMENT = 'Leads B2B collectés via la landing page Tilto Pro';
+        ''',
+        '''
+        CREATE TABLE IF NOT EXISTS pro_accounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL UNIQUE COMMENT 'Compte Tilto (users.user_id) du coach',
+            credits INT NOT NULL DEFAULT 0 COMMENT 'Dossiers clients restants à créer',
+            company VARCHAR(120) NULL COMMENT 'Cabinet (landing /pro/cabinets)',
+            credit_requested_at DATETIME NULL COMMENT 'Demande de dossier en attente de facture',
+            nudges_sent TINYINT NOT NULL DEFAULT 0 COMMENT 'Relances automatiques envoyées (dossier offert non envoyé)',
+            nudge_last_at DATETIME NULL,
+            nudges_stopped_at DATETIME NULL COMMENT 'Relances arrêtées (admin ou coach)',
+            source VARCHAR(100) NULL COMMENT 'Origine de l inscription (landing hero, cta final...)',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            CONSTRAINT fk_pro_accounts_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT = 'Comptes Tilto Pro (coachs)';
+        ''',
+        '''
+        CREATE TABLE IF NOT EXISTS pro_clients (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            pro_account_id INT NOT NULL,
+            label VARCHAR(80) NOT NULL COMMENT 'Prénom ou initiales de la personne accompagnée',
+            status ENUM('fiche', 'audio', 'analyse', 'pret') NOT NULL DEFAULT 'fiche' COMMENT 'Étape du dossier',
+            is_free BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Dossier offert',
+            kind VARCHAR(20) NULL COMMENT 'Point de départ : moi, client, enregistrement',
+            fiche_json TEXT NULL COMMENT 'Fiche d identité (JSON)',
+            audio_path VARCHAR(500) NULL COMMENT 'Chemin GCS de l enregistrement (audio ou vidéo)',
+            audio_filename VARCHAR(255) NULL,
+            cv_path VARCHAR(500) NULL COMMENT 'Chemin GCS du CV',
+            cv_filename VARCHAR(255) NULL,
+            transcript_path VARCHAR(500) NULL COMMENT 'Chemin GCS de la transcription (à la place de l enregistrement)',
+            transcript_filename VARCHAR(255) NULL,
+            recording_url VARCHAR(500) NULL COMMENT 'Lien de partage de l enregistrement (Loom, Drive, Teams...)',
+            submitted_at DATETIME NULL COMMENT 'Envoi en analyse (fiche + audio complets)',
+            consent_at DATETIME NULL COMMENT 'Accord du client pour l enregistrement, coché à l envoi',
+            analysis_path VARCHAR(500) NULL COMMENT 'Chemin GCS de l analyse HTML',
+            share_token VARCHAR(64) NULL UNIQUE COMMENT 'Lien de lecture pour le client du coach',
+            share_views INT NOT NULL DEFAULT 0,
+            share_last_view_at DATETIME NULL,
+            delivered_at DATETIME NULL COMMENT 'Mise à disposition de l analyse',
+            files_purged_at DATETIME NULL COMMENT 'Suppression audio + CV (30 j après livraison)',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_pro_clients_account (pro_account_id),
+            INDEX idx_pro_clients_status (status),
+            INDEX idx_pro_clients_delivered (delivered_at),
+            CONSTRAINT fk_pro_clients_account FOREIGN KEY (pro_account_id) REFERENCES pro_accounts(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT = 'Dossiers clients des coachs Tilto Pro';
         '''
         ]
  

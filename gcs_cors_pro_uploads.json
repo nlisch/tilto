@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["https://tilto.co", "https://www.tilto.co", "http://127.0.0.1:5000", "http://localhost:5000"],
+      "method": ["PUT"],
+      "responseHeader": ["Content-Type"],
+      "maxAgeSeconds": 3600
+    }
+]

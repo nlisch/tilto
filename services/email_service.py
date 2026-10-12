@@ -421,3 +421,78 @@ def send_smart_contact_purchase_email(email, firstname, order_data, magic_url):
     except Exception as e:
         logger.error(f"❌ Exception envoi email Smart Contact: {str(e)}", exc_info=True)
         return False
+
+def send_pro_access_email(email, magic_url, is_new):
+    """Tilto Pro : bienvenue (nouveau compte) ou lien d'accès (compte existant)."""
+    try:
+        subject = "Bienvenue sur Tilto Pro : votre 1er dossier offert" if is_new else "Votre accès à Tilto Pro"
+        html_content = render_template(
+            'emails/pro_access.html',
+            magic_url=magic_url,
+            is_new=is_new,
+            validity_label='7 jours' if is_new else '24 heures',
+        )
+        result = send_email(to_email=email, subject=subject, html_content=html_content)
+        if not result.get('success', False):
+            logger.error(f"❌ Email Tilto Pro non envoyé à {email} : {result.get('message')}")
+            return False
+        logger.info(f"✅ Email Tilto Pro ({'bienvenue' if is_new else 'accès'}) envoyé à {email}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Exception email Tilto Pro : {str(e)}", exc_info=True)
+        return False
+
+
+def send_pro_analysis_ready_email(email, client_label, client_url):
+    """Tilto Pro : prévient le coach que l'analyse de son client est disponible."""
+    try:
+        html_content = render_template(
+            'emails/pro_analysis_ready.html',
+            client_label=client_label,
+            client_url=client_url,
+        )
+        result = send_email(
+            to_email=email,
+            subject=f"L'analyse de {client_label} est prête",
+            html_content=html_content,
+        )
+        if not result.get('success', False):
+            logger.error(f"❌ Email analyse Tilto Pro non envoyé à {email} : {result.get('message')}")
+            return False
+        return True
+    except Exception as e:
+        logger.error(f"❌ Exception email analyse Tilto Pro : {str(e)}", exc_info=True)
+        return False
+
+
+def _send_pro_simple(email, template, subject, **ctx):
+    try:
+        result = send_email(to_email=email, subject=subject, html_content=render_template(template, **ctx))
+        if not result.get('success', False):
+            logger.error(f"❌ Email Tilto Pro « {subject} » non envoyé à {email} : {result.get('message')}")
+            return False
+        return True
+    except Exception as e:
+        logger.error(f"❌ Exception email Tilto Pro « {subject} » : {str(e)}", exc_info=True)
+        return False
+
+
+def send_pro_credit_request_email(email, dashboard_url):
+    """Tilto Pro : confirme la demande « Débloquer un dossier »."""
+    return _send_pro_simple(email, 'emails/pro_credit_request.html',
+                            "Votre demande de dossier Tilto Pro", dashboard_url=dashboard_url)
+
+
+def send_pro_credit_added_email(email, amount, dashboard_url):
+    """Tilto Pro : le ou les dossiers sont disponibles dans l'espace du coach."""
+    subject = "Votre dossier Tilto Pro est débloqué" if amount == 1 else f"Vos {amount} dossiers Tilto Pro sont débloqués"
+    return _send_pro_simple(email, 'emails/pro_credit_added.html', subject,
+                            amount=amount, dashboard_url=dashboard_url)
+
+
+def send_pro_nudge_email(email, number, dossier_url, stop_url):
+    """Tilto Pro : relance automatique du dossier offert pas encore envoyé (1re ou 2e)."""
+    subject = ("Votre dossier offert vous attend" if number == 1
+               else "Votre dossier offert : on vous aide ?")
+    return _send_pro_simple(email, 'emails/pro_nudge.html', subject,
+                            number=number, dossier_url=dossier_url, stop_url=stop_url)

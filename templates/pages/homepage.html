@@ -4,6 +4,15 @@
 {% block meta_description %}Discute 5 min avec Claire, reçois 3 pistes carrière concrètes adaptées à ton profil et au marché de l'emploi de ta région. Gratuit et confidentiel.{% endblock %}
 {% block body_class %}tilto-new-homepage{% endblock %}
 
+{% block header_banner %}
+{% if not (pro_nav and pro_nav.is_pro) %}
+<div class="hp-pro-banner">
+  <span>Vous êtes coach<span class="hp-pro-banner__long"> ou consultant en bilan de compétences</span>&nbsp;?</span>
+  <a href="{{ url_for('tilto_pro') }}">Découvrez Tilto Pro →</a>
+</div>
+{% endif %}
+{% endblock %}
+
 {% block extra_head %}
 <script type="application/ld+json" nonce="{{ g.nonce }}">
 {"@context":"https://schema.org","@type":"Organization","name":"Tilto","url":"https://tilto.co","logo":"https://tilto.co/static/image/tilto_favicon.png","description":"Service d'orientation professionnelle par IA, basé sur les données du marché de l'emploi français.","areaServed":{"@type":"Country","name":"France"},"sameAs":["https://www.linkedin.com/company/tilto-ai"]}
@@ -31,10 +40,11 @@
 <section class="hp-hero" id="section-hero">
   <div class="hp-hero__container">
     <div class="hp-hero__text">
-      <h1 class="hp-hero__title" style="text-align:left;">Tes <span class="hp-hero__hl">pistes pro</span> en quelques minutes</h1>
+      <h1 class="hp-hero__title" style="text-align:left;">Tes <span class="hp-hero__hl">premières pistes pro</span> en quelques minutes</h1>
       <div class="hp-hero__usps">
         <div class="hp-hero__usp">✓ <strong>3 pistes métiers</strong> basées sur les données du marché</div>
         <div class="hp-hero__usp">✓ Résultats <strong>sous quelques minutes</strong></div>
+        <div class="hp-hero__usp">✓ Pour aller jusqu'au bout, <strong>un coach t'accompagne</strong></div>
       </div>
 
       {% if config.QUIZ_CHAT_MODE %}
@@ -92,7 +102,7 @@
             <div class="hp-steps__dot"></div>
             <div><span class="hp-steps__lb">Étape 1</span>
               <h3 class="hp-steps__tt">Le déclic</h3>
-              <p class="hp-steps__ds">Parle de ta situation en quelques minutes. Tu reçois 3 pistes concrètes pour commencer à y voir plus clair.</p>
+              <p class="hp-steps__ds">Parle de ta situation en quelques minutes. Tu reçois 3 premières pistes pour commencer à y voir plus clair.</p>
             </div>
           </div>
           <div class="hp-steps__it">
@@ -106,7 +116,7 @@
             <div class="hp-steps__dot"></div>
             <div><span class="hp-steps__lb">Étape 3</span>
               <h3 class="hp-steps__tt">Ta prochaine étape</h3>
-              <p class="hp-steps__ds">Tu repars avec des premières actions concrètes. Et si tu veux être guidé·e, un accompagnement adapté à ta situation.</p>
+              <p class="hp-steps__ds">Tu repars avec tes premières actions. Et pour construire ton projet jusqu'au bout, <strong>un coach spécialisé en reconversion t'accompagne.</strong></p>
             </div>
           </div>
       </div>
@@ -114,9 +124,20 @@
     <div class="hp-steps__right">
         <div class="hp-steps__frame">
             <img src="https://images.tilto.co/production/2026/02/ca478881_Tilto_example_piste_1.webp" alt="Exemple piste Tilto" loading="lazy" id="stepPreviewImg" class="hp-steps__zoomable">
-            <p class="hp-steps__caption">Exemple de piste issue d'un diagnostic Tilto</p>
+            <p class="hp-steps__caption">Exemple d'une première piste Tilto</p>
         </div>
     </div>
+  </div>
+</section>
+
+<!-- BLOC 2 bis : COACHS → TILTO PRO -->
+<section class="hp-coach" id="section-coach">
+  <div class="hp-coach__box">
+    <div class="hp-coach__txt">
+      <h2 class="hp-coach__title">Vous êtes coach ou consultant en bilan de compétences&nbsp;?</h2>
+      <p>Offrez à vos clients un dossier de reconversion de 20&nbsp;pages&nbsp;: pistes chiffrées, entreprises à contacter, plan d'action. Le premier est gratuit.</p>
+    </div>
+    <a href="{{ url_for('tilto_pro') }}" class="hp-coach__cta">Découvrir Tilto Pro →</a>
   </div>
 </section>
 
@@ -1501,6 +1522,84 @@
     left: 0;
     color: #d4a24e;
     font-weight: bold;
+}
+
+/* ============================================================================
+   TILTO PRO : bandeau du header + bloc coachs
+   ============================================================================ */
+.hp-pro-banner {
+    margin: -0.8rem 0 0.8rem;
+    background: #1A1A2E;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 1rem;
+    padding: 0.45rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    white-space: normal;
+    text-align: center;
+}
+.hp-pro-banner a { color: #F7C164; font-weight: 700; text-decoration: none; }
+.hp-pro-banner a:hover { text-decoration: underline; text-underline-offset: 3px; }
+body:has(.hp-pro-banner) .hp-hero { padding-top: calc(7rem + 2.2rem); }
+
+.hp-coach { background: #fff; padding: 0 2rem 5rem; }
+.hp-coach__box {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #FBEFF4;
+    border-radius: 20px;
+    padding: 2.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+.hp-coach__txt { flex: 999 1 460px; min-width: 0; }
+.hp-coach__title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-weight: 700;
+    color: #1A1A2E;
+    line-height: 1.2;
+    margin: 0 0 0.6rem;
+    text-align: left;
+}
+.hp-coach__txt p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: #374151;
+    line-height: 1.6;
+    margin: 0;
+}
+.hp-coach__cta {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0.85rem 1.5rem;
+    background: #1A1A2E;
+    color: #fff;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hp-coach__cta:hover { color: #fff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26, 26, 46, 0.25); }
+
+@media (max-width: 768px) {
+    .hp-pro-banner__long { display: none; }
+    body:has(.hp-pro-banner) .hp-hero { padding-top: calc(6rem + 2.2rem); }
+    .hp-coach { padding: 0 1.25rem 3.5rem; }
+    .hp-coach__box { padding: 1.5rem; text-align: center; justify-content: center; }
+    .hp-coach__title { text-align: center; }
+    .hp-coach__cta { width: 100%; justify-content: center; }
 }
 </style>
 <!-- ====================================================================

@@ -1,0 +1,806 @@
+{% extends "base.html" %}
+
+{% set locked = dossier.status in ('analyse', 'pret') %}
+{% set kind = dossier.kind or 'client' %}
+{% set is_default_label = dossier.label in ('Mon premier client', 'Mon dossier test') or (dossier.label.startswith('Client ') and dossier.label[7:].isdigit()) %}
+{% set live = kind in ('client', 'moi') %}
+{% if not locked and live %}{% set page_title = 'Enregistrez la séance' %}
+{% elif not locked %}{% set page_title = "Déposez l'enregistrement" %}
+{% elif kind == 'moi' %}{% set page_title = 'Mon dossier test' %}
+{% elif dossier.is_free and (is_default_label or not locked) %}{% set page_title = 'Mon premier client' %}
+{% elif is_default_label %}{% set page_title = 'Nouveau client' %}
+{% else %}{% set page_title = dossier.label %}{% endif %}
+
+{% block title %}{{ page_title }} · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+<style>
+.tilto-pro-app .tpc-head { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.tilto-pro-app .tpc-intro { margin-top: 12px !important; font-size: 1.05rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-errors { margin-top: 24px; }
+.tilto-pro-app .tpc-fields { margin-top: 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.tilto-pro-app .tpc-more { margin-top: 18px; border-top: 1px solid var(--tp-line); padding-top: 14px; }
+.tilto-pro-app .tpc-more summary { cursor: pointer; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--tp-primary); list-style: none; }
+.tilto-pro-app .tpc-more summary::-webkit-details-marker { display: none; }
+.tilto-pro-app .tpc-more summary::before { content: '+'; display: inline-block; width: 1.2em; font-size: 1.15rem; }
+.tilto-pro-app .tpc-more[open] summary::before { content: '–'; }
+.tilto-pro-app .tpc-more-fields { margin-top: 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.tilto-pro-app .tpc-saved { margin-top: 14px !important; font-size: 0.85rem; color: var(--tp-muted); min-height: 1.4em; }
+.tilto-pro-app .tpc-saved.is-error { color: #991B1B; }
+.tilto-pro-app .tpc-say { margin-top: 14px !important; font-size: 0.97rem; background: var(--tp-primary-light); border-radius: 12px; padding: 14px 16px; }
+.tilto-pro-app .tpc-drop { margin-top: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; border: 2px dashed #D9C9D1; border-radius: 14px; padding: 32px 20px; background: #FDFAF8; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.tilto-pro-app .tpc-drop:hover, .tilto-pro-app .tpc-drop.is-over { border-color: var(--tp-primary); background: var(--tp-primary-light); }
+.tilto-pro-app .tpc-drop:focus-within { outline: 2px solid var(--tp-primary); outline-offset: 2px; }
+.tilto-pro-app .tpc-drop strong { font-size: 1.02rem; color: var(--tp-ink); }
+.tilto-pro-app .tpc-drop span { font-size: 0.9rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-drop em { font-style: normal; font-weight: 700; color: var(--tp-primary); }
+.tilto-pro-app .tpc-drop input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tilto-pro-app .tpc-drop .tpc-drop-formats { font-size: 0.82rem; }
+.tilto-pro-app .tpc-rec { margin-top: 18px; }
+.tilto-pro-app .tpc-mic-zone { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0 4px; }
+.tilto-pro-app .tpc-mic-zone[hidden] { display: none; }
+.tilto-pro-app .tpc-mic { width: 88px; height: 88px; border-radius: 50%; border: none; background: linear-gradient(145deg, #A11857, #C44B89); color: #fff; cursor: pointer; box-shadow: 0 8px 35px rgba(161,24,87,0.3); transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s; display: flex; align-items: center; justify-content: center; animation: tpcMicInvite 2s ease-in-out infinite; }
+.tilto-pro-app .tpc-mic:hover { transform: scale(1.06); box-shadow: 0 12px 45px rgba(161,24,87,0.4); }
+.tilto-pro-app .tpc-mic:active { transform: scale(0.94); }
+.tilto-pro-app .tpc-mic:focus-visible { outline: 3px solid var(--tp-gold); outline-offset: 4px; }
+.tilto-pro-app .tpc-mic:disabled { background: #E9E4E6; color: #A79CA2; box-shadow: none; cursor: not-allowed; animation: none; transform: none; }
+.tilto-pro-app .tpc-mic--recording { background: linear-gradient(145deg, #ef4444, #dc2626); animation: tpcMicRec 1.5s ease-in-out infinite; }
+@keyframes tpcMicInvite { 0%,100% { box-shadow: 0 8px 35px rgba(161,24,87,0.3); } 50% { box-shadow: 0 12px 45px rgba(161,24,87,0.45); } }
+@keyframes tpcMicRec { 0%,100% { box-shadow: 0 8px 35px rgba(239,68,68,0.3); } 50% { box-shadow: 0 8px 35px rgba(239,68,68,0.3), 0 0 0 12px rgba(239,68,68,0); } }
+.tilto-pro-app .tpc-mic-hint { margin: 0 !important; font-size: 0.88rem; color: var(--tp-muted); text-align: center; }
+.tilto-pro-app .tpc-wave { width: 220px; height: 48px; }
+.tilto-pro-app .tpc-rec-time { margin: 0 !important; font-size: 1.4rem; font-weight: 700; color: var(--tp-ink); font-variant-numeric: tabular-nums; }
+.tilto-pro-app .tpc-rec-recover { margin-top: 12px; border: 2px solid var(--tp-primary); border-radius: 14px; padding: 18px; background: var(--tp-primary-light); display: flex; flex-direction: column; gap: 12px; }
+.tilto-pro-app .tpc-rec-recover[hidden] { display: none; }
+.tilto-pro-app .tpc-rec-recover p { margin: 0 !important; font-weight: 600; color: var(--tp-ink); }
+.tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
+.tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-consent { margin-top: 12px; display: flex; justify-content: center; }
+.tilto-pro-app .tpc-consent .tpa-check { font-weight: 600; color: var(--tp-ink); }
+.tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--tp-line); text-align: left; }
+.tilto-pro-app .tpc-prep li { border-bottom: 1px solid var(--tp-line); }
+.tilto-pro-app .tpc-prep summary { list-style: none; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
+.tilto-pro-app .tpc-prep summary::-webkit-details-marker { display: none; }
+.tilto-pro-app .tpc-prep summary::after { content: '+'; margin-left: auto; padding-left: 12px; font-size: 1.2rem; font-weight: 700; line-height: 1.2; color: var(--tp-primary); }
+.tilto-pro-app .tpc-prep details[open] summary::after { content: '–'; }
+.tilto-pro-app .tpc-prep-n { flex: 0 0 auto; min-width: 1.1em; font-weight: 800; color: var(--tp-primary); line-height: 1.45; }
+.tilto-pro-app .tpc-prep-t strong { display: block; color: var(--tp-ink); line-height: 1.45; }
+.tilto-pro-app .tpc-prep-t small { display: block; margin-top: 2px; font-size: 0.9rem; color: var(--tp-muted); line-height: 1.4; }
+.tilto-pro-app .tpc-prep-ex { margin: -4px 0 12px 1.9em !important; padding: 10px 14px; border-radius: 10px; background: var(--tp-primary-light); color: var(--tp-ink); font-size: 0.93rem; font-style: italic; }
+/* Pendant l'enregistrement : seul le micro reste */
+.tilto-pro-app #tpc-form.is-recording .js-prep, .tilto-pro-app #tpc-form.is-recording .tpc-consent, .tilto-pro-app #tpc-form.is-recording .js-alt, .tilto-pro-app #tpc-form.is-recording .js-files { display: none; }
+.tilto-pro-app .tpc-h2-note { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--tp-muted); letter-spacing: 0; }
+.tilto-pro-app .tpc-intro { margin: 10px 0 24px !important; max-width: 600px; }
+.tilto-pro-app .tpc-review { width: 100%; margin-top: 4px; text-align: left; }
+.tilto-pro-app .js-after[hidden] { display: none; }
+.tilto-pro-app .tpc-link { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.tilto-pro-app .tpc-link label { font-size: 0.92rem; font-weight: 600; color: var(--tp-muted); }
+.tilto-pro-app .tpc-link input { font: inherit; font-size: 16px; color: var(--tp-ink); padding: 12px 14px; border: 1px solid #D9CCD2; border-radius: 10px; min-height: 48px; box-sizing: border-box; width: 100%; background: var(--tp-white); }
+.tilto-pro-app .tpc-link input:focus { outline: 2px solid var(--tp-primary); outline-offset: 1px; border-color: var(--tp-primary); }
+.tilto-pro-app .tpc-link-msg { margin: 0 !important; font-size: 0.85rem; min-height: 0; }
+.tilto-pro-app .tpc-link-msg.is-ok { color: var(--tp-ok); font-weight: 600; }
+.tilto-pro-app .tpc-link-msg.is-error { color: #991B1B; font-weight: 600; }
+.tilto-pro-app .tpc-files { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tilto-pro-app .tpc-files li { display: flex; gap: 8px; align-items: flex-start; font-size: 0.95rem; overflow-wrap: anywhere; }
+.tilto-pro-app .tpc-files li[hidden] { display: none; }
+.tilto-pro-app .tpc-files li.is-ok { color: var(--tp-ok); font-weight: 600; }
+.tilto-pro-app .tpc-files li.is-todo { color: var(--tp-muted); }
+.tilto-pro-app .tpc-files li.is-busy { color: var(--tp-primary); font-weight: 600; }
+.tilto-pro-app .tpc-files li.is-error { color: #991B1B; font-weight: 600; }
+.tilto-pro-app .tpc-submit { margin-top: 20px; min-height: 56px; font-size: 1.05rem; padding: 0 28px; }
+.tilto-pro-app #tpc-form > .tpa-block:first-of-type { margin-top: 28px; }
+.tilto-pro-app .tpc-link-btn { all: unset; cursor: pointer; display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; color: var(--tp-primary); text-decoration: underline; text-underline-offset: 3px; }
+.tilto-pro-app .tpc-link-btn:focus-visible { outline: 2px solid var(--tp-primary); outline-offset: 2px; }
+.tilto-pro-app .tpc-wait { margin-top: 14px; display: flex; gap: 12px; align-items: center; background: var(--tp-primary-light); color: var(--tp-primary-dark); border-radius: 12px; padding: 14px 16px; font-weight: 600; }
+.tilto-pro-app .tpc-share { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; }
+.tilto-pro-app .tpc-share input { flex: 1 1 260px; min-width: 0; font: inherit; font-size: 15px; color: var(--tp-ink); padding: 12px 14px; border: 1px solid #D9CCD2; border-radius: 10px; min-height: 48px; box-sizing: border-box; background: var(--tp-cream); }
+.tilto-pro-app .tpc-share-off { margin-top: 6px; }
+.tilto-pro-app .tpc-summary { margin: 16px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.tilto-pro-app .tpc-summary dt { font-size: 0.82rem; color: var(--tp-muted); }
+.tilto-pro-app .tpc-summary dd { margin: 2px 0 0; font-weight: 600; color: var(--tp-ink); overflow-wrap: anywhere; }
+.tilto-pro-app .tpc-summary .is-wide { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+    .tilto-pro-app .tpc-fields, .tilto-pro-app .tpc-more-fields, .tilto-pro-app .tpc-summary { grid-template-columns: 1fr; }
+    .tilto-pro-app .tpc-drop { padding: 24px 14px; }
+}
+</style>
+{% endblock %}
+
+{% macro fiche_block(num, title=None) %}
+<section class="tpa-card tpa-block" aria-labelledby="bloc-fiche">
+  <div class="tpa-block-head"><span class="tpa-num">{{ num }}</span><h2 id="bloc-fiche">{{ title or ('Vous' if kind == 'moi' else 'Votre client') }}</h2></div>
+  <div class="tpc-fields">
+    <div class="tpa-field">
+      <label for="f-label">{{ 'Prénom' if kind == 'moi' else 'Prénom ou initiales' }}</label>
+      <input id="f-label" class="js-fiche" name="label" type="text" maxlength="80" required autocomplete="off" value="{{ '' if is_default_label else dossier.label }}" placeholder="{{ 'Ex : Anne' if kind == 'moi' else 'Ex : Marie ou M. D.' }}">
+    </div>
+    <div class="tpa-field">
+      <label for="f-age">Âge</label>
+      <input id="f-age" class="js-fiche" name="age" type="text" inputmode="numeric" maxlength="20" required autocomplete="off" value="{{ dossier.fiche.age or '' }}" placeholder="Ex : {{ '43' if kind == 'moi' else '38' }}">
+    </div>
+    <div class="tpa-field">
+      <label for="f-ville">Ville</label>
+      <input id="f-ville" class="js-fiche" name="localisation" type="text" maxlength="120" required autocomplete="off" value="{{ dossier.fiche.localisation or '' }}" placeholder="Ex : Nantes">
+    </div>
+  </div>
+  {% set has_more = dossier.fiche.mobilite or dossier.fiche.salaire_souhaite or dossier.fiche.statut or dossier.fiche.remarques %}
+  <details class="tpc-more" {{ 'open' if has_more }}>
+    <summary>Affiner les pistes (facultatif)</summary>
+    <div class="tpc-more-fields">
+      <div class="tpa-field">
+        <label for="f-mob">Mobilité</label>
+        <input id="f-mob" class="js-fiche" name="mobilite" type="text" maxlength="200" autocomplete="off" value="{{ dossier.fiche.mobilite if dossier.fiche.mobilite is string else (dossier.fiche.mobilite or [])|join(', ') }}" placeholder="Ex : sa région, toute la France">
+      </div>
+      <div class="tpa-field">
+        <label for="f-sal">Salaire souhaité</label>
+        <input id="f-sal" class="js-fiche" name="salaire_souhaite" type="text" maxlength="120" autocomplete="off" value="{{ dossier.fiche.salaire_souhaite or '' }}" placeholder="Ex : 35-40 k€ brut/an">
+      </div>
+      <div class="tpa-field">
+        <label for="f-stat">Statut recherché</label>
+        <input id="f-stat" class="js-fiche" name="statut" type="text" maxlength="200" autocomplete="off" value="{{ dossier.fiche.statut if dossier.fiche.statut is string else (dossier.fiche.statut or [])|join(', ') }}" placeholder="Ex : CDI, indépendant">
+      </div>
+      {% if kind != 'moi' %}
+      <div class="tpa-field">
+        <label for="f-rem">Remarques</label>
+        <input id="f-rem" class="js-fiche" name="remarques" type="text" maxlength="2000" autocomplete="off" value="{{ dossier.fiche.remarques or '' }}" placeholder="Contraintes, envies…">
+      </div>
+      {% endif %}
+    </div>
+  </details>
+  <p class="tpc-saved js-saved" aria-live="polite">Enregistré automatiquement.</p>
+</section>
+{% endmacro %}
+
+{# Les 5 sujets du guide, affichés pendant l'enregistrement #}
+{% set topics = [
+  ("Le point de départ", "Ce qui ne va plus dans son travail actuel.", "Qu'est-ce qui coince aujourd'hui dans ton travail ?"),
+  ("Les pistes déjà explorées", "Les idées envisagées, celle qui l'attire le plus.", "Quelles pistes as-tu déjà explorées ? Laquelle te parle le plus ?"),
+  ("Le cadre idéal", "Lieu, salaire, statut : le non négociable et le reste.", "Qu'est-ce qui est non négociable pour toi ? Qu'est-ce que tu pourrais assouplir ?"),
+  ("L'envie de changement", "Changer de métier, ou garder un pied dans le sien.", "Prêt à changer complètement de métier, ou tu veux garder un pied dans le tien ?"),
+  ("Le calendrier et les moyens", "Le délai, le temps et le budget disponibles.", "En combien de temps veux-tu changer ? Avec quel budget et quel temps ?"),
+] %}
+
+
+{% macro prep_list() %}
+<ol class="tpc-prep">
+  {% for t, why, example in topics %}
+  <li>
+    <details>
+      <summary><span class="tpc-prep-n">{{ loop.index }}</span><span class="tpc-prep-t"><strong>{{ t }}</strong><small>{{ why }}</small></span></summary>
+      <p class="tpc-prep-ex">Par exemple&nbsp;: «&nbsp;{{ example }}&nbsp;»</p>
+    </details>
+  </li>
+  {% endfor %}
+</ol>
+{% endmacro %}
+
+{% macro rec_zone() %}
+{# Même enregistreur que la page d'accueil. Affiché par le JS si le navigateur sait enregistrer. #}
+<div class="tpc-rec js-rec" hidden>
+  <div class="tpc-mic-zone js-rec-idle">
+    <button type="button" class="tpc-mic js-rec-start" aria-label="Enregistrer maintenant" data-track="pro_recording_started">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+    </button>
+    <p class="tpc-mic-hint js-rec-hint" data-ready="Appuyez pour enregistrer · 10 min suffisent" data-locked="Cochez l'accord pour commencer">Cochez l'accord pour commencer</p>
+  </div>
+  <div class="tpc-mic-zone js-rec-live" hidden role="status">
+    <button type="button" class="tpc-mic tpc-mic--recording js-rec-stop" aria-label="Arrêter et envoyer">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="6" y="6" width="16" height="16" rx="3" fill="currentColor"/></svg>
+    </button>
+    <canvas class="tpc-wave js-rec-wave" aria-hidden="true"></canvas>
+    <p class="tpc-rec-time js-rec-time">0:00</p>
+    <p class="tpc-mic-hint">Appuyez pour terminer et envoyer</p>
+    <details class="tpc-more tpc-review">
+      <summary>Revoir les sujets</summary>
+      {{ prep_list() }}
+    </details>
+  </div>
+  <div class="tpc-rec-recover js-rec-recover" hidden role="alert">
+    <p class="js-rec-recover-text"></p>
+    <div class="tpc-rec-actions">
+      <button type="button" class="tpa-btn tpa-btn--primary js-rec-resend">Envoyer cet enregistrement</button>
+      <button type="button" class="tpc-link-btn js-rec-save">Le télécharger</button>
+      <button type="button" class="tpc-link-btn js-rec-discard">Le supprimer</button>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro upload_zone() %}
+<label class="tpc-drop js-drop" for="f-files">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A11857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg>
+  <strong>{{ "Déposez l'enregistrement et le CV" if not live else "Déposez un fichier" }}</strong>
+  <span>Glissez-les ici ou <em>choisissez des fichiers</em></span>
+  <span class="tpc-drop-formats">Audio ou vidéo (Zoom, Teams, Meet, Loom, téléphone…) jusqu'à 2&nbsp;Go · Transcription acceptée · CV facultatif</span>
+  <input id="f-files" name="files" type="file" multiple accept="{{ accept }}" data-rules="{{ upload_rules|tojson|forceescape }}">
+</label>
+<div class="tpc-link">
+  <label for="f-link">ou collez le lien de l'enregistrement</label>
+  <input id="f-link" class="js-link" name="recording_url" type="text" inputmode="url" maxlength="500" autocomplete="off" value="{{ dossier.recording_url or '' }}" placeholder="Lien Loom, Google Drive, Teams, Zoom…">
+  <p class="tpc-link-msg js-link-msg" aria-live="polite"></p>
+</div>
+{% endmacro %}
+
+{% macro files_list() %}
+<ul class="tpc-files js-files" aria-live="polite">
+  <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not dossier.audio_path and not dossier.recording_url }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
+  <li class="is-ok" data-kind="transcript" {{ 'hidden' if not dossier.transcript_path }}><span aria-hidden="true">✓</span><span>Transcription&nbsp;: <span class="js-name">{{ dossier.transcript_filename or '' }}</span></span></li>
+  <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" {{ 'hidden' if live and not dossier.cv_path }}><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
+</ul>
+{% endmacro %}
+
+{% macro consent_box() %}
+<label class="tpa-check"><input type="checkbox" class="js-consent" name="consent" value="1" required {{ 'checked' if request.form.get('consent') == '1' }}>
+  {{ "Mon client a accepté que l'échange soit enregistré et analysé" if kind == 'enregistrement' else "La personne enregistrée est d'accord" }}</label>
+{% endmacro %}
+
+{% macro submit_button() %}
+<button type="submit" class="tpa-btn tpa-btn--primary tpc-submit js-submit">Envoyer en analyse</button>
+<p class="tpa-note">Dossier sous 48&nbsp;h{{ ', à relire avant de le remettre' if kind != 'moi' }}.</p>
+{% endmacro %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpa-narrow">
+  {% if not locked %}
+    <a class="tpa-back" href="{{ url_for('pro.start', client_id=dossier.id) }}">← Retour</a>
+    <h1>{{ page_title }}</h1>
+    <p class="tpc-intro">{% if kind == 'enregistrement' %}Tilto transforme votre séance en un dossier de reconversion de 20 pages.{% else %}10 minutes d'échange deviennent un dossier de reconversion de 20 pages. Pour tester, enregistrez-vous vous-même.{% endif %}</p>
+
+    {% if errors %}
+    <div class="tpa-errors tpc-errors" role="alert"><strong>Il manque quelques éléments pour envoyer le dossier&nbsp;:</strong>
+      <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <form id="tpc-form" method="post" action="{{ url_for('pro.submit', client_id=dossier.id) }}" enctype="multipart/form-data"
+          data-autosave-url="{{ url_for('pro.autosave', client_id=dossier.id) }}" data-upload-url="{{ url_for('pro.upload', client_id=dossier.id) }}"
+          data-start-url="{{ url_for('pro.upload_start', client_id=dossier.id) }}" data-finish-url="{{ url_for('pro.upload_finish', client_id=dossier.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      {% if kind == 'enregistrement' %}
+      <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
+        <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-fichiers">L'enregistrement</h2></div>
+        <p class="tpa-lead">Telle quelle, vidéo comprise. L'idéal&nbsp;: 5 à 15 minutes où votre client parle de son parcours.</p>
+        {{ upload_zone() }}
+        {{ files_list() }}
+        {{ consent_box() }}
+      </section>
+      {{ fiche_block(2, 'Votre client') }}
+      <div>{{ submit_button() }}</div>
+
+      {% else %}
+      {% set has_rec = dossier.audio_path or dossier.recording_url or dossier.transcript_path %}
+      <section class="tpa-card tpa-block js-prep" aria-labelledby="bloc-prep">
+        <div class="tpa-block-head"><span class="tpa-num">1</span><h2 id="bloc-prep">Préparez-vous <span class="tpc-h2-note">· 2 min</span></h2></div>
+        <p class="tpa-lead">À aborder dans l'ordre qui vous va. Touchez un sujet pour un exemple de question.</p>
+        {{ prep_list() }}
+      </section>
+      <section class="tpa-card tpa-block" id="fichiers" aria-labelledby="bloc-fichiers">
+        <div class="tpa-block-head"><span class="tpa-num">2</span><h2 id="bloc-fichiers">Enregistrez</h2></div>
+        {% if live %}
+        <div class="tpc-consent">{{ consent_box() }}</div>
+        {% endif %}
+        {{ rec_zone() }}
+        {{ files_list() }}
+        <details class="tpc-more tpc-alt js-alt" {{ 'open' if not has_rec and (errors or request.args.get('fichier')) }}>
+          <summary>J'ai déjà un fichier ou un lien</summary>
+          {{ upload_zone() }}
+        </details>
+        <noscript><style>.tilto-pro-app .js-alt { display: block; } .tilto-pro-app .js-after { display: block !important; }</style></noscript>
+      </section>
+      <div class="js-after" {{ 'hidden' if not has_rec and not errors }}>
+        {{ fiche_block(3, 'Dernière étape') }}
+        <div>{{ submit_button() }}</div>
+      </div>
+      {% endif %}
+    </form>
+
+
+  {% else %}
+    <a class="tpa-back" href="{{ url_for('pro.dashboard') }}">← Mes dossiers</a>
+    <div class="tpc-head">
+      <h1>{{ page_title }}</h1>
+      <span class="tpa-badge tpa-badge--{{ dossier.status }}">{{ dossier.status_label }}</span>
+      {% if dossier.is_free %}<span class="tpa-badge tpa-badge--free">Offert</span>{% endif %}
+    </div>
+
+    <section class="tpa-card tpa-block">
+      <h2>Dossier de reconversion</h2>
+      {% if dossier.status == 'pret' %}
+      <p class="tpa-lead">Relisez-le, puis {{ 'remettez-le à votre client' if kind != 'moi' else 'montrez-le à vos prospects comme exemple' }}&nbsp;: en PDF ou avec un lien.</p>
+      <p style="margin-top:16px;"><a class="tpa-btn tpa-btn--primary" href="{{ url_for('pro.analysis', client_id=dossier.id) }}" target="_blank" rel="noopener" data-track="pro_analysis_opened">Voir et télécharger le dossier</a></p>
+      {% else %}
+      <div class="tpc-wait"><span aria-hidden="true">⏳</span> Analyse en cours. Le dossier arrive sous 48&nbsp;h&nbsp;: on vous prévient par email.</div>
+      {% endif %}
+    </section>
+
+    {% if dossier.status == 'pret' %}
+    <section class="tpa-card tpa-block" id="partage">
+      <h2>{{ 'Partager à votre client' if kind != 'moi' else 'Partager le dossier' }}</h2>
+      {% if not dossier.share_token %}
+      <p class="tpa-lead">Créez un lien à lui envoyer&nbsp;: {{ 'il' if kind != 'moi' else 'on' }} lit le dossier en ligne et peut le télécharger en PDF, sans compte. Vous pouvez désactiver le lien à tout moment.</p>
+      <form method="post" action="{{ url_for('pro.share', client_id=dossier.id) }}" style="margin-top:16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="tpa-btn tpa-btn--ghost" data-track="pro_share_link_created">Créer le lien de partage</button>
+      </form>
+      {% else %}
+      {% set share_url = url_for('pro.shared_analysis', token=dossier.share_token, _external=True) %}
+      <div class="tpc-share">
+        <label for="share-url" class="tp-sr">Lien du dossier</label>
+        <input id="share-url" class="js-share-url" type="text" readonly value="{{ share_url }}">
+        <button type="button" class="tpa-btn tpa-btn--primary js-copy" data-track="pro_share_link_copied">Copier le lien</button>
+      </div>
+      <p class="tpa-note">
+        <a href="mailto:?subject={{ ('Votre dossier de reconversion')|urlencode }}&amp;body={{ ('Bonjour,\n\nVoici votre dossier de reconversion, à lire en ligne ou à télécharger en PDF :\n' ~ share_url ~ '\n\nBonne lecture,')|urlencode }}" data-track="pro_share_link_emailed">Envoyer par email</a>
+        · {% if dossier.share_views %}Ouvert {{ dossier.share_views }} fois, dernière fois le {{ dossier.share_last_view_at.strftime('%d/%m à %H h %M') }}{% else %}Pas encore ouvert{% endif %}
+      </p>
+      <form method="post" action="{{ url_for('pro.share', client_id=dossier.id) }}" class="tpc-share-off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" name="action" value="disable" class="tpc-link-btn">Désactiver le lien</button>
+      </form>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="tpa-card tpa-block">
+      <h2>Ce que vous avez envoyé</h2>
+      <dl class="tpc-summary">
+        <div><dt>{{ 'Prénom' if kind == 'moi' else 'Prénom ou initiales' }}</dt><dd>{{ dossier.label }}</dd></div>
+        {% for key, title, required in fiche_fields %}
+        {% set v = dossier.fiche.get(key) %}
+        {% if v %}<div class="{{ 'is-wide' if key == 'remarques' }}"><dt>{{ title }}</dt><dd>{{ v if v is string else v|join(', ') }}</dd></div>{% endif %}
+        {% endfor %}
+        <div class="is-wide"><dt>Fichiers</dt><dd>
+          {% if dossier.files_purged_at %}Supprimés 30 jours après la livraison du dossier, comme prévu.
+          {% else %}{{ [dossier.audio_filename if dossier.audio_path, 'lien de l\'enregistrement' if dossier.recording_url, dossier.transcript_filename if dossier.transcript_path, dossier.cv_filename if dossier.cv_path]|select|join(' · ') }}{% endif %}
+        </dd></div>
+      </dl>
+    </section>
+  {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not locked %}
+<script nonce="{{ g.nonce }}">
+(function () {
+    'use strict';
+    var form = document.getElementById('tpc-form');
+    if (!form) return;
+    var csrf = form.querySelector('input[name="csrf_token"]').value;
+
+    // ── Enregistrement automatique de la fiche ──
+    var saved = form.querySelector('.js-saved');
+    var timer = null;
+    function autosave() {
+        var data = new FormData();
+        data.append('csrf_token', csrf);
+        form.querySelectorAll('.js-fiche').forEach(function (el) { data.append(el.name, el.value); });
+        saved.classList.remove('is-error');
+        saved.textContent = 'Enregistrement…';
+        fetch(form.dataset.autosaveUrl, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); saved.textContent = 'Enregistré automatiquement.'; })
+            .catch(function () { saved.classList.add('is-error'); saved.textContent = "Pas encore enregistré : vérifiez votre connexion."; });
+    }
+    form.querySelectorAll('.js-fiche').forEach(function (el) {
+        el.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(autosave, 800); });
+        el.addEventListener('change', function () { clearTimeout(timer); autosave(); });
+    });
+
+    // ── Dépôt des fichiers : envoyés dès qu'ils sont choisis, rangés d'après leur nom ──
+    // Petits fichiers : via le serveur. Gros fichiers (vidéos…) : directement dans le
+    // stockage via une URL signée (une requête vers le serveur est limitée à 32 Mo).
+    var input = form.querySelector('#f-files');
+    var drop = form.querySelector('.js-drop');
+    var list = form.querySelector('.js-files');
+    var submitBtn = form.querySelector('.js-submit');
+    var rules = JSON.parse(input.dataset.rules);
+    var pending = 0;
+    var isRecording = false;
+    var LABELS = { audio: 'Enregistrement', transcript: 'Transcription', cv: 'CV' };
+
+    function kindOf(name) {
+        var lower = name.toLowerCase();
+        var dot = lower.lastIndexOf('.');
+        var ext = dot >= 0 ? lower.slice(dot) : '';
+        if (rules.audio.indexOf(ext) >= 0) return 'audio';
+        if (rules.transcript.indexOf(ext) >= 0) return 'transcript';
+        if (rules.cv.indexOf(ext) >= 0) return /transcri|verbatim/.test(lower) ? 'transcript' : 'cv';
+        return null;
+    }
+    function human(bytes) {
+        return bytes >= 1073741824 ? Math.round(bytes / 1073741824) + ' Go' : Math.round(bytes / 1048576) + ' Mo';
+    }
+    function row(kind) { return list.querySelector('li[data-kind="' + kind + '"]'); }
+    function setRow(kind, state, text) {
+        var li = row(kind);
+        li.hidden = false;
+        li.className = 'is-' + state;
+        li.firstElementChild.textContent = state === 'ok' ? '✓' : (state === 'busy' ? '…' : (state === 'error' ? '!' : '○'));
+        li.querySelector('.js-name').textContent = text;
+    }
+    // Parcours « en direct » : la fiche s'ouvre une fois l'enregistrement reçu
+    var after = form.querySelector('.js-after');
+    function revealAfter() {
+        if (!after || !after.hidden) return;
+        after.hidden = false;
+        after.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var first = Array.prototype.find.call(after.querySelectorAll('input[required]'), function (i) { return !i.value; });
+        if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 600);
+    }
+    function applyState(res) {
+        ['audio', 'transcript', 'cv'].forEach(function (k) { if (res[k]) setRow(k, 'ok', res[k]); });
+        if (res.audio || res.transcript) revealAfter();
+    }
+    function showError(message) {
+        var li = document.createElement('li');
+        li.className = 'is-error js-err';
+        li.innerHTML = '<span aria-hidden="true">!</span><span></span>';
+        li.lastElementChild.textContent = message;
+        list.appendChild(li);
+    }
+    function refreshSubmit() {
+        submitBtn.disabled = pending > 0;
+        submitBtn.textContent = isRecording ? 'Enregistrement en cours…'
+            : pending > 0 ? 'Fichier en cours d’envoi…' : 'Envoyer en analyse';
+    }
+    function post(url, fields, onDone) {
+        var data = new FormData();
+        data.append('csrf_token', csrf);
+        Object.keys(fields).forEach(function (k) { data.append(k, fields[k]); });
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.onload = function () {
+            var res = null;
+            try { res = JSON.parse(xhr.responseText); } catch (e) { /* réponse non JSON */ }
+            onDone(xhr.status === 200 && res && res.success ? null : ((res && res.errors && res.errors[0]) || 'error'), res);
+        };
+        xhr.onerror = function () { onDone('network', null); };
+        return { xhr: xhr, data: data };
+    }
+
+    // Retourne une promesse : true si le fichier est bien rattaché au dossier
+    function upload(file, method) {
+        return new Promise(function (resolve) { uploadInner(file, method, resolve); });
+    }
+    function uploadInner(file, method, resolve) {
+        var kind = kindOf(file.name);
+        if (!kind) { showError(file.name + ' : format non accepté. Déposez un enregistrement (audio ou vidéo), une transcription ou un CV (PDF, Word).'); resolve(false); return; }
+        if (file.size > rules.max[kind]) { showError(file.name + ' : fichier trop lourd (' + human(rules.max[kind]) + ' max).'); resolve(false); return; }
+        if (!file.size) { showError(file.name + ' : le fichier est vide.'); resolve(false); return; }
+
+        var li = row(kind);
+        var previous = { hidden: li.hidden, className: li.className, html: li.innerHTML };
+        pending++; refreshSubmit();
+        setRow(kind, 'busy', file.name + ' : envoi 0 %');
+        function progress(e) {
+            if (e.lengthComputable) setRow(kind, 'busy', file.name + ' : envoi ' + Math.round(e.loaded * 100 / e.total) + ' %');
+        }
+        function done(error, res) {
+            if (error) {
+                li.hidden = previous.hidden; li.className = previous.className; li.innerHTML = previous.html;
+                showError(error === 'network' || error === 'error'
+                    ? file.name + " : l'envoi a échoué. Vérifiez votre connexion et réessayez."
+                    : error);
+            } else {
+                applyState(res);
+                window.tpTrack('pro_file_uploaded', { file_kind: kind, method: method || 'fichier', size_mb: Math.round(file.size / 1048576) });
+            }
+            pending--; refreshSubmit();
+            resolve(!error);
+        }
+
+        if (file.size <= rules.server_max) {
+            var req = post(form.dataset.uploadUrl, {}, done);
+            req.data.append('files', file);
+            req.xhr.upload.onprogress = progress;
+            req.xhr.send(req.data);
+            return;
+        }
+        // Gros fichier : 1. URL signée, 2. envoi direct dans le stockage, 3. confirmation
+        var type = file.type || 'application/octet-stream';
+        var start = post(form.dataset.startUrl, { filename: file.name, size: file.size, content_type: type }, function (error, res) {
+            if (error) { done(error, res); return; }
+            var put = new XMLHttpRequest();
+            put.open('PUT', res.url);
+            put.setRequestHeader('Content-Type', res.content_type);
+            put.upload.onprogress = progress;
+            put.onload = function () {
+                if (put.status < 200 || put.status >= 300) { done('error', null); return; }
+                setRow(kind, 'busy', file.name + ' : finalisation…');
+                var finish = post(form.dataset.finishUrl, { token: res.token }, done);
+                finish.xhr.send(finish.data);
+            };
+            put.onerror = function () { done('network', null); };
+            put.send(file);
+        });
+        start.xhr.send(start.data);
+    }
+    function handle(files) {
+        list.querySelectorAll('.js-err').forEach(function (li) { li.remove(); });
+        Array.prototype.forEach.call(files, function (f) { upload(f); });
+        input.value = '';  // déjà envoyés : on ne les renvoie pas avec le formulaire
+    }
+    input.addEventListener('change', function () { handle(input.files); });
+    ['dragenter', 'dragover'].forEach(function (t) {
+        drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('is-over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (t) {
+        drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove('is-over'); });
+    });
+    drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) handle(e.dataTransfer.files); });
+    // Une vidéo peut prendre plusieurs minutes : on prévient avant de quitter la page
+    window.addEventListener('beforeunload', function (e) { if (pending > 0) { e.preventDefault(); e.returnValue = ''; } });
+
+    // ── Lien de partage : enregistré dès qu'il est collé ──
+    var link = form.querySelector('.js-link');
+    var linkMsg = form.querySelector('.js-link-msg');
+    function saveLink() {
+        var data = new FormData();
+        data.append('csrf_token', csrf);
+        data.append('recording_url', link.value);
+        fetch(form.dataset.autosaveUrl, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, json: j }; }); })
+            .then(function (r) {
+                linkMsg.className = 'tpc-link-msg js-link-msg ' + (r.ok ? 'is-ok' : 'is-error');
+                linkMsg.textContent = r.ok ? (link.value.trim() ? 'Lien enregistré.' : '') : r.json.message;
+                if (r.ok && r.json.recording_url !== undefined && document.activeElement !== link) link.value = r.json.recording_url;
+                if (r.ok && link.value.trim()) { window.tpTrack('pro_link_pasted', {}); revealAfter(); }
+                if (r.ok && !row('audio').classList.contains('is-ok') && !row('audio').classList.contains('is-busy')) {
+                    row('audio').querySelector('.js-name').textContent = link.value.trim() ? 'lien ci-dessus' : 'à déposer';
+                }
+            })
+            .catch(function () { linkMsg.className = 'tpc-link-msg js-link-msg is-error'; linkMsg.textContent = "Pas encore enregistré : vérifiez votre connexion."; });
+    }
+    var linkTimer = null;
+    link.addEventListener('input', function () { clearTimeout(linkTimer); linkTimer = setTimeout(saveLink, 900); });
+    link.addEventListener('change', function () { clearTimeout(linkTimer); saveLink(); });
+
+    // ── Enregistrement depuis la page ──
+    // L'audio est découpé en morceaux de 5 s, gardés en mémoire ET sauvegardés sur
+    // l'appareil (IndexedDB) : si la page se ferme ou si l'envoi échoue, rien n'est perdu.
+    var rec = form.querySelector('.js-rec');
+    if (rec && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder) {
+        rec.hidden = false;
+        var DOSSIER = {{ dossier.id }};
+        var idle = rec.querySelector('.js-rec-idle'), live = rec.querySelector('.js-rec-live');
+        var recover = rec.querySelector('.js-rec-recover'), timeEl = rec.querySelector('.js-rec-time');
+        var recorder = null, stream = null, chunks = [], mime = '', startedAt = 0, ticker = null, wakeLock = null;
+        // Petite couche IndexedDB (silencieuse si indisponible : navigation privée…)
+        var dbPromise = new Promise(function (resolve) {
+            try {
+                var req = indexedDB.open('tilto-pro-rec', 1);
+                req.onupgradeneeded = function () { req.result.createObjectStore('chunks', { autoIncrement: true }); };
+                req.onsuccess = function () { resolve(req.result); };
+                req.onerror = function () { resolve(null); };
+            } catch (e) { resolve(null); }
+        });
+        function dbAdd(item) {
+            return dbPromise.then(function (db) {
+                if (!db) return;
+                try { db.transaction('chunks', 'readwrite').objectStore('chunks').add(item); } catch (e) { /* quota… */ }
+            });
+        }
+        function dbLoad() {
+            return dbPromise.then(function (db) {
+                if (!db) return [];
+                return new Promise(function (resolve) {
+                    var out = [];
+                    var cur = db.transaction('chunks').objectStore('chunks').openCursor();
+                    cur.onsuccess = function () {
+                        var c = cur.result;
+                        if (!c) { resolve(out); return; }
+                        if (c.value.d === DOSSIER) out.push(c.value);
+                        c.continue();
+                    };
+                    cur.onerror = function () { resolve(out); };
+                });
+            });
+        }
+        function dbClear() {
+            return dbPromise.then(function (db) {
+                if (!db) return;
+                return new Promise(function (resolve) {
+                    var tx = db.transaction('chunks', 'readwrite');
+                    var cur = tx.objectStore('chunks').openCursor();
+                    cur.onsuccess = function () {
+                        var c = cur.result;
+                        if (!c) return;
+                        if (c.value.d === DOSSIER) c.delete();
+                        c.continue();
+                    };
+                    tx.oncomplete = resolve; tx.onerror = resolve;
+                });
+            });
+        }
+
+        function fmt(sec) { return Math.floor(sec / 60) + ':' + ('0' + Math.floor(sec % 60)).slice(-2); }
+        function extFor(type) {
+            return /mp4|m4a|aac/.test(type) ? '.m4a' : /ogg/.test(type) ? '.ogg' : /wav/.test(type) ? '.wav' : '.webm';
+        }
+        function fileFrom(blobs, type, started) {
+            var d = new Date(started || Date.now());
+            var name = 'Enregistrement ' + ('0' + d.getDate()).slice(-2) + '-' + ('0' + (d.getMonth() + 1)).slice(-2)
+                + ' ' + d.getHours() + 'h' + ('0' + d.getMinutes()).slice(-2) + extFor(type);
+            var cleanType = (type || 'audio/webm').split(';')[0];
+            return new File(blobs, name, { type: cleanType });
+        }
+        function show(state) {
+            idle.hidden = state !== 'idle'; live.hidden = state !== 'live'; recover.hidden = state !== 'recover';
+        }
+        function keepAwake() {
+            if (!('wakeLock' in navigator) || !recorder) return;
+            navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; }).catch(function () { /* refusé */ });
+        }
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && recorder && recorder.state === 'recording') keepAwake();
+        });
+
+        function offerRecovery(blobs, type, started, seconds, message) {
+            var file = fileFrom(blobs, type, started);
+            rec.querySelector('.js-rec-recover-text').textContent = message
+                || ('Un enregistrement ' + (seconds < 60 ? 'de moins d’une minute' : 'de ' + Math.round(seconds / 60) + ' min') + ' n’a pas encore été envoyé.');
+            rec.querySelector('.js-rec-resend').onclick = function () { sendRecording(file); };
+            rec.querySelector('.js-rec-save').onclick = function () {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(file); a.download = file.name;
+                document.body.appendChild(a); a.click(); a.remove();
+            };
+            rec.querySelector('.js-rec-discard').onclick = function () {
+                if (!window.confirm('Supprimer définitivement cet enregistrement ?')) return;
+                dbClear().then(function () { show('idle'); });
+            };
+            show('recover');
+        }
+
+        function sendRecording(file) {
+            show('idle');
+            upload(file, 'enregistrement_page').then(function (ok) {
+                if (ok) { dbClear(); return; }
+                offerRecovery([file], file.type, null, 0, 'L’envoi de l’enregistrement a échoué. Il est gardé sur cet appareil : réessayez dès que la connexion revient.');
+            });
+        }
+
+        var startBtn = rec.querySelector('.js-rec-start'), hint = rec.querySelector('.js-rec-hint');
+        var consent = form.querySelector('.js-consent');
+        function syncConsent() {
+            var ok = !consent || consent.checked;
+            startBtn.disabled = !ok;
+            hint.textContent = ok ? hint.dataset.ready : hint.dataset.locked;
+        }
+        if (consent) consent.addEventListener('change', syncConsent);
+        syncConsent();
+
+        // Onde sonore, comme sur la page d'accueil
+        var wave = rec.querySelector('.js-rec-wave'), audioCtx = null, rafId = null;
+        function startWave() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                audioCtx.createMediaStreamSource(stream).connect(analyser);
+                var dpr = window.devicePixelRatio || 1, W = 220, H = 48;
+                wave.width = W * dpr; wave.height = H * dpr;
+                var ctx = wave.getContext('2d'); ctx.scale(dpr, dpr);
+                var data = new Uint8Array(analyser.frequencyBinCount), bars = 28, bw = 3, gap = 3;
+                var x0 = (W - (bars * bw + (bars - 1) * gap)) / 2;
+                (function draw() {
+                    rafId = requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(data);
+                    ctx.clearRect(0, 0, W, H);
+                    for (var i = 0; i < bars; i++) {
+                        var v = data[Math.floor(i / bars * data.length * 0.6)] / 255;
+                        var h = Math.max(3, v * (H - 4));
+                        ctx.globalAlpha = 0.3 + v * 0.7; ctx.fillStyle = '#A11857';
+                        ctx.fillRect(x0 + i * (bw + gap), (H - h) / 2, bw, h);
+                    }
+                })();
+            } catch (e) { /* onde facultative */ }
+        }
+        function stopWave() {
+            if (rafId) cancelAnimationFrame(rafId);
+            if (audioCtx) { try { audioCtx.close(); } catch (e) { /* déjà fermé */ } }
+            rafId = null; audioCtx = null;
+        }
+
+        startBtn.addEventListener('click', function () {
+            list.querySelectorAll('.js-err').forEach(function (li) { li.remove(); });
+            navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } })
+                .then(function (s) {
+                    stream = s;
+                    mime = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus']
+                        .find(function (t) { return MediaRecorder.isTypeSupported(t); }) || '';
+                    var opts = { audioBitsPerSecond: 64000 };  // ~30 Mo par heure
+                    if (mime) opts.mimeType = mime;
+                    recorder = new MediaRecorder(stream, opts);
+                    mime = recorder.mimeType || mime || 'audio/webm';
+                    chunks = []; startedAt = Date.now();
+                    dbClear();
+                    recorder.addEventListener('dataavailable', function (e) {
+                        if (!e.data || !e.data.size) return;
+                        chunks.push(e.data);
+                        dbAdd({ d: DOSSIER, t: startedAt, m: mime, b: e.data });
+                    });
+                    recorder.addEventListener('stop', onStop);
+                    recorder.start(5000);
+                    isRecording = true;
+                    form.classList.add('is-recording');
+                    pending++; refreshSubmit();
+                    show('live');
+                    timeEl.textContent = '0:00';
+                    ticker = setInterval(function () { timeEl.textContent = fmt((Date.now() - startedAt) / 1000); }, 500);
+                    keepAwake();
+                    startWave();
+                    live.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (navigator.vibrate) navigator.vibrate(40);
+                })
+                .catch(function () {
+                    showError('Micro inaccessible : autorisez le micro pour ce site dans votre navigateur, ou déposez un fichier.');
+                });
+        });
+        rec.querySelector('.js-rec-stop').addEventListener('click', function () {
+            if (recorder && recorder.state !== 'inactive') recorder.stop();
+        });
+
+        // Appelé à l'arrêt, y compris si le navigateur coupe l'enregistrement (appel entrant…)
+        function onStop() {
+            clearInterval(ticker);
+            stopWave();
+            if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+            if (wakeLock) { try { wakeLock.release(); } catch (e) { /* déjà libéré */ } wakeLock = null; }
+            var seconds = (Date.now() - startedAt) / 1000;
+            recorder = null;
+            isRecording = false;
+            form.classList.remove('is-recording');
+            pending--; refreshSubmit();
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+            window.tpTrack('pro_recording_stopped', { duration_s: Math.round(seconds) });
+            if (seconds < 5 || !chunks.length) {
+                dbClear(); show('idle');
+                showError('Enregistrement trop court : appuyez à nouveau sur « Enregistrer maintenant ».');
+                return;
+            }
+            sendRecording(fileFrom(chunks, mime, startedAt));
+        }
+
+        // Enregistrement resté sur l'appareil (page fermée, envoi raté…) : on propose de l'envoyer
+        dbLoad().then(function (items) {
+            if (!items.length || recorder) return;
+            var blobs = items.map(function (i) { return i.b; });
+            offerRecovery(blobs, items[0].m, items[0].t, items.length * 5);
+        });
+    }
+
+    form.addEventListener('submit', function (e) {
+        if (pending > 0) { e.preventDefault(); return; }
+        clearTimeout(timer);
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Envoi en cours…';
+    });
+})();
+</script>
+{% else %}
+<script nonce="{{ g.nonce }}">
+(function () {
+    'use strict';
+    var btn = document.querySelector('.js-copy');
+    if (!btn) return;
+    var input = document.querySelector('.js-share-url');
+    btn.addEventListener('click', function () {
+        function copied() { btn.textContent = 'Lien copié ✓'; setTimeout(function () { btn.textContent = 'Copier le lien'; }, 2500); }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(input.value).then(copied, function () { input.select(); document.execCommand('copy'); copied(); });
+        } else {
+            input.select(); document.execCommand('copy'); copied();
+        }
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

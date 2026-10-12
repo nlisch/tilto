@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Mes dossiers clients · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+<style>
+.tilto-pro-app .tpd-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; }
+.tilto-pro-app .tpd-links { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.tilto-pro-app .tpd-links a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
+.tilto-pro-app .tpd-grid { margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.tilto-pro-app .tpd-client { display: flex; flex-direction: column; gap: 14px; text-decoration: none; color: inherit !important; transition: border-color 0.2s, box-shadow 0.2s; }
+.tilto-pro-app .tpd-client:hover { border-color: var(--tp-primary); box-shadow: 0 10px 24px rgba(74,11,39,0.07); }
+.tilto-pro-app .tpd-client-top { display: flex; gap: 8px; flex-wrap: wrap; }
+.tilto-pro-app .tpd-client h2 { font-size: 1.25rem; }
+.tilto-pro-app .tpd-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.tilto-pro-app .tpd-progress span { height: 6px; border-radius: 3px; background: var(--tp-line); }
+.tilto-pro-app .tpd-progress span.is-done { background: var(--tp-primary); }
+.tilto-pro-app .tpd-next { font-size: 0.92rem; color: var(--tp-muted); }
+.tilto-pro-app .tpd-next strong { color: var(--tp-primary); }
+.tilto-pro-app .tpd-new { display: flex; flex-direction: column; justify-content: center; gap: 12px; border-style: dashed; border-width: 1.5px; background: transparent; }
+.tilto-pro-app .tpd-new form { margin: 0; }
+.tilto-pro-app .tpd-unlock { background: var(--tp-primary-deep); border-color: var(--tp-primary-deep); color: var(--tp-rose-pale); display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+.tilto-pro-app .tpd-unlock h2 { color: var(--tp-white); }
+.tilto-pro-app .tpd-unlock form { margin: 0; }
+.tilto-pro-app .tpd-unlock-note { font-size: 0.85rem; opacity: 0.85; }
+.tilto-pro-app .tpd-pending { scroll-margin-top: 100px; }
+.tilto-pro-app .tpd-pending strong { color: var(--tp-white); }
+.tilto-pro-app .tpd-pending-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); color: var(--tp-white); display: flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpd-price { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 800; color: var(--tp-gold-light); }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set step_index = {'fiche': 0, 'audio': 0, 'analyse': 2, 'pret': 3} %}
+<div class="tpa">
+  <div class="tpa-wrap">
+    <div class="tpd-head">
+      <div>
+        <p class="tpa-eyebrow">Tilto Pro</p>
+        <h1>Mes dossiers clients</h1>
+      </div>
+      <nav class="tpd-links" aria-label="Ressources">
+        <a href="{{ url_for('pro.guide') }}">Les 5 sujets à aborder</a>
+        {% if has_example %}<a href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">Exemple de dossier</a>{% endif %}
+      </nav>
+    </div>
+
+    <div class="tpd-grid">
+      {% for c in clients %}
+      <a class="tpa-card tpd-client" href="{{ url_for('pro.client', client_id=c.id) }}">
+        <div class="tpd-client-top">
+          <span class="tpa-badge tpa-badge--{{ c.status }}">{{ c.status_label }}</span>
+          {% if c.is_free %}<span class="tpa-badge tpa-badge--free">Offert</span>{% endif %}
+        </div>
+        <h2>{{ 'Mon dossier test' if c.kind == 'moi' and c.label in ('Mon dossier test', 'Mon premier client') else c.label }}</h2>
+        <div class="tpd-progress" aria-hidden="true">
+          {% for i in range(3) %}<span class="{{ 'is-done' if i < step_index[c.status] }}"></span>{% endfor %}
+        </div>
+        <p class="tpd-next">
+          {% if c.status in ('fiche', 'audio') and not c.kind %}Prochaine étape : <strong>choisir comment commencer</strong>
+          {% elif c.status in ('fiche', 'audio') and not c.audio_path %}Prochaine étape : <strong>déposer l'enregistrement</strong>
+          {% elif c.status in ('fiche', 'audio') %}Prochaine étape : <strong>envoyer en analyse</strong>
+          {% elif c.status == 'analyse' %}Dossier attendu sous 48&nbsp;h
+          {% else %}<strong>Dossier disponible</strong>{% endif %}
+        </p>
+      </a>
+      {% endfor %}
+
+      {% if account.credits > 0 %}
+      <div class="tpa-card tpd-new" id="debloquer">
+        <h2>Nouveau client</h2>
+        <p class="tpd-next">{{ account.credits }} dossier{{ 's' if account.credits > 1 }} disponible{{ 's' if account.credits > 1 }}.</p>
+        <form method="post" action="{{ url_for('pro.new_client') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="tpa-btn tpa-btn--primary">Créer un dossier</button>
+        </form>
+      </div>
+      {% else %}
+      {% if account.credit_requested_at %}
+      <div class="tpa-card tpd-unlock tpd-pending" id="debloquer" role="status">
+        <div class="tpd-pending-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div>
+        <h2>Demande envoyée</h2>
+        <p>Le {{ account.credit_requested_at.strftime('%d/%m à %H h %M') }}. Vous recevez la facture de 49&nbsp;€ HT par email <strong>sous 24&nbsp;h</strong>.</p>
+        <p>Dès le paiement, le dossier apparaît ici et on vous prévient par email.</p>
+      </div>
+      {% else %}
+      <div class="tpa-card tpd-unlock" id="debloquer">
+        <h2>Un autre client&nbsp;?</h2>
+        <p>Débloquez un nouveau dossier de reconversion de 20&nbsp;pages.</p>
+        <div class="tpd-price">49&nbsp;€ HT</div>
+        <form method="post" action="{{ url_for('pro.request_credit') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="tpa-btn tpa-btn--gold" data-track="pro_credit_requested">Débloquer un dossier</button>
+        </form>
+        <p class="tpd-unlock-note">Facture envoyée par email sous 24&nbsp;h. Sans abonnement.</p>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

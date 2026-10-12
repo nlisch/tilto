@@ -1,0 +1,176 @@
+{# Aperçu interactif du dossier (onglets Identité / Compétences / Pistes / Plan).
+   Utilisé sur la landing /pro et dans l'espace coach. Variable : mockup_hint. #}
+<style>
+/* Variables propres à l'aperçu (l'espace coach n'a pas toutes celles de la landing) */
+.tilto-pro-page .tp-mockup-wrap { --tp-text-medium: #4A4A4A; --tp-text-light: #777; }
+/* ═══ APERÇU DU LIVRABLE (repris de l'ancienne page) ═══ */
+/* ═══ MOCKUP ═══ */
+.tilto-pro-page .tp-hero-visual { position: relative; }
+.tilto-pro-page .tp-mockup { background: var(--tp-white); border-radius: 18px; box-shadow: 0 28px 72px rgba(0,0,0,0.12), 0 0 0 1px rgba(161,24,87,0.06); overflow: visible; transform: perspective(800px) rotateY(-3deg); transition: transform 0.5s; position: relative; }
+.tilto-pro-page .tp-mockup:hover { transform: perspective(800px) rotateY(0deg); }
+.tilto-pro-page .tp-mockup-head { background: var(--tp-cream); padding: 12px 16px; border-bottom: 2px solid var(--tp-primary); display: flex; align-items: center; gap: 8px; }
+.tilto-pro-page .tp-mockup-logo { font-family: 'Libre Baskerville', serif; font-weight: 700; font-size: 0.85rem; color: var(--tp-primary); }
+.tilto-pro-page .tp-mockup-badge { background: var(--tp-gold); color: #5A3800; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; vertical-align: middle; }
+.tilto-pro-page .tp-mockup-tabs { display: flex; gap: 0; margin-left: auto; }
+.tilto-pro-page .tp-mockup-tab { font-size: 0.54rem; padding: 4px 7px; font-weight: 600; color: var(--tp-text-light); border-bottom: 2px solid transparent; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+.tilto-pro-page .tp-mockup-tab.tp-active { color: var(--tp-primary); border-color: var(--tp-primary); }
+.tilto-pro-page .tp-mockup-body { padding: 18px; min-height: 280px; }
+.tilto-pro-page .tp-mp { display: none; } .tilto-pro-page .tp-mp.tp-active { display: block; }
+.tilto-pro-page .tp-mp-title { font-family: 'Libre Baskerville', serif; font-size: 0.8rem; font-weight: 700; color: var(--tp-text); display: flex; align-items: center; gap: 7px; margin-bottom: 11px; padding-bottom: 7px; border-bottom: 1px solid var(--tp-rose-pale); }
+.tilto-pro-page .tp-mp-title .tp-ic { width: 24px; height: 24px; background: var(--tp-primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; }
+.tilto-pro-page .tp-mp-block { background: var(--tp-primary-light); border-left: 3px solid var(--tp-primary); border-radius: 9px; padding: 11px 13px; margin-bottom: 9px; }
+.tilto-pro-page .tp-mp-block-gold { background: var(--tp-cream); border-left: 3px solid var(--tp-gold); border-radius: 9px; padding: 11px 13px; margin-bottom: 9px; }
+.tilto-pro-page .tp-mp-bt { font-weight: 700; font-size: 0.66rem; color: var(--tp-primary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tilto-pro-page .tp-mp-block-gold .tp-mp-bt { color: #7A5400; }
+.tilto-pro-page .tp-mp-txt { font-size: 0.7rem; color: var(--tp-text-medium); line-height: 1.6; }
+.tilto-pro-page .tp-mp-line { height: 6px; background: var(--tp-rose-pale); border-radius: 4px; margin-bottom: 4px; } .tilto-pro-page .tp-mp-line:nth-child(3) { width: 85%; }
+.tilto-pro-page .tp-mp-tag { display: inline-block; font-size: 0.58rem; padding: 2px 6px; background: var(--tp-cream); border-radius: 5px; color: var(--tp-text-medium); font-weight: 600; margin: 2px 2px 2px 0; }
+.tilto-pro-page .tp-mp-stat { display: inline-block; font-size: 0.55rem; padding: 3px 7px; background: var(--tp-gold-light); border-radius: 5px; color: #5A3800; font-weight: 700; }
+.tilto-pro-page .tp-mp-quote { background: var(--tp-cream); border-radius: 9px; padding: 9px 11px 9px 20px; font-style: italic; font-size: 0.7rem; color: var(--tp-text-medium); position: relative; margin-top: 7px; font-family: 'Libre Baskerville', serif; line-height: 1.6; }
+.tilto-pro-page .tp-mp-quote::before { content: '«'; font-size: 1.2rem; opacity: 0.15; color: var(--tp-primary); font-style: normal; position: absolute; left: 6px; top: 1px; }
+.tilto-pro-page .tp-mp-coach { background: var(--tp-white); border: 1.5px dashed var(--tp-rose-pale); border-radius: 9px; padding: 8px 10px; margin-top: 7px; font-size: 0.65rem; color: var(--tp-primary); display: flex; align-items: flex-start; gap: 5px; }
+.tilto-pro-page .tp-mockup-hint { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.58rem; color: var(--tp-text-light); margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--tp-rose-pale); }
+.tilto-pro-page .tp-float-badge { display: none; }
+.tilto-pro-page .tp-tab-hint {
+    position: absolute; top: -56px; right: 30px;
+    display: flex; align-items: flex-end; gap: 6px;
+    pointer-events: none; z-index: 5;
+}
+.tilto-pro-page .tp-tab-hint-text {
+    font-family: 'Caveat', cursive; font-size: 1.2rem; font-weight: 600;
+    color: var(--tp-gold); white-space: nowrap; margin-bottom: 12px;
+}
+.tilto-pro-page .tp-tab-hint img {
+    width: 52px; height: auto; opacity: 0.9;
+    transform: rotate(0deg);
+}
+
+.tilto-pro-page .tp-mp-title .tp-ic svg, .tilto-pro-page .tp-mockup-hint svg { width: 13px; height: 13px; stroke: var(--tp-primary); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* onglets en <button> : on neutralise le style natif */
+.tilto-pro-page button.tp-mockup-tab { background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; box-shadow: none; margin: 0; min-height: 0; line-height: 1.4; font-family: inherit; }
+.tilto-pro-page button.tp-mockup-tab.tp-active { border-bottom-color: var(--tp-primary); }
+.tilto-pro-page button.tp-mockup-tab:focus-visible { outline: 2px solid var(--tp-primary); outline-offset: 1px; }
+.tilto-pro-page .tp-mockup-wrap { flex: 1 1 500px; min-width: 0; max-width: 560px; padding-top: 56px; }
+@media (min-width: 769px) and (max-width: 1024px) {
+    .tilto-pro-page .tp-mockup-tab { font-size: 0.48rem; padding: 3px 5px; }
+    .tilto-pro-page .tp-mockup-body { padding: 14px; min-height: 240px; }
+    .tilto-pro-page .tp-mp-block, .tilto-pro-page .tp-mp-block-gold { padding: 9px 11px; }
+    .tilto-pro-page .tp-mp-txt { font-size: 0.65rem; }
+    .tilto-pro-page .tp-mp-stat { font-size: 0.5rem; padding: 2px 5px; }
+    .tilto-pro-page .tp-tab-hint { top: -48px; right: 16px; }
+    .tilto-pro-page .tp-tab-hint-text { font-size: 1rem; }
+    .tilto-pro-page .tp-tab-hint img { width: 40px; }
+}
+@media (max-width: 768px) {
+    .tilto-pro-page .tp-mockup-wrap { max-width: none; padding-top: 48px; }
+    .tilto-pro-page .tp-mockup { transform: none !important; border-radius: 14px; }
+    .tilto-pro-page .tp-mockup:hover { transform: none !important; }
+    .tilto-pro-page .tp-mockup-head { padding: 10px 12px; flex-wrap: wrap; gap: 6px; }
+    .tilto-pro-page .tp-mockup-tabs { margin-left: 0; width: 100%; justify-content: space-between; margin-top: 4px; }
+    .tilto-pro-page .tp-mockup-tab { font-size: 0.52rem; padding: 4px 6px; flex: 1; text-align: center; }
+    .tilto-pro-page .tp-mockup-body { padding: 14px 12px; min-height: 220px; }
+    .tilto-pro-page .tp-mp-title { font-size: 0.72rem; }
+    .tilto-pro-page .tp-mp-block, .tilto-pro-page .tp-mp-block-gold { padding: 9px 10px; margin-bottom: 7px; }
+    .tilto-pro-page .tp-mp-bt { font-size: 0.6rem; }
+    .tilto-pro-page .tp-mp-txt { font-size: 0.65rem; }
+    .tilto-pro-page .tp-mp-stat { font-size: 0.5rem; padding: 2px 5px; }
+    .tilto-pro-page .tp-mp-tag { font-size: 0.52rem; padding: 2px 5px; }
+    .tilto-pro-page .tp-mp-quote { font-size: 0.64rem; padding: 8px 10px 8px 18px; }
+    .tilto-pro-page .tp-mp-coach { font-size: 0.6rem; }
+    .tilto-pro-page .tp-tab-hint { top: -44px; right: 10px; }
+    .tilto-pro-page .tp-tab-hint-text { font-size: 0.95rem; margin-bottom: 8px; }
+    .tilto-pro-page .tp-tab-hint img { width: 36px; }
+}
+@media (max-width: 420px) {
+    .tilto-pro-page .tp-mockup-wrap { padding-top: 0; }
+    .tilto-pro-page .tp-mockup-head { padding: 8px 10px; }
+    .tilto-pro-page .tp-mockup-logo { font-size: 0.75rem; }
+    .tilto-pro-page .tp-mockup-tab { font-size: 0.46rem; padding: 3px 4px; }
+    .tilto-pro-page .tp-mockup-body { padding: 10px; min-height: 200px; }
+
+    .tilto-pro-page .tp-tab-hint { display: none; }
+}
+</style>
+        <div class="tp-mockup-wrap">
+        <div class="tp-mockup">
+            <div class="tp-mockup-head">
+                <span class="tp-mockup-logo">Tilto</span><span class="tp-mockup-badge" style="font-size:0.48rem;">Pro</span>
+                <div class="tp-mockup-tabs">
+                    <button type="button" class="tp-mockup-tab" data-p="identity" aria-pressed="false">Identité</button>
+                    <button type="button" class="tp-mockup-tab" data-p="skills" aria-pressed="false">Compétences</button>
+                    <button type="button" class="tp-mockup-tab tp-active" data-p="tracks" aria-pressed="true">Pistes</button>
+                    <button type="button" class="tp-mockup-tab" data-p="plan" aria-pressed="false">Plan</button>
+                </div>
+            </div>
+            <div class="tp-tab-hint">
+                <span class="tp-tab-hint-text">{{ mockup_hint }}</span>
+                <img src="https://images.tilto.co/production/2025/11/9f174d70_fleche_jaune.webp" alt="">
+            </div>
+            <div class="tp-mockup-body">
+                <div class="tp-mp" id="p-identity">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span> Ce que j'ai compris</div>
+                    <div class="tp-mp-block"><div class="tp-mp-bt">🧭 Ce qu'elle cherche</div><div class="tp-mp-txt">Un environnement qui valorise sa créativité et son besoin de stimulation intellectuelle avec impact tangible.</div></div>
+                    <div class="tp-mp-quote">J'aimerais retrouver un sens, et me sentir à ma place. J'aimerais être stimulée intellectuellement et créativement…</div>
+                    <div class="tp-mp-coach"><span>💡</span><span><strong>Moment coachable :</strong> La difficulté à entrer dans l'événementiel ne vient pas d'elle — marché très fermé. Levier : rediriger l'énergie.</span></div>
+                </div>
+                <div class="tp-mp" id="p-skills">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Compétences transférables</div>
+                    <div class="tp-mp-block"><div class="tp-mp-bt">Identifiées depuis CV + audio</div><div class="tp-mp-txt">Coordination d'événements · Gestion de partenaires · Plannings complexes · Interface multi-acteurs</div></div>
+                    <div style="margin-top:7px;"><span class="tp-mp-tag">🎯 Organisation</span><span class="tp-mp-tag">🎨 Créativité</span><span class="tp-mp-tag">🤝 Coordination</span><span class="tp-mp-tag">💡 Recherche de solutions</span></div>
+                    <div class="tp-mp-quote">Le côté organisation et recherche de solutions, d'idées, l'aspect créatif, c'est ce qui me plaît le plus.</div>
+                </div>
+                <div class="tp-mp tp-active" id="p-tracks">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span> Pistes professionnelles</div>
+                    <div class="tp-mp-block">
+                        <div class="tp-mp-bt">💡 Coordinatrice Admin. en Crèche</div>
+                        <div class="tp-mp-txt">Organisation, événementiel, interface CAF/mairies — pas de soins d'enfants.</div>
+                        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">1 900–2 400€ net</span>
+                            <span class="tp-mp-stat">6 mois formation</span>
+                            <span class="tp-mp-stat">48% offres région</span>
+                        </div>
+                    </div>
+                    <div class="tp-mp-block" style="opacity:0.6;">
+                        <div class="tp-mp-bt">🏠 Coord. Habitat Social</div>
+                        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">2 200–2 800€ net</span>
+                            <span class="tp-mp-stat">2-3 mois</span>
+                            <span class="tp-mp-stat">CDI stable</span>
+                        </div>
+                    </div>
+                    <div class="tp-mp-block" style="opacity:0.35;">
+                        <div class="tp-mp-bt">🏥 Assistante Gestion EHPAD</div>
+                        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+                            <span class="tp-mp-stat">1 900–2 400€ net</span>
+                            <span class="tp-mp-stat">1-2 mois</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tp-mp" id="p-plan">
+                    <div class="tp-mp-title"><span class="tp-ic"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span> Plan d'action</div>
+                    <div class="tp-mp-block-gold"><div class="tp-mp-bt">Phase 1 — Comprendre le terrain</div><div class="tp-mp-txt">✓ Cartographier les structures locales<br>✓ Échanger avec 2-3 professionnels en poste<br>✓ Identifier les compétences transférables</div></div>
+                    <div class="tp-mp-block-gold" style="opacity:0.55;"><div class="tp-mp-bt">Phase 2 — Acquisition de compétences</div><div class="tp-mp-txt">✓ Formations utiles + financements possibles</div></div>
+                    <div class="tp-mp-block-gold" style="opacity:0.3;"><div class="tp-mp-bt">Phase 3 — Positionnement</div><div class="tp-mp-txt">✓ CV adapté · Pitch · Profil LinkedIn</div></div>
+                </div>
+            </div>
+        </div>
+        </div>
+<script nonce="{{ g.nonce }}">
+(function () {
+    'use strict';
+    // Onglets de l'aperçu
+    document.querySelectorAll('.tp-mockup').forEach(function (mock) {
+        var tabs = [].slice.call(mock.querySelectorAll('.tp-mockup-tab'));
+        tabs.forEach(function (t) {
+            t.addEventListener('click', function () {
+                tabs.forEach(function (x) { x.classList.remove('tp-active'); x.setAttribute('aria-pressed', 'false'); });
+                mock.querySelectorAll('.tp-mp').forEach(function (x) { x.classList.remove('tp-active'); });
+                t.classList.add('tp-active');
+                t.setAttribute('aria-pressed', 'true');
+                var panel = mock.querySelector('#p-' + t.dataset.p);
+                if (panel) panel.classList.add('tp-active');
+            });
+        });
+    });
+})();
+</script>

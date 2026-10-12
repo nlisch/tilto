@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Dossier envoyé · Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}
+{% include "pro/_pro_css.html" %}
+<style>
+.tilto-pro-app .tpe-check { width: 56px; height: 56px; border-radius: 50%; background: var(--tp-primary-light); color: var(--tp-primary); display: flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpe-title { margin-top: 22px !important; font-size: clamp(2.2rem, 5vw, 2.8rem) !important; }
+.tilto-pro-app .tpe-lead { margin-top: 14px !important; font-size: 1.12rem; color: var(--tp-muted); }
+.tilto-pro-app .tpe-next { margin-top: 36px; }
+.tilto-pro-app .tpe-links { margin-top: 16px; display: flex; flex-direction: column; gap: 14px; }
+.tilto-pro-app .tpe-links form { margin: 0; }
+.tilto-pro-app .tpe-link { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: flex; justify-content: space-between; gap: 16px; align-items: center; color: var(--tp-ink) !important; border: 1px solid var(--tp-line); border-radius: 12px; padding: 16px 18px; min-height: 44px; font-family: 'DM Sans', system-ui, sans-serif; text-decoration: none; transition: border-color 0.2s; }
+.tilto-pro-app .tpe-link:hover { border-color: var(--tp-primary); }
+.tilto-pro-app .tpe-link:focus-visible { outline: 2px solid var(--tp-primary); outline-offset: 2px; }
+.tilto-pro-app .tpe-link strong { display: block; }
+.tilto-pro-app .tpe-link small { font-size: 0.9rem; color: var(--tp-muted); }
+.tilto-pro-app .tpe-link .tpe-arrow { font-weight: 700; color: var(--tp-primary); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.nonce }}">
+(function () {
+    // Une seule fois par dossier, même si la page est rechargée
+    var key = 'tp_sent_{{ dossier.id }}';
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { /* stockage indisponible */ }
+    window.tpTrack('pro_dossier_submitted', { kind: '{{ dossier.kind or '' }}', is_free: {{ 'true' if dossier.is_free else 'false' }},
+        recording: '{{ 'fichier' if dossier.audio_path else ('lien' if dossier.recording_url else 'transcription') }}' });
+})();
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpa-narrow">
+    <div class="tpe-check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></div>
+    <h1 class="tpe-title">C'est parti&nbsp;!</h1>
+    <p class="tpe-lead">Votre dossier arrive sous 48&nbsp;h. On vous prévient par email&nbsp;: vous n'avez rien d'autre à faire.</p>
+
+    <section class="tpa-card tpe-next">
+      <h2>En attendant</h2>
+      <div class="tpe-links">
+        {% if has_example %}
+        <a class="tpe-link" href="{{ url_for('pro.example') }}" target="_blank" rel="noopener">
+          <span><strong>Voir un exemple de dossier complet</strong><small>Pour savoir à quoi vous attendre.</small></span>
+          <span class="tpe-arrow" aria-hidden="true">→</span>
+        </a>
+        {% endif %}
+        {% if account.credits > 0 %}
+        <form method="post" action="{{ url_for('pro.new_client') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="tpe-link">
+            <span><strong>Préparer le dossier d'un client</strong><small>{{ account.credits }} dossier{{ 's' if account.credits > 1 }} disponible{{ 's' if account.credits > 1 }}.</small></span>
+            <span class="tpe-arrow" aria-hidden="true">→</span>
+          </button>
+        </form>
+        {% else %}
+        <a class="tpe-link" href="{{ url_for('pro.dashboard') }}#debloquer">
+          <span><strong>Préparer le dossier d'un client</strong><small>49&nbsp;€&nbsp;HT par dossier, sans abonnement.</small></span>
+          <span class="tpe-arrow" aria-hidden="true">→</span>
+        </a>
+        {% endif %}
+      </div>
+    </section>
+
+    <a class="tpa-back" style="margin-top:24px;" href="{{ url_for('pro.dashboard') }}">← Retour à mes dossiers</a>
+  </div>
+</div>
+{% endblock %}

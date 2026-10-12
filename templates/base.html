@@ -218,6 +218,7 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
 <body class="{% block body_class %}{% endblock %}">
     <!-- Header principal -->
     <header class="header-parallax">
+      {% block header_banner %}{% endblock %}
       <div class="container header-container">
           <a href="{{ url_for('auth.home') }}" class="logo">
               Tilto
@@ -251,10 +252,18 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                           </div>
                       </div>
                       -->
+                      {% if pro_nav and pro_nav.is_pro %}
+                      <a href="{{ url_for('pro.dashboard') }}" class="nav-link">
+                          <i class="fas fa-briefcase" style="margin-right: 6px;"></i>
+                          Espace Pro
+                      </a>
+                      {% endif %}
+                      {% if not pro_nav or pro_nav.show_personal %}
                       <a href="{{ url_for('dashboard.index') }}" class="nav-link">
                           <i class="fas fa-compass" style="margin-right: 6px;"></i>
                           {{ _('Mes pistes') }}
                       </a>
+                      {% endif %}
                       <a href="{{ url_for('user.my_account') }}" class="nav-link">
                           <i class="fas fa-cog" style="margin-right: 6px;"></i>
                           {{ _('Mon compte') }}
@@ -263,23 +272,23 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                   {% elif session.get('prelaunch_bypass') %}
                       <a href="{{ url_for('tokens.shop') }}" class="nav-link">{{ _('Boutique') }}</a>
                       <a href="{{ url_for('auth.signup') }}" class="nav-link cta">{{ _('M\'inscrire') }}</a>
-                  {% elif request.endpoint == 'tilto_pro' %}
-                  {# Landing /pro : un seul CTA vers le formulaire #}
-                  <a href="#essai" class="nav-link cta">Mon dossier gratuit</a>
+                  {% elif request.endpoint in ('tilto_pro', 'pro.cabinets') %}
+                  {# Landings /pro et /pro/cabinets : un seul CTA vers le formulaire #}
+                  <a href="#essai" class="nav-link cta">{{ 'Lancer un pilote' if request.endpoint == 'pro.cabinets' else 'Mon dossier gratuit' }}</a>
                   {% else %}
-                  <a href="{{ url_for('tilto_pro') }}" class="nav-link">Tilto Pro</a>
+                  <a href="{{ url_for('tilto_pro') }}" class="nav-link cta">Tilto Pro</a>
                   <a href="{{ url_for('auth.login') }}" class="nav-link">{{ _('Me connecter') }}</a>
                   {% endif %}
               </nav>
               {% endif %}
               
-              {% if request.endpoint != 'tilto_pro' %}
+              {% if request.endpoint not in ('tilto_pro', 'pro.cabinets') %}
               <div class="language-selector">
                   <a href="{{ url_for('set_language', lang_code='fr') }}" class="lang-link {% if g.lang_code == 'fr' %}active{% endif %}">FR</a>
               </div>
               {% endif %}
               
-              {% if not config.PRELAUNCH_MODE and (current_user.is_authenticated or request.endpoint != 'tilto_pro') %}
+              {% if not config.PRELAUNCH_MODE and (current_user.is_authenticated or request.endpoint not in ('tilto_pro', 'pro.cabinets')) %}
                   <button class="mobile-menu-btn" aria-label="Ouvrir le menu">
                       <i class="fas fa-bars"></i>
                   </button>
@@ -308,10 +317,18 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
         
         <div class="mobile-nav-links">
             {% if current_user.is_authenticated %}
+            {% if pro_nav and pro_nav.is_pro %}
+            <a href="{{ url_for('pro.dashboard') }}" class="mobile-nav-link">
+                <i class="fas fa-briefcase" style="margin-right: 10px; width: 20px; text-align: center;"></i>
+                Espace Pro
+            </a>
+            {% endif %}
+            {% if not pro_nav or pro_nav.show_personal %}
             <a href="{{ url_for('dashboard.index') }}" class="mobile-nav-link">
                 <i class="fas fa-compass" style="margin-right: 10px; width: 20px; text-align: center;"></i>
                 {{ _('Mes pistes') }}
             </a>
+            {% endif %}
             <a href="{{ url_for('user.my_account') }}" class="mobile-nav-link">
                 <i class="fas fa-cog" style="margin-right: 10px; width: 20px; text-align: center;"></i>
                 {{ _('Mon compte') }}
@@ -320,7 +337,7 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
                 <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>
                 {{ _('DÃ©connexion') }}
             </a>
-            {% elif request.endpoint != 'tilto_pro' %}
+            {% elif request.endpoint not in ('tilto_pro', 'pro.cabinets') %}
             <a href="{{ url_for('tilto_pro') }}" class="mobile-nav-link">
                 <i class="fas fa-briefcase" style="margin-right: 10px;"></i>
                 Tilto Pro
@@ -359,6 +376,10 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
     {% if (current_user.is_authenticated and current_user.user_status == 'admin' and session.get('two_factor_authenticated')) or session.get('prelaunch_bypass_token') %}
     <nav class="secondary-navbar">
         <p> CMS MODE : </p>
+        <a href="{{ url_for('pro.admin') }}" class="secondary-nav-link">
+            <i class="fas fa-briefcase" style="color: #A11857; margin-right: 6px;"></i>
+            Tilto Pro
+        </a>
         <a href="{{ url_for('images.image_handler') }}" class="secondary-nav-link">
             <i class="fas fa-image" style="color: #0073b1; margin-right: 6px;"></i>
             Gestion des Images
@@ -461,6 +482,7 @@ window.GOOGLE_ADS_CONVERSION_LABEL = '{{ GOOGLE_ADS_CONVERSION_LABEL }}';  // â†
               <h4><a href="{{ url_for('auth.home') }}" style="color: inherit; text-decoration: none;">Tilto.ai</a></h4>
               <ul>
                 <li><a href="{{ url_for('auth.about') }}">{{ _('Ã€ propos de nous') }}</a></li>
+                <li><a href="{{ url_for('tilto_pro') }}" style="color: #A11857; font-weight: 600;">Tilto Pro, pour les coachs</a></li>
               </ul>
             </div>
             <div class="footer-column">

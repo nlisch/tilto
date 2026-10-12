@@ -3,7 +3,7 @@ from flask_limiter.errors import RateLimitExceeded
 from flask_login import current_user
 from config import get_config, get_csp_policy
 from models import User, init_db, update_database
-from routes import auth_bp, quiz_bp, quiz_analysis_bp, user_bp, image_bp, video_bp, token_bp, coupons_bp, cookie_bp, audio_bp, lead_bp, dashboard_bp, audio_capsule_bp, admin_bp, chat_bp, async_analysis_bp, help_requests_bp, seo_bp
+from routes import auth_bp, quiz_bp, quiz_analysis_bp, user_bp, image_bp, video_bp, token_bp, coupons_bp, cookie_bp, audio_bp, lead_bp, dashboard_bp, audio_capsule_bp, admin_bp, chat_bp, async_analysis_bp, help_requests_bp, seo_bp, pro_bp
 import logging
 import google.cloud.logging
 from opentelemetry import trace
@@ -393,7 +393,9 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message = _('Veuillez vous connecter pour accéder à cette page.')
     login_manager.login_message_category = 'error'
-    login_manager.session_protection = "strong"
+    # « basic » : un changement d'IP (mobile qui passe de la 4G au wifi) ne déconnecte plus
+    # l'utilisateur (« strong » supprimait la session et le cookie « se souvenir de moi »).
+    login_manager.session_protection = "basic"
 
     # Compression
     Compress(app)
@@ -780,6 +782,7 @@ def create_app():
     app.register_blueprint(async_analysis_bp)
     app.register_blueprint(help_requests_bp)
     app.register_blueprint(seo_bp)
+    app.register_blueprint(pro_bp)
 
 
     @app.template_filter('status_badge_class')

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Rappels Tilto Pro{% endblock %}
+{% block body_class %}tilto-pro-app{% endblock %}
+{% block extra_head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block extra_css %}{% include "pro/_pro_css.html" %}{% endblock %}
+
+{% block content %}
+<div class="tpa">
+  <div class="tpa-wrap tpa-narrow">
+    <div class="tpa-card">
+      {% if done %}
+      <h1>C'est noté</h1>
+      <p class="tpa-sub">Vous ne recevrez plus de rappel pour votre dossier offert. Il reste disponible dans votre espace, quand vous voulez.</p>
+      {% else %}
+      <h1>Ne plus recevoir ces rappels&nbsp;?</h1>
+      <p class="tpa-sub">Vous ne recevrez plus d'email de rappel pour votre dossier offert. Les emails liés à vos dossiers (dossier prêt, par exemple) continuent.</p>
+      <form method="post" style="margin-top:20px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="tpa-btn tpa-btn--primary">Ne plus recevoir ces rappels</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
