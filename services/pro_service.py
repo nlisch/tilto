@@ -379,6 +379,9 @@ def list_clients_for_admin(account_id=None):
 
 def _hydrate(row):
     row['fiche'] = json.loads(row['fiche_json']) if row.get('fiche_json') else {}
+    # Enregistrement en plusieurs parties : la 1re dans audio_path, les suivantes ici
+    row['audio_extra'] = json.loads(row['audio_extra_json']) if row.get('audio_extra_json') else []
+    row['audio_parts'] = (1 if row.get('audio_path') else 0) + len(row['audio_extra'])
     row['status_label'] = STATUS_LABELS.get(row['status'], row['status'])
     return row
 
@@ -498,17 +501,22 @@ def _new_path(client, kind, filename):
     return f"pro/{client['pro_account_id']}/{client['id']}/{kind}-{uuid.uuid4().hex[:8]}{ext}"
 
 
-def _attach(client, kind, path, filename):
+def _attach(client, kind, path, filename, append=False, seconds=None):
     """Rattache un fichier déjà stocké au dossier. Retourne une erreur ou None.
+
+    Enregistrement (kind « audio ») : `append` ajoute une partie à la suite des
+    précédentes ; sinon le nouvel enregistrement remplace toutes les parties.
+    `seconds` : durée connue (enregistrement fait dans la page), cumulée.
 
     Verrou de ligne : deux envois simultanés ou un envoi pendant « Envoyer en analyse »
     ne doivent ni écraser un dossier parti en analyse, ni laisser de fichier orphelin.
     """
     assert kind in UPLOAD_KINDS  # nom de colonne : liste fermée
+    seconds = int(seconds) if seconds else None
     cur = _cursor()
     try:
         cur.execute(
-            f"SELECT {kind}_path AS old_path FROM pro_clients "
+            f"SELECT {kind}_path AS old_path, audio_extra_json, audio_seconds FROM pro_clients "
             "WHERE id = %s AND status IN ('fiche', 'audio') FOR UPDATE",
             (client['id'],),
         )
@@ -517,20 +525,40 @@ def _attach(client, kind, path, filename):
             current_app.mysql.connection.rollback()
             _delete_blob(path)
             return "Le dossier est parti en analyse : les fichiers ne sont plus modifiables."
-        cur.execute(
-            f"UPDATE pro_clients SET {kind}_path = %s, {kind}_filename = %s WHERE id = %s",
-            (path, filename[:255], client['id']),
-        )
+        old_paths = []
+        if kind == 'audio' and append and row['old_path']:
+            extra = json.loads(row['audio_extra_json']) if row['audio_extra_json'] else []
+            extra.append({'p': path, 'f': filename[:255], 's': seconds})
+            total = (row['audio_seconds'] or 0) + (seconds or 0) if (row['audio_seconds'] or seconds) else None
+            cur.execute(
+                "UPDATE pro_clients SET audio_extra_json = %s, audio_seconds = %s WHERE id = %s",
+                (json.dumps(extra, ensure_ascii=False), total, client['id']),
+            )
+        else:
+            if row['old_path']:
+                old_paths.append(row['old_path'])
+            if kind == 'audio':
+                old_paths += [e['p'] for e in (json.loads(row['audio_extra_json']) if row['audio_extra_json'] else [])]
+                cur.execute(
+                    "UPDATE pro_clients SET audio_path = %s, audio_filename = %s, audio_extra_json = NULL, "
+                    "audio_seconds = %s WHERE id = %s",
+                    (path, filename[:255], seconds, client['id']),
+                )
+            else:
+                cur.execute(
+                    f"UPDATE pro_clients SET {kind}_path = %s, {kind}_filename = %s WHERE id = %s",
+                    (path, filename[:255], client['id']),
+                )
         _commit()
-        old_path = row['old_path']
     finally:
         cur.close()
-    if old_path and old_path != path:
-        _delete_blob(old_path)
+    for old in old_paths:
+        if old != path:
+            _delete_blob(old)
     return None
 
 
-def save_upload(client, file_storage):
+def save_upload(client, file_storage, append=False, seconds=None):
     """Petit fichier envoyé au serveur (≤ 30 Mo). Retourne (kind, erreur)."""
     filename = file_storage.filename or ''
     data = file_storage.read()
@@ -541,14 +569,14 @@ def save_upload(client, file_storage):
         return kind, f"{filename} : fichier trop lourd pour cet envoi. Réessayez depuis la page du dossier."
     path = _new_path(client, kind, filename)
     _bucket().blob(path).upload_from_string(data, content_type=file_storage.mimetype or 'application/octet-stream')
-    return kind, _attach(client, kind, path, filename)
+    return kind, _attach(client, kind, path, filename, append=append, seconds=seconds)
 
 
 def _upload_serializer():
     return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt='tilto-pro-upload')
 
 
-def start_direct_upload(client, filename, size, content_type):
+def start_direct_upload(client, filename, size, content_type, append=False, seconds=None):
     """Gros fichier (vidéo…) : URL signée pour l'envoyer directement dans GCS, et jeton
     signé à renvoyer une fois l'envoi terminé. Retourne (infos, erreur)."""
     filename = os.path.basename(filename or '')[:255]
@@ -560,7 +588,8 @@ def start_direct_upload(client, filename, size, content_type):
     url = _bucket().blob(path).generate_signed_url(
         version='v4', expiration=UPLOAD_LINK_VALIDITY, method='PUT', content_type=content_type,
     )
-    token = _upload_serializer().dumps({'c': client['id'], 'k': kind, 'p': path, 'f': filename})
+    token = _upload_serializer().dumps({'c': client['id'], 'k': kind, 'p': path, 'f': filename,
+                                        'a': bool(append), 's': int(seconds) if seconds else None})
     return {'url': url, 'token': token, 'kind': kind, 'content_type': content_type}, None
 
 
@@ -584,7 +613,8 @@ def finish_direct_upload(client, token):
     if size > max_bytes_for(data['k']):
         _delete_blob(data['p'])
         return data['k'], data['f'], f"{data['f']} : fichier trop lourd."
-    return data['k'], data['f'], _attach(client, data['k'], data['p'], data['f'])
+    return data['k'], data['f'], _attach(client, data['k'], data['p'], data['f'],
+                                         append=data.get('a', False), seconds=data.get('s'))
 
 
 def save_recording_url(client, url):
@@ -834,16 +864,17 @@ def purge_expired_files():
     purged = 0
     try:
         cur.execute("""
-            SELECT id, audio_path, cv_path, transcript_path FROM pro_clients
+            SELECT id, audio_path, audio_extra_json, cv_path, transcript_path FROM pro_clients
             WHERE delivered_at IS NOT NULL AND files_purged_at IS NULL
               AND delivered_at < NOW() - INTERVAL %s DAY
         """, (FILES_RETENTION_DAYS,))
         for row in cur.fetchall():
-            for path in (row['audio_path'], row['cv_path'], row['transcript_path']):
+            extra = [e['p'] for e in json.loads(row['audio_extra_json'])] if row['audio_extra_json'] else []
+            for path in [row['audio_path'], row['cv_path'], row['transcript_path']] + extra:
                 if path:
                     _delete_blob(path)
             cur.execute("""
-                UPDATE pro_clients SET audio_path = NULL, cv_path = NULL, transcript_path = NULL,
+                UPDATE pro_clients SET audio_path = NULL, audio_extra_json = NULL, cv_path = NULL, transcript_path = NULL,
                        recording_url = NULL, files_purged_at = NOW()
                 WHERE id = %s
             """, (row['id'],))

@@ -354,7 +354,16 @@ def autosave(client_id):
     return jsonify({'success': True})
 
 
-def _save_files(dossier, files):
+def _upload_options():
+    """Envoi depuis la page : « à la suite » de l'enregistrement existant, et durée."""
+    try:
+        seconds = max(0, min(int(float(request.form.get('duration') or 0)), 6 * 3600)) or None
+    except ValueError:
+        seconds = None
+    return {'append': request.form.get('append') == '1', 'seconds': seconds}
+
+
+def _save_files(dossier, files, append=False, seconds=None):
     """Range chaque fichier déposé (enregistrement, transcription ou CV) d'après son
     nom. Retourne les erreurs."""
     errors = []
@@ -362,7 +371,7 @@ def _save_files(dossier, files):
         if not file or not file.filename:
             continue
         try:
-            _, error = pro_service.save_upload(dossier, file)
+            _, error = pro_service.save_upload(dossier, file, append=append, seconds=seconds)
         except Exception as e:
             logger.error(f"Upload Tilto Pro impossible (dossier {dossier['id']}): {e}", exc_info=True)
             error = f"{file.filename} : l'envoi a échoué. Réessayez dans un instant."
@@ -384,7 +393,7 @@ def upload(client_id):
         flash(message, 'warning')
         return redirect(url_for('pro.client', client_id=client_id))
 
-    errors = _save_files(dossier, request.files.getlist('files'))
+    errors = _save_files(dossier, request.files.getlist('files'), **_upload_options())
     if _wants_json():
         return jsonify(dict(_files_state(client_id), success=not errors, errors=errors)), (200 if not errors else 400)
     for e in errors:
@@ -394,8 +403,10 @@ def upload(client_id):
 
 def _files_state(client_id):
     dossier = pro_service.get_client(client_id)
-    return {kind: (dossier.get(f'{kind}_filename') if dossier.get(f'{kind}_path') else None)
-            for kind in pro_service.UPLOAD_KINDS}
+    state = {kind: (dossier.get(f'{kind}_filename') if dossier.get(f'{kind}_path') else None)
+             for kind in pro_service.UPLOAD_KINDS}
+    state.update(audio_parts=dossier['audio_parts'], audio_seconds=dossier.get('audio_seconds'))
+    return state
 
 
 @pro_bp.route('/pro/clients/<int:client_id>/fichiers/demarrer', methods=['POST'])
@@ -411,7 +422,7 @@ def upload_start(client_id):
         size = 0
     try:
         info, error = pro_service.start_direct_upload(
-            dossier, request.form.get('filename'), size, request.form.get('content_type'))
+            dossier, request.form.get('filename'), size, request.form.get('content_type'), **_upload_options())
     except Exception as e:
         logger.error(f"URL d'envoi Tilto Pro impossible (dossier {client_id}): {e}", exc_info=True)
         info, error = None, "L'envoi n'a pas pu démarrer. Réessayez dans un instant."
@@ -641,12 +652,21 @@ def _admin_back():
 @login_required
 @admin_required
 def admin_file(client_id, kind):
+    """Téléchargement d'un fichier du dossier (?partie=2… pour les suites d'enregistrement)."""
     dossier = pro_service.get_client(client_id)
     if not dossier or kind not in pro_service.UPLOAD_KINDS or not dossier.get(f'{kind}_path'):
         abort(404)
-    name = dossier.get(f'{kind}_filename') or f'{kind}-{client_id}'
+    path, name = dossier[f'{kind}_path'], dossier.get(f'{kind}_filename') or f'{kind}-{client_id}'
+    part = request.args.get('partie', type=int) or 1
+    if kind == 'audio' and part > 1:
+        if part - 2 >= len(dossier['audio_extra']):
+            abort(404)
+        extra = dossier['audio_extra'][part - 2]
+        path, name = extra['p'], f"partie {part} - {extra['f']}"
+    elif kind == 'audio' and dossier['audio_parts'] > 1:
+        name = f"partie 1 - {name}"
     # Préfixé par le prénom du client pour retrouver le fichier dans les téléchargements
-    return redirect(pro_service.signed_url(dossier[f'{kind}_path'], download_name=f"{dossier['label']} - {name}"))
+    return redirect(pro_service.signed_url(path, download_name=f"{dossier['label']} - {name}"))
 
 
 @pro_bp.route('/admin/pro/clients/<int:client_id>/analyse', methods=['POST'])

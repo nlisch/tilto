@@ -1169,6 +1169,8 @@ def init_db(force_init=False):
             fiche_json TEXT NULL COMMENT 'Fiche d identité (JSON)',
             audio_path VARCHAR(500) NULL COMMENT 'Chemin GCS de l enregistrement (audio ou vidéo)',
             audio_filename VARCHAR(255) NULL,
+            audio_extra_json TEXT NULL COMMENT 'Parties suivantes de l enregistrement (JSON)',
+            audio_seconds INT NULL COMMENT 'Durée totale des enregistrements faits dans la page',
             cv_path VARCHAR(500) NULL COMMENT 'Chemin GCS du CV',
             cv_filename VARCHAR(255) NULL,
             transcript_path VARCHAR(500) NULL COMMENT 'Chemin GCS de la transcription (à la place de l enregistrement)',

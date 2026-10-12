@@ -83,7 +83,9 @@
               <td class="tpx-links">
                 {% if c.files_purged_at %}<span class="tpx-muted">Supprimés le {{ c.files_purged_at.strftime('%d/%m/%Y') }}</span>
                 {% else %}
-                  {% if c.audio_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio') }}">⬇ Enregistrement<br><span class="tpx-muted">{{ c.audio_filename }}</span></a>{% endif %}
+                  {% if c.audio_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio') }}">⬇ Enregistrement{{ ' (partie 1)' if c.audio_extra }}<br><span class="tpx-muted">{{ c.audio_filename }}</span></a>
+                  {% for e in c.audio_extra %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='audio', partie=loop.index + 1) }}">⬇ Enregistrement (partie {{ loop.index + 1 }})<br><span class="tpx-muted">{{ e.f }}</span></a>{% endfor %}
+                  {% if c.audio_seconds %}<span class="tpx-muted">Durée enregistrée dans la page : {{ (c.audio_seconds / 60)|round|int }} min</span>{% endif %}{% endif %}
                   {% if c.recording_url %}<a href="{{ c.recording_url }}" target="_blank" rel="noopener noreferrer">↗ Lien de l'enregistrement<br><span class="tpx-muted">{{ c.recording_url|truncate(48, True, '…') }}</span></a>{% endif %}
                   {% if c.transcript_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='transcript') }}">⬇ Transcription<br><span class="tpx-muted">{{ c.transcript_filename }}</span></a>{% endif %}
                   {% if c.cv_path %}<a href="{{ url_for('pro.admin_file', client_id=c.id, kind='cv') }}">⬇ CV<br><span class="tpx-muted">{{ c.cv_filename }}</span></a>{% endif %}

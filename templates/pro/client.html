@@ -58,6 +58,14 @@
 .tilto-pro-app .tpc-rec-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
 @media (prefers-reduced-motion: reduce) { .tilto-pro-app .tpc-mic, .tilto-pro-app .tpc-mic--recording { animation: none; } }
 .tilto-pro-app .tpc-alt { margin-top: 18px; }
+.tilto-pro-app .tpc-rec-done { margin-top: 8px; border-radius: 14px; background: var(--tp-ok-pale); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.tilto-pro-app .tpc-rec-done[hidden] { display: none; }
+.tilto-pro-app .tpc-done-line { display: flex; gap: 10px; align-items: center; font-weight: 700; color: var(--tp-ok); margin: 0 !important; }
+.tilto-pro-app .tpc-done-check { width: 26px; height: 26px; border-radius: 50%; background: var(--tp-ok); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; flex: 0 0 auto; }
+.tilto-pro-app .tpc-done-warn { margin: 0 !important; font-size: 0.92rem; color: #8A5A00; }
+.tilto-pro-app .tpc-done-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.tilto-pro-app .tpc-done-actions .tpa-btn { gap: 10px; }
+.tilto-pro-app .tpc-dot { width: 10px; height: 10px; border-radius: 50%; background: #E0242B; }
 .tilto-pro-app .tpc-consent { margin-top: 12px; display: flex; justify-content: center; }
 .tilto-pro-app .tpc-consent .tpa-check { font-weight: 600; color: var(--tp-ink); }
 .tilto-pro-app .tpc-prep { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--tp-line); text-align: left; }
@@ -179,7 +187,15 @@
 
 {% macro rec_zone() %}
 {# Même enregistreur que la page d'accueil. Affiché par le JS si le navigateur sait enregistrer. #}
-<div class="tpc-rec js-rec" hidden>
+<div class="tpc-rec js-rec" hidden data-has-audio="{{ '1' if dossier.audio_path }}" data-parts="{{ dossier.audio_parts }}" data-seconds="{{ dossier.audio_seconds or '' }}" data-name="{{ dossier.audio_filename or '' }}">
+  <div class="tpc-rec-done js-rec-done" hidden role="status">
+    <p class="tpc-done-line"><span class="tpc-done-check" aria-hidden="true">✓</span><span>Enregistrement envoyé · <span class="js-rec-summary"></span></span></p>
+    <p class="tpc-done-warn js-rec-short" hidden></p>
+    <div class="tpc-done-actions">
+      <button type="button" class="tpa-btn tpa-btn--ghost js-rec-continue"><span class="tpc-dot" aria-hidden="true"></span>Continuer l'enregistrement</button>
+      <button type="button" class="tpc-link-btn js-rec-restart">Recommencer</button>
+    </div>
+  </div>
   <div class="tpc-mic-zone js-rec-idle">
     <button type="button" class="tpc-mic js-rec-start" aria-label="Enregistrer maintenant" data-track="pro_recording_started">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
@@ -226,14 +242,15 @@
 
 {% macro files_list() %}
 <ul class="tpc-files js-files" aria-live="polite">
-  <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not dossier.audio_path and not dossier.recording_url }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
+  <li class="{{ 'is-ok' if dossier.audio_path else 'is-todo' }}" data-kind="audio" {{ 'hidden' if live and not (dossier.recording_url and not dossier.audio_path) }}><span aria-hidden="true">{{ '✓' if dossier.audio_path else '○' }}</span><span>Enregistrement&nbsp;: <span class="js-name">{{ dossier.audio_filename if dossier.audio_path else ('lien ci-dessus' if dossier.recording_url else 'à déposer') }}</span></span></li>
   <li class="is-ok" data-kind="transcript" {{ 'hidden' if not dossier.transcript_path }}><span aria-hidden="true">✓</span><span>Transcription&nbsp;: <span class="js-name">{{ dossier.transcript_filename or '' }}</span></span></li>
   <li class="{{ 'is-ok' if dossier.cv_path else 'is-todo' }}" data-kind="cv" {{ 'hidden' if live and not dossier.cv_path }}><span aria-hidden="true">{{ '✓' if dossier.cv_path else '○' }}</span><span>CV&nbsp;: <span class="js-name">{{ dossier.cv_filename if dossier.cv_path else 'facultatif' }}</span></span></li>
 </ul>
 {% endmacro %}
 
 {% macro consent_box() %}
-<label class="tpa-check"><input type="checkbox" class="js-consent" name="consent" value="1" required {{ 'checked' if request.form.get('consent') == '1' }}>
+{# Déjà enregistré dans la page : l'accord a été coché avant d'enregistrer #}
+<label class="tpa-check"><input type="checkbox" class="js-consent" name="consent" value="1" required {{ 'checked' if request.form.get('consent') == '1' or (live and dossier.audio_path) }}>
   {{ "Mon client a accepté que l'échange soit enregistré et analysé" if kind == 'enregistrement' else "La personne enregistrée est d'accord" }}</label>
 {% endmacro %}
 
@@ -356,7 +373,7 @@
         {% endfor %}
         <div class="is-wide"><dt>Fichiers</dt><dd>
           {% if dossier.files_purged_at %}Supprimés 30 jours après la livraison du dossier, comme prévu.
-          {% else %}{{ [dossier.audio_filename if dossier.audio_path, 'lien de l\'enregistrement' if dossier.recording_url, dossier.transcript_filename if dossier.transcript_path, dossier.cv_filename if dossier.cv_path]|select|join(' · ') }}{% endif %}
+          {% else %}{{ [(dossier.audio_parts ~ ' parties d\'enregistrement') if dossier.audio_parts > 1 else (dossier.audio_filename if dossier.audio_path), 'lien de l\'enregistrement' if dossier.recording_url, dossier.transcript_filename if dossier.transcript_path, dossier.cv_filename if dossier.cv_path]|select|join(' · ') }}{% endif %}
         </dd></div>
       </dl>
     </section>
@@ -433,8 +450,10 @@
         var first = Array.prototype.find.call(after.querySelectorAll('input[required]'), function (i) { return !i.value; });
         if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 600);
     }
+    var onAudioSaved = null;  // défini par l'enregistreur de la page
     function applyState(res) {
         ['audio', 'transcript', 'cv'].forEach(function (k) { if (res[k]) setRow(k, 'ok', res[k]); });
+        if (res.audio && onAudioSaved) { row('audio').hidden = true; onAudioSaved(res); }
         if (res.audio || res.transcript) revealAfter();
     }
     function showError(message) {
@@ -466,10 +485,11 @@
     }
 
     // Retourne une promesse : true si le fichier est bien rattaché au dossier
-    function upload(file, method) {
-        return new Promise(function (resolve) { uploadInner(file, method, resolve); });
+    // opts : { append: '1', duration: secondes } pour un enregistrement fait dans la page
+    function upload(file, method, opts) {
+        return new Promise(function (resolve) { uploadInner(file, method, opts || {}, resolve); });
     }
-    function uploadInner(file, method, resolve) {
+    function uploadInner(file, method, opts, resolve) {
         var kind = kindOf(file.name);
         if (!kind) { showError(file.name + ' : format non accepté. Déposez un enregistrement (audio ou vidéo), une transcription ou un CV (PDF, Word).'); resolve(false); return; }
         if (file.size > rules.max[kind]) { showError(file.name + ' : fichier trop lourd (' + human(rules.max[kind]) + ' max).'); resolve(false); return; }
@@ -497,7 +517,7 @@
         }
 
         if (file.size <= rules.server_max) {
-            var req = post(form.dataset.uploadUrl, {}, done);
+            var req = post(form.dataset.uploadUrl, opts, done);
             req.data.append('files', file);
             req.xhr.upload.onprogress = progress;
             req.xhr.send(req.data);
@@ -505,7 +525,7 @@
         }
         // Gros fichier : 1. URL signée, 2. envoi direct dans le stockage, 3. confirmation
         var type = file.type || 'application/octet-stream';
-        var start = post(form.dataset.startUrl, { filename: file.name, size: file.size, content_type: type }, function (error, res) {
+        var start = post(form.dataset.startUrl, Object.assign({ filename: file.name, size: file.size, content_type: type }, opts), function (error, res) {
             if (error) { done(error, res); return; }
             var put = new XMLHttpRequest();
             put.open('PUT', res.url);
@@ -631,9 +651,25 @@
             var cleanType = (type || 'audio/webm').split(';')[0];
             return new File(blobs, name, { type: cleanType });
         }
+        var done = rec.querySelector('.js-rec-done'), appendMode = false;
         function show(state) {
             idle.hidden = state !== 'idle'; live.hidden = state !== 'live'; recover.hidden = state !== 'recover';
+            done.hidden = state !== 'done';
         }
+        function minutes(sec) { return sec < 60 ? 'moins d’1 min' : Math.round(sec / 60) + ' min'; }
+        // Résumé : « 2 parties · 14 min », et alerte si c'est court
+        function showDone(parts, seconds, name) {
+            parts = parseInt(parts, 10) || 1; seconds = parseInt(seconds, 10) || 0;
+            var bits = [];
+            if (parts > 1) bits.push(parts + ' parties');
+            if (seconds) bits.push(minutes(seconds));
+            rec.querySelector('.js-rec-summary').textContent = bits.length ? bits.join(' · ') : (name || '');
+            var shortEl = rec.querySelector('.js-rec-short');
+            shortEl.hidden = !(seconds && seconds < 180);
+            shortEl.textContent = 'Enregistrement court (' + minutes(seconds) + ') : complétez-le si vous pouvez.';
+            show('done');
+        }
+        onAudioSaved = function (res) { showDone(res.audio_parts, res.audio_seconds, res.audio); };
         function keepAwake() {
             if (!('wakeLock' in navigator) || !recorder) return;
             navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; }).catch(function () { /* refusé */ });
@@ -642,11 +678,11 @@
             if (document.visibilityState === 'visible' && recorder && recorder.state === 'recording') keepAwake();
         });
 
-        function offerRecovery(blobs, type, started, seconds, message) {
+        function offerRecovery(blobs, type, started, seconds, message, append) {
             var file = fileFrom(blobs, type, started);
             rec.querySelector('.js-rec-recover-text').textContent = message
                 || ('Un enregistrement ' + (seconds < 60 ? 'de moins d’une minute' : 'de ' + Math.round(seconds / 60) + ' min') + ' n’a pas encore été envoyé.');
-            rec.querySelector('.js-rec-resend').onclick = function () { sendRecording(file); };
+            rec.querySelector('.js-rec-resend').onclick = function () { sendRecording(file, append, seconds); };
             rec.querySelector('.js-rec-save').onclick = function () {
                 var a = document.createElement('a');
                 a.href = URL.createObjectURL(file); a.download = file.name;
@@ -654,17 +690,21 @@
             };
             rec.querySelector('.js-rec-discard').onclick = function () {
                 if (!window.confirm('Supprimer définitivement cet enregistrement ?')) return;
-                dbClear().then(function () { show('idle'); });
+                dbClear().then(function () { initialState(); });
             };
             show('recover');
         }
 
-        function sendRecording(file) {
-            show('idle');
-            upload(file, 'enregistrement_page').then(function (ok) {
+        function sendRecording(file, append, seconds) {
+            show('none');
+            upload(file, 'enregistrement_page', { append: append ? '1' : '', duration: Math.round(seconds || 0) }).then(function (ok) {
                 if (ok) { dbClear(); return; }
-                offerRecovery([file], file.type, null, 0, 'L’envoi de l’enregistrement a échoué. Il est gardé sur cet appareil : réessayez dès que la connexion revient.');
+                offerRecovery([file], file.type, null, seconds, 'L’envoi de l’enregistrement a échoué. Il est gardé sur cet appareil : réessayez dès que la connexion revient.', append);
             });
+        }
+        function initialState() {
+            if (rec.dataset.hasAudio) showDone(rec.dataset.parts, rec.dataset.seconds, rec.dataset.name);
+            else show('idle');
         }
 
         var startBtn = rec.querySelector('.js-rec-start'), hint = rec.querySelector('.js-rec-hint');
@@ -709,7 +749,19 @@
             rafId = null; audioCtx = null;
         }
 
-        startBtn.addEventListener('click', function () {
+        rec.querySelector('.js-rec-continue').addEventListener('click', function () {
+            if (consent && !consent.checked) { consent.focus(); showError("Cochez « La personne enregistrée est d'accord » pour continuer."); return; }
+            startRecording(true);
+        });
+        rec.querySelector('.js-rec-restart').addEventListener('click', function () {
+            if (!window.confirm('Recommencer ? L’enregistrement déjà envoyé sera remplacé.')) return;
+            if (consent && !consent.checked) { consent.focus(); showError("Cochez « La personne enregistrée est d'accord » pour recommencer."); return; }
+            startRecording(false);
+        });
+        startBtn.addEventListener('click', function () { startRecording(false); });
+
+        function startRecording(append) {
+            appendMode = append;
             list.querySelectorAll('.js-err').forEach(function (li) { li.remove(); });
             navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } })
                 .then(function (s) {
@@ -725,7 +777,7 @@
                     recorder.addEventListener('dataavailable', function (e) {
                         if (!e.data || !e.data.size) return;
                         chunks.push(e.data);
-                        dbAdd({ d: DOSSIER, t: startedAt, m: mime, b: e.data });
+                        dbAdd({ d: DOSSIER, t: startedAt, m: mime, b: e.data, a: appendMode });
                     });
                     recorder.addEventListener('stop', onStop);
                     recorder.start(5000);
@@ -743,7 +795,7 @@
                 .catch(function () {
                     showError('Micro inaccessible : autorisez le micro pour ce site dans votre navigateur, ou déposez un fichier.');
                 });
-        });
+        }
         rec.querySelector('.js-rec-stop').addEventListener('click', function () {
             if (recorder && recorder.state !== 'inactive') recorder.stop();
         });
@@ -762,18 +814,19 @@
             if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
             window.tpTrack('pro_recording_stopped', { duration_s: Math.round(seconds) });
             if (seconds < 5 || !chunks.length) {
-                dbClear(); show('idle');
+                dbClear(); initialState();
                 showError('Enregistrement trop court : appuyez à nouveau sur « Enregistrer maintenant ».');
                 return;
             }
-            sendRecording(fileFrom(chunks, mime, startedAt));
+            sendRecording(fileFrom(chunks, mime, startedAt), appendMode, seconds);
         }
 
         // Enregistrement resté sur l'appareil (page fermée, envoi raté…) : on propose de l'envoyer
+        initialState();
         dbLoad().then(function (items) {
             if (!items.length || recorder) return;
             var blobs = items.map(function (i) { return i.b; });
-            offerRecovery(blobs, items[0].m, items[0].t, items.length * 5);
+            offerRecovery(blobs, items[0].m, items[0].t, items.length * 5, null, items[0].a);
         });
     }
 
