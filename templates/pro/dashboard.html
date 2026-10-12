@@ -28,12 +28,19 @@
 .tilto-pro-app .tpd-pending { scroll-margin-top: 100px; }
 .tilto-pro-app .tpd-pending strong { color: var(--tp-white); }
 .tilto-pro-app .tpd-pending-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15); color: var(--tp-white); display: flex; align-items: center; justify-content: center; }
+.tilto-pro-app .tpd-go { margin-top: auto; align-self: flex-start; pointer-events: none; }
+.tilto-pro-app .tpd-price-note { margin-top: 18px !important; font-size: 0.9rem; color: var(--tp-muted); }
 .tilto-pro-app .tpd-price { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 800; color: var(--tp-gold-light); }
 </style>
 {% endblock %}
 
 {% block content %}
 {% set step_index = {'fiche': 0, 'audio': 0, 'analyse': 2, 'pret': 3} %}
+{# Le dossier payant ne se propose qu'une fois le dossier offert livré : avant, le coach
+   n'a encore rien vu du produit (ou s'il a déjà des crédits / une demande en cours) #}
+{% set has_delivered = clients|selectattr('status', 'equalto', 'pret')|list %}
+{% set has_paid = clients|rejectattr('is_free')|list %}
+{% set show_unlock = has_delivered or has_paid or account.credits > 0 or account.credit_requested_at %}
 <div class="tpa">
   <div class="tpa-wrap">
     <div class="tpd-head">
@@ -65,10 +72,14 @@
           {% elif c.status == 'analyse' %}Dossier attendu sous 48&nbsp;h
           {% else %}<strong>Dossier disponible</strong>{% endif %}
         </p>
+        {% if c.status in ('fiche', 'audio') %}<span class="tpa-btn tpa-btn--primary tpd-go">{{ 'Commencer mon dossier' if not c.kind else 'Reprendre mon dossier' }}</span>
+        {% elif c.status == 'pret' %}<span class="tpa-btn tpa-btn--ghost tpd-go">Voir le dossier</span>{% endif %}
       </a>
       {% endfor %}
 
-      {% if account.credits > 0 %}
+      {% if not show_unlock %}
+      {# Rien de payant tant que le dossier offert n'est pas livré #}
+      {% elif account.credits > 0 %}
       <div class="tpa-card tpd-new" id="debloquer">
         <h2>Nouveau client</h2>
         <p class="tpd-next">{{ account.credits }} dossier{{ 's' if account.credits > 1 }} disponible{{ 's' if account.credits > 1 }}.</p>
@@ -99,6 +110,9 @@
       {% endif %}
       {% endif %}
     </div>
+    {% if not show_unlock %}
+    <p class="tpd-price-note" id="debloquer">Après votre dossier offert&nbsp;: 49&nbsp;€ HT par dossier, sans abonnement.</p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

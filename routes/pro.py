@@ -339,6 +339,10 @@ def start(client_id):
 @pro_required
 def dashboard():
     clients = pro_service.list_clients(g.pro_account['id'])
+    # Un seul dossier, pas encore envoyé : le tableau de bord ne servirait qu'à cliquer
+    # dessus. On ouvre directement le dossier (ou l'écran de choix).
+    if len(clients) == 1 and clients[0]['status'] in DRAFT_STATUSES:
+        return redirect(url_for('pro.client', client_id=clients[0]['id']))
     return render_template('pro/dashboard.html', clients=clients, account=g.pro_account,
                            has_example=pro_service.has_example())
 
