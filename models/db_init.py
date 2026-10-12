@@ -1187,6 +1187,8 @@ def init_db(force_init=False):
             share_views INT NOT NULL DEFAULT 0,
             share_last_view_at DATETIME NULL,
             delivered_at DATETIME NULL COMMENT 'Mise à disposition de l analyse',
+            coach_views INT NOT NULL DEFAULT 0 COMMENT 'Ouvertures du dossier livré par le coach',
+            coach_last_view_at DATETIME NULL,
             files_purged_at DATETIME NULL COMMENT 'Suppression audio + CV (30 j après livraison)',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

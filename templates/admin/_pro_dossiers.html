@@ -13,6 +13,9 @@
 .tilto-pro-app .tpx-actions { display: flex; flex-direction: column; gap: 8px; min-width: 230px; }
 .tilto-pro-app .tpx-actions form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0; }
 .tilto-pro-app .tpx-actions input[type="file"] { font-size: 0.82rem; max-width: 220px; }
+.tilto-pro-app .tpx-state { font-size: 0.82rem; font-weight: 700; }
+.tilto-pro-app .tpx-state--todo { color: #8A5A00; }
+.tilto-pro-app .tpx-state--ok { color: var(--tp-ok); }
 .tilto-pro-app .tpx-btn { min-height: 36px; padding: 0 12px; font-size: 0.85rem; border-radius: 8px; }
 .tilto-pro-app .tpx-links { min-width: 170px; }
 .tilto-pro-app .tpx-transcript { margin: 4px 0 8px; font-size: 0.85rem; }
@@ -108,16 +111,31 @@
               </td>
               <td>
                 <div class="tpx-actions">
-                  {% if c.analysis_path %}<a href="{{ url_for('pro.analysis', client_id=c.id) }}" target="_blank" rel="noopener">Voir l'analyse</a>{% endif %}
+                  {% if c.status not in ('analyse', 'pret') %}
+                  <span class="tpx-muted">En attente du coach</span>
+                  {% else %}
+                  {% if c.status == 'analyse' and c.analysis_path %}
+                  {# Déposée, pas encore livrée : on prévisualise puis on livre #}
+                  <span class="tpx-state tpx-state--todo">Déposée, pas encore livrée</span>
+                  <a href="{{ url_for('pro.analysis', client_id=c.id) }}" target="_blank" rel="noopener">👁 Prévisualiser</a>
+                  <form method="post" action="{{ url_for('pro.admin_deliver', client_id=c.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ next_url }}">
+                    <button type="submit" class="tpa-btn tpa-btn--primary tpx-btn">Livrer au coach (email)</button>
+                  </form>
+                  {% elif c.status == 'pret' %}
+                  <span class="tpx-state tpx-state--ok">Livrée le {{ c.delivered_at.strftime('%d/%m à %H:%M') }}</span>
+                  <a href="{{ url_for('pro.analysis', client_id=c.id) }}" target="_blank" rel="noopener">👁 Voir l'analyse</a>
+                  <span class="tpx-muted">{% if c.coach_views %}Ouverte par le coach {{ c.coach_views }} fois, dernière le {{ c.coach_last_view_at.strftime('%d/%m à %H:%M') }}{% else %}<strong style="color:#8A5A00;">Pas encore ouverte par le coach</strong>{% endif %}</span>
                   {% if c.share_token %}<span class="tpx-muted">Lien client : ouvert {{ c.share_views }} fois{% if c.share_last_view_at %}, dernière fois le {{ c.share_last_view_at.strftime('%d/%m') }}{% endif %}</span>{% endif %}
-                  {% if c.status in ('analyse', 'pret') %}
+                  {% endif %}
                   <form method="post" action="{{ url_for('pro.admin_upload_analysis', client_id=c.id) }}" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="next" value="{{ next_url }}">
                     <input type="file" name="file" accept=".html,.htm,text/html" required aria-label="Fichier HTML de l'analyse">
-                    <button type="submit" class="tpa-btn tpa-btn--primary tpx-btn">{{ 'Remplacer' if c.analysis_path else 'Livrer' }}</button>
+                    <button type="submit" class="tpa-btn tpa-btn--ghost tpx-btn">{{ 'Remplacer' if c.analysis_path else "Déposer l'analyse" }}</button>
                   </form>
-                  {% else %}<span class="tpx-muted">En attente du coach</span>{% endif %}
+                  {% endif %}
                 </div>
               </td>
             </tr>

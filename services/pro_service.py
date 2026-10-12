@@ -667,20 +667,45 @@ def submit_for_analysis(client, consent):
 
 
 def save_analysis(client, html_bytes):
+    """Dépose (ou remplace) l'analyse. Ne livre pas : l'admin prévisualise d'abord,
+    puis livre au coach avec deliver_analysis."""
     path = f"pro/{client['pro_account_id']}/{client['id']}/analyse-{uuid.uuid4().hex[:8]}.html"
     _bucket().blob(path).upload_from_string(html_bytes, content_type='text/html; charset=utf-8')
     old_path = client.get('analysis_path')
     cur = _cursor()
     try:
-        cur.execute("""
-            UPDATE pro_clients SET analysis_path = %s, status = 'pret', delivered_at = NOW()
-            WHERE id = %s
-        """, (path, client['id']))
+        cur.execute("UPDATE pro_clients SET analysis_path = %s WHERE id = %s", (path, client['id']))
         _commit()
     finally:
         cur.close()
     if old_path:
         _delete_blob(old_path)
+
+
+def deliver_analysis(client):
+    """Rend l'analyse visible au coach. Retourne True si c'est la première livraison."""
+    cur = _cursor()
+    try:
+        cur.execute("""
+            UPDATE pro_clients SET status = 'pret', delivered_at = NOW()
+            WHERE id = %s AND analysis_path IS NOT NULL AND status <> 'pret'
+        """, (client['id'],))
+        _commit()
+        return cur.rowcount > 0
+    finally:
+        cur.close()
+
+
+def record_coach_view(client_id):
+    cur = _cursor()
+    try:
+        cur.execute(
+            "UPDATE pro_clients SET coach_views = coach_views + 1, coach_last_view_at = NOW() WHERE id = %s",
+            (client_id,),
+        )
+        _commit()
+    finally:
+        cur.close()
 
 
 EXAMPLE_PATH = 'pro/exemple/dossier.html'
@@ -799,7 +824,8 @@ def due_nudges():
     cur = _cursor()
     try:
         cur.execute("""
-            SELECT a.id AS account_id, a.user_id, a.nudges_sent, u.email, c.id AS client_id
+            SELECT a.id AS account_id, a.user_id, a.nudges_sent, u.email, c.id AS client_id,
+                   (c.audio_path IS NOT NULL OR c.recording_url IS NOT NULL OR c.transcript_path IS NOT NULL) AS has_recording
             FROM pro_accounts a
             JOIN users u ON u.user_id = a.user_id
             JOIN pro_clients c ON c.pro_account_id = a.id AND c.is_free = TRUE

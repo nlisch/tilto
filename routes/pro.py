@@ -552,6 +552,10 @@ def submit(client_id):
         f"Coach : {current_user.email}", f"Dossier : {dossier['label']} ({KIND_LABELS.get(dossier['kind'], '')})",
         f"Enregistrement : {recording}", "À livrer sous 48 h."],
         url_for('pro.admin_account', account_id=dossier['pro_account_id'], _external=True))
+    from services.email_service import send_pro_submitted_email
+    if not send_pro_submitted_email(current_user.email, dossier['label'],
+                                    _coach_link(dossier['pro_account_id'], url_for('pro.client', client_id=client_id))):
+        _alert_tech("email de confirmation d'envoi non envoyé", f"{current_user.email} (dossier {client_id})")
     if dossier.get('audio_path'):
         # Transcription Whisper en arrière-plan, pour préparer l'analyse
         try:
@@ -607,6 +611,11 @@ def analysis(client_id):
         account = pro_service.get_account_by_user(current_user.id)
         dossier = pro_service.get_client(client_id, account['id']) if account else None
         back_url = url_for('pro.client', client_id=client_id)
+        # Le coach ne voit l'analyse qu'une fois livrée (l'admin la prévisualise avant)
+        if dossier and dossier['status'] != 'pret':
+            dossier = None
+        elif dossier:
+            pro_service.record_coach_view(client_id)
     if not dossier or not dossier.get('analysis_path'):
         abort(404)
     return _sandboxed_html(pro_service.read_analysis(dossier), back_url)
@@ -785,17 +794,30 @@ def admin_upload_analysis(client_id):
         flash("Déposez un fichier .html.", 'error')
         return redirect(_admin_back())
 
-    first_delivery = dossier['status'] != 'pret'
     pro_service.save_analysis(dossier, file.read())
+    if dossier['status'] == 'pret':
+        flash(f"Analyse de « {dossier['label']} » remplacée : le coach voit déjà la nouvelle version.", 'success')
+    else:
+        flash(f"Analyse déposée pour « {dossier['label']} » : prévisualisez-la, puis livrez-la au coach.", 'success')
+    return redirect(_admin_back())
 
-    if first_delivery:
+
+@pro_bp.route('/admin/pro/clients/<int:client_id>/livrer', methods=['POST'])
+@login_required
+@admin_required
+def admin_deliver(client_id):
+    """Livraison au coach, après prévisualisation : dossier visible + email."""
+    dossier = pro_service.get_client(client_id)
+    if not dossier or not dossier.get('analysis_path'):
+        abort(404)
+    if pro_service.deliver_analysis(dossier):
         coach = pro_service.get_coach_email(dossier['pro_account_id'])
         from services.email_service import send_pro_analysis_ready_email
-        send_pro_analysis_ready_email(
-            coach, dossier['label'], _coach_link(dossier['pro_account_id'], url_for('pro.client', client_id=client_id))
-        )
+        if not send_pro_analysis_ready_email(
+                coach, dossier['label'], _coach_link(dossier['pro_account_id'], url_for('pro.client', client_id=client_id))):
+            _alert_tech("email « dossier prêt » non envoyé", f"{coach} (dossier {client_id})")
         _notify_slack(f"✅ *Analyse Tilto Pro livrée*\n📧 {coach}\n👤 {dossier['label']} (dossier {dossier['id']})")
-    flash(f"Analyse déposée pour « {dossier['label']} »" + (" et coach prévenu." if first_delivery else " (mise à jour)."), 'success')
+        flash(f"Dossier de « {dossier['label']} » livré : {coach} est prévenu par email.", 'success')
     return redirect(_admin_back())
 
 
@@ -839,7 +861,7 @@ def _send_nudges():
         number = row['nudges_sent'] + 1
         try:
             ok = send_pro_nudge_email(
-                row['email'], number,
+                row['email'], number, bool(row['has_recording']),
                 _coach_link(row['account_id'], url_for('pro.client', client_id=row['client_id'])),
                 url_for('pro.nudges_stop', token=pro_service.make_nudge_stop_token(row['account_id']), _external=True),
             )

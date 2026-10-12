@@ -490,9 +490,20 @@ def send_pro_credit_added_email(email, amount, dashboard_url):
                             amount=amount, dashboard_url=dashboard_url)
 
 
-def send_pro_nudge_email(email, number, dossier_url, stop_url):
-    """Tilto Pro : relance automatique du dossier offert pas encore envoyé (1re ou 2e)."""
-    subject = ("Votre dossier offert vous attend" if number == 1
-               else "Votre dossier offert : on vous aide ?")
-    return _send_pro_simple(email, 'emails/pro_nudge.html', subject,
-                            number=number, dossier_url=dossier_url, stop_url=stop_url)
+def send_pro_nudge_email(email, number, has_recording, dossier_url, stop_url):
+    """Tilto Pro : relance automatique du dossier offert pas encore envoyé (1re ou 2e).
+    Si l'enregistrement est déjà déposé, il ne reste qu'à l'envoyer : message dédié."""
+    if has_recording:
+        subject = "Votre enregistrement est bien arrivé : il reste à l'envoyer"
+    else:
+        subject = ("Votre dossier offert vous attend" if number == 1
+                   else "Votre dossier offert : on vous aide ?")
+    return _send_pro_simple(email, 'emails/pro_nudge.html', subject, number=number,
+                            has_recording=has_recording, dossier_url=dossier_url, stop_url=stop_url)
+
+
+def send_pro_submitted_email(email, client_label, dossier_url):
+    """Tilto Pro : confirme au coach que son dossier est parti en analyse."""
+    label = client_label if client_label not in ('Mon premier client', 'Mon dossier test') else None
+    subject = f"Bien reçu : le dossier de {label} arrive sous 48 h" if label else "Bien reçu : votre dossier arrive sous 48 h"
+    return _send_pro_simple(email, 'emails/pro_submitted.html', subject, label=label, dossier_url=dossier_url)
